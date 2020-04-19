@@ -1,0 +1,8 @@
+com\dvproject\vertTerm\HomeController.class
+com\dvproject\vertTerm\UserDAOImpl.class
+com\dvproject\vertTerm\UserController.class
+com\dvproject\vertTerm\UserDAO.class
+com\dvproject\vertTerm\User.class
+com\dvproject\vertTerm\VertTermApplication.class
+com\dvproject\vertTerm\UserManager.class
+com\dvproject\vertTerm\UserManagerImpl.class
