@@ -1,11 +1,11 @@
-package Project.VertTerm.dao;
+package com.dvproject.vertTerm.DAO;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.stereotype.Repository;
 
-import Project.VertTerm.model.User;
+import com.dvproject.vertTerm.Model.User;
 
 @Repository
 public class UserDAOImpl implements UserDAO {

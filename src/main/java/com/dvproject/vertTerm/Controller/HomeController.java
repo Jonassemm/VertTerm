@@ -1,4 +1,4 @@
-package com.dvproject.vertTerm;
+package com.dvproject.vertTerm.Controller;
 
 
 import org.springframework.stereotype.Controller;

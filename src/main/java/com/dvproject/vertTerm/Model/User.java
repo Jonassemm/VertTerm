@@ -1,4 +1,4 @@
-package Project.VertTerm.model;
+package com.dvproject.vertTerm.Model;
 
 import java.io.Serializable;
 

@@ -5,6 +5,8 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.web.servlet.support.SpringBootServletInitializer;
 import org.springframework.context.annotation.ComponentScan;
 
+import com.dvproject.vertTerm.Controller.HomeController;
+
 @SpringBootApplication
 @ComponentScan(basePackageClasses=HomeController.class)
 public class VertTermApplication extends SpringBootServletInitializer{
