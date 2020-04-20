@@ -5,9 +5,9 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.dvproject.vertTerm.DAO.UserDAO;
 import com.dvproject.vertTerm.Model.User;
 
+/*
 @Service
 public class UserManagerImpl implements UserManager {
 
@@ -19,3 +19,5 @@ public class UserManagerImpl implements UserManager {
 		return dao.getAllUsers();
 	}
 }
+
+*/

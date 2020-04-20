@@ -1,6 +1,7 @@
 var path = require('path');
 
 module.exports = {
+	mode: 'development',
 	entry:{
 			index: './src/main/js/App.js',
 			userListDisplay: './src/main/js/userListComponent.js'
