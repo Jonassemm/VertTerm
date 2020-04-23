@@ -1,18 +1,28 @@
 package com.dvproject.vertTerm.Model;
 
 import java.io.Serializable;
+import java.util.Collection;
+import java.util.List;
 
 import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.index.Indexed;
+import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
-
 
 public class User implements Serializable
 {
 	private static final long serialVersionUID = 1L;
 
-	@Id private String id;
+	@Id
+	private String id;
+	@Indexed(unique=true)
+	private String username;
+	private String password;
 	private String firstName;
 	private String lastName;
+	
+	@DBRef
+	private List<Role> role_id;
 
 	@Override
 	public String toString() {
@@ -42,5 +52,29 @@ public class User implements Serializable
 
 	public void setLastName(String lastName) {
 		this.lastName = lastName;
+	}
+
+	public String getUsername() {
+	    return username;
+	}
+
+	public void setUsername(String username) {
+	    this.username = username;
+	}
+
+	public String getPassword() {
+	    return password;
+	}
+
+	public void setPassword(String password) {
+	    this.password = password;
+	}
+
+	public Collection<Role> getRoles() {
+	    return role_id;
+	}
+
+	public void setRoles(List<Role> role_id) {
+	    this.role_id = role_id;
 	}
 }
