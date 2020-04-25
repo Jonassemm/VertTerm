@@ -1,7 +1,6 @@
 package com.dvproject.vertTerm.security;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
@@ -16,28 +15,21 @@ import org.springframework.stereotype.Component;
 import com.dvproject.vertTerm.Model.Right;
 import com.dvproject.vertTerm.Model.Role;
 import com.dvproject.vertTerm.Model.User;
-import com.dvproject.vertTerm.repository.RoleRepository;
 import com.dvproject.vertTerm.repository.UserRespository;
 
 @Component
 public class MyUserDetailsService implements UserDetailsService 
 {
-
     @Autowired
     private UserRespository userRepository;
 
-    @Autowired
-    private RoleRepository roleRepository;
-
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException 
     {
-
 	User user = userRepository.findByUsername(username);
 	
 	if (user == null) 
 	{
-	    return new org.springframework.security.core.userdetails.User(" ", " ", true, true, true, true,
-		    getAuthorities(Arrays.asList(roleRepository.findByName("ROLE_USER"))));
+	    throw new UsernameNotFoundException ("No user with the given username");
 	}
 	
 	return new org.springframework.security.core.userdetails.User(user.getUsername(), user.getPassword(), true,

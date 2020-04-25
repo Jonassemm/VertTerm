@@ -3,12 +3,14 @@ package com.dvproject.vertTerm.security;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
+import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 
 @Configuration
 @EnableWebSecurity
+@EnableGlobalMethodSecurity(prePostEnabled = true)
 public class ApplicationSecurityConfiguration extends WebSecurityConfigurerAdapter 
 {
     @Autowired
@@ -19,9 +21,10 @@ public class ApplicationSecurityConfiguration extends WebSecurityConfigurerAdapt
     {
 	http.formLogin()
 		.loginPage("/login").permitAll()
-		.usernameParameter("username").passwordParameter("password")
 		.loginProcessingUrl("/login").permitAll()
-		.defaultSuccessUrl("/");
+		.usernameParameter("username").passwordParameter("password")
+		.defaultSuccessUrl("/")
+		.failureForwardUrl("/login?error");
 	
 	http.authorizeRequests()
 		.antMatchers("/test").hasAuthority("WRITE_RIGHT")
@@ -29,10 +32,10 @@ public class ApplicationSecurityConfiguration extends WebSecurityConfigurerAdapt
 		.anyRequest().authenticated();
 	
 	http.logout()
-		.logoutSuccessUrl("/login")
+		.logoutUrl("/logout")
 		.clearAuthentication(true)
 		.invalidateHttpSession(true)
-		.deleteCookies("SESSION");
+		.logoutSuccessUrl("/login");
 	
 	http.csrf().disable();
 	
@@ -44,4 +47,5 @@ public class ApplicationSecurityConfiguration extends WebSecurityConfigurerAdapt
     {
         auth.userDetailsService(userDetailsService);
     }
+
 }
