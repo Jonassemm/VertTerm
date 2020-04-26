@@ -20,7 +20,7 @@ import com.dvproject.vertTerm.repository.UserRespository;
 @Component
 public class SetupDataLoader implements ApplicationListener<ContextRefreshedEvent> 
 {
-
+    
     boolean alreadySetup = false;
 
     @Autowired
@@ -47,11 +47,9 @@ public class SetupDataLoader implements ApplicationListener<ContextRefreshedEven
 	Right usersWriteRight = createRightIfNotFound("USERS_READ_RIGHT");
 
 	List<Right> adminRights = Arrays.asList(readRight, writeRight, userWriteRight, usersWriteRight);
-	createRoleIfNotFound("ROLE_ADMIN", adminRights);
-	createRoleIfNotFound("ROLE_USER", Arrays.asList(readRight, usersWriteRight));
-
-	Role adminRole = roleRepository.findByName("ROLE_ADMIN");
-	Role userRole = roleRepository.findByName("ROLE_USER");
+	List<Right> userRights = Arrays.asList(readRight, usersWriteRight);
+	Role adminRole = createRoleIfNotFound("ROLE_ADMIN", adminRights);
+	Role userRole = createRoleIfNotFound("ROLE_USER", userRights);
 	
 	createUserIfNotFound("admin", "password", Arrays.asList(adminRole));
 	createUserIfNotFound("user", "password", Arrays.asList(userRole));
