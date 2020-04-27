@@ -1,6 +1,5 @@
 import React from "react"
-import Navbar from "react-bootstrap/Navbar"
-import Nav from "react-bootstrap/Nav"
+import {Nav, Navbar, NavItem, NavDropdown} from "react-bootstrap"
 import Styled from "styled-components"
 import {Link} from 'react-router-dom'
 
@@ -23,20 +22,20 @@ const Styles = Styled.div`
 }
 `
 
-export const Header = () => {
+function Header() {
     return (
         <Styles>
             <Navbar expand="lg" justify-content="end">
-                <Navbar.Brand href="/">Calendar App</Navbar.Brand>
+                <Navbar.Brand as={Link} to="/" >VertTerm</Navbar.Brand>
                 <Navbar.Toggle aria-controls="basic-navbar-nav"/>
-                <Navbar.Collapse id="basic-navbar-nav">
-                    <Nav className="ml-auto">
-                        <Nav.Item><Link to="/">Home</Link></Nav.Item>
-                        <Nav.Item><Link to="/Calendar">Calendar</Link></Nav.Item>
-                    </Nav>
-                </Navbar.Collapse>
+                <Nav className="ml-auto">
+                    <Nav.Item><Nav.Link as={Link} to="/">Home</Nav.Link></Nav.Item>
+                    <Nav.Item><Nav.Link as={Link} to="/Calendar">Calendar</Nav.Link></Nav.Item>
+                    <Nav.Item><Nav.Link as={Link} to="/employee/add">add employee</Nav.Link></Nav.Item>
+                </Nav>
             </Navbar>
         </Styles>
     )
-   
 }
+
+export default Header
