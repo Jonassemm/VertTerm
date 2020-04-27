@@ -3,35 +3,41 @@ const webpack = require('webpack')
 const HtmlWebPackPlugin = require('html-webpack-plugin')
 
 module.exports = {
-    entry: "./src/App.js",
+    entry: './src/index.js',
     output: {
-      path: path.resolve(__dirname, '../src/main/resources/static/build'),
-      publicPath: '/react-components/dist/',
-      filename: 'build.js'
+      path: path.join(__dirname, '/dist'),
+      filename: 'bundle.js',
+      publicPath: '/'
     },
+    devServer: {
+      port: 8080,
+      historyApiFallback: true
+    },
+    devtool: "#inline-source-map",
     module: {
       rules: [
         {
           test: /\.(js|jsx)$/,
           exclude: /node_modules/,
-          use: {
-            loader: "babel-loader"
-          }
+          loader: "babel-loader",
         },
-          {
-            test: /\.html$/,
-            use: [
-              {
-                loader: "html-loader"
-              }
-            ]
-          }
-      ]
-    },
+        {
+              test: /\.css$/i,
+              use: ['style-loader', 'css-loader'],
+        },
+        {
+          test: /\.(png|jpe?g|gif)$/i,
+          use: [
+            {
+              loader: 'file-loader',
+            },
+          ],
+        }
+          ]
+        },
     plugins: [
       new HtmlWebPackPlugin({
-        template: "./src/template/index.html",
-        filename: "../../ReactApp/index.html"
+        template: "./dist/index.html"
       })
     ]
   };

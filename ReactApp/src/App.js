@@ -1,24 +1,30 @@
 'use strict'
+import './App.css'
+import React from "react"
+import HomePage from "./components/calendarComponents/HomePage"
+import {BrowserRouter as Router, Route, Switch} from "react-router-dom"
+import {Header} from "./components/Header"
+import {Home} from "./components/Home"
+import {NoMatch} from "./components/NoMatch"
+import "react-big-calendar/lib/css/react-big-calendar.css"
+import "react-datepicker/dist/react-datepicker.css"
+import "react-loader-spinner/dist/loader/css/react-spinner-loader.css"
 
-const React = require('react');
-const ReactDOM = require('react-dom');
-
-class App extends React.Component {
-	constructor(props){
-		super(props)
-	}
-	
-	render() {
-		return (
-			<div>
-				<h2>successful inject v3.3</h2>
-				<h1>Endlich funktioniert alles</h1>
-				<h3>test</h3>
-				<h4>test nr 2</h4>
-			</div>	
-		)
-	}
+function App({calendarStore}) {
+	return (
+		<React.Fragment>
+			<Router>
+			<Header/>
+				<Switch>
+					<Route exact path="/" component={Home}/>
+					<Route exact path="/Calendar" component={() => (<HomePage calendarStore={calendarStore}/>)}/>
+					<Route exact path="/NoMatch" component={NoMatch}/>
+				</Switch>
+			</Router> 
+		</React.Fragment>
+		  )
 }
 
-const wrapper = document.getElementById("root");
-wrapper ? ReactDOM.render(<App />, wrapper) : false;
+export default App
+
+
