@@ -22,9 +22,7 @@ public class ApplicationSecurityConfiguration extends WebSecurityConfigurerAdapt
 	http.formLogin()
 		.loginPage("/login").permitAll()
 		.loginProcessingUrl("/login").permitAll()
-		.usernameParameter("username").passwordParameter("password")
-		.defaultSuccessUrl("/")
-		.failureForwardUrl("/login?error");
+		.usernameParameter("username").passwordParameter("password");
 	
 	http.authorizeRequests()
 		.antMatchers("/test").hasAuthority("WRITE_RIGHT")
@@ -34,8 +32,7 @@ public class ApplicationSecurityConfiguration extends WebSecurityConfigurerAdapt
 	http.logout()
 		.logoutUrl("/logout")
 		.clearAuthentication(true)
-		.invalidateHttpSession(true)
-		.logoutSuccessUrl("/login");
+		.invalidateHttpSession(true);
 	
 	http.csrf().disable();
 	
