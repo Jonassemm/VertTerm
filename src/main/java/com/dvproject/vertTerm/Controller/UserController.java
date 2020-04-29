@@ -3,7 +3,6 @@ package com.dvproject.vertTerm.Controller;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -42,9 +41,9 @@ public class UserController
     }
 
     @GetMapping("/loggedInUser")
-    public List<User> getLoggedInUserData()
+    public User getLoggedInUserData()
     {
-	return userService.getUsersWithUsernames(new String [] {SecurityContextHolder.getContext().getAuthentication().getName()});
+	return userService.getOwnUser();
     }
 
     @GetMapping("/id/rights")

@@ -8,11 +8,12 @@ import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+@Document("user")
 public class User implements Serializable
 {
-	private static final long serialVersionUID = 1L;
+    	private static final long serialVersionUID = 1L;
 
-	@Id
+    	@Id
 	private String id;
 	@Indexed(unique=true)
 	private String username;

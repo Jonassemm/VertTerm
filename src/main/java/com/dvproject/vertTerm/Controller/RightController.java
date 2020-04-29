@@ -19,14 +19,14 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.dvproject.vertTerm.Model.Right;
 import com.dvproject.vertTerm.Model.Role;
-import com.dvproject.vertTerm.Service.RightService1;
+import com.dvproject.vertTerm.Service.RightService;
 
 @RestController
 @RequestMapping(value= "/Api/Right")
 public class RightController
 {
 	@Autowired
-	private RightService1 rightService;
+	private RightService rightService;
 	
 	@GetMapping()
 	public List<Right> getAllRights() {

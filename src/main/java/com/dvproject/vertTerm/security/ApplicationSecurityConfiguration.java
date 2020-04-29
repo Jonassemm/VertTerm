@@ -1,5 +1,8 @@
 package com.dvproject.vertTerm.security;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
@@ -7,6 +10,12 @@ import org.springframework.security.config.annotation.method.configuration.Enabl
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+
+import com.dvproject.vertTerm.Model.Right;
+import com.dvproject.vertTerm.Model.Role;
+import com.dvproject.vertTerm.repository.RoleRepository;
 
 @Configuration
 @EnableWebSecurity
@@ -15,6 +24,9 @@ public class ApplicationSecurityConfiguration extends WebSecurityConfigurerAdapt
 {
     @Autowired
     private MyUserDetailsService userDetailsService;
+    
+    @Autowired
+    private RoleRepository roleReposiroty;
 
     @Override
     protected void configure(HttpSecurity http) throws Exception 
@@ -24,8 +36,9 @@ public class ApplicationSecurityConfiguration extends WebSecurityConfigurerAdapt
 		.loginProcessingUrl("/login").permitAll()
 		.usernameParameter("username").passwordParameter("password");
 	
+	http.anonymous().authorities(getAuthoritiesOfAnonymousUsers());
+	
 	http.authorizeRequests()
-		.antMatchers("/test").hasAuthority("WRITE_RIGHT")
 		.antMatchers("/**").permitAll()
 		.anyRequest().authenticated();
 	
@@ -43,6 +56,26 @@ public class ApplicationSecurityConfiguration extends WebSecurityConfigurerAdapt
     protected void configure(final AuthenticationManagerBuilder auth) throws Exception 
     {
         auth.userDetailsService(userDetailsService);
+    }
+    
+    private List<GrantedAuthority> getAuthoritiesOfAnonymousUsers () 
+    {
+	List<GrantedAuthority> authorities = new ArrayList<GrantedAuthority> ();
+	Role anonymousRole = roleReposiroty.findByName("ANONYMOUS_ROLE");
+	
+	if (anonymousRole == null)
+	{
+	    authorities.add(new SimpleGrantedAuthority("NO_RIGHTS"));
+	}
+	else
+	{
+	    for (Right right : anonymousRole.getRights())
+	    {
+		authorities.add(new SimpleGrantedAuthority(right.getName()));
+	    }
+	}
+	
+	return authorities;
     }
 
 }

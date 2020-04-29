@@ -1,5 +1,6 @@
 package com.dvproject.vertTerm.security;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -10,9 +11,11 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.dvproject.vertTerm.Model.Employee;
 import com.dvproject.vertTerm.Model.Right;
 import com.dvproject.vertTerm.Model.Role;
 import com.dvproject.vertTerm.Model.User;
+import com.dvproject.vertTerm.repository.EmployeeRepository;
 import com.dvproject.vertTerm.repository.RightRepository;
 import com.dvproject.vertTerm.repository.RoleRepository;
 import com.dvproject.vertTerm.repository.UserRepository;
@@ -20,11 +23,13 @@ import com.dvproject.vertTerm.repository.UserRepository;
 @Component
 public class SetupDataLoader implements ApplicationListener<ContextRefreshedEvent> 
 {
+    private boolean alreadySetup = false;
     
-    boolean alreadySetup = false;
-
     @Autowired
     private UserRepository userRepository;
+    
+    @Autowired
+    private EmployeeRepository employeeRepository;
 
     @Autowired
     private RoleRepository roleRepository;
@@ -41,18 +46,11 @@ public class SetupDataLoader implements ApplicationListener<ContextRefreshedEven
 	if (alreadySetup)
 	    return;
 
-	Right readRight = createRightIfNotFound("READ_RIGHT");
-	Right writeRight = createRightIfNotFound("WRITE_RIGHT");
-	Right userWriteRight = createRightIfNotFound("USERS_WRITE_RIGHT");
-	Right usersWriteRight = createRightIfNotFound("USERS_READ_RIGHT");
-
-	List<Right> adminRights = Arrays.asList(readRight, writeRight, userWriteRight, usersWriteRight);
-	List<Right> userRights = Arrays.asList(readRight, usersWriteRight);
-	Role adminRole = createRoleIfNotFound("ROLE_ADMIN", adminRights);
-	Role userRole = createRoleIfNotFound("ROLE_USER", userRights);
+	Role adminRole = createRoleIfNotFound("ADMIN_ROLE", setUpAdminRights());
+	Role userRole = createRoleIfNotFound("ANONYMOUS_ROLE", setUpAnonymusUserRights());
 	
-	createUserIfNotFound("admin", "password", Arrays.asList(adminRole));
-	createUserIfNotFound("user", "password", Arrays.asList(userRole));
+	createEmployeeIfNotFound("admin", "password", Arrays.asList(adminRole));
+	createUserIfNotFound("anonymousUser", "password", Arrays.asList(userRole));
 	
 	alreadySetup = true;
     }
@@ -69,6 +67,37 @@ public class SetupDataLoader implements ApplicationListener<ContextRefreshedEven
 	    rightRepository.save(rights);
 	}
 
+	return rights;
+    }
+    
+    private List<Right> setUpAdminRights () {
+	List<Right> rights = new ArrayList<Right> ();
+	
+	//user-rights
+	rights.add(createRightIfNotFound("OWN_USER_DATA_READ"));
+	rights.add(createRightIfNotFound("OWN_USER_DATA_WRITE"));
+	rights.add(createRightIfNotFound("USERS_DATA_READ"));
+	rights.add(createRightIfNotFound("USERS_DATA_WRITE"));
+	//user-role-rights
+	rights.add(createRightIfNotFound("OWN_USER_ROLES_READ"));
+	//user-right-rights
+	rights.add(createRightIfNotFound("OWN_USER_RIGHTS_READ"));
+	
+	//role-rights
+	rights.add(createRightIfNotFound("ROLES_WRITE"));
+	rights.add(createRightIfNotFound("ROLES_READ"));
+	
+	//right-rights
+	rights.add(createRightIfNotFound("RIGHTS_READ"));
+	
+	return rights;
+    }
+    
+    private List<Right> setUpAnonymusUserRights () {
+	List<Right> rights = new ArrayList<Right> ();
+	
+	rights.add(createRightIfNotFound("OWN_USER_DATA_READ"));
+	
 	return rights;
     }
 
@@ -98,6 +127,23 @@ public class SetupDataLoader implements ApplicationListener<ContextRefreshedEven
 	    user.setUsername(username);
 	    user.setPassword(passwordEncoder.encode(password));
 	    user.setRoles(roles);
+	    userRepository.save(user);
+	}
+
+	return user;
+    }
+    
+    @Transactional
+    private Employee createEmployeeIfNotFound (String username, String password, List<Role> roles) {
+	Employee user = employeeRepository.findByUsername(username);
+
+	if (user == null) 
+	{
+	    user = new Employee();
+	    user.setUsername(username);
+	    user.setPassword(passwordEncoder.encode(password));
+	    user.setRoles(roles);
+	    user.setAvailable(true);
 	    userRepository.save(user);
 	}
 

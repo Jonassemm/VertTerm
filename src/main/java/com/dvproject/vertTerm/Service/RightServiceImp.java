@@ -8,14 +8,14 @@ import org.springframework.data.rest.webmvc.ResourceNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.dvproject.vertTerm.Service.RightService1;
+import com.dvproject.vertTerm.Service.RightService;
 import com.dvproject.vertTerm.Model.Right;
 import com.dvproject.vertTerm.repository.RightRepository;
 
 
 @Service
 @Transactional
-public class RightServiceImp implements RightService1 {
+public class RightServiceImp implements RightService {
 
    @Autowired
    private RightRepository RightRepo;
@@ -38,7 +38,6 @@ public class RightServiceImp implements RightService1 {
    }
    
 }
-
 
 
 
