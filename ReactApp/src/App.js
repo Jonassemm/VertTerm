@@ -17,17 +17,17 @@ import "react-loader-spinner/dist/loader/css/react-spinner-loader.css"
 export default function App({calendarStore}) {
 
   return (
-    <Router>
-        <Header />
-            <Switch>
-                <Route path="/" exact component={Home}/>
-                <Route path="/employee/add" exact component={EmployeeAdd}/>
-                <Route path="/customer/add" exact component={CustomerAdd}/>
-                <Route path="/customer/list" exact component={() => <UserList heading={"Kundenliste"}/>}/>
-                <Route path="/employee/list" exact component={() => <UserList heading={"Mitarbeiterliste"}/>}/>
-                <Route exact path="/Calendar" component={() => (<HomePage calendarStore={calendarStore}/>)}/>
-            </Switch>
-        <Footer/>
-    </Router>
+       <Router>
+       <Header />
+           <Switch>
+               <Route path="/" exact component={Home}/>
+               <Route path="/employee/add" exact component={EmployeeAdd}/>
+               <Route path="/customer/add" exact component={CustomerAdd}/>
+               <Route path="/customer/list" exact component={() => <UserList heading={"Kundenliste"}/>}/>
+               <Route path="/employee/list" exact component={() => <UserList heading={"Mitarbeiterliste"}/>}/>
+               <Route exact path="/Calendar" component={() => (<HomePage calendarStore={calendarStore}/>)}/>
+           </Switch>
+           <Footer/>
+           </Router>
   )
 }
