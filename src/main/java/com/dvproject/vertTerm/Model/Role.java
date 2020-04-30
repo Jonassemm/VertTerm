@@ -4,13 +4,15 @@ import java.util.List;
 
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.DBRef;
+import org.springframework.data.mongodb.core.mapping.Document;
 
+@Document
 public class Role {
 
     @Id
     private String id;
-    
     private String name;
+    private String description;
  
     @DBRef
     private List<Right> rights;
@@ -37,6 +39,14 @@ public class Role {
 
     public void setRights(List<Right> rights) {
         this.rights = rights;
+    }
+
+    public String getDescription() {
+	return description;
+    }
+
+    public void setDescription(String description) {
+	this.description = description;
     }   
     
 }

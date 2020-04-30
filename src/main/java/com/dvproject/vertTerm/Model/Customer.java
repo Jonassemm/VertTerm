@@ -10,7 +10,7 @@ public class Customer extends User implements Serializable
     private static final long serialVersionUID = 7035726826167256599L;
     
     private boolean appointmentStatus;
-    private boolean waiting;
+    private boolean isWaiting;
     
     public boolean isAppointmentStatus() {
         return appointmentStatus;
@@ -21,11 +21,11 @@ public class Customer extends User implements Serializable
     }
     
     public boolean isWaiting() {
-        return waiting;
+        return isWaiting;
     }
     
-    public void setWaiting(boolean waiting) {
-        this.waiting = waiting;
+    public void setIsWaiting(boolean isWaiting) {
+        this.isWaiting = isWaiting;
     }
     
 }

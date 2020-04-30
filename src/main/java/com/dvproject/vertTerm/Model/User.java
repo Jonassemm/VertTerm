@@ -1,6 +1,7 @@
 package com.dvproject.vertTerm.Model;
 
 import java.io.Serializable;
+import java.sql.Timestamp;
 import java.util.List;
 
 import org.springframework.data.annotation.Id;
@@ -11,15 +12,17 @@ import org.springframework.data.mongodb.core.mapping.Document;
 @Document("user")
 public class User implements Serializable
 {
-    	private static final long serialVersionUID = 1L;
-
-    	@Id
+    	private static final long serialVersionUID = -5252169753921361843L;
+    	
+	@Id
 	private String id;
-	@Indexed(unique=true)
+	@Indexed(unique = true)
 	private String username;
 	private String password;
 	private String firstName;
 	private String lastName;
+	private Timestamp timeOfCreation;
+	private int systemStatus;
 	
 	@DBRef
 	private List<Role> role_id;
@@ -76,5 +79,21 @@ public class User implements Serializable
 
 	public void setRoles(List<Role> role_id) {
 	    this.role_id = role_id;
+	}
+
+	public Timestamp getTimeOfCreation() {
+	    return timeOfCreation;
+	}
+
+	public void setTimeOfCreation(Timestamp timeOfCreation) {
+	    this.timeOfCreation = timeOfCreation;
+	}
+
+	public int getSystemStatus() {
+	    return systemStatus;
+	}
+
+	public void setSystemStatus(int systemStatus) {
+	    this.systemStatus = systemStatus;
 	}
 }
