@@ -9,7 +9,7 @@ import org.springframework.data.rest.core.annotation.RepositoryRestResource;
 import com.dvproject.vertTerm.Model.User;
 
 @RepositoryRestResource(collectionResourceRel = "people", path = "people")
-public interface UserRespository extends MongoRepository<User, String> 
+public interface UserRepository extends MongoRepository<User, String>
 {
 	List<User> findByLastName(@Param("name") String name);
 	

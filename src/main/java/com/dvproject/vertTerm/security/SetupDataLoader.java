@@ -15,7 +15,7 @@ import com.dvproject.vertTerm.Model.Role;
 import com.dvproject.vertTerm.Model.User;
 import com.dvproject.vertTerm.repository.RightRepository;
 import com.dvproject.vertTerm.repository.RoleRepository;
-import com.dvproject.vertTerm.repository.UserRespository;
+import com.dvproject.vertTerm.repository.UserRepository;
 
 @Component
 public class SetupDataLoader implements ApplicationListener<ContextRefreshedEvent> 
@@ -24,7 +24,7 @@ public class SetupDataLoader implements ApplicationListener<ContextRefreshedEven
     boolean alreadySetup = false;
 
     @Autowired
-    private UserRespository userRepository;
+    private UserRepository userRepository;
 
     @Autowired
     private RoleRepository roleRepository;

@@ -15,13 +15,13 @@ import org.springframework.stereotype.Component;
 import com.dvproject.vertTerm.Model.Right;
 import com.dvproject.vertTerm.Model.Role;
 import com.dvproject.vertTerm.Model.User;
-import com.dvproject.vertTerm.repository.UserRespository;
+import com.dvproject.vertTerm.repository.UserRepository;
 
 @Component
 public class MyUserDetailsService implements UserDetailsService 
 {
     @Autowired
-    private UserRespository userRepository;
+    private UserRepository userRepository;
 
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException 
     {

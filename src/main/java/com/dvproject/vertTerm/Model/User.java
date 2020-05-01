@@ -24,6 +24,18 @@ public class User implements Serializable
 	@DBRef
 	private List<Role> role_id;
 
+	public User(String id, String username, String password, String firstName, String lastName, List<Role> role_id) {
+		this.id = id;
+		this.username = username;
+		this.password = password;
+		this.firstName = firstName;
+		this.lastName = lastName;
+		this.role_id = role_id;
+	}
+
+	public User() {
+	}
+
 	@Override
 	public String toString() {
 		return "User [id=" + id + ", firstName=" + firstName
