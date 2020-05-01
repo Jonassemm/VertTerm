@@ -1,7 +1,6 @@
 package com.dvproject.vertTerm.security;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,12 +35,12 @@ public class MyUserDetailsService implements UserDetailsService
 		true, true, true, getAuthorities(user.getRoles()));
     }
 
-    private Collection<? extends GrantedAuthority> getAuthorities(Collection<Role> roles) 
+    private List<? extends GrantedAuthority> getAuthorities(List<Role> roles) 
     {
 	return getGrantedAuthorities(getRights(roles));
     }
 
-    private List<String> getRights(Collection<Role> roles) 
+    private List<String> getRights(List<Role> roles) 
     {
 	List<String> rights = new ArrayList<String>();
 	List<Right> collection = new ArrayList<Right>();

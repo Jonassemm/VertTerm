@@ -9,9 +9,19 @@ import com.dvproject.vertTerm.repository.UserRepository;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.List;
 
-@Controller
-@RequestMapping("/users")
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+import com.dvproject.vertTerm.Model.Right;
+import com.dvproject.vertTerm.Model.Role;
+import com.dvproject.vertTerm.Model.User;
+
+@RestController
+@RequestMapping("/json/user")
 public class UserController
 {
 	@Autowired
