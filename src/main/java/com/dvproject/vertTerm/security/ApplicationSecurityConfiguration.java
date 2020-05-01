@@ -10,6 +10,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -21,6 +22,8 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
+import org.springframework.security.web.authentication.HttpStatusEntryPoint;
+import org.springframework.security.web.authentication.logout.LogoutSuccessHandler;
 
 import com.dvproject.vertTerm.Model.Right;
 import com.dvproject.vertTerm.Model.Role;
@@ -50,7 +53,6 @@ public class ApplicationSecurityConfiguration extends WebSecurityConfigurerAdapt
 			    AuthenticationException exception) throws IOException, ServletException {
 			response.sendError(401, "Failure to log in");
 		    }
-		    
 		})
 		.successHandler(new AuthenticationSuccessHandler () {
 		    @Override
@@ -59,17 +61,25 @@ public class ApplicationSecurityConfiguration extends WebSecurityConfigurerAdapt
 			response.setStatus(HttpServletResponse.SC_OK);
 			
 		    }
-		    
-		});;
+		});
 	
 	http.anonymous().authorities(getAuthoritiesOfAnonymousUsers());
 	
 	http.authorizeRequests()
 		.antMatchers("/**").permitAll()
-		.anyRequest().authenticated();
+		.anyRequest().authenticated()
+		.and().exceptionHandling().authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED));
 	
 	http.logout()
 		.logoutUrl("/logout")
+		.logoutSuccessHandler(new LogoutSuccessHandler () {
+		    @Override
+		    public void onLogoutSuccess(HttpServletRequest request, HttpServletResponse response,
+			    Authentication authentication) throws IOException, ServletException {
+			response.setStatus(200);
+		    }
+		})
+		.deleteCookies("JSESSIONID")
 		.clearAuthentication(true)
 		.invalidateHttpSession(true);
 	
