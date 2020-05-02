@@ -1,5 +1,6 @@
 package com.dvproject.vertTerm.Controller;
 
+import java.security.Principal;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,9 +42,9 @@ public class UserController
     }
 
     @GetMapping("/loggedInUser")
-    public User getLoggedInUserData()
+    public User getLoggedInUserData(Principal principal)
     {
-	return userService.getOwnUser();
+	return userService.getOwnUser(principal);
     }
 
     @GetMapping("/id/rights")

@@ -1,6 +1,7 @@
 package com.dvproject.vertTerm.security;
 
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -28,6 +29,7 @@ import org.springframework.security.web.authentication.logout.LogoutSuccessHandl
 import com.dvproject.vertTerm.Model.Right;
 import com.dvproject.vertTerm.Model.Role;
 import com.dvproject.vertTerm.repository.RoleRepository;
+import com.dvproject.vertTerm.repository.UserRepository;
 
 @Configuration
 @EnableWebSecurity
@@ -39,6 +41,9 @@ public class ApplicationSecurityConfiguration extends WebSecurityConfigurerAdapt
     
     @Autowired
     private RoleRepository roleReposiroty;
+    
+    @Autowired
+    private UserRepository userRepository;
 
     @Override
     protected void configure(HttpSecurity http) throws Exception 
@@ -59,7 +64,9 @@ public class ApplicationSecurityConfiguration extends WebSecurityConfigurerAdapt
 		    public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response,
 			    Authentication authentication) throws IOException, ServletException {
 			response.setStatus(HttpServletResponse.SC_OK);
-			
+			PrintWriter out = response.getWriter();
+			out.write(userRepository.findByUsername(authentication.getName()).getId());
+			out.flush();
 		    }
 		});
 	
