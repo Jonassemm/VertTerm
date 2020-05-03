@@ -22,7 +22,7 @@ import com.dvproject.vertTerm.Model.Role;
 import com.dvproject.vertTerm.Service.RightService;
 
 @RestController
-@RequestMapping(value= "/Api/Right")
+@RequestMapping(value= "/api/Right")
 public class RightController
 {
 	@Autowired

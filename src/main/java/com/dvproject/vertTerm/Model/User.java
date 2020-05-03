@@ -18,6 +18,16 @@ public class User implements Serializable
 	private String id;
 	@Indexed(unique = true)
 	private String username;
+
+	public Adress getAdress() {
+		return adress;
+	}
+
+	public void setAdress(Adress adress) {
+		this.adress = adress;
+	}
+
+	private Adress adress;
 	private String password;
 	private String firstName;
 	private String lastName;
