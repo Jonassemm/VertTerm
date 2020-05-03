@@ -1,15 +1,17 @@
 import React ,{useState, useEffect} from 'react'
 import {Form, Table, Card, Col, Container, Button, InputGroup} from 'react-bootstrap'
+import {useParams} from "react-router-dom"
 import {observer} from "mobx-react"
 import Layout from "./Layout"
+import {useHistory} from 'react-router-dom';
 
-import Availability from "./../availability/AvailabilityForm"
+import Availability from "../availability/AvailabilityForm"
 import {
   addEmployee,
   getRolesOfUser,
   getRoles,
   getUser
-} from "./requests";
+} from "./UserRequests";
 
 const styles = {
   radioFullBox: {
@@ -38,43 +40,96 @@ const styles = {
 
 function EmployeeAdd(props) {
   
-  const [forename, setForename] = useState("")
-  const [surname, setSurname] = useState("")
+  const history = useHistory();
+
+  const [firstname, setFirstname] = useState("")
+  const [lastname, setLastname] = useState("")
   const [username, setUsername] = useState("") 
   const [password, setPassword] = useState("")
   const [position, setPosition] = useState("")
-  const [status, setStatus] = useState(null)
+  const [systemStatus, setSystemStatus] = useState("")
 
   let firstSelectedRole = null // to add the first role wich is listed when click on "Hinzufügen"
   const [selectedRole, setSelectedRole] = useState(null)
   const [userRoles, setUserRoles] = useState([])
-  const [choosableRoles, setChoosableRoles] = useState([{roleName: "Admin"},{roleName: "Gast"},{roleName: "Benutzerdefinierte Rolle"}])
-
+  const [choosableRoles, setChoosableRoles] = useState([])//([{name: "Standard"}])
+  //EDIT
   const [currentUser, setCurrentUser] = useState(null)
-  const [validated, setValidated] = useState(false)
+  const {userId} = useParams() //graps userId from URL
+
+  //HANDEL CHANGE
+  const handleFirstnameChange = data => setFirstname(data.target.value)
+  const handleLastnameChange = data => setLastname(data.target.value)
+  const handleUsernameChange = data => setUsername(data.target.value)
+  const handlePasswordChange = data => setPassword(data.target.value)
+  const handlePositionChange = data => setPosition(data.target.value)
+  const handleRoleInputChange = data => setSelectedRole(data.target.value)
+  const handleSystemStatusChange = data => setSystemStatus(data.target.value)
 
 
+  useEffect(() => {
+    console.log("useEffect-Call: loadChoosableRoles");
+    loadChoosableRoles();
+    switch(props.type) {
+      case "edit":
+        console.log("useEffect-Call: loadUser");
+        loadUser();
+        break;
+      case "add":
+        break;
+    }
+  }, [])
 
-
+  //---------------------------------SUBMIT---------------------------------
   const handleSubmit = async event => {
-    const form = event.currentTarget;
     event.preventDefault();//reload the page after clicking "Enter"
-
-    const usertype = "employee"
-    const employeeData = {forename, surname, username, password, position, status, roles: userRoles, usertype}
+  
+  //---------------------------------SUBMIT---------------------------------
+  const employeeData = {firstname, lastname, username, password, position, systemStatus, userRoles}
     try {
-      await addEmployee(employeeData);
       console.log("AXIOS: addEmployee()")
+      await addEmployee(employeeData);
     } catch (error) {
       console.log(Object.keys(error), error.message)
-      alert("An error occoured while adding a employee")
+      alert("An error occoured while adding a user")
     }
   };
 
+  //---------------------------------CURRENT_USER---------------------------------
+  //LOAD USER
+  const loadUser = async () => {
+  var data = [];
+    /*try {
+      console.log("AXIOS: loadUser()");
+      const response = await getUser(userId);
+      data = response.data.map(properties => {
+          return {
+              ...properties,
+          }
+      })
+      console.log("load User: " + data + " / " + [data] +  " / " + {data});
+    } catch (error) {
+      console.log(Object.keys(error), error.message);
+      alert("An error occoured while loading a user");
+    }*/
+    //REMOVE testdata for real usage
+    const testdata = {currentId: 1, currentFirstname: "Test-Vorname", currentLastname: "Test-Nachname", currentUsername: "Test-Username", currentPassword: "Test-Passwort", currentPosition: "Test-Position", currentSystemStatus:"inactive", currentRoles:[{name:"Admin"}, {name:"Gast"}]};
+    const {currentId, currentFirstname: currentFirstname, currentLastname: currentLastname, currentUsername, currentPassword, currentPosition, currentSystemStatus, currentRoles,} = testdata;
+    setFirstname(currentFirstname);
+    setLastname(currentLastname);
+    setPassword(currentPassword);
+    setUsername(currentUsername);
+    setPosition(currentPosition);
+    setSystemStatus(currentSystemStatus);
+    setUserRoles(currentRoles);
+  };
+
+
   //---------------------------------ROLES---------------------------------
-  //LOAD
+  //LOAD USER ROLES
+  /*
   const loadUserRoles = async () => {
-    const response = await getRolesOfUser();
+    const response = await getRolesOfUser(userId);
     const data = response.data.map(role => {
         return {
             ...role,
@@ -83,118 +138,107 @@ function EmployeeAdd(props) {
     console.log("load Role: " + data + " / " + [data] +  " / " + {data})
     setUserRoles(data)
   }
-
-  const loadChoosableRoles = async () => {
-    const response = await getRoles();
-    const data = response.data.map(role => {
-        return {
-            ...role,
-        }
-    })
-    console.log("load Role: " + data + " / " + [data] +  " / " + {data})
-    setChoosableRoles(data)
-  }
-
-  //ADD
+  */
+  //ADD USER ROLES
   const addRole = () => {
-    console.log("add Role:" + selectedRole)
-    console.log("firstRole: " + firstSelectedRole)
-
-    if(userRoles.some(roles => roles.roleName === selectedRole) || (userRoles.some(roles => roles.roleName === firstSelectedRole) && (selectedRole==null))) {
-      alert("Rolle bereits vorhanden!")  
+    if(userRoles.some(roles => roles.name === selectedRole) || (userRoles.some(roles => roles.name === firstSelectedRole) && (selectedRole==null))) {
+      alert("Rolle bereits vorhanden!");
       } else if (selectedRole == null) {
-        setUserRoles([...userRoles, {roleName: firstSelectedRole}]) 
-        console.log("first role added and reset: " + firstSelectedRole)
+          if(firstSelectedRole == "" || firstSelectedRole == null )
+          {
+            alert("Keine Rolle zum hinzufügen gefunden");
+          }else {
+            setUserRoles([...userRoles, {name: firstSelectedRole}]); 
+            console.log("first role added: " + firstSelectedRole);
+          }
       } else {
-      setUserRoles([...userRoles, {roleName: selectedRole}])
+      console.log("add Role:" + selectedRole);
+      setUserRoles([...userRoles, {name: selectedRole}]);
       }
   };
 
-  const updateChoosableRoles = (index) => {
-    console.table(userRoles);
-    userRoles.splice((index),1);
-    setUserRoles([...userRoles]);
-    console.table(userRoles);
-  }
-  //REMOVE
+  //REMOVE USER ROLES
   const removeRole = (index) => {
     console.table(userRoles);
     userRoles.splice((index),1);
     setUserRoles([...userRoles]);
     console.table(userRoles);
-  }
+  };
 
-  //---------------------------------CURRENT_USER---------------------------------
-  const loadUser = async () => {
-    const response = await getUser();
-    const data = response.data.map(properties => {
-        return {
-            ...properties,
-        }
+  //LOAD CHOOSABLE ROLES
+  const loadChoosableRoles = async () => {
+    var data = [];
+    /*try{ 
+      const response = await getRoles();
+      data = response.data.map(role => {
+          return {
+              ...role,
+          }
+      })
+    }catch (error) {
+      console.log(Object.keys(error), error.message)
+      alert("An error occoured while loading choosable roles")
+    }*/
+    
+    //console.log("load Role: " + data + " / " + [data] +  " / " + {data})
+    const testdata = [{name: "Admin"},{name: "Gast"},{name: "Benutzerdefinierte Rolle"}];
+    //const testdata = []
+    testdata.map((role, index) => {
+      setChoosableRoles(choosableRoles => [...choosableRoles, role]);
     })
-    console.log("load User: " + data + " / " + [data] +  " / " + {data});
-    setCurrentUser(data);
-  }
+
+  };
+
+  //UPDATE CHOSSABLE ROLES
+  const updateChoosableRoles = (index) => {
+    
+  };
 
 
   //---------------------------------RENDERING---------------------------------
+  // DYNAMIC DROPDOWN
   function renderDropdown() {
-    if (choosableRoles != null) {
-        return choosableRoles.map((role, index) => {
-            const {roleName} = role
-            if(index == 0) {
-              firstSelectedRole = roleName
-            }
-            return (
-                <option key={index} value={roleName}>{roleName}</option>
-            )
-        })
+    if (choosableRoles.length > 0) {
+      return choosableRoles.map((role, index) => {
+          const {name} = role;
+          if(index == 0) {
+            firstSelectedRole = name;
+          }
+          return (<option key={index} value={name}>{name}</option>);
+      })
     } else {
-        return (
-            <tr align="center">
-                <td colSpan="7">Kein Benutzer vorhanden</td>
-            </tr>
-        )
+        return (<option disabled key={0}>KEINE ROLLEN VORHANDEN</option>);
     }
-    
-}
+  };
 
-  useEffect(() => {
-    switch(props.type) {
-      case "edit":
-        loadUser();
-        console.log("useEffect-Call: loadUser()");
-        break;
-      case "add":
-        break;
-    }
-  })
-
-  const handleForenameChange = data => setForename(data.target.value)
-  const handleSurnameChange = data => setSurname(data.target.value)
-  const handleUsernameChange = data => setUsername(data.target.value)
-  const handlePasswordChange = data => setPassword(data.target.value)
-  const handlePositionChange = data => setPosition(data.target.value)
-  const handleRoleInputChange = data => setSelectedRole(data.target.value)
-  const handleStatusChange = data => setStatus(data.target.value)
+  function renderRoleTable() {
+    return ( 
+      userRoles.map((role, index) =>(
+        <tr key={index}>
+          <td><Form.Control readOnly type="text" name={"Rolle"+ index} value={role.name}/></td>
+          <td><Button onClick={()=>removeRole(index)} id={role.name}>Entfernen</Button></td>
+        </tr>
+      ))
+    );
+  };
 
 
    return (
     <Layout>
       <Card style={{marginBottom: "50px"}} className={"border border-dark bg-dark text-white"}>
         <Form id="employeeAdd" onSubmit={(e) => handleSubmit(e)}>
-          <Card.Header><h3>Mitarbeiter hinzufügen</h3></Card.Header>
+          <Card.Header><h3>{props.type === "edit" ? "Mitarbeiter bearbeiten" : "Mitarbeiter hinzufügen"}</h3></Card.Header>
           <Card.Body>
             <Form.Row>
               <Form.Group as={Col} md="5" >
                 <Form.Label>Vorname:</Form.Label>
                 <Form.Control
                   required
-                  name="forename"
+                  name="firstname"
                   type="text"
                   placeholder="Vorname"
-                  value={forename || ""}
-                  onChange={handleForenameChange}
+                  value={firstname || ""}
+                  onChange={handleFirstnameChange}
                 />
                 <Form.Control.Feedback>Passt!</Form.Control.Feedback>
               </Form.Group>
@@ -202,11 +246,11 @@ function EmployeeAdd(props) {
                 <Form.Label>Nachname:</Form.Label>
                 <Form.Control
                   required
-                  name="surename"
+                  name="lastname"
                   type="text"
                   placeholder="Nachname"
-                  value={surname || ""}
-                  onChange={handleSurnameChange}
+                  value={lastname || ""}
+                  onChange={handleLastnameChange}
                 />
                 <Form.Control.Feedback>Passt!</Form.Control.Feedback>
               </Form.Group>
@@ -217,19 +261,21 @@ function EmployeeAdd(props) {
                       required
                       type="radio"
                       label="Aktiviert"
-                      name="status"
-                      value="aktive"
+                      name="systemStatus"
+                      value="active"
+                      checked={systemStatus === 'active'}
                       id="SystemStatusAktive"
-                      onClick={handleStatusChange}
+                      onChange={handleSystemStatusChange}
                   />
                   <Form.Check
                       required
                       type="radio"
                       label="Deaktiviert"
-                      name="status"
+                      name="systemStatus"
                       id="SystemStatusInaktive"
-                      value="inaktive"
-                      onClick={handleStatusChange}
+                      value="inactive"
+                      checked={systemStatus === 'inactive'}
+                      onChange={handleSystemStatusChange}
                   />
               </Form.Group>
             </Form.Row>
@@ -303,15 +349,7 @@ function EmployeeAdd(props) {
                           </tr>
                       </thead>
                       <tbody>
-                        {
-                          userRoles.map((role, index) =>(
-                              <tr key={index}>
-                                <td><Form.Control readOnly type="text" name={"Rolle"+ index} value={role.roleName}/></td>
-                                <td><Button onClick={()=>removeRole(index)} id={role.roleName}>Entfernen</Button></td>
-                              </tr>
-                            )
-                          )
-                        }
+                        {renderRoleTable()}
                       </tbody>
                     </Table> 
                 </Form.Group>
@@ -319,8 +357,12 @@ function EmployeeAdd(props) {
             {/*<Availability/> */}
         </Card.Body>
         <Card.Footer style={{textAlign: "right"}}>
+            {props.type === "edit" ? 
+              <Button variant="secondary" onClick={() => history.push('/employee/list')} style={{marginRight: "20px"}}>Abbrechen</Button> :
+              null
+            }
           <Button size="md" variant="success" type="submit">
-            Mitarbeiter anlegen
+            {props.type === "edit" ? "Übernehmen" : "Mitarbeiter anlegen"}
           </Button>
         </Card.Footer>
       </Form>

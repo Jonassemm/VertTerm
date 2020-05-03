@@ -52,17 +52,17 @@ export default function CustomerAdd() {
                 <Form.Label>Vorname:</Form.Label>
                 <Form.Control
                   required
-                  name="forename"
+                  name="firstname"
                   type="text"
                   placeholder="Vorname"
                 />
                 <Form.Control.Feedback>Passt!</Form.Control.Feedback>
               </Form.Group>
-              <Form.Group as={Col} md="5" controlId="validationSurname">
+              <Form.Group as={Col} md="5" controlId="validationLastname">
                 <Form.Label>Nachname:</Form.Label>
                 <Form.Control
                   required
-                  name="surname"
+                  name="lastname"
                   type="text"
                   placeholder="Nachname"
                 />

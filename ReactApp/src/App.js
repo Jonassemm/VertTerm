@@ -5,7 +5,7 @@ import {Container, Row, Col} from 'react-bootstrap';
 import {BrowserRouter as Router, Switch, Route} from 'react-router-dom';
 import NavigationBar from './components/NavigationBar';
 import CustomerAdd from './components/user/CustomerAdd';
-import EmployeeAdd from './components/user/EmployeeAdd';
+import EmployeeForm from './components/user/EmployeeForm';
 import UserList from './components/user/UserList';
 import {Home} from './components/Home'
 import HomePage from './components/calendarComponents/HomePage'
@@ -21,8 +21,9 @@ export default function App({calendarStore}) {
        <Header />
            <Switch>
                <Route path="/" exact component={Home}/>
-               <Route path="/employee/add" exact component={EmployeeAdd}/>
-               <Route path="/customer/add" exact component={CustomerAdd}/>
+               <Route path="/employee/add" exact component={() => <EmployeeForm type={"add"}/>}/>
+               <Route path="/customer/add" exact component={() => <CustomerAdd type={"add"}/>}/>
+               <Route path="/employee/edit/:userId" exact component={() => <EmployeeForm type={"edit"}/>}/>
                <Route path="/customer/list" exact component={() => <UserList heading={"Kundenliste"}/>}/>
                <Route path="/employee/list" exact component={() => <UserList heading={"Mitarbeiterliste"}/>}/>
                <Route exact path="/Calendar" component={() => (<HomePage calendarStore={calendarStore}/>)}/>
