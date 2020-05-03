@@ -7,31 +7,31 @@ import Layout from "./Layout"
 import {observer} from "mobx-react"
 import {
     getEmployeeList
-  } from "./requests";
+  } from "./UserRequests";
 
 export default function UserList(props) {
   
     const history = useHistory();
-    const [userList, setUserList] = useState([  {id: 1, username: "albeeins", forename: "Albert", surename: "Einstein", systemstatus: "aktiv"},
-                                                {id: 2, username: "maricuri", forename: "Marie", surename: "Curie", systemstatus: "aktiv"},
-                                                {id: 3, username: "julicaes", forename: "Julius", surename: "Caesar", systemstatus: "deativiert"}])
+    const [userList, setUserList] = useState([  {id: 1, username: "albeeins", fristname: "Albert", lastname: "Einstein", systemstatus: "aktiv"},
+                                                {id: 2, username: "maricuri", fristname: "Marie", lastname: "Curie", systemstatus: "aktiv"},
+                                                {id: 3, username: "julicaes", fristname: "Julius", lastname: "Caesar", systemstatus: "deativiert"}])
 
     const handleUserListChange = data => setUserList(data)
 
     useEffect( () => {
         getUserList()
-    })
+    },[])
 
     function renderTableBody() {
         if (userList != null) {
             return userList.map((user, index) => {
-                const {id, username, surename, forename, systemstatus} = user
+                const {id, username, firstname, lastname, systemstatus} = user
                 return (
                     <tr key={index}>
                         <td>{id}</td>
                         <td>{username}</td>
-                        <td>{forename}</td>
-                        <td>{surename}</td>
+                        <td>{firstname}</td>
+                        <td>{lastname}</td>
                         <td>{systemstatus}</td>
                         <td style={{width: "300px"}}>
                             <Button  onClick={() => history.push('/employee/edit/' + id)} style={{marginRight:"5px"}}>Ansicht</Button>
@@ -52,11 +52,12 @@ export default function UserList(props) {
     
     const getUserList = async () => {
         const response = await getEmployeeList();
-        const users = response.data.map(user => {
+        const data = response.data.map(user => {
             return {
                 ...user,
             }
         })
+        setUserList(data)
     }
 
     
