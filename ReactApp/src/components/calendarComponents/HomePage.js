@@ -82,10 +82,8 @@ function HomePage({ calendarStore }){
     }
 
     useEffect(() => {
-        console.log('Im using useEffect')
         let source = Axios.CancelToken.source()
         if(!initialized) {
-            console.log("getting Data")
            getCalendarEvents(source)
         }
         return () => {

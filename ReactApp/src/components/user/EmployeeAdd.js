@@ -316,7 +316,7 @@ function EmployeeAdd(props) {
                     </Table> 
                 </Form.Group>
             </Form.Row>
-            {/*<Availability/> */}
+            <Availability/>
         </Card.Body>
         <Card.Footer style={{textAlign: "right"}}>
           <Button size="md" variant="success" type="submit">
