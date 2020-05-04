@@ -8,7 +8,6 @@ import {useHistory} from 'react-router-dom';
 import Availability from "../availability/AvailabilityForm"
 import {
   addEmployee,
-  getRolesOfUser,
   getRoles,
   getUser
 } from "./UserRequests";
@@ -51,7 +50,7 @@ function EmployeeAdd(props) {
 
   let firstSelectedRole = null // to add the first role wich is listed when click on "Hinzufügen"
   const [selectedRole, setSelectedRole] = useState(null)
-  const [userRoles, setUserRoles] = useState([])
+  const [roles, setRoles] = useState([])
   const [choosableRoles, setChoosableRoles] = useState([])//([{name: "Standard"}])
   //EDIT
   const [currentUser, setCurrentUser] = useState(null)
@@ -85,7 +84,7 @@ function EmployeeAdd(props) {
     event.preventDefault();//reload the page after clicking "Enter"
   
   //---------------------------------SUBMIT---------------------------------
-  const employeeData = {firstname, lastname, username, password, position, systemStatus, userRoles}
+  const employeeData = {firstname, lastname, username, password, systemStatus, roles}
     try {
       console.log("AXIOS: addEmployee()")
       await addEmployee(employeeData);
@@ -99,76 +98,63 @@ function EmployeeAdd(props) {
   //LOAD USER
   const loadUser = async () => {
   var data = [];
-    /*try {
+    try {
       console.log("AXIOS: loadUser()");
+      //Load response-data
       const response = await getUser(userId);
-      data = response.data.map(properties => {
-          return {
-              ...properties,
-          }
-      })
-      console.log("load User: " + data + " / " + [data] +  " / " + {data});
+      data = response.data;
+      console.log("load User: ");
+      console.log(data);
     } catch (error) {
       console.log(Object.keys(error), error.message);
       alert("An error occoured while loading a user");
-    }*/
-    //REMOVE testdata for real usage
-    const testdata = {currentId: 1, currentFirstname: "Test-Vorname", currentLastname: "Test-Nachname", currentUsername: "Test-Username", currentPassword: "Test-Passwort", currentPosition: "Test-Position", currentSystemStatus:"inactive", currentRoles:[{name:"Admin"}, {name:"Gast"}]};
-    const {currentId, currentFirstname: currentFirstname, currentLastname: currentLastname, currentUsername, currentPassword, currentPosition, currentSystemStatus, currentRoles,} = testdata;
-    setFirstname(currentFirstname);
-    setLastname(currentLastname);
-    setPassword(currentPassword);
-    setUsername(currentUsername);
-    setPosition(currentPosition);
-    setSystemStatus(currentSystemStatus);
-    setUserRoles(currentRoles);
+    }
+    //Extract response-data
+    const {currentId, firstname, lastname, username, password, systemStatus, position, roles} = data;
+    //Save response-data
+    setFirstname(firstname);
+    setLastname(lastname);
+    setUsername(username);
+    setPassword(password);
+    setPosition(position);
+    setSystemStatus(systemStatus);
+    roles.map((role, index) => {
+      setRoles(choosableRoles => [...choosableRoles, role]);
+    })
   };
 
 
   //---------------------------------ROLES---------------------------------
-  //LOAD USER ROLES
-  /*
-  const loadUserRoles = async () => {
-    const response = await getRolesOfUser(userId);
-    const data = response.data.map(role => {
-        return {
-            ...role,
-        }
-    })
-    console.log("load Role: " + data + " / " + [data] +  " / " + {data})
-    setUserRoles(data)
-  }
-  */
-  //ADD USER ROLES
+  //ADD USER ROLES (TABLE)
   const addRole = () => {
-    if(userRoles.some(roles => roles.name === selectedRole) || (userRoles.some(roles => roles.name === firstSelectedRole) && (selectedRole==null))) {
+    if(roles.some(roles => roles.name === selectedRole) || (roles.some(roles => roles.name === firstSelectedRole) && (selectedRole==null))) {
       alert("Rolle bereits vorhanden!");
       } else if (selectedRole == null) {
           if(firstSelectedRole == "" || firstSelectedRole == null )
           {
             alert("Keine Rolle zum hinzufügen gefunden");
           }else {
-            setUserRoles([...userRoles, {name: firstSelectedRole}]); 
+            setRoles([...roles, {name: firstSelectedRole}]); 
             console.log("first role added: " + firstSelectedRole);
           }
       } else {
       console.log("add Role:" + selectedRole);
-      setUserRoles([...userRoles, {name: selectedRole}]);
+      setRoles([...roles, {name: selectedRole}]);
       }
   };
 
-  //REMOVE USER ROLES
+  //REMOVE USER ROLES (TABLE)
   const removeRole = (index) => {
-    console.table(userRoles);
-    userRoles.splice((index),1);
-    setUserRoles([...userRoles]);
-    console.table(userRoles);
+    console.table(roles);
+    roles.splice((index),1); // remove role at "index" and just remove "1" role
+    setRoles([...roles]);
+    console.table(roles);
   };
 
-  //LOAD CHOOSABLE ROLES
+  //LOAD CHOOSABLE ROLES (DROPDOWN)
   const loadChoosableRoles = async () => {
     var data = [];
-    /*try{ 
+    try{ 
       const response = await getRoles();
       data = response.data.map(role => {
           return {
@@ -178,22 +164,15 @@ function EmployeeAdd(props) {
     }catch (error) {
       console.log(Object.keys(error), error.message)
       alert("An error occoured while loading choosable roles")
-    }*/
+    }
     
-    //console.log("load Role: " + data + " / " + [data] +  " / " + {data})
-    const testdata = [{name: "Admin"},{name: "Gast"},{name: "Benutzerdefinierte Rolle"}];
-    //const testdata = []
-    testdata.map((role, index) => {
+    console.log("load Role: ")
+    console.log(data)
+    data.map((role, index) => {
       setChoosableRoles(choosableRoles => [...choosableRoles, role]);
     })
 
   };
-
-  //UPDATE CHOSSABLE ROLES
-  const updateChoosableRoles = (index) => {
-    
-  };
-
 
   //---------------------------------RENDERING---------------------------------
   // DYNAMIC DROPDOWN
@@ -212,14 +191,17 @@ function EmployeeAdd(props) {
   };
 
   function renderRoleTable() {
-    return ( 
-      userRoles.map((role, index) =>(
-        <tr key={index}>
-          <td><Form.Control readOnly type="text" name={"Rolle"+ index} value={role.name}/></td>
-          <td><Button onClick={()=>removeRole(index)} id={role.name}>Entfernen</Button></td>
-        </tr>
-      ))
-    );
+    if(roles.length > 0 )
+    {
+      return ( 
+        roles.map((role, index) =>(
+          <tr key={index}>
+            <td><Form.Control readOnly type="text" name={"Rolle"+ index} value={role.name}/></td>
+            <td><Button onClick={()=>removeRole(index)} id={role.name}>Entfernen</Button></td>
+          </tr>
+        ))
+      );
+    }
   };
 
 
@@ -354,7 +336,8 @@ function EmployeeAdd(props) {
                     </Table> 
                 </Form.Group>
             </Form.Row>
-            <Availability/>
+            {//<Availability/>
+            }
         </Card.Body>
         <Card.Footer style={{textAlign: "right"}}>
             {props.type === "edit" ? 

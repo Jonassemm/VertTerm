@@ -52,7 +52,6 @@ function NavBar({ userStore }) {
                                 <NavDropdown.Item as={Link} to="/customer/list">Kunden verwalten</NavDropdown.Item>
                             </NavDropdown>
                             : null}
-                        <Nav.Item><Nav.Link as={Link} to="/">Home</Nav.Link></Nav.Item>
                         <Nav.Item><Nav.Link as={Link} to="/Calendar">Kalender</Nav.Link></Nav.Item>
                     </Nav>
                 </Navbar.Collapse >
