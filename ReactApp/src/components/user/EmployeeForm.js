@@ -41,8 +41,8 @@ function EmployeeAdd(props) {
   
   const history = useHistory();
 
-  const [firstname, setFirstname] = useState("")
-  const [lastname, setLastname] = useState("")
+  const [firstName, setFirstname] = useState("")
+  const [lastName, setLastname] = useState("")
   const [username, setUsername] = useState("") 
   const [password, setPassword] = useState("")
   const [position, setPosition] = useState("")
@@ -84,7 +84,8 @@ function EmployeeAdd(props) {
     event.preventDefault();//reload the page after clicking "Enter"
   
   //---------------------------------SUBMIT---------------------------------
-  const employeeData = {firstname, lastname, username, password, systemStatus, roles}
+  var id = Math.random() * (10000 - 0) + 0;
+  const employeeData = {id, firstName, lastName, username, password, systemStatus, roles}
     try {
       console.log("AXIOS: addEmployee()")
       await addEmployee(employeeData);
@@ -92,6 +93,8 @@ function EmployeeAdd(props) {
       console.log(Object.keys(error), error.message)
       alert("An error occoured while adding a user")
     }
+    //REDIRECT
+    history.push('/employee/list');
   };
 
   //---------------------------------CURRENT_USER---------------------------------
@@ -110,17 +113,20 @@ function EmployeeAdd(props) {
       alert("An error occoured while loading a user");
     }
     //Extract response-data
-    const {currentId, firstname, lastname, username, password, systemStatus, position, roles} = data;
+    const {currentId, firstName, lastName, username, password, systemStatus, position, roles} = data;
     //Save response-data
-    setFirstname(firstname);
-    setLastname(lastname);
+    setFirstname(firstName);
+    setLastname(lastName);
     setUsername(username);
     setPassword(password);
     setPosition(position);
     setSystemStatus(systemStatus);
-    roles.map((role, index) => {
-      setRoles(choosableRoles => [...choosableRoles, role]);
-    })
+    if(roles != null) {
+      roles.map((role) => {
+        if(role.name != null) //ensure not to save empty roles
+        setRoles(choosableRoles => [...choosableRoles, role]);
+      }) 
+    }
   };
 
 
@@ -129,18 +135,32 @@ function EmployeeAdd(props) {
   const addRole = () => {
     if(roles.some(roles => roles.name === selectedRole) || (roles.some(roles => roles.name === firstSelectedRole) && (selectedRole==null))) {
       alert("Rolle bereits vorhanden!");
-      } else if (selectedRole == null) {
-          if(firstSelectedRole == "" || firstSelectedRole == null )
-          {
-            alert("Keine Rolle zum hinzufügen gefunden");
-          }else {
-            setRoles([...roles, {name: firstSelectedRole}]); 
-            console.log("first role added: " + firstSelectedRole);
-          }
-      } else {
-      console.log("add Role:" + selectedRole);
-      setRoles([...roles, {name: selectedRole}]);
-      }
+    } else if (selectedRole == null) { //NO ROLE SELECTED
+        if(firstSelectedRole == null ) //NO ROLES FOR DROPDOWN
+        {
+          alert("Keine Rolle zum hinzufügen gefunden");
+        } else { // ONE ROLE SELECTED IN DROPDOWN
+          choosableRoles.map((role, index) => {
+            console.log(role.name == firstSelectedRole)
+            if(role.name == firstSelectedRole) { //ADD THE ROLE WICH IS SELECTED
+              setRoles(roles => [...roles, role]);
+              console.log("ADD FIRSTROLE:");
+              console.log(role);
+            }
+          })
+        }
+    } else { // ROLE SELECTED
+    console.log("add Role:");
+    console.log(selectedRole);
+      choosableRoles.map((role, index) => {
+        if(role.name == selectedRole) {
+          setRoles(roles => [...roles, role]);
+          console.log("ADD ROLE:");
+          console.log(role);
+        }
+      })
+    }
+
   };
 
   //REMOVE USER ROLES (TABLE)
@@ -156,18 +176,11 @@ function EmployeeAdd(props) {
     var data = [];
     try{ 
       const response = await getRoles();
-      data = response.data.map(role => {
-          return {
-              ...role,
-          }
-      })
+      data = response.data;
     }catch (error) {
       console.log(Object.keys(error), error.message)
       alert("An error occoured while loading choosable roles")
     }
-    
-    console.log("load Role: ")
-    console.log(data)
     data.map((role, index) => {
       setChoosableRoles(choosableRoles => [...choosableRoles, role]);
     })
@@ -191,7 +204,13 @@ function EmployeeAdd(props) {
   };
 
   function renderRoleTable() {
-    if(roles.length > 0 )
+    var emptyRole = false;
+    roles.map((role) => {
+      if(role.name == null)
+      emptyRole = true
+    })
+
+    if(roles.length > 0 && !emptyRole)
     {
       return ( 
         roles.map((role, index) =>(
@@ -219,7 +238,7 @@ function EmployeeAdd(props) {
                   name="firstname"
                   type="text"
                   placeholder="Vorname"
-                  value={firstname || ""}
+                  value={firstName || ""}
                   onChange={handleFirstnameChange}
                 />
                 <Form.Control.Feedback>Passt!</Form.Control.Feedback>
@@ -231,7 +250,7 @@ function EmployeeAdd(props) {
                   name="lastname"
                   type="text"
                   placeholder="Nachname"
-                  value={lastname || ""}
+                  value={lastName || ""}
                   onChange={handleLastnameChange}
                 />
                 <Form.Control.Feedback>Passt!</Form.Control.Feedback>
@@ -244,8 +263,8 @@ function EmployeeAdd(props) {
                       type="radio"
                       label="Aktiviert"
                       name="systemStatus"
-                      value="active"
-                      checked={systemStatus === 'active'}
+                      value="1"
+                      checked={systemStatus == 1}
                       id="SystemStatusAktive"
                       onChange={handleSystemStatusChange}
                   />
@@ -255,8 +274,8 @@ function EmployeeAdd(props) {
                       label="Deaktiviert"
                       name="systemStatus"
                       id="SystemStatusInaktive"
-                      value="inactive"
-                      checked={systemStatus === 'inactive'}
+                      value="0"
+                      checked={systemStatus == 0}
                       onChange={handleSystemStatusChange}
                   />
               </Form.Group>
