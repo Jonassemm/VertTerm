@@ -8,6 +8,7 @@ import {useHistory} from 'react-router-dom';
 import Availability from "../availability/AvailabilityForm"
 import {
   addEmployee,
+  updateEmployee,
   getRoles,
   getUser
 } from "./UserRequests";
@@ -83,15 +84,32 @@ function EmployeeAdd(props) {
   const handleSubmit = async event => {
     event.preventDefault();//reload the page after clicking "Enter"
   
-  //---------------------------------SUBMIT---------------------------------
-  var id = Math.random() * (10000 - 0) + 0;
-  const employeeData = {id, firstName, lastName, username, password, systemStatus, roles}
-    try {
-      console.log("AXIOS: addEmployee()")
-      await addEmployee(employeeData);
-    } catch (error) {
-      console.log(Object.keys(error), error.message)
-      alert("An error occoured while adding a user")
+    switch(props.type) {
+      case "edit":
+        console.log("useEffect-Call: loadUser");
+        loadUser();
+        var id = userId
+        const updateData = {id, firstName, lastName, username, password, systemStatus, roles}
+        try {
+          console.log("AXIOS: updateEmployee()")
+          console.log(updateData)
+          await updateEmployee(userId, updateData);
+        } catch (error) {
+          console.log(Object.keys(error), error.message)
+          alert("An error occoured while updating a user")
+        }
+        break;
+      case "add":
+        var id = Math.random() * (10000 - 0) + 0;
+        const employeeData = {id, firstName, lastName, username, password, systemStatus, roles}
+        try {
+          console.log("AXIOS: addEmployee()")
+          await addEmployee(employeeData);
+        } catch (error) {
+          console.log(Object.keys(error), error.message)
+          alert("An error occoured while adding a user")
+        }
+        break;
     }
     //REDIRECT
     history.push('/employee/list');
@@ -113,7 +131,7 @@ function EmployeeAdd(props) {
       alert("An error occoured while loading a user");
     }
     //Extract response-data
-    const {currentId, firstName, lastName, username, password, systemStatus, position, roles} = data;
+    const {firstName, lastName, username, password, systemStatus, position, roles} = data;
     //Save response-data
     setFirstname(firstName);
     setLastname(lastName);
