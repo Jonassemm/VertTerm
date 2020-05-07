@@ -1,6 +1,9 @@
 package com.dvproject.vertTerm.Model;
 
 import java.io.Serializable;
+import java.util.List;
+
+import javax.validation.constraints.NotEmpty;
 
 import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -14,6 +17,10 @@ public class Employee extends User implements Serializable
     
     @DBRef
     private Position position;
+	@NotEmpty
+	private List<Availability> availabilities;
+	@DBRef
+	private Employee supervisor;
     
     public boolean isAvailable() {
         return isAvailable;
@@ -30,5 +37,13 @@ public class Employee extends User implements Serializable
     public void setPosition(Position position) {
         this.position = position;
     }
+
+	public List<Availability> getAvailabilities() {
+		return availabilities;
+	}
+
+	public void setAvailabilities(List<Availability> availabilities) {
+		this.availabilities = availabilities;
+	}
 
 }
