@@ -1,15 +1,17 @@
 package com.dvproject.vertTerm.Model;
 
 import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 @Document
 public class Position {
-    
     @Id
     private int id;
+    @Indexed(unique = true)
     private String name;
     private String description;
+    @Indexed(unique = true)
     private String title;
     
     public int getId() {

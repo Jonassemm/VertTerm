@@ -1,8 +1,10 @@
 package com.dvproject.vertTerm.Model;
 
 import java.io.Serializable;
-import java.sql.Timestamp;
+import java.util.Date;
 import java.util.List;
+
+import javax.validation.constraints.NotNull;
 
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
@@ -12,7 +14,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 @Document("user")
 public class User implements Serializable
 {
-    	private static final long serialVersionUID = -5252169753921361843L;
+    private static final long serialVersionUID = -5252169753921361843L;
     	
 	@Id
 	private String id;
@@ -21,13 +23,16 @@ public class User implements Serializable
 	private String password;
 	private String firstName;
 	private String lastName;
-	private Timestamp timeOfCreation;
+	private Date timeOfCreation;
 	private int systemStatus;
+	@NotNull
+	private Status status;
 	
 	@DBRef
 	private List<Role> role_id;
 
 	public User(String id, String username, String password, String firstName, String lastName, List<Role> role_id) {
+		this();
 		this.id = id;
 		this.username = username;
 		this.password = password;
@@ -37,6 +42,8 @@ public class User implements Serializable
 	}
 
 	public User() {
+		timeOfCreation = new Date();
+		this.status = Status.ACTIVE;
 	}
 
 	@Override
@@ -93,11 +100,11 @@ public class User implements Serializable
 	    this.role_id = role_id;
 	}
 
-	public Timestamp getTimeOfCreation() {
+	public Date getTimeOfCreation() {
 	    return timeOfCreation;
 	}
 
-	public void setTimeOfCreation(Timestamp timeOfCreation) {
+	public void setTimeOfCreation(Date timeOfCreation) {
 	    this.timeOfCreation = timeOfCreation;
 	}
 
@@ -108,4 +115,13 @@ public class User implements Serializable
 	public void setSystemStatus(int systemStatus) {
 	    this.systemStatus = systemStatus;
 	}
+
+	public Status getStatus() {
+		return status;
+	}
+
+	public void setStatus(Status status) {
+		this.status = status;
+	}
+
 }
