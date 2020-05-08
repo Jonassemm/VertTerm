@@ -6,36 +6,71 @@ import Layout from "./Layout"
 
 import {observer} from "mobx-react"
 import {
-    getEmployeeList
+    getEmployeeList,
+    removeEmployee
   } from "./UserRequests";
+import { remove } from 'mobx';
 
 export default function UserList(props) {
   
     const history = useHistory();
-    const [userList, setUserList] = useState([  {id: 1, username: "albeeins", fristname: "Albert", lastname: "Einstein", systemstatus: "aktiv"},
-                                                {id: 2, username: "maricuri", fristname: "Marie", lastname: "Curie", systemstatus: "aktiv"},
-                                                {id: 3, username: "julicaes", fristname: "Julius", lastname: "Caesar", systemstatus: "deativiert"}])
+    const [userList, setUserList] = useState([])
 
     const handleUserListChange = data => setUserList(data)
 
     useEffect( () => {
-        getUserList()
+        loadUserList()
     },[])
+    
+    //---------------------------------USER---------------------------------
+    //LOAD USERLIST
+    const loadUserList = async () => {
+        var data = []
+        try {
+            const response = await getEmployeeList();
+            data = response.data.map(user => {
+                return {
+                    ...user,
+                }
+            })
+        }catch (error) {
+            console.log(Object.keys(error), error.message)
+            alert("An error occoured while loading userlist")
+        }
+        setUserList(data)
+    }
+    //REMOVE USER
+    const removeUser = async  (index) => {
+        try {
+            console.log("AXIOS: removeUser()")
+            console.log(userList[index])
+            console.log(userList[index].id)
+            await removeEmployee(userList[index].id);
+          } catch (error) {
+            console.log(Object.keys(error), error.message)
+            alert("An error occoured while adding a user")
+          }
 
+        userList.splice((index),1)
+        setUserList([...userList])
+ 
+      }
+
+    //---------------------------------RENDERING---------------------------------
+    //DYNAMIC TABLE
     function renderTableBody() {
         if (userList != null) {
             return userList.map((user, index) => {
-                const {id, username, firstname, lastname, systemstatus} = user
+                const {id, username, firstName, lastName, systemStatus} = user
                 return (
                     <tr key={index}>
-                        <td>{id}</td>
                         <td>{username}</td>
-                        <td>{firstname}</td>
-                        <td>{lastname}</td>
-                        <td>{systemstatus}</td>
+                        <td>{firstName}</td>
+                        <td>{lastName}</td>
+                        <td>{systemStatus}</td>
                         <td style={{width: "300px"}}>
                             <Button  onClick={() => history.push('/employee/edit/' + id)} style={{marginRight:"5px"}}>Ansicht</Button>
-                            <Button onClick={()=>removeUser(index)} id={id}>Entfernen</Button>
+                            <Button onClick={() => {if(window.confirm('Wollen Sie diesen Benutzer wirklich entfernen?')){removeUser(index)};}}  id={id}>Entfernen</Button>
                         </td>
                     </tr>
                 )
@@ -43,34 +78,39 @@ export default function UserList(props) {
         } else {
             return (
                 <tr align="center">
-                    <td colSpan="7">Kein Benutzer vorhanden</td>
+                    <td colSpan="5">Kein Benutzer vorhanden</td>
                 </tr>
             )
         }
+    }
+
+    /*
+    function confirmDelet(index) {
+        const handleClose = () => setShow(false);
+        const handleDelete = () => removeUser(index);
+        return (
+            <>
+              <Button variant="primary" onClick={handleShow}>
+                Launch demo modal
+              </Button>
         
-    }
-    
-    const getUserList = async () => {
-        const response = await getEmployeeList();
-        const data = response.data.map(user => {
-            return {
-                ...user,
-            }
-        })
-        setUserList(data)
-    }
-
-    
-
-    const removeUser = (index) => {
-        console.table(userList)
-        console.log("remove nr.:" + index)
-        console.log("role:" + userList[index])
-        userList.splice((index),1)
-        setUserList([...userList])
-        console.table(userList)
-      }
-   
+              <Modal show={show} onHide={handleClose}>
+                <Modal.Header closeButton>
+                  <Modal.Title>Benutzer entfernen</Modal.Title>
+                </Modal.Header>
+                <Modal.Body>Wollen Sie diesen Benutzer wirklich entfernen?</Modal.Body>
+                <Modal.Footer>
+                  <Button variant="secondary" onClick={handleClose}>
+                    Close
+                  </Button>
+                  <Button variant="primary" onClick={handleDelete}>
+                    Save Changes
+                  </Button>
+                </Modal.Footer>
+              </Modal>
+            </>
+          );
+    }*/
 
     return (
     <Layout>
@@ -80,7 +120,6 @@ export default function UserList(props) {
                 <Table striped hover variant="dark">
                     <thead>
                         <tr>
-                            <th>ID</th>
                             <th>Benutzername</th>
                             <th>Nachname</th>
                             <th>Vorname</th>

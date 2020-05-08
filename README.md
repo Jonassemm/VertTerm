@@ -6,8 +6,6 @@ DV-Projekt Verteilte- Termin und Ressourcenplanung
 
 
 # Test frontend with backend
-change port in ReactApp/webpack.config.js from 8080 to 8081
-
 Run frontend: /ReactApp> npm start
 
 FOR BETTER PERFORMANCE:
@@ -17,6 +15,6 @@ FOR BETTER PERFORMANCE:
 Run backend: /> mvn spring-boot:run
 
 After Testing:
-    DON'T FORGET TO UNDO YOUR CHANGE!!!
+    DON'T FORGET TO UNDO YOUR CHANGE AT POM!!!
 
 

@@ -8,7 +8,6 @@ import {useHistory} from 'react-router-dom';
 import Availability from "../availability/AvailabilityForm"
 import {
   addEmployee,
-  getRolesOfUser,
   getRoles,
   getUser
 } from "./UserRequests";
@@ -42,8 +41,8 @@ function EmployeeAdd(props) {
   
   const history = useHistory();
 
-  const [firstname, setFirstname] = useState("")
-  const [lastname, setLastname] = useState("")
+  const [firstName, setFirstname] = useState("")
+  const [lastName, setLastname] = useState("")
   const [username, setUsername] = useState("") 
   const [password, setPassword] = useState("")
   const [position, setPosition] = useState("")
@@ -51,7 +50,7 @@ function EmployeeAdd(props) {
 
   let firstSelectedRole = null // to add the first role wich is listed when click on "Hinzufügen"
   const [selectedRole, setSelectedRole] = useState(null)
-  const [userRoles, setUserRoles] = useState([])
+  const [roles, setRoles] = useState([])
   const [choosableRoles, setChoosableRoles] = useState([])//([{name: "Standard"}])
   //EDIT
   const [currentUser, setCurrentUser] = useState(null)
@@ -85,7 +84,8 @@ function EmployeeAdd(props) {
     event.preventDefault();//reload the page after clicking "Enter"
   
   //---------------------------------SUBMIT---------------------------------
-  const employeeData = {firstname, lastname, username, password, position, systemStatus, userRoles}
+  var id = Math.random() * (10000 - 0) + 0;
+  const employeeData = {id, firstName, lastName, username, password, systemStatus, roles}
     try {
       console.log("AXIOS: addEmployee()")
       await addEmployee(employeeData);
@@ -93,107 +93,99 @@ function EmployeeAdd(props) {
       console.log(Object.keys(error), error.message)
       alert("An error occoured while adding a user")
     }
+    //REDIRECT
+    history.push('/employee/list');
   };
 
   //---------------------------------CURRENT_USER---------------------------------
   //LOAD USER
   const loadUser = async () => {
   var data = [];
-    /*try {
+    try {
       console.log("AXIOS: loadUser()");
+      //Load response-data
       const response = await getUser(userId);
-      data = response.data.map(properties => {
-          return {
-              ...properties,
-          }
-      })
-      console.log("load User: " + data + " / " + [data] +  " / " + {data});
+      data = response.data;
+      console.log("load User: ");
+      console.log(data);
     } catch (error) {
       console.log(Object.keys(error), error.message);
       alert("An error occoured while loading a user");
-    }*/
-    //REMOVE testdata for real usage
-    const testdata = {currentId: 1, currentFirstname: "Test-Vorname", currentLastname: "Test-Nachname", currentUsername: "Test-Username", currentPassword: "Test-Passwort", currentPosition: "Test-Position", currentSystemStatus:"inactive", currentRoles:[{name:"Admin"}, {name:"Gast"}]};
-    const {currentId, currentFirstname: currentFirstname, currentLastname: currentLastname, currentUsername, currentPassword, currentPosition, currentSystemStatus, currentRoles,} = testdata;
-    setFirstname(currentFirstname);
-    setLastname(currentLastname);
-    setPassword(currentPassword);
-    setUsername(currentUsername);
-    setPosition(currentPosition);
-    setSystemStatus(currentSystemStatus);
-    setUserRoles(currentRoles);
+    }
+    //Extract response-data
+    const {currentId, firstName, lastName, username, password, systemStatus, position, roles} = data;
+    //Save response-data
+    setFirstname(firstName);
+    setLastname(lastName);
+    setUsername(username);
+    setPassword(password);
+    setPosition(position);
+    setSystemStatus(systemStatus);
+    if(roles != null) {
+      roles.map((role) => {
+        if(role.name != null) //ensure not to save empty roles
+        setRoles(choosableRoles => [...choosableRoles, role]);
+      }) 
+    }
   };
 
 
   //---------------------------------ROLES---------------------------------
-  //LOAD USER ROLES
-  /*
-  const loadUserRoles = async () => {
-    const response = await getRolesOfUser(userId);
-    const data = response.data.map(role => {
-        return {
-            ...role,
-        }
-    })
-    console.log("load Role: " + data + " / " + [data] +  " / " + {data})
-    setUserRoles(data)
-  }
-  */
-  //ADD USER ROLES
+  //ADD USER ROLES (TABLE)
   const addRole = () => {
-    if(userRoles.some(roles => roles.name === selectedRole) || (userRoles.some(roles => roles.name === firstSelectedRole) && (selectedRole==null))) {
+    if(roles.some(roles => roles.name === selectedRole) || (roles.some(roles => roles.name === firstSelectedRole) && (selectedRole==null))) {
       alert("Rolle bereits vorhanden!");
-      } else if (selectedRole == null) {
-          if(firstSelectedRole == "" || firstSelectedRole == null )
-          {
-            alert("Keine Rolle zum hinzufügen gefunden");
-          }else {
-            setUserRoles([...userRoles, {name: firstSelectedRole}]); 
-            console.log("first role added: " + firstSelectedRole);
-          }
-      } else {
-      console.log("add Role:" + selectedRole);
-      setUserRoles([...userRoles, {name: selectedRole}]);
-      }
+    } else if (selectedRole == null) { //NO ROLE SELECTED
+        if(firstSelectedRole == null ) //NO ROLES FOR DROPDOWN
+        {
+          alert("Keine Rolle zum hinzufügen gefunden");
+        } else { // ONE ROLE SELECTED IN DROPDOWN
+          choosableRoles.map((role, index) => {
+            console.log(role.name == firstSelectedRole)
+            if(role.name == firstSelectedRole) { //ADD THE ROLE WICH IS SELECTED
+              setRoles(roles => [...roles, role]);
+              console.log("ADD FIRSTROLE:");
+              console.log(role);
+            }
+          })
+        }
+    } else { // ROLE SELECTED
+    console.log("add Role:");
+    console.log(selectedRole);
+      choosableRoles.map((role, index) => {
+        if(role.name == selectedRole) {
+          setRoles(roles => [...roles, role]);
+          console.log("ADD ROLE:");
+          console.log(role);
+        }
+      })
+    }
+
   };
 
-  //REMOVE USER ROLES
+  //REMOVE USER ROLES (TABLE)
   const removeRole = (index) => {
-    console.table(userRoles);
-    userRoles.splice((index),1);
-    setUserRoles([...userRoles]);
-    console.table(userRoles);
+    console.table(roles);
+    roles.splice((index),1); // remove role at "index" and just remove "1" role
+    setRoles([...roles]);
+    console.table(roles);
   };
 
-  //LOAD CHOOSABLE ROLES
+  //LOAD CHOOSABLE ROLES (DROPDOWN)
   const loadChoosableRoles = async () => {
     var data = [];
-    /*try{ 
+    try{ 
       const response = await getRoles();
-      data = response.data.map(role => {
-          return {
-              ...role,
-          }
-      })
+      data = response.data;
     }catch (error) {
       console.log(Object.keys(error), error.message)
       alert("An error occoured while loading choosable roles")
-    }*/
-    
-    //console.log("load Role: " + data + " / " + [data] +  " / " + {data})
-    const testdata = [{name: "Admin"},{name: "Gast"},{name: "Benutzerdefinierte Rolle"}];
-    //const testdata = []
-    testdata.map((role, index) => {
+    }
+    data.map((role, index) => {
       setChoosableRoles(choosableRoles => [...choosableRoles, role]);
     })
 
   };
-
-  //UPDATE CHOSSABLE ROLES
-  const updateChoosableRoles = (index) => {
-    
-  };
-
 
   //---------------------------------RENDERING---------------------------------
   // DYNAMIC DROPDOWN
@@ -212,14 +204,23 @@ function EmployeeAdd(props) {
   };
 
   function renderRoleTable() {
-    return ( 
-      userRoles.map((role, index) =>(
-        <tr key={index}>
-          <td><Form.Control readOnly type="text" name={"Rolle"+ index} value={role.name}/></td>
-          <td><Button onClick={()=>removeRole(index)} id={role.name}>Entfernen</Button></td>
-        </tr>
-      ))
-    );
+    var emptyRole = false;
+    roles.map((role) => {
+      if(role.name == null)
+      emptyRole = true
+    })
+
+    if(roles.length > 0 && !emptyRole)
+    {
+      return ( 
+        roles.map((role, index) =>(
+          <tr key={index}>
+            <td><Form.Control readOnly type="text" name={"Rolle"+ index} value={role.name}/></td>
+            <td><Button onClick={()=>removeRole(index)} id={role.name}>Entfernen</Button></td>
+          </tr>
+        ))
+      );
+    }
   };
 
 
@@ -237,7 +238,7 @@ function EmployeeAdd(props) {
                   name="firstname"
                   type="text"
                   placeholder="Vorname"
-                  value={firstname || ""}
+                  value={firstName || ""}
                   onChange={handleFirstnameChange}
                 />
                 <Form.Control.Feedback>Passt!</Form.Control.Feedback>
@@ -249,7 +250,7 @@ function EmployeeAdd(props) {
                   name="lastname"
                   type="text"
                   placeholder="Nachname"
-                  value={lastname || ""}
+                  value={lastName || ""}
                   onChange={handleLastnameChange}
                 />
                 <Form.Control.Feedback>Passt!</Form.Control.Feedback>
@@ -262,8 +263,8 @@ function EmployeeAdd(props) {
                       type="radio"
                       label="Aktiviert"
                       name="systemStatus"
-                      value="active"
-                      checked={systemStatus === 'active'}
+                      value="1"
+                      checked={systemStatus == 1}
                       id="SystemStatusAktive"
                       onChange={handleSystemStatusChange}
                   />
@@ -273,8 +274,8 @@ function EmployeeAdd(props) {
                       label="Deaktiviert"
                       name="systemStatus"
                       id="SystemStatusInaktive"
-                      value="inactive"
-                      checked={systemStatus === 'inactive'}
+                      value="0"
+                      checked={systemStatus == 0}
                       onChange={handleSystemStatusChange}
                   />
               </Form.Group>
@@ -354,7 +355,8 @@ function EmployeeAdd(props) {
                     </Table> 
                 </Form.Group>
             </Form.Row>
-            {/*<Availability/> */}
+            {//<Availability/>
+            }
         </Card.Body>
         <Card.Footer style={{textAlign: "right"}}>
             {props.type === "edit" ? 

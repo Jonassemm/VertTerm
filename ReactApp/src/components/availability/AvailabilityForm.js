@@ -3,6 +3,12 @@ import {Form, Table, Card, Col, Container, Button, InputGroup} from 'react-boots
 
 import DatePicker from "react-datepicker"
 import "react-datepicker/dist/react-datepicker.css"
+import moment from "moment"
+
+moment.updateLocale('en', {
+    weekdaysMin: ['S', 'M', 'T', 'W', 'T', 'F', 'S']
+    });
+const weekdays = moment.weekdaysMin()
 
 
 function setDate() {
@@ -42,35 +48,34 @@ export default function AvaiabilityForm() {
     const handleEndDateChange = date => setEndDate(date)
     return (
         <Container>
-            <hr style={{backgroundColor: "white"}}/>
+            <hr style={{ border: "3px solid white" }}/>
             <h4 style={{fontWeight:"bold", margin: "20px 0px 20px 0px"}} >Verfügbarkeit</h4>
+            <hr style={{ border: "1px dashed white" }}/>
             <Form.Row>
-                <Form.Group style={{display: "flex", flexWrap: "nowrap"}} as={Col} md="6">
-                    <Form.Label style={{marginRight: "20px"}}>Stardatum</Form.Label>
-                    <DatePicker
-                    selected={startDate}
-                    onChange={handleStartDateChange}
-                    showTimeSelect
-                    timeFormat="HH:mm"
-                    timeIntervals={5}
-                    timeCaption="Uhrzeit"
-                    dateFormat="d.M.yyyy / HH:mm"
-                    />
-                </Form.Group>
-                <Form.Group style={{display: "flex", flexWrap: "nowrap"}} as={Col} md="6">
-                    <Form.Label style={{marginRight: "20px"}}>Enddatum</Form.Label>
-                    <DatePicker
-                    selected={startDate}
-                    onChange={handleStartDateChange}
-                    showTimeSelect
-                    timeFormat="HH:mm"
-                    timeIntervals={5}
-                    timeCaption="Uhrzeit"
-                    dateFormat="d.M.yyyy / HH:mm"
-                    />
-                </Form.Group>
+                    <Form.Label>Verfügbarkeitsdauer:</Form.Label>
+                    <Form.Group style={{display: "flex", flexWrap: "nowrap"}} as={Col} md="6">
+                        <Form.Label style={{marginRight: "20px"}}>Beginn</Form.Label>
+                        <DatePicker
+                        weekdays={weekdays}
+                        selected={startDate}
+                        onChange={handleStartDateChange}
+                        dateFormat="d.M.yyyy"
+                        />
+                    </Form.Group>
+                    <Form.Group style={{display: "flex", flexWrap: "nowrap"}} as={Col} md="6">
+                        <Form.Label style={{marginRight: "20px"}}>Enddatum</Form.Label>
+                        <DatePicker
+                        selected={startDate}
+                        onChange={handleStartDateChange}
+                        showTimeSelect
+                        timeFormat="HH:mm"
+                        timeIntervals={5}
+                        timeCaption="Uhrzeit"
+                        dateFormat="d.M.yyyy / HH:mm"
+                        />
+                    </Form.Group>
             </Form.Row>
-
+            <hr style={{ border: "1px dashed white" }}/>
             <Form.Row>
                 <Form.Group style={{display: "flex", flexWrap: "nowrap"}} as={Col} md="6">
                     <div style={{borderStyle: "solid"}} key={`inline-checkbox-weekday`} className="mb-3">

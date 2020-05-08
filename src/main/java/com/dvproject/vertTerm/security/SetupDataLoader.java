@@ -11,9 +11,11 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.dvproject.vertTerm.Model.Availability;
 import com.dvproject.vertTerm.Model.Employee;
 import com.dvproject.vertTerm.Model.Right;
 import com.dvproject.vertTerm.Model.Role;
+import com.dvproject.vertTerm.Model.Status;
 import com.dvproject.vertTerm.Model.User;
 import com.dvproject.vertTerm.repository.EmployeeRepository;
 import com.dvproject.vertTerm.repository.RightRepository;
@@ -21,132 +23,129 @@ import com.dvproject.vertTerm.repository.RoleRepository;
 import com.dvproject.vertTerm.repository.UserRepository;
 
 @Component
-public class SetupDataLoader implements ApplicationListener<ContextRefreshedEvent> 
-{
-    private boolean alreadySetup = false;
+public class SetupDataLoader implements ApplicationListener<ContextRefreshedEvent> {
+	private boolean alreadySetup = false;
 
-    @Autowired
-    private UserRepository userRepository;
+	@Autowired
+	private UserRepository userRepository;
 
-    @Autowired
-    private EmployeeRepository employeeRepository;
+	@Autowired
+	private EmployeeRepository employeeRepository;
 
-    @Autowired
-    private RoleRepository roleRepository;
+	@Autowired
+	private RoleRepository roleRepository;
 
-    @Autowired
-    private RightRepository rightRepository;
+	@Autowired
+	private RightRepository rightRepository;
 
-    @Autowired
-    private PasswordEncoder passwordEncoder;
+	@Autowired
+	private PasswordEncoder passwordEncoder;
 
-    @Transactional
-    public void onApplicationEvent(ContextRefreshedEvent event) 
-    {
-	if (alreadySetup)
-	    return;
+	@Transactional
+	public void onApplicationEvent(ContextRefreshedEvent event) {
+		if (alreadySetup)
+			return;
 
-	Role adminRole = createRoleIfNotFound("ADMIN_ROLE", setUpAdminRights());
-	Role userRole = createRoleIfNotFound("ANONYMOUS_ROLE", setUpAnonymusUserRights());
-	
-	createEmployeeIfNotFound("admin", "password", Arrays.asList(adminRole));
-	createUserIfNotFound("anonymousUser", "password", Arrays.asList(userRole));
-	
-	alreadySetup = true;
-    }
+		Role adminRole = createRoleIfNotFound("ADMIN_ROLE", setUpAdminRights());
+		Role userRole = createRoleIfNotFound("ANONYMOUS_ROLE", setUpAnonymusUserRights());
 
-    @Transactional
-    private Right createRightIfNotFound(String name) 
-    {
-	Right rights = rightRepository.findByName(name);
+		createEmployeeIfNotFound("admin", "password", Arrays.asList(adminRole));
+		createUserIfNotFound("anonymousUser", "password", Arrays.asList(userRole));
 
-	if (rights == null) 
-	{
-	    rights = new Right();
-	    rights.setName(name);
-	    rightRepository.save(rights);
+		alreadySetup = true;
 	}
 
-	return rights;
-    }
+	@Transactional
+	private Right createRightIfNotFound(String name) {
+		Right rights = rightRepository.findByName(name);
 
-    private List<Right> setUpAdminRights () {
-	List<Right> rights = new ArrayList<Right> ();
+		if (rights == null) {
+			rights = new Right();
+			rights.setName(name);
+			rightRepository.save(rights);
+		}
 
-	//user-rights
-	rights.add(createRightIfNotFound("OWN_USER_DATA_READ"));
-	rights.add(createRightIfNotFound("OWN_USER_DATA_WRITE"));
-	rights.add(createRightIfNotFound("USERS_DATA_READ"));
-	rights.add(createRightIfNotFound("USERS_DATA_WRITE"));
-	//user-role-rights
-	rights.add(createRightIfNotFound("OWN_USER_ROLES_READ"));
-	//user-right-rights
-	rights.add(createRightIfNotFound("OWN_USER_RIGHTS_READ"));
-
-	//role-rights
-	rights.add(createRightIfNotFound("ROLES_WRITE"));
-	rights.add(createRightIfNotFound("ROLES_READ"));
-
-	//right-rights
-	rights.add(createRightIfNotFound("RIGHTS_READ"));
-
-	return rights;
-    }
-
-    private List<Right> setUpAnonymusUserRights () {
-	List<Right> rights = new ArrayList<Right> ();
-
-	rights.add(createRightIfNotFound("OWN_USER_DATA_READ"));
-
-	return rights;
-    }
-
-    @Transactional
-    private Role createRoleIfNotFound(String name, List<Right> rights)
-    {
-	Role role = roleRepository.findByName(name);
-
-	if (role == null) 
-	{
-	    role = new Role();
-	    role.setName(name);
-	    role.setRights(rights);
-	    roleRepository.save(role);
+		return rights;
 	}
 
-	return role;
-    }
-    
-    @Transactional
-    private User createUserIfNotFound (String username, String password, List<Role> roles) {
-	User user = userRepository.findByUsername(username);
+	private List<Right> setUpAdminRights() {
+		List<Right> rights = new ArrayList<Right>();
 
-	if (user == null) 
-	{
-	    user = new User();
-	    user.setUsername(username);
-	    user.setPassword(passwordEncoder.encode(password));
-	    user.setRoles(roles);
-	    userRepository.save(user);
+		// user-rights
+		rights.add(createRightIfNotFound("OWN_USER_DATA_READ"));
+		rights.add(createRightIfNotFound("OWN_USER_DATA_WRITE"));
+		rights.add(createRightIfNotFound("USERS_DATA_READ"));
+		rights.add(createRightIfNotFound("USERS_DATA_WRITE"));
+		// user-role-rights
+		rights.add(createRightIfNotFound("OWN_USER_ROLES_READ"));
+		// user-right-rights
+		rights.add(createRightIfNotFound("OWN_USER_RIGHTS_READ"));
+
+		// role-rights
+		rights.add(createRightIfNotFound("ROLES_WRITE"));
+		rights.add(createRightIfNotFound("ROLES_READ"));
+
+		// right-rights
+		rights.add(createRightIfNotFound("RIGHTS_READ"));
+
+		return rights;
 	}
 
-	return user;
-    }
+	private List<Right> setUpAnonymusUserRights() {
+		List<Right> rights = new ArrayList<Right>();
 
-    @Transactional
-    private Employee createEmployeeIfNotFound (String username, String password, List<Role> roles) {
-	Employee user = employeeRepository.findByUsername(username);
+		rights.add(createRightIfNotFound("OWN_USER_DATA_READ"));
 
-	if (user == null)
-	{
-	    user = new Employee();
-	    user.setUsername(username);
-	    user.setPassword(passwordEncoder.encode(password));
-	    user.setRoles(roles);
-	    user.setAvailable(true);
-	    userRepository.save(user);
+		return rights;
 	}
 
-	return user;
-    }
+	@Transactional
+	private Role createRoleIfNotFound(String name, List<Right> rights) {
+		Role role = roleRepository.findByName(name);
+
+		if (role == null) {
+			role = new Role();
+			role.setName(name);
+			role.setRights(rights);
+			roleRepository.save(role);
+		}
+
+		return role;
+	}
+
+	@Transactional
+	private User createUserIfNotFound(String username, String password, List<Role> roles) {
+		User user = userRepository.findByUsername(username);
+
+		if (user == null) {
+			user = new User();
+			user.setUsername(username);
+			user.setPassword(passwordEncoder.encode(password));
+			user.setRoles(roles);
+			user.setStatus(Status.ACTIVE);
+			userRepository.save(user);
+		}
+
+		return user;
+	}
+
+	@Transactional
+	private Employee createEmployeeIfNotFound(String username, String password, List<Role> roles) {
+		Employee user = employeeRepository.findByUsername(username);
+
+		if (user == null) {
+			user = new Employee();
+			user.setUsername(username);
+			user.setPassword(passwordEncoder.encode(password));
+			user.setStatus(Status.ACTIVE);
+			user.setRoles(roles);
+
+			Availability avail = new Availability();
+			user.setAvailabilities(Arrays.asList(avail));
+
+			userRepository.save(user);
+		}
+
+		return user;
+	}
 }

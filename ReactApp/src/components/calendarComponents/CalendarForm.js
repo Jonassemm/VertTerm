@@ -28,7 +28,6 @@ function CalendarForm({calendarStore, calendarEvent, onCancel, edit}){
         setStart(calendarEvent.start)
         setEnd(calendarEvent.end)
         setId(calendarEvent.id)
-        console.log("useEffect")
     }, [calendarEvent.title, calendarEvent.start, calendarEvent.end, calendarEvent.id])
 
     const handleSubmit = async event => {
@@ -72,11 +71,7 @@ function CalendarForm({calendarStore, calendarEvent, onCancel, edit}){
   
     async function refrehEvents(){
         const response = await getCalendar()
-        const evts = response.data.map(item => {
-            return {
-                ...item,
-            }  
-        })
+        const evts = response.data
         calendarStore.setCalendarEvents(evts)
     }
 
