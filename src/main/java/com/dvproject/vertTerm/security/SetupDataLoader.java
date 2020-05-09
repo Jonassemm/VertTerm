@@ -2,7 +2,10 @@ package com.dvproject.vertTerm.security;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
+import java.util.TimeZone;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationListener;
@@ -12,6 +15,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.dvproject.vertTerm.Model.Availability;
+import com.dvproject.vertTerm.Model.AvailabilityRythm;
 import com.dvproject.vertTerm.Model.Employee;
 import com.dvproject.vertTerm.Model.Right;
 import com.dvproject.vertTerm.Model.Role;
@@ -122,7 +126,7 @@ public class SetupDataLoader implements ApplicationListener<ContextRefreshedEven
 			user.setUsername(username);
 			user.setPassword(passwordEncoder.encode(password));
 			user.setRoles(roles);
-			user.setStatus(Status.ACTIVE);
+			user.setSystemStatus(Status.ACTIVE);
 			userRepository.save(user);
 		}
 
@@ -137,12 +141,19 @@ public class SetupDataLoader implements ApplicationListener<ContextRefreshedEven
 			user = new Employee();
 			user.setUsername(username);
 			user.setPassword(passwordEncoder.encode(password));
-			user.setStatus(Status.ACTIVE);
+			user.setSystemStatus(Status.ACTIVE);
 			user.setRoles(roles);
+			
+			Calendar cal = Calendar.getInstance(TimeZone.getTimeZone("GMT"));
+			cal.set(2020, 5, 1, 8, 0, 0);
+			Date start = cal.getTime();
+			cal.clear();
 
-			Availability avail = new Availability();
+			cal.set(2020, 5, 1, 18, 0, 0);
+			Date end = cal.getTime();
+			
+			Availability avail = new Availability (start, end, AvailabilityRythm.DAILY);
 			user.setAvailabilities(Arrays.asList(avail));
-
 			userRepository.save(user);
 		}
 

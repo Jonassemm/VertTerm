@@ -9,7 +9,6 @@ public class Consumable extends Resource implements Serializable {
 	private static final long serialVersionUID = -6141132277124076940L;
 	
 	private int numberOfUses;
-	private int numberOfUnits;
 	private int pricePerUnit;
 	
 	public Consumable () {
@@ -22,14 +21,6 @@ public class Consumable extends Resource implements Serializable {
 
 	public void setNumberOfUses(int numberOfUses) {
 		this.numberOfUses = numberOfUses;
-	}
-
-	public int getNumberOfUnits() {
-		return numberOfUnits;
-	}
-
-	public void setNumberOfUnits(int numberOfUnits) {
-		this.numberOfUnits = numberOfUnits;
 	}
 
 	public int getPricePerUnit() {

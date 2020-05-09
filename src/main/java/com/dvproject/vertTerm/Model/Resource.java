@@ -26,7 +26,9 @@ public class Resource implements Serializable{
 	@NotNull
 	private Status status;
 	@DBRef
-	private Resource inheritedRessource;
+	private Resource parentRessource;
+	@DBRef
+	private List<Restriction> restrictions;
 
 	public String getId() {
 		return id;
@@ -52,12 +54,12 @@ public class Resource implements Serializable{
 		this.description = description;
 	}
 
-	public Resource getInheritedRessource() {
-		return inheritedRessource;
+	public Resource getParentRessource() {
+		return parentRessource;
 	}
 
-	public void setInheritedRessource(Resource inheritedRessource) {
-		this.inheritedRessource = inheritedRessource;
+	public void setParentRessource(Resource parentRessource) {
+		this.parentRessource = parentRessource;
 	}
 
 	public List<Availability> getAvailability() {

@@ -12,7 +12,7 @@ public class Room extends Resource implements Serializable {
 	private static final long serialVersionUID = 4674628310429192035L;
 	
 	private int floor;
-	private int roomNr;
+	private String roomNr;
 	
 	@DBRef
 	@NonNull
@@ -26,11 +26,11 @@ public class Room extends Resource implements Serializable {
 		this.floor = floor;
 	}
 
-	public int getRoomNr() {
+	public String getRoomNr() {
 		return roomNr;
 	}
 
-	public void setRoomNr(int roomNr) {
+	public void setRoomNr(String roomNr) {
 		this.roomNr = roomNr;
 	}
 

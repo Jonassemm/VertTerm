@@ -12,7 +12,7 @@ public class ProcedureRelation {
 	private Duration maxDifference;
 	@DBRef
 	@NotNull
-	private Procedure followingProcedure;
+	private Procedure procedure;
 	
 	public Duration getMinDifference() {
 		return minDifference;
@@ -30,12 +30,12 @@ public class ProcedureRelation {
 		this.maxDifference = maxDifference;
 	}
 	
-	public Procedure getFollowingProcedure() {
-		return followingProcedure;
+	public Procedure getProcedure() {
+		return procedure;
 	}
 	
-	public void setFollowingProcedure(Procedure followingProcedure) {
-		this.followingProcedure = followingProcedure;
+	public void setProcedure(Procedure procedure) {
+		this.procedure = procedure;
 	}
 
 }
