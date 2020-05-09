@@ -1,7 +1,10 @@
 package com.dvproject.vertTerm.Model;
 
+import java.util.List;
+
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
+import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 @Document
@@ -11,8 +14,9 @@ public class Position {
     @Indexed(unique = true)
     private String name;
     private String description;
-    @Indexed(unique = true)
-    private String title;
+    
+    @DBRef
+    private List<Employee> employees;
     
     public int getId() {
         return id;
@@ -36,14 +40,6 @@ public class Position {
     
     public void setDescription(String description) {
         this.description = description;
-    }
-    
-    public String getTitle() {
-        return title;
-    }
-    
-    public void setTitle(String title) {
-        this.title = title;
     }
 
 }

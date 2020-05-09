@@ -3,67 +3,53 @@ package com.dvproject.vertTerm.Model;
 import java.util.Date;
 
 public class Availability {	
-	private boolean isAvailable;
-	private Date startOfAvailibleTime;
-	private Date endOfAvailableTimes;
+	private Date startDate;
+	private Date endDate;
 	
 	/**
 	 * defines the type of rythm (e.g. daily or weekly)
 	 */
-	private AvailabilityRythm availabilityRythm;
+	private AvailabilityRythm rythm;
 	
 	/**
 	 * defines the frequenzy of the rythm (e.g. 2 -> every two rythms)
 	 */
 	private int frequenzy;
-	private Date endOfAvailability;
+	private Date endOfSeries;
 	
-	public boolean isAvailable() {
-		return isAvailable;
-	}
-	
-	public void setAvailable(boolean isAvailable) {
-		this.isAvailable = isAvailable;
+	public Availability (Date startDate, Date endDate, AvailabilityRythm rythm) {
+		this(startDate, endDate, rythm, 1);
 	}
 	
-	public Date getStartOfAvailibleTime() {
-		return startOfAvailibleTime;
+	public Availability (Date startDate, Date endDate, AvailabilityRythm rythm, int frequenzy) {
+		this.startDate = startDate;
+		this.endDate = endDate;
+		this.rythm = rythm;
+		this.frequenzy = frequenzy;
 	}
 	
-	public void setStartOfAvailibleTime(Date startOfAvailibleTime) {
-		this.startOfAvailibleTime = startOfAvailibleTime;
+	public Date getStartDate() {
+		return startDate;
 	}
 
-	public Date getEndOfAvailableTimes() {
-		return endOfAvailableTimes;
+	public Date getEndDate() {
+		return endDate;
 	}
-
-	public void setEndOfAvailableTimes(Date endOfAvailableTimes) {
-		this.endOfAvailableTimes = endOfAvailableTimes;
+	
+	public AvailabilityRythm getRythm() {
+		return rythm;
 	}
-
-	public AvailabilityRythm getAvailabilityRythm() {
-		return availabilityRythm;
-	}
-
-	public void setAvailabilityRythm(AvailabilityRythm availabilityRythm) {
-		this.availabilityRythm = availabilityRythm;
-	}
-
+	
 	public int getFrequenzy() {
 		return frequenzy;
 	}
-
-	public void setFrequenzy(int frequenzy) {
-		this.frequenzy = frequenzy;
+	
+	public Date getEndOfSeries() {
+		return endOfSeries;
 	}
-
-	public Date getEndOfAvailability() {
-		return endOfAvailability;
-	}
-
-	public void setEndOfAvailability(Date endOfAvailability) {
-		this.endOfAvailability = endOfAvailability;
+	
+	public void setEndOfSeries(Date endOfSeries) {
+		this.endOfSeries = endOfSeries;
 	}
 	
 }
