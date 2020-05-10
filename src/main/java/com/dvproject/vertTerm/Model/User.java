@@ -1,8 +1,11 @@
 package com.dvproject.vertTerm.Model;
 
 import java.io.Serializable;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
+import java.util.TimeZone;
 
 import javax.validation.constraints.NotNull;
 
@@ -20,16 +23,29 @@ public class User implements Serializable
 	private String id;
 	@Indexed(unique = true)
 	private String username;
+
+	public Adress getAdress() {
+		return adress;
+	}
+
+	public void setAdress(Adress adress) {
+		this.adress = adress;
+	}
+
+	private Adress adress;
 	private String password;
 	private String firstName;
 	private String lastName;
-	private Date timeOfCreation;
-	private int systemStatus;
+	private Date creationDate;
 	@NotNull
-	private Status status;
+	private Status systemStatus;
 	
 	@DBRef
 	private List<Role> role_id;
+	@DBRef
+	private Map<OptionalAttribute, String> optionalAttributes;
+	@DBRef
+    private List<Restriction> restrictions;
 
 	public User(String id, String username, String password, String firstName, String lastName, List<Role> role_id) {
 		this();
@@ -42,8 +58,8 @@ public class User implements Serializable
 	}
 
 	public User() {
-		timeOfCreation = new Date();
-		this.status = Status.ACTIVE;
+		this.setCreationDate();
+		this.systemStatus = Status.ACTIVE;
 	}
 
 	@Override
@@ -100,28 +116,22 @@ public class User implements Serializable
 	    this.role_id = role_id;
 	}
 
-	public Date getTimeOfCreation() {
-	    return timeOfCreation;
+	public Date getCreationDate() {
+	    return creationDate;
 	}
 
-	public void setTimeOfCreation(Date timeOfCreation) {
-	    this.timeOfCreation = timeOfCreation;
+	private void setCreationDate() {
+		Calendar cal = Calendar.getInstance(TimeZone.getTimeZone("GMT"));
+		cal.setTimeInMillis(System.currentTimeMillis());
+		creationDate = cal.getTime();
 	}
 
-	public int getSystemStatus() {
+	public Status getSystemStatus() {
 	    return systemStatus;
 	}
 
-	public void setSystemStatus(int systemStatus) {
+	public void setSystemStatus(Status systemStatus) {
 	    this.systemStatus = systemStatus;
-	}
-
-	public Status getStatus() {
-		return status;
-	}
-
-	public void setStatus(Status status) {
-		this.status = status;
 	}
 
 }

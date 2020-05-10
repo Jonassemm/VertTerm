@@ -8,7 +8,6 @@ import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 
 import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.DBRef;
 
 public class Appointment implements Serializable {
@@ -16,35 +15,24 @@ public class Appointment implements Serializable {
 	
 	@Id
 	private String id;
-	@Indexed(unique = true)
-	private String name;
 	private String description;
 	@NotNull
 	private AppointmentStatus status;
 	
-	private Date targetStartTime;
-	private Date targetEndTime;
-	private Date actualStartTime;
-	private Date actualEndTime;
-	
-	private Date timeOfCreation;
-	private Date timeOfBooking;
+	private Date plannedStarttime;
+	private Date plannedEndtime;
+	private Date actualStarttime;
+	private Date actualEndtime;
 	
 	@DBRef
 	private Procedure procedure;
 	@DBRef
 	@NotEmpty
-	private List<Customer> customers;
+	private List<User> bookedCustomers;
 	@DBRef
-	@NotEmpty
-	private List<Employee> employees;
+	private List<Employee> bookedEmployees;
 	@DBRef
-	@NotEmpty
-	private List<Resource> resources;
-	
-	public Appointment () {
-		timeOfCreation = new Date();
-	}
+	private List<Resource> bookedResources;
 	
 	public String getId() {
 		return id;
@@ -52,14 +40,6 @@ public class Appointment implements Serializable {
 	
 	public void setId(String id) {
 		this.id = id;
-	}
-	
-	public String getName() {
-		return name;
-	}
-	
-	public void setName(String name) {
-		this.name = name;
 	}
 	
 	public String getDescription() {
@@ -78,52 +58,36 @@ public class Appointment implements Serializable {
 		this.status = status;
 	}
 	
-	public Date getTargetStartTime() {
-		return targetStartTime;
+	public Date getPlannedEndtime() {
+		return plannedEndtime;
 	}
 	
-	public void setTargetStartTime(Date targetStartTime) {
-		this.targetStartTime = targetStartTime;
+	public void setPlannedEndtime(Date plannedEndtime) {
+		this.plannedEndtime = plannedEndtime;
 	}
 	
-	public Date getTargetEndTime() {
-		return targetEndTime;
+	public Date getPlannedStarttime() {
+		return plannedStarttime;
 	}
 	
-	public void setTargetEndTime(Date targetEndTime) {
-		this.targetEndTime = targetEndTime;
+	public void setPlannedStarttime(Date plannedStarttime) {
+		this.plannedStarttime = plannedStarttime;
 	}
 	
-	public Date getActualStartTime() {
-		return actualStartTime;
+	public Date getActualStarttime() {
+		return actualStarttime;
 	}
 	
-	public void setActualStartTime(Date actualStartTime) {
-		this.actualStartTime = actualStartTime;
+	public void setActualStarttime(Date actualStarttime) {
+		this.actualStarttime = actualStarttime;
 	}
 	
-	public Date getActualEndTime() {
-		return actualEndTime;
+	public Date getActualEndtime() {
+		return actualEndtime;
 	}
 	
-	public void setActualEndTime(Date actualEndTime) {
-		this.actualEndTime = actualEndTime;
-	}
-	
-	public Date getTimeOfCreation() {
-		return timeOfCreation;
-	}
-	
-	public void setTimeOfCreation(Date timeOfCreation) {
-		this.timeOfCreation = timeOfCreation;
-	}
-	
-	public Date getTimeOfBooking() {
-		return timeOfBooking;
-	}
-	
-	public void setTimeOfBooking(Date timeOfBooking) {
-		this.timeOfBooking = timeOfBooking;
+	public void setActualEndtime(Date actualEndtime) {
+		this.actualEndtime = actualEndtime;
 	}
 	
 	public Procedure getProcedure() {
@@ -134,28 +98,28 @@ public class Appointment implements Serializable {
 		this.procedure = procedure;
 	}
 	
-	public List<Customer> getCustomers() {
-		return customers;
+	public List<User> getBookedCustomers() {
+		return bookedCustomers;
 	}
 	
-	public void setCustomers(List<Customer> customers) {
-		this.customers = customers;
+	public void setBookedCustomers(List<User> bookedCustomers) {
+		this.bookedCustomers = bookedCustomers;
 	}
 	
-	public List<Employee> getEmployees() {
-		return employees;
+	public List<Employee> getBookedEmployees() {
+		return bookedEmployees;
 	}
 	
-	public void setEmployees(List<Employee> employees) {
-		this.employees = employees;
+	public void setBookedEmployees(List<Employee> bookedEmployees) {
+		this.bookedEmployees = bookedEmployees;
 	}
 	
-	public List<Resource> getResources() {
-		return resources;
+	public List<Resource> getBookedResources() {
+		return bookedResources;
 	}
 	
-	public void setResources(List<Resource> resources) {
-		this.resources = resources;
+	public void setBookedResources(List<Resource> bookedResources) {
+		this.bookedResources = bookedResources;
 	}
 
 }

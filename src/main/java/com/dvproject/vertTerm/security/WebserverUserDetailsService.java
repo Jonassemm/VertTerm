@@ -30,7 +30,7 @@ public class WebserverUserDetailsService implements UserDetailsService {
 		}
 
 		return new org.springframework.security.core.userdetails.User(user.getUsername(), user.getPassword(),
-				user.getStatus() == Status.ACTIVE, true, true, true, getAuthorities(user.getRoles()));
+				user.getSystemStatus() == Status.ACTIVE, true, true, true, getAuthorities(user.getRoles()));
 	}
 
 	private List<? extends GrantedAuthority> getAuthorities(List<Role> roles) {

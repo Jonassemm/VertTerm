@@ -2,6 +2,11 @@ package com.dvproject.vertTerm.Model;
 
 public enum AvailabilityRythm {
 	/**
+	 * only this one time
+	 */
+	ONE_TIME,
+	
+	/**
 	 * on every day
 	 */
 	DAILY,

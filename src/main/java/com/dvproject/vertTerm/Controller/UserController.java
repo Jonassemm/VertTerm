@@ -6,6 +6,8 @@ import java.security.Principal;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -21,6 +23,7 @@ import org.springframework.ui.Model;
 import com.dvproject.vertTerm.Model.Right;
 import com.dvproject.vertTerm.Model.Role;
 import com.dvproject.vertTerm.Model.User;
+import com.dvproject.vertTerm.repository.UserRepository;
 
 import com.dvproject.vertTerm.Service.UserService;
 
@@ -28,7 +31,7 @@ import com.dvproject.vertTerm.repository.UserRepository;
 
 
 @RestController
-@RequestMapping("/json/user")
+@RequestMapping("/api/User")
 public class UserController
 {
 	@Autowired
@@ -36,14 +39,14 @@ public class UserController
 
 	@GetMapping()
 	public @ResponseBody
-	List<User> getAllUsers()
+	List<User> getUsers()
 	{
 		return repo.findAll();
 	}
 
 	@GetMapping("/{id}")
 	public @ResponseBody
-	User getUserById(@PathVariable String id)
+	User getUser(@PathVariable String id)
 	{
 		Optional<User> user = repo.findById(id);
 		return user.orElse(null);

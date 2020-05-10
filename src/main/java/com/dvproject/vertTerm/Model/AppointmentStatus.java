@@ -9,7 +9,7 @@ public enum AppointmentStatus {
 	/**
 	 * appointment target times have been set
 	 */
-	BOOKED,
+	PLANNED,
 	
 	/**
 	 * appointment has been created and can be booked
