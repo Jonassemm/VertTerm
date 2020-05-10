@@ -13,21 +13,25 @@ import "react-datepicker/dist/react-datepicker.css"
 import "react-loader-spinner/dist/loader/css/react-spinner-loader.css"
 import { hasRole } from "./auth"
 import { observer } from "mobx-react"
+import RolePage from "./components/roleComponents/RolePage"
 
 export default observer(function App({ userStore, calendarStore }) {
 
   return (
     <Router>
       <NavBar userStore={userStore} />
-      <Switch>
-        <Route path="/" exact component={Home} />
-        {hasRole(userStore, ["ADMIN_ROLE"]) && <Route path="/employee/add" exact component={() => <EmployeeForm type={"add"} />} />}
-        {hasRole(userStore, ["ADMIN_ROLE"]) && <Route path="/customer/add" exact component={() => <CustomerAdd type={"add"} />} />}
-        {hasRole(userStore, ["ADMIN_ROLE"]) && <Route path="/employee/edit/:userId" exact component={() => <EmployeeForm type={"edit"} />} />}
-        {hasRole(userStore, ["ADMIN_ROLE"]) && <Route path="/customer/list" exact component={() => <UserList heading={"Kundenliste"} />} />}
-        {hasRole(userStore, ["ADMIN_ROLE"]) && <Route path="/employee/list" exact component={() => <UserList heading={"Mitarbeiterliste"} />} />}
-        <Route exact path="/Calendar" component={() => (<HomePage calendarStore={calendarStore} />)} />
-      </Switch>
+      <div style={{ margin: "70px 0px 50px 0px" }}>
+        <Switch>
+          <Route path="/" exact component={Home} />
+          {hasRole(userStore, ["ADMIN_ROLE"]) && <Route path="/employee/add" exact component={() => <EmployeeForm type={"add"} />} />}
+          {hasRole(userStore, ["ADMIN_ROLE"]) && <Route path="/customer/add" exact component={() => <CustomerAdd type={"add"} />} />}
+          {hasRole(userStore, ["ADMIN_ROLE"]) && <Route path="/employee/edit/:userId" exact component={() => <EmployeeForm type={"edit"} />} />}
+          {hasRole(userStore, ["ADMIN_ROLE"]) && <Route path="/customer/list" exact component={() => <UserList heading={"Kundenliste"} />} />}
+          {hasRole(userStore, ["ADMIN_ROLE"]) && <Route path="/employee/list" exact component={() => <UserList heading={"Mitarbeiterliste"} />} />}
+          <Route exact path="/calendar" component={() => (<HomePage calendarStore={calendarStore} />)} />
+          <Route exact path="/role" component={() => (<RolePage userStore={userStore} />)} />
+        </Switch>
+      </div>
       <Footer />
     </Router>
   )
