@@ -2,6 +2,8 @@ package com.dvproject.vertTerm.Model;
 
 import java.util.Date;
 
+import org.springframework.data.annotation.PersistenceConstructor;
+
 public class Availability {	
 	private Date startDate;
 	private Date endDate;
@@ -21,6 +23,7 @@ public class Availability {
 		this(startDate, endDate, rythm, 1);
 	}
 	
+	@PersistenceConstructor
 	public Availability (Date startDate, Date endDate, AvailabilityRythm rythm, int frequenzy) {
 		this.startDate = startDate;
 		this.endDate = endDate;
