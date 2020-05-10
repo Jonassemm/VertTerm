@@ -9,7 +9,8 @@ import Availability from "../availability/AvailabilityForm"
 import {
   addEmployee,
   updateEmployee,
-  getRoles,
+  getAllRoles,
+  getAllPositions,
   getUser
 } from "./UserRequests";
 
@@ -46,8 +47,12 @@ function EmployeeAdd(props) {
   const [lastName, setLastname] = useState("")
   const [username, setUsername] = useState("") 
   const [password, setPassword] = useState("")
-  const [position, setPosition] = useState("")
-  const [systemStatus, setSystemStatus] = useState("")
+  const [systemStatus, setSystemStatus] = useState(1)
+
+  let firstSelectedPosition = null // to add the first position wich is listed when click on "Mitarbeiter anlegen"
+  const [position, setPosition] = useState(null)
+  const [choosablePositions, setChoosablePositions] = useState([])
+
 
   let firstSelectedRole = null // to add the first role wich is listed when click on "Hinzufügen"
   const [selectedRole, setSelectedRole] = useState(null)
@@ -63,13 +68,16 @@ function EmployeeAdd(props) {
   const handleUsernameChange = data => setUsername(data.target.value)
   const handlePasswordChange = data => setPassword(data.target.value)
   const handlePositionChange = data => setPosition(data.target.value)
-  const handleRoleInputChange = data => setSelectedRole(data.target.value)
+  const handleSelectedRoleChange = data => setSelectedRole(data.target.value)
+  const handleSelectedPositionChange = data => setPosition(data.target.value)
   const handleSystemStatusChange = data => setSystemStatus(data.target.value)
 
 
   useEffect(() => {
     console.log("useEffect-Call: loadChoosableRoles");
     loadChoosableRoles();
+    console.log("useEffect-Call: loadChoosablePositions");
+    loadChoosablePosition();
     switch(props.type) {
       case "edit":
         console.log("useEffect-Call: loadUser");
@@ -148,7 +156,7 @@ function EmployeeAdd(props) {
   };
 
 
-  //---------------------------------ROLES---------------------------------
+  //---------------------------------USER-ROLES---------------------------------
   //ADD USER ROLES (TABLE)
   const addRole = () => {
     if(roles.some(roles => roles.name === selectedRole) || (roles.some(roles => roles.name === firstSelectedRole) && (selectedRole==null))) {
@@ -159,29 +167,23 @@ function EmployeeAdd(props) {
           alert("Keine Rolle zum hinzufügen gefunden");
         } else { // ONE ROLE SELECTED IN DROPDOWN
           choosableRoles.map((role, index) => {
-            console.log(role.name == firstSelectedRole)
             if(role.name == firstSelectedRole) { //ADD THE ROLE WICH IS SELECTED
               setRoles(roles => [...roles, role]);
-              console.log("ADD FIRSTROLE:");
-              console.log(role);
+
             }
           })
         }
     } else { // ROLE SELECTED
-    console.log("add Role:");
-    console.log(selectedRole);
       choosableRoles.map((role, index) => {
         if(role.name == selectedRole) {
           setRoles(roles => [...roles, role]);
-          console.log("ADD ROLE:");
-          console.log(role);
         }
       })
     }
 
   };
 
-  //REMOVE USER ROLES (TABLE)
+  //REMOVE USER ROLES (ROLE-TABLE)
   const removeRole = (index) => {
     console.table(roles);
     roles.splice((index),1); // remove role at "index" and just remove "1" role
@@ -189,25 +191,46 @@ function EmployeeAdd(props) {
     console.table(roles);
   };
 
-  //LOAD CHOOSABLE ROLES (DROPDOWN)
+  //---------------------------------ALL-ROLES---------------------------------
+  //LOAD (ROLE-DROPDOWN)
   const loadChoosableRoles = async () => {
     var data = [];
     try{ 
-      const response = await getRoles();
+      const response = await getAllRoles();
       data = response.data;
     }catch (error) {
       console.log(Object.keys(error), error.message)
       alert("An error occoured while loading choosable roles")
     }
-    data.map((role, index) => {
+    data.map((role) => {
       setChoosableRoles(choosableRoles => [...choosableRoles, role]);
     })
 
   };
 
+  //---------------------------------ALL-POSITIONS---------------------------------
+  //LOAD (POSITION-DROPDOWN)
+  const loadChoosablePosition = async () => {
+    var data = [];
+    try{ 
+      const response = await getAllPositions();
+      data = response.data;
+    }catch (error) {
+      console.log(Object.keys(error), error.message)
+      //alert("An error occoured while loading choosable positions")
+      data = [{id:"1", name:"Position1", description:"Erste Position"},{id:"2", name:"Position2", description:"Zweite Position"}]
+    }
+    data.map((singlePosition, index) => {
+      if(index == 0) {
+        setPosition(singlePosition) // set first default selected position to be ready for submit
+      }
+      setChoosablePositions(choosablePositions => [...choosablePositions, singlePosition]);
+    })
+  };
+
   //---------------------------------RENDERING---------------------------------
-  // DYNAMIC DROPDOWN
-  function renderDropdown() {
+  // DYNAMIC ROLE-DROPDOWN
+  function renderRoleDropdown() {
     if (choosableRoles.length > 0) {
       return choosableRoles.map((role, index) => {
           const {name} = role;
@@ -218,6 +241,18 @@ function EmployeeAdd(props) {
       })
     } else {
         return (<option disabled key={0}>KEINE ROLLEN VORHANDEN</option>);
+    }
+  };
+
+  // DYNAMIC POSITION-DROPDOWN
+  function renderPositionDropdown() {
+    if (choosablePositions.length > 0) {
+      return choosablePositions.map((singlePosition, index) => {
+          const {name} = singlePosition;
+          return (<option key={index} value={name}>{name}</option>);
+      })
+    } else {
+        return (<option disabled key={0}>KEINE POSITIONEN VORHANDEN</option>);
     }
   };
 
@@ -336,27 +371,19 @@ function EmployeeAdd(props) {
               <Form.Group as={Col} md="5">
                 <Form.Label>Rolle hinzufügen:</Form.Label>
                   <Container style={{display: "flex", flexWrap: "nowrap"}}>
-                    {/*<Form.Control 
-                      type="text"
-                      placeholder="Rolle" 
-                      onChange={handleRoleInputChange}
-                    />*/}
-                      <select onChange={handleRoleInputChange} className="custom-select">
-                          {renderDropdown()}
+                      <select onChange={handleSelectedRoleChange} className="custom-select">
+                          {renderRoleDropdown()}
                       </select>
                     <Button onClick={addRole} style={{marginLeft: "20px"}}>Hinzufügen</Button>
                   </Container> 
               </Form.Group>
               <Form.Group as={Col} md="3">
                 <Form.Label>Position:</Form.Label>
-                  <Form.Control 
-                      required
-                      name="position"
-                      type="text"
-                      placeholder="Position" 
-                      value={position || ""}
-                      onChange={handlePositionChange}
-                      />  
+                <Container style={{display: "flex", flexWrap: "nowrap"}}>
+                    <select onChange={handleSelectedPositionChange} className="custom-select">
+                        {renderPositionDropdown()}
+                    </select>
+                </Container> 
               </Form.Group>
             </Form.Row>
             <Form.Row>
@@ -373,7 +400,7 @@ function EmployeeAdd(props) {
                     </Table> 
                 </Form.Group>
             </Form.Row>
-            {//<Availability/>
+            {<Availability/>
             }
         </Card.Body>
         <Card.Footer style={{textAlign: "right"}}>
