@@ -7,11 +7,11 @@ import {useHistory} from 'react-router-dom';
 
 import Availability from "../availability/AvailabilityForm"
 import {
-  addEmployee,
-  updateEmployee,
+  addCustomer,
+  updateCustomer,
   getAllRoles,
   getAllPositions,
-  getEmployee,
+  getCustomer,
   getAllUsers
 } from "./UserRequests";
 
@@ -40,7 +40,7 @@ const styles = {
 }
 
 
-function EmployeeAdd(props) {
+function CustomerForm(props) {
   
   const history = useHistory();
 
@@ -100,11 +100,11 @@ function EmployeeAdd(props) {
         console.log("useEffect-Call: loadUser");
         loadUser();
         var id = userId
-        const updateData = {id, firstName, lastName, username, password, systemStatus, roles, supervisor}
+        const updateData = {id, firstName, lastName, username, password, systemStatus, roles}
         try {
-          console.log("AXIOS: updateEmployee()")
+          console.log("AXIOS: updateCustomer()")
           console.log(updateData)
-          await updateEmployee(userId, updateData);
+          await updateCustomer(userId, updateData);
         } catch (error) {
           console.log(Object.keys(error), error.message)
           alert("An error occoured while updating a user")
@@ -112,10 +112,10 @@ function EmployeeAdd(props) {
         break;
       case "add":
         var id = Math.random() * (10000 - 0) + 0;
-        const employeeData = {id, firstName, lastName, username, password, systemStatus, roles, supervisor}
+        const customerData = {id, firstName, lastName, username, password, systemStatus, roles}
         try {
-          console.log("AXIOS: addEmployee()")
-          await addEmployee(employeeData);
+          console.log("AXIOS: addCustomer()")
+          await addCustomer(customerData);
         } catch (error) {
           console.log(Object.keys(error), error.message)
           alert("An error occoured while adding a user")
@@ -123,7 +123,7 @@ function EmployeeAdd(props) {
         break;
     }
     //REDIRECT
-    history.push('/employee/list');
+    history.push('/customer/list');
   };
 
   //---------------------------------CURRENT_USER---------------------------------
@@ -133,7 +133,7 @@ function EmployeeAdd(props) {
     try {
       console.log("AXIOS: loadUser()");
       //Load response-data
-      const response = await getEmployee(userId);
+      const response = await getCustomer(userId);
       data = response.data;
     } catch (error) {
       console.log(Object.keys(error), error.message);
@@ -289,12 +289,9 @@ function EmployeeAdd(props) {
 
   // DYNAMIC SUPERVISOR-DROPDOWN
   function renderSupervisorDropdown() {
-    console.log(choosableSupervisors)
     if (choosableSupervisors.length > 0) {
       return choosableSupervisors.map((singleSupervisor, index) => {
         const {firstName, lastName, username} = singleSupervisor;
-        console.log("render")
-        console.log(choosableSupervisors.length)
         return (<option key={index} value={index}>{firstName}, {lastName} ({username})</option>);
       })
     } else {
@@ -326,8 +323,8 @@ function EmployeeAdd(props) {
    return (
     <Layout>
       <Card style={{marginBottom: "50px"}} className={"border border-dark bg-dark text-white"}>
-        <Form id="employeeAdd" onSubmit={(e) => handleSubmit(e)}>
-          <Card.Header><h3>{props.type === "edit" ? "Mitarbeiter bearbeiten" : "Mitarbeiter hinzufügen"}</h3></Card.Header>
+        <Form id="customerAdd" onSubmit={(e) => handleSubmit(e)}>
+          <Card.Header><h3>{props.type === "edit" ? "Kunde bearbeiten" : "Kunde hinzufügen"}</h3></Card.Header>
           <Card.Body>
             <Form.Row>
               <Form.Group as={Col} md="5" >
@@ -423,22 +420,6 @@ function EmployeeAdd(props) {
                     <Button onClick={addRole} style={{marginLeft: "20px"}}>Hinzufügen</Button>
                   </Container> 
               </Form.Group>
-              <Form.Group as={Col} md="3">
-                <Form.Label>Position:</Form.Label>
-                <Container style={{display: "flex", flexWrap: "nowrap"}}>
-                    <select onChange={handleSelectedPositionChange} className="custom-select">
-                        {renderPositionDropdown()}
-                    </select>
-                </Container> 
-              </Form.Group>
-              <Form.Group as={Col} md="4">
-                <Form.Label>Supervisor:</Form.Label>
-                <Container style={{display: "flex", flexWrap: "nowrap"}}>
-                    <select onChange={handleSelectedSupervisorChange} className="custom-select">
-                        {renderSupervisorDropdown()}
-                    </select>
-                </Container> 
-              </Form.Group>
             </Form.Row>
             <Form.Row>
                 <Form.Group as={Col} md="5">
@@ -459,11 +440,11 @@ function EmployeeAdd(props) {
         </Card.Body>
         <Card.Footer style={{textAlign: "right"}}>
             {props.type === "edit" ? 
-              <Button variant="secondary" onClick={() => history.push('/employee/list')} style={{marginRight: "20px"}}>Abbrechen</Button> :
+              <Button variant="secondary" onClick={() => history.push('/customer/list')} style={{marginRight: "20px"}}>Abbrechen</Button> :
               null
             }
           <Button size="md" variant="success" type="submit">
-            {props.type === "edit" ? "Übernehmen" : "Mitarbeiter anlegen"}
+            {props.type === "edit" ? "Übernehmen" : "Kunde anlegen"}
           </Button>
         </Card.Footer>
       </Form>
@@ -472,7 +453,7 @@ function EmployeeAdd(props) {
   )
 }
 
-export default observer(EmployeeAdd)
+export default observer(CustomerForm)
 
 
     

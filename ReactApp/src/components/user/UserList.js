@@ -7,7 +7,9 @@ import Layout from "./Layout"
 import {observer} from "mobx-react"
 import {
     getEmployeeList,
-    removeEmployee
+    getCustomerList,
+    removeEmployee,
+    removeCustomer
   } from "./UserRequests";
 import { remove } from 'mobx';
 
@@ -30,32 +32,66 @@ export default function UserList(props) {
     //LOAD USERLIST
     const loadUserList = async () => {
         var data = []
-        try {
-            const response = await getEmployeeList();
-            data = response.data.map(user => {
-                return {
-                    ...user,
+        switch(props.userType) {
+            case "employee":
+                try {
+                    console.log("getEmployeeList")
+                    const response = await getEmployeeList();
+                    data = response.data.map(user => {
+                        return {
+                            ...user,
+                        }
+                    })
+                }catch (error) {
+                    console.log(Object.keys(error), error.message)
+                    alert("An error occoured while loading userlist")
                 }
-            })
-        }catch (error) {
-            console.log(Object.keys(error), error.message)
-            alert("An error occoured while loading userlist")
-        }
+              break;
+            case "customer":
+                try {
+                    console.log("getCustomerlist")
+                    const response = await getCustomerList();
+                    data = response.data.map(user => {
+                        return {
+                            ...user,
+                        }
+                    })
+                }catch (error) {
+                    console.log(Object.keys(error), error.message)
+                    alert("An error occoured while loading userlist")
+                }
+              break;
+          }
         setUserList(data)
     }
+
+
     //REMOVE USER
     const removeUser = async  (index) => {
-        try {
-            console.log("AXIOS: removeUser()")
-            console.log(userList[index])
-            console.log(userList[index].id)
-            await removeEmployee(userList[index].id);
-            userList.splice((index),1)
-            setUserList([...userList])
-          } catch (error) {
-            console.log(Object.keys(error), error.message)
-            alert("An error occoured while removing a user")
-          }
+        switch(props.userType) {
+        case "employee":
+            try {
+                console.log("AXIOS: removeEmployee()")
+                await removeEmployee(userList[index].id);
+                userList.splice((index),1)
+                setUserList([...userList])
+              } catch (error) {
+                console.log(Object.keys(error), error.message)
+                alert("An error occoured while removing a employee")
+              }
+          break;
+        case "customer":
+            try {
+                console.log("AXIOS: removeCustomer()")
+                await removeCustomer(userList[index].id);
+                userList.splice((index),1)
+                setUserList([...userList])
+              } catch (error) {
+                console.log(Object.keys(error), error.message)
+                alert("An error occoured while removing a customer")
+              }
+          break;
+        }
       }
 
     const hideModal = () => {
@@ -83,9 +119,9 @@ export default function UserList(props) {
                         <td>{username}</td>
                         <td>{firstName}</td>
                         <td>{lastName}</td>
-                        <td>{systemStatus == 0 ? "Deaktiviert":"Aktiviert"}</td>
+                        <td>{systemStatus}</td>
                         <td style={{width: "300px"}}>
-                            <Button  onClick={() => history.push('/employee/edit/' + id)} style={{marginRight:"5px"}}>Ansicht</Button>
+                            <Button  onClick={() => history.push(props.userType == "employee" ? '/employee/edit/'+id : '/customer/edit/'+id )} style={{marginRight:"5px"}}>Ansicht</Button>
                             {//<Button onClick={() => {if(window.confirm('Wollen Sie diesen Benutzer wirklich entfernen?')){removeUser(index)};}}  id={id}>Entfernen</Button>
                             }<Button onClick={handleRemoveIndexChange} value={index} id={id}>Entfernen</Button>
                         </td>
