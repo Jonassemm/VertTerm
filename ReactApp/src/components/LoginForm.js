@@ -96,7 +96,7 @@ return (
                 <Button ref={target} type="submit">{!userStore.loggedIn ? "Login" : "Logout"}</Button>
                 <Overlay target={target} show={inputError} placement="bottom">
                     <Popover id="popover-basic">
-                        <Popover.Title as="h3">Falscher Login</Popover.Title>
+                        <Popover.Title as="h3">Falscher Login!</Popover.Title>
                         <Popover.Content style={{ color: "#FF0000" }}>
                             Falscher Benutzername oder falsches Passwort!
                             </Popover.Content>
