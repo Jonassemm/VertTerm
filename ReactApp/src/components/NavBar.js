@@ -45,10 +45,10 @@ function NavBar({ userStore }) {
                     <Nav className="mr-auto">
                         {hasRole(userStore, ["ADMIN_ROLE"]) &&
                             <NavDropdown className="mr-auto" title="Benutzer" id="collasible-nav-dropdown">
-                                <NavDropdown.Item as={Link} to="/employee/add">Mitarbeiter anlegen</NavDropdown.Item>
+                                <NavDropdown.Item as={Link} to="/employee/add">Mitarbeiter hinzufügen</NavDropdown.Item>
                                 <NavDropdown.Item as={Link} to="/employee/list">Mitarbeiter verwalten</NavDropdown.Item>
                                 <NavDropdown.Divider />
-                                <NavDropdown.Item as={Link} to="/customer/add">Kunden anlegen</NavDropdown.Item>
+                                <NavDropdown.Item as={Link} to="/customer/add">Kunden hinzufügen</NavDropdown.Item>
                                 <NavDropdown.Item as={Link} to="/customer/list">Kunden verwalten</NavDropdown.Item>
                             </NavDropdown>}
                         <Nav.Item><Nav.Link as={Link} to="/role">Rollen</Nav.Link></Nav.Item>

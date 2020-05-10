@@ -293,8 +293,6 @@ function EmployeeAdd(props) {
     if (choosableSupervisors.length > 0) {
       return choosableSupervisors.map((singleSupervisor, index) => {
         const {firstName, lastName, username} = singleSupervisor;
-        console.log("render")
-        console.log(choosableSupervisors.length)
         return (<option key={index} value={index}>{firstName}, {lastName} ({username})</option>);
       })
     } else {
@@ -460,7 +458,7 @@ function EmployeeAdd(props) {
         <Card.Footer style={{textAlign: "right"}}>
             {props.type === "edit" ? 
               <Button variant="secondary" onClick={() => history.push('/employee/list')} style={{marginRight: "20px"}}>Abbrechen</Button> :
-              null
+              <Button variant="secondary" onClick={() => history.push('/')} style={{marginRight: "20px"}}>Abbrechen</Button>
             }
           <Button size="md" variant="success" type="submit">
             {props.type === "edit" ? "Übernehmen" : "Mitarbeiter anlegen"}

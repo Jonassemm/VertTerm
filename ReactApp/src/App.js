@@ -2,7 +2,7 @@ import React from 'react';
 import './App.css';
 import Footer from './components/Footer';
 import { BrowserRouter as Router, Switch, Route } from 'react-router-dom';
-import CustomerAdd from './components/user/CustomerAdd';
+import CustomerForm from './components/user/CustomerForm';
 import EmployeeForm from './components/user/EmployeeForm';
 import UserList from './components/user/UserList';
 import { Home } from './components/Home'
@@ -24,10 +24,11 @@ export default observer(function App({ userStore, calendarStore }) {
         <Switch>
           <Route path="/" exact component={Home} />
           {hasRole(userStore, ["ADMIN_ROLE"]) && <Route path="/employee/add" exact component={() => <EmployeeForm type={"add"} />} />}
-          {hasRole(userStore, ["ADMIN_ROLE"]) && <Route path="/customer/add" exact component={() => <CustomerAdd type={"add"} />} />}
+          {hasRole(userStore, ["ADMIN_ROLE"]) && <Route path="/customer/add" exact component={() => <CustomerForm type={"add"} />} />}
           {hasRole(userStore, ["ADMIN_ROLE"]) && <Route path="/employee/edit/:userId" exact component={() => <EmployeeForm type={"edit"} />} />}
-          {hasRole(userStore, ["ADMIN_ROLE"]) && <Route path="/customer/list" exact component={() => <UserList heading={"Kundenliste"} />} />}
-          {hasRole(userStore, ["ADMIN_ROLE"]) && <Route path="/employee/list" exact component={() => <UserList heading={"Mitarbeiterliste"} />} />}
+          {hasRole(userStore, ["ADMIN_ROLE"]) && <Route path="/customer/edit/:userId" exact component={() => <CustomerForm type={"edit"} />} />}
+          {hasRole(userStore, ["ADMIN_ROLE"]) && <Route path="/customer/list" exact component={() => <UserList userType={"customer"} heading={"Kundenliste"} />} />}
+          {hasRole(userStore, ["ADMIN_ROLE"]) && <Route path="/employee/list" exact component={() => <UserList userType={"employee"} heading={"Mitarbeiterliste"} />} />}
           <Route exact path="/calendar" component={() => (<HomePage calendarStore={calendarStore} />)} />
           <Route exact path="/role" component={() => (<RolePage userStore={userStore} />)} />
         </Switch>

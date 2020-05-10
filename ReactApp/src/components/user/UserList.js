@@ -121,9 +121,9 @@ export default function UserList(props) {
                         <td>{lastName}</td>
                         <td>{systemStatus}</td>
                         <td style={{width: "300px"}}>
-                            <Button  onClick={() => history.push(props.userType == "employee" ? '/employee/edit/'+id : '/customer/edit/'+id )} style={{marginRight:"5px"}}>Ansicht</Button>
+                            <Button  variant="info" onClick={() => history.push(props.userType == "employee" ? '/employee/edit/'+id : '/customer/edit/'+id )} style={{marginRight:"5px"}}>Ansicht</Button>
                             {//<Button onClick={() => {if(window.confirm('Wollen Sie diesen Benutzer wirklich entfernen?')){removeUser(index)};}}  id={id}>Entfernen</Button>
-                            }<Button onClick={handleRemoveIndexChange} value={index} id={id}>Entfernen</Button>
+                            }<Button variant="danger" onClick={handleRemoveIndexChange} value={index} id={id}>Entfernen</Button>
                         </td>
                     </tr>
                 )
@@ -151,7 +151,7 @@ export default function UserList(props) {
 
                     <Modal.Footer>
                         <Button variant="secondary"onClick={hideModal}>Nein</Button>
-                        <Button variant="primary" onClick={handleRemoveUser}>Ja</Button>
+                        <Button variant="danger" onClick={handleRemoveUser}>Ja</Button>
                     </Modal.Footer>
             </Modal>
             <Card className={"border border-dark bg-dark text-white"}>

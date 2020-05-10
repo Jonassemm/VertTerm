@@ -441,7 +441,7 @@ function CustomerForm(props) {
         <Card.Footer style={{textAlign: "right"}}>
             {props.type === "edit" ? 
               <Button variant="secondary" onClick={() => history.push('/customer/list')} style={{marginRight: "20px"}}>Abbrechen</Button> :
-              null
+              <Button variant="secondary" onClick={() => history.push('/')} style={{marginRight: "20px"}}>Abbrechen</Button>
             }
           <Button size="md" variant="success" type="submit">
             {props.type === "edit" ? "Übernehmen" : "Kunde anlegen"}
