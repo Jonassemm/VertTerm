@@ -14,7 +14,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.dvproject.vertTerm.Model.Right;
 import com.dvproject.vertTerm.Model.Role;
+import com.dvproject.vertTerm.Model.User;
 import com.dvproject.vertTerm.Service.RoleService;
 
 @RestController
@@ -24,7 +26,7 @@ public class RoleController
 	@Autowired
     private RoleService roleService;  
 	
-	@GetMapping()
+	 @GetMapping()
      public  @ResponseBody  List<Role> getAllRole() {
 		 return roleService.getAllRoles();
 	 }
@@ -34,20 +36,43 @@ public class RoleController
 	     return roleService.getRoleById(id);
 	 }
     
+	 @GetMapping("/rights/{id}") 
+     public  @ResponseBody  List<Right> getRoleRights(@PathVariable String id) {
+		 return roleService.getRoleRights(id);
+	 }
+	 
+	 @GetMapping("/users/{id}") 
+     public  @ResponseBody  List<User> getRoleUsers(@PathVariable String id) {
+		 return roleService.getRoleUsers(id);
+	 }
+	
+	 @PutMapping("/rights/edit/{id}") 
+     public  @ResponseBody  Role updateRoleRights(@PathVariable String id, @RequestBody Role role) {
+		 role.setId(id);
+		 return roleService.updateRoleRights(role);
+	 }
+	
+	 //TODO
+	//	 @GetMapping("/users/edit/{id}") 
+	//     public  @ResponseBody  updateRoleUsers(@PathVariable String id) {
+	//		 return roleService.updateRoleUsers(id);
+	//	 }
+	 
 	 @PostMapping()
 	 public Role createRole(@RequestBody Role role) {
 	     return roleService.createRole(role);
      }
 
 	 @PutMapping("/{id}")
-	 public  Role updateProduct(@PathVariable String id, @RequestBody Role role) {
+	 public  Role updateRole(@PathVariable String id, @RequestBody Role role) {
 	      role.setId(id);
 	      return roleService.updateRole(role);
 	 }
     
 	 @DeleteMapping("/{id}")
-	 public void deleteProduct(@PathVariable String id) {
+	 public void deleteRole(@PathVariable String id) {
 	       roleService.deleteRoleById(id);
 	  }
 
+	 
 }

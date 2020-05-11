@@ -70,3 +70,4 @@ public class Resource implements Serializable{
 		this.availabilities = availabilities;
 	}
 }
+

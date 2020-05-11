@@ -6,6 +6,7 @@ import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.rest.webmvc.ResourceNotFoundException;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -28,14 +29,14 @@ public class RightServiceImp implements RightService {
    @Autowired
    private RoleRepository roleRepo;
    
- 
-
-   @Override
+    
+   //@PreAuthorize("hasAuthority('RIGHTS_READ')")
    public List <Right> getAllRights() {
        return this.RightRepo.findAll();
    }
-
-   @Override
+   
+    
+   //@PreAuthorize("hasAuthority('RIGHTS_READ')") 
    public Right getRightById(String id) {
 	   Optional <Right> RightDb = this.RightRepo.findById(id);
        if (RightDb.isPresent()) {
@@ -45,7 +46,8 @@ public class RightServiceImp implements RightService {
        }
    }
   
-	public List<User> getListUserswithRight(String id) {
+   //   @PreAuthorize("hasAuthority('USER_ROLES_READ','USER_RIGHTS_READ')")
+   public List<User> getListUserswithRight(String id) {
 			   List<User> userslist = new ArrayList<User>();
 			   List<User> Allusers = userRepo.findAll();
 			   for (User user : Allusers) {
@@ -60,8 +62,8 @@ public class RightServiceImp implements RightService {
     }
 
 
-	@Override
-	public List<Role> getListRoleswithRight(String id) {
+   //   @PreAuthorize("hasAuthority('ROLES_READ','ROLES_RIGHTS_READ')")
+   public List<Role> getListRoleswithRight(String id) {
 		   List<Role> listrole = new ArrayList<Role>();
 		   List<Role> AllRoles = roleRepo.findAll();
 		   
