@@ -20,7 +20,7 @@ export default observer(function App({ userStore, calendarStore }) {
   return (
     <Router>
       <NavBar userStore={userStore} />
-      <div style={{ margin: "70px 0px 50px 0px" }}>
+      <div style={{ margin: "55px 0px 50px 0px" }}>
         <Switch>
           <Route path="/" exact component={Home} />
           {hasRole(userStore, ["ADMIN_ROLE"]) && <Route path="/employee/add" exact component={() => <EmployeeForm type={"add"} />} />}

@@ -74,7 +74,6 @@ const RolesForm = ({ onCancel, edit, selected }) => {
         } else {
             res = await editRole(selected.id, data)
         }
-        console.log(res)
         onCancel()
     }
 
