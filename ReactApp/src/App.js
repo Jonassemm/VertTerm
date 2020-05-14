@@ -4,6 +4,7 @@ import Footer from './components/Footer';
 import { BrowserRouter as Router, Switch, Route } from 'react-router-dom';
 import CustomerForm from './components/user/CustomerForm';
 import EmployeeForm from './components/user/EmployeeForm';
+import Availability from './components/availability/AvailabilityForm'
 import UserList from './components/user/UserList';
 import { Home } from './components/Home'
 import HomePage from './components/calendarComponents/HomePage'
@@ -14,6 +15,7 @@ import "react-loader-spinner/dist/loader/css/react-spinner-loader.css"
 import { hasRole } from "./auth"
 import { observer } from "mobx-react"
 import RolePage from "./components/roleComponents/RolePage"
+import PositionPage from "./components/position/PositionPage"
 
 export default observer(function App({ userStore, calendarStore }) {
 
@@ -23,6 +25,8 @@ export default observer(function App({ userStore, calendarStore }) {
       <div style={{ margin: "70px 0px 50px 0px" }}>
         <Switch>
           <Route path="/" exact component={Home} />
+          {hasRole(userStore, ["ADMIN_ROLE"]) && <Route path="/position" exact component={() => <PositionPage/>} />}
+          {hasRole(userStore, ["ADMIN_ROLE"]) && <Route path="/employee/edit/availability/:userId" exact component={() => <Availability/>} />}
           {hasRole(userStore, ["ADMIN_ROLE"]) && <Route path="/employee/add" exact component={() => <EmployeeForm type={"add"} />} />}
           {hasRole(userStore, ["ADMIN_ROLE"]) && <Route path="/customer/add" exact component={() => <CustomerForm type={"add"} />} />}
           {hasRole(userStore, ["ADMIN_ROLE"]) && <Route path="/employee/edit/:userId" exact component={() => <EmployeeForm type={"edit"} />} />}
