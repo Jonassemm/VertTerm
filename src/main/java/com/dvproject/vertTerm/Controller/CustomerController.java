@@ -26,7 +26,7 @@ public class CustomerController {
 
     @GetMapping()
     public @ResponseBody
-    List<Customer> getCustomer()
+    List<Customer> getCustomers()
     {
         return repo.findAll();
     }

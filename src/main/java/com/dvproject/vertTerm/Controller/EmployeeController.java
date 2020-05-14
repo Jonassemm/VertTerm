@@ -26,7 +26,7 @@ public class EmployeeController {
 
     @GetMapping()
     public @ResponseBody
-    List<Employee> getEmployee()
+    List<Employee> getEmployees()
     {
         return repo.findAll();
     }

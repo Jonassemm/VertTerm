@@ -15,7 +15,7 @@ import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 @Document("user")
-public class User implements Serializable
+public class User implements Serializable, Identifiable
 {
     private static final long serialVersionUID = -5252169753921361843L;
     	
@@ -23,16 +23,6 @@ public class User implements Serializable
 	private String id;
 	@Indexed(unique = true)
 	private String username;
-
-	public Adress getAdress() {
-		return adress;
-	}
-
-	public void setAdress(Adress adress) {
-		this.adress = adress;
-	}
-
-	private Adress adress;
 	private String password;
 	private String firstName;
 	private String lastName;
