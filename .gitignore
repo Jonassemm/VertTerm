@@ -3,3 +3,5 @@ node_modules
 .settings
 .vscode
 node
+ReactApp\dist\bundle.js
+ReactApp\package-lock.json
