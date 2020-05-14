@@ -115,10 +115,25 @@
 							<npmVersion>6.4.1</npmVersion>
 						</configuration>
 					</execution>
-					
+					<execution>
+						<id>npm install</id>
+						<goals>
+							<goal>npm</goal>
+						</goals>
+						<configuration>
+							<arguments>install</arguments>
+						</configuration>
+					</execution>
+					<execution>
+                        <id>webpack-build</id>
+                        <goals><goal>npm</goal></goals>
+                        <configuration>
+                            <arguments>run build</arguments>
+                        </configuration>
+                    </execution>
 				</executions>
 			</plugin>
 		</plugins>
 	</build>
-
+	
 </project>
