@@ -9,26 +9,37 @@ public class Availability {
 	private Date endDate;
 	
 	/**
-	 * defines the type of rythm (e.g. daily or weekly)
+	 * defines the type of rhythm (e.g. daily or weekly)
 	 */
-	private AvailabilityRythm rythm;
+	private AvailabilityRhythm rhythm;
 	
 	/**
-	 * defines the frequenzy of the rythm (e.g. 2 -> every two rythms)
+	 * defines the frequenzy of the rhythm (e.g. 2 -> every two rhythms)
 	 */
 	private int frequenzy;
 	private Date endOfSeries;
 	
-	public Availability (Date startDate, Date endDate, AvailabilityRythm rythm) {
+	public Availability (Date startDate, Date endDate, AvailabilityRhythm rythm) {
 		this(startDate, endDate, rythm, 1);
 	}
 	
-	@PersistenceConstructor
-	public Availability (Date startDate, Date endDate, AvailabilityRythm rythm, int frequenzy) {
+	public Availability (Date startDate, Date endDate, AvailabilityRhythm rhythm, int frequenzy) {
 		this.startDate = startDate;
 		this.endDate = endDate;
-		this.rythm = rythm;
+		this.rhythm = rhythm;
 		this.frequenzy = frequenzy;
+	}
+	
+	@PersistenceConstructor
+	public Availability (Date startDate, Date endDate, AvailabilityRhythm rhythm, Date endOfSeries, int frequenzy) {
+		this.startDate = startDate;
+		this.endDate = endDate;
+		this.endOfSeries = endOfSeries;
+		this.rhythm = rhythm;
+		this.frequenzy = frequenzy;
+	}
+	
+	public Availability () {
 	}
 	
 	public Date getStartDate() {
@@ -39,8 +50,8 @@ public class Availability {
 		return endDate;
 	}
 	
-	public AvailabilityRythm getRythm() {
-		return rythm;
+	public AvailabilityRhythm getRhythm() {
+		return rhythm;
 	}
 	
 	public int getFrequenzy() {

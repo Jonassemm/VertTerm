@@ -31,20 +31,20 @@ public class User implements Serializable
 	private Status systemStatus;
 	
 	@DBRef
-	private List<Role> role_id;
+	private List<Role> roles;
 	@DBRef
 	private Map<OptionalAttribute, String> optionalAttributes;
 	@DBRef
     private List<Restriction> restrictions;
 
-	public User(String id, String username, String password, String firstName, String lastName, List<Role> role_id) {
+	public User(String id, String username, String password, String firstName, String lastName, List<Role> roles) {
 		this();
 		this.id = id;
 		this.username = username;
 		this.password = password;
 		this.firstName = firstName;
 		this.lastName = lastName;
-		this.role_id = role_id;
+		this.roles = roles;
 	}
 
 	public User() {
@@ -99,11 +99,11 @@ public class User implements Serializable
 	}
 
 	public List<Role> getRoles() {
-	    return role_id;
+	    return roles;
 	}
 
-	public void setRoles(List<Role> role_id) {
-	    this.role_id = role_id;
+	public void setRoles(List<Role> roles) {
+	    this.roles = roles;
 	}
 
 	public Date getCreationDate() {

@@ -3,8 +3,6 @@ package com.dvproject.vertTerm.Model;
 import java.io.Serializable;
 import java.util.List;
 
-import javax.validation.constraints.NotEmpty;
-
 import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
 
@@ -23,6 +21,14 @@ public class Employee extends User implements Serializable
 
 	public void setAvailabilities(List<Availability> availabilities) {
 		this.availabilities = availabilities;
+	}
+
+	public Position getPosition() {
+		return position;
+	}
+
+	public void setPosition(Position position) {
+		this.position = position;
 	}
 
 }

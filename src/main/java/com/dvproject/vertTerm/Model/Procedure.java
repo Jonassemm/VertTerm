@@ -34,8 +34,11 @@ public class Procedure implements Serializable {
 	private List<Position> neededEmployeePositions;
 	@DBRef
 	private List<Restriction> restrictions;
-	@DBRef
 	private List<Availability> availabilities;
+
+	public String getId() {
+		return id;
+	}
 
 	public String getName() {
 		return name;
