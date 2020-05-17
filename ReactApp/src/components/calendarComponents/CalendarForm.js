@@ -3,7 +3,6 @@ import Form from "react-bootstrap/Form";
 import Col from "react-bootstrap/Col";
 import DatePicker from "react-datepicker";
 import Button from "react-bootstrap/Button";
-import Loader from "react-loader-spinner"
 import {
   addCalendar,
   editCalendar,
@@ -125,7 +124,7 @@ function CalendarForm({calendarStore, calendarEvent, onCancel, edit}){
                 </Form.Group>
             </Form.Row>
             <Button disabled={loading} type="submit" style={buttonStyle}>
-                {loading ? <Loader type="TailSpin" color="#00BFFF" height={20} width={20}/> : "Save"}
+                {loading ? <div>loading...</div> : "Save"}
             </Button>
             <Button disabled={loading} type="button" style={buttonStyle} onClick={deleteCalendarEvent}>
                 Delete

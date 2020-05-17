@@ -4,6 +4,10 @@ import { Container, Row, Col, Button, Table, Modal } from "react-bootstrap"
 
 const Style = styled.div`
 
+.topRow {
+    margin: 65px 0px 0px 0px
+}
+
 .row {
     margin: 20px 0px 0px 0px
 }
@@ -105,6 +109,7 @@ function OverviewPage({
             </Modal>
 
             <Container>
+                <div className="topRow"></div>
                 <Row>
                     <Col ><h1>{pageTitle}</h1></Col>
                     <Col className="colR"><Button onClick={handleNew}>{newItemText}</Button></Col>

@@ -53,6 +53,7 @@ function NavBar({ userStore }) {
                             </NavDropdown>}
                         <Nav.Item><Nav.Link as={Link} to="/role">Rollen</Nav.Link></Nav.Item>
                         <Nav.Item><Nav.Link as={Link} to="/calendar">Kalender</Nav.Link></Nav.Item>
+                        <Nav.Item><Nav.Link as={Link} to="/procedure">Prozeduren</Nav.Link></Nav.Item>
                     </Nav>
                 </Navbar.Collapse >
                 <Nav.Item style={{ color: "#bbb", marginRight: "10px" }}>
