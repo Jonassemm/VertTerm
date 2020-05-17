@@ -1,14 +1,17 @@
 import React, {useState, useEffect, Fragment} from 'react'
-import {Card, Table, Button, Modal} from 'react-bootstrap';
+import {Button} from 'react-bootstrap';
 import {useHistory} from 'react-router-dom';
-import Layout from "./Layout"
+import {Dropdown, DropdownButton} from "react-bootstrap"
+import CustomerForm from "./CustomerForm"
+import EmployeeForm from "./EmployeeForm"
+import OverviewPage from "../OverviewPage"
 
 
 import {observer} from "mobx-react"
 import {
     getEmployeeList,
     getCustomerList,
-    removeEmployee,
+    deleteEmployee,
     removeCustomer
   } from "./UserRequests";
 import { remove } from 'mobx';
@@ -65,14 +68,13 @@ export default function UserList(props) {
         setUserList(data)
     }
 
-
     //REMOVE USER
     const removeUser = async  (index) => {
         switch(props.userType) {
         case "employee":
             try {
                 console.log("AXIOS: removeEmployee()")
-                await removeEmployee(userList[index].id);
+                await deleteEmployee(userList[index].id);
                 userList.splice((index),1)
                 setUserList([...userList])
               } catch (error) {
@@ -120,10 +122,20 @@ export default function UserList(props) {
                         <td>{firstName}</td>
                         <td>{lastName}</td>
                         <td>{systemStatus}</td>
-                        <td style={{width: "300px"}}>
+                        {/*<td style={{width: "300px"}}>
                             <Button  variant="info" onClick={() => history.push(props.userType == "employee" ? '/employee/edit/'+id : '/customer/edit/'+id )} style={{marginRight:"5px"}}>Ansicht</Button>
                             {//<Button onClick={() => {if(window.confirm('Wollen Sie diesen Benutzer wirklich entfernen?')){removeUser(index)};}}  id={id}>Entfernen</Button>
                             }<Button variant="danger" onClick={handleRemoveIndexChange} value={index} id={id}>Entfernen</Button>
+                        </td>
+                        */}
+                        <td>
+                        <DropdownButton id="dropdown-basic-button" title="AKTION">
+                            <Dropdown.Item as="button" onClick={() => history.push(props.userType == "employee" ? '/employee/edit/'+id : '/customer/edit/'+id )}>Anzeigen</Dropdown.Item>
+                            {props.userType == "employee" ? 
+                                <Dropdown.Item as="button" onClick={() => history.push('/employee/availability/'+id)}>Verfügbarkeiten</Dropdown.Item>  : null}
+                            <Dropdown.Divider />
+                            <Dropdown.Item  as="button" onClick={handleRemoveIndexChange} value={index} id={id} >LÖSCHEN</Dropdown.Item>
+                        </DropdownButton>
                         </td>
                     </tr>
                 )
@@ -137,43 +149,72 @@ export default function UserList(props) {
         }
     }
 
+
+    const tableBody =
+        userList.map((item, index) => { 
+            var status
+            if(item.systemStatus == "ACTIVE") {
+                status = "Aktiviert"
+            }else if (item.systemStatus == "INACTIVE") {
+                status = "Deaktiviert"
+            }else {
+                status = "UNDIFINED"
+            }
+            return ([
+                index + 1,
+                item.username,
+                item.lastName,
+                item.firstName,
+                status]
+            )
+        })
+
+    const modalEmployee = (onCancel,edit,selectedItem) => {
+        return (
+            <EmployeeForm
+                onCancel={onCancel}
+                edit={edit}
+                selected={selectedItem}
+                userType={"employee"}
+            />
+        )
+    }
+
+    const modalCustomer = (onCancel,edit,selectedItem) => {
+        return (
+            <CustomerForm
+                onCancel={onCancel}
+                edit={edit}
+                selected={selectedItem}
+                userType={"customer"}
+            />
+        )
+    }
+
     return (
-    <Layout>
-        <div className="page">
-            <Modal show={showRemoveConfirmModal} onHide={hideModal}>
-                    <Modal.Header closeButton>
-                        <Modal.Title>Benutzer entfernen</Modal.Title>
-                    </Modal.Header>
-
-                    <Modal.Body>
-                        <p>Soll der Benutzer wirklich gelöscht werden? </p>
-                    </Modal.Body>
-
-                    <Modal.Footer>
-                        <Button variant="secondary"onClick={hideModal}>Nein</Button>
-                        <Button variant="danger" onClick={handleRemoveUser}>Ja</Button>
-                    </Modal.Footer>
-            </Modal>
-            <Card className={"border border-dark bg-dark text-white"}>
-                <Card.Header>{props.heading}</Card.Header>
-                <Card.Body>
-                    <Table striped hover variant="dark">
-                        <thead>
-                            <tr>
-                                <th>Benutzername</th>
-                                <th>Nachname</th>
-                                <th>Vorname</th>
-                                <th>Status</th>
-                                <th>AKTION</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {renderTableBody()}
-                        </tbody>
-                    </Table>
-                </Card.Body>
-            </Card>
-        </div>
-    </Layout>
+        <React.Fragment>
+            {props.userType == "employee" ? 
+                <OverviewPage
+                    pageTitle="Mitarbeiter"
+                    newItemText="Neuer Mitarbeiter"
+                    tableHeader={["#", "Benutzername", "Nachname", "Vorname", "Status"]}
+                    tableBody={tableBody}
+                    modal={modalEmployee}
+                    data={userList}
+                    modalSize="xl"
+                    refreshData={loadUserList}
+                /> :
+                <OverviewPage
+                    pageTitle="Kunde"
+                    newItemText="Neuer Kunde"
+                    tableHeader={["#", "Benutzername", "Nachname", "Vorname", "Status"]}
+                    tableBody={tableBody}
+                    modal={modalCustomer}
+                    data={userList}
+                    modalSize="xl"
+                    refreshData={loadUserList}
+                />
+            }
+        </React.Fragment>
    )
 }
