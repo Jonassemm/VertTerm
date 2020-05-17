@@ -59,8 +59,7 @@ function setDate() {
 
 
 
-const AvaiabilityForm = (props) => {
-    
+const Availability = (props) => {
     //props.addAvailability
     //props.availability
     //props.editedAvailability
@@ -309,4 +308,4 @@ const AvaiabilityForm = (props) => {
     </React.Fragment>
     )
 }
-export default AvaiabilityForm
+export default Availability
