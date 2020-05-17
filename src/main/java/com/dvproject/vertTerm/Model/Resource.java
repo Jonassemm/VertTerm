@@ -3,7 +3,6 @@ package com.dvproject.vertTerm.Model;
 import java.io.Serializable;
 import java.util.List;
 
-import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 
 import org.springframework.data.annotation.Id;
@@ -21,14 +20,15 @@ public class Resource implements Serializable{
 	private String name;
 	private String description;
 	
-	@NotEmpty
 	private List<Availability> availabilities;
 	@NotNull
 	private Status status;
 	@DBRef
-	private Resource parentRessource;
+	private List<Resource> childRessources;
 	@DBRef
 	private List<Restriction> restrictions;
+	@DBRef
+	private ResourceType resourceTyp;
 
 	public String getId() {
 		return id;
@@ -54,19 +54,51 @@ public class Resource implements Serializable{
 		this.description = description;
 	}
 
-	public Resource getParentRessource() {
-		return parentRessource;
-	}
-
-	public void setParentRessource(Resource parentRessource) {
-		this.parentRessource = parentRessource;
-	}
-
 	public List<Availability> getAvailability() {
 		return availabilities;
 	}
 
 	public void setAvailability(List<Availability> availabilities) {
 		this.availabilities = availabilities;
+	}
+
+	public List<Availability> getAvailabilities() {
+		return availabilities;
+	}
+
+	public void setAvailabilities(List<Availability> availabilities) {
+		this.availabilities = availabilities;
+	}
+
+	public Status getStatus() {
+		return status;
+	}
+
+	public void setStatus(Status status) {
+		this.status = status;
+	}
+
+	public List<Resource> getChildRessources() {
+		return childRessources;
+	}
+
+	public void setChildRessources(List<Resource> childRessources) {
+		this.childRessources = childRessources;
+	}
+
+	public List<Restriction> getRestrictions() {
+		return restrictions;
+	}
+
+	public void setRestrictions(List<Restriction> restrictions) {
+		this.restrictions = restrictions;
+	}
+
+	public ResourceType getResourceTyp() {
+		return resourceTyp;
+	}
+
+	public void setResourceTyp(ResourceType resourceTyp) {
+		this.resourceTyp = resourceTyp;
 	}
 }

@@ -14,7 +14,7 @@ public interface UserService
     List<Role> getOwnUserRoles (Principal principal);
     List<Right> getOwnUserRights (Principal principal);
     List<User> getUsersWithUsernames (String [] usernames);
-    List<User> getUsersWithIds (String [] ids);
+    User getUserWithId (String id);
     List<Role> getUserRolesWithId (String id);
     List<Right> getUserRightsWithId (String id);
 }

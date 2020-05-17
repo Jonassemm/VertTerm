@@ -18,6 +18,8 @@ public class Appointment implements Serializable {
 	private String description;
 	@NotNull
 	private AppointmentStatus status;
+	@NotNull
+	private Warning warning;
 	
 	private Date plannedStarttime;
 	private Date plannedEndtime;
@@ -25,10 +27,10 @@ public class Appointment implements Serializable {
 	private Date actualEndtime;
 	
 	@DBRef
-	private Procedure procedure;
+	private Procedure bookedProcedure;
 	@DBRef
 	@NotEmpty
-	private List<User> bookedCustomers;
+	private User bookedCustomer;
 	@DBRef
 	private List<Employee> bookedEmployees;
 	@DBRef
@@ -90,20 +92,20 @@ public class Appointment implements Serializable {
 		this.actualEndtime = actualEndtime;
 	}
 	
-	public Procedure getProcedure() {
-		return procedure;
+	public Procedure getBookedProcedure() {
+		return bookedProcedure;
 	}
 	
-	public void setProcedure(Procedure procedure) {
-		this.procedure = procedure;
+	public void setBookedProcedure(Procedure bookedProcedure) {
+		this.bookedProcedure = bookedProcedure;
 	}
 	
-	public List<User> getBookedCustomers() {
-		return bookedCustomers;
+	public User getBookedCustomer() {
+		return bookedCustomer;
 	}
 	
-	public void setBookedCustomers(List<User> bookedCustomers) {
-		this.bookedCustomers = bookedCustomers;
+	public void setBookedCustomer(User bookedCustomers) {
+		this.bookedCustomer = bookedCustomers;
 	}
 	
 	public List<Employee> getBookedEmployees() {
@@ -120,6 +122,14 @@ public class Appointment implements Serializable {
 	
 	public void setBookedResources(List<Resource> bookedResources) {
 		this.bookedResources = bookedResources;
+	}
+
+	public Warning getWarning() {
+		return warning;
+	}
+
+	public void setWarning(Warning warning) {
+		this.warning = warning;
 	}
 
 }

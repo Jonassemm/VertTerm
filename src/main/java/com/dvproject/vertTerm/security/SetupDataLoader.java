@@ -15,7 +15,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.dvproject.vertTerm.Model.Availability;
-import com.dvproject.vertTerm.Model.AvailabilityRythm;
+import com.dvproject.vertTerm.Model.AvailabilityRhythm;
 import com.dvproject.vertTerm.Model.Employee;
 import com.dvproject.vertTerm.Model.Right;
 import com.dvproject.vertTerm.Model.Role;
@@ -61,15 +61,29 @@ public class SetupDataLoader implements ApplicationListener<ContextRefreshedEven
 
 	@Transactional
 	private Right createRightIfNotFound(String name) {
-		Right rights = rightRepository.findByName(name);
+		Right right = rightRepository.findByName(name);
 
-		if (rights == null) {
-			rights = new Right();
-			rights.setName(name);
-			rightRepository.save(rights);
+		if (right == null) {
+			right = new Right();
+			right.setName(name);
+			rightRepository.save(right);
 		}
 
-		return rights;
+		return right;
+	}
+	
+	@Transactional
+	private Right createRightIfNotFound(String name, String description) {
+		Right right = rightRepository.findByName(name);
+
+		if (right == null) {
+			right = new Right();
+			right.setName(name);
+			right.setDescription(description);
+			rightRepository.save(right);
+		}
+
+		return right;
 	}
 
 	private List<Right> setUpAdminRights() {
@@ -152,7 +166,7 @@ public class SetupDataLoader implements ApplicationListener<ContextRefreshedEven
 			cal.set(2020, 5, 1, 18, 0, 0);
 			Date end = cal.getTime();
 			
-			Availability avail = new Availability (start, end, AvailabilityRythm.DAILY);
+			Availability avail = new Availability (start, end, AvailabilityRhythm.DAILY);
 			user.setAvailabilities(Arrays.asList(avail));
 			userRepository.save(user);
 		}

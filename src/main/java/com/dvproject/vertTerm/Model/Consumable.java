@@ -10,6 +10,7 @@ public class Consumable extends Resource implements Serializable {
 	
 	private int numberOfUses;
 	private int pricePerUnit;
+	private int amountInStock;
 	
 	public Consumable () {
 		numberOfUses = 1;
@@ -29,5 +30,13 @@ public class Consumable extends Resource implements Serializable {
 
 	public void setPricePerUnit(int pricePerUnit) {
 		this.pricePerUnit = pricePerUnit;
+	}
+
+	public int getAmountInStock() {
+		return amountInStock;
+	}
+
+	public void setAmountInStock(int amountInStock) {
+		this.amountInStock = amountInStock;
 	}
 }

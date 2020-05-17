@@ -3,6 +3,7 @@ package com.dvproject.vertTerm.Service;
 import java.security.Principal;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -38,7 +39,7 @@ public class UserServiceImp implements UserService {
 
     @PreAuthorize("hasAuthority('USERS_DATA_READ')")
     public List<User> getUsersWithUsernames(String[] usernames) {
-	List<User> users = new ArrayList<User>();
+	List<User> users = new ArrayList<>();
 
 	for (String username : usernames) {
 	    users.add(userRepository.findByUsername(username));
@@ -48,14 +49,9 @@ public class UserServiceImp implements UserService {
     }
 
     @PreAuthorize("hasAuthority('USERS_DATA_READ')")
-    public List<User> getUsersWithIds(String[] ids) {
-	List<User> users = new ArrayList<User>();
-
-	for (String id : ids) {
-	    users.add(userRepository.findById(id).get());
-	}
-
-	return obfuscatePassword(users);
+    public User getUserWithId(String id) {
+	Optional<User> user = userRepository.findById(id);
+	return user.map(this::obfuscatePassword).orElse(null);
     }
 
     @PreAuthorize("hasAuthority('OWN_USER_ROLES_READ')")
@@ -72,18 +68,18 @@ public class UserServiceImp implements UserService {
 
     @PreAuthorize("hasAuthority('ROLES_READ')")
     public List<Role> getUserRolesWithId(String id) {
-	User user = getUsersWithIds(new String[] { id }).get(0);
+	User user = getUserWithId(id);
 
 	return user.getRoles();
     }
 
     @PreAuthorize("hasAuthority('RIGHTS_READ')")
     public List<Right> getUserRightsWithId(String id) {
-	return getRights(getUsersWithIds(new String[] { id }).get(0));
+	return getRights(getUserWithId(id));
     }
 
     private List<Right> getRights(User user) {
-	List<Right> rights = new ArrayList<Right>();
+	List<Right> rights = new ArrayList<>();
 
 	for (Role role : user.getRoles()) {
 	    for (Right right : role.getRights()) {

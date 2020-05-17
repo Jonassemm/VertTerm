@@ -57,7 +57,7 @@ public class ResourceServiceImp implements ResourceService {
 		    	ResUpdate.setName(res.getName());
 		    	ResUpdate.setDescription(res.getDescription());
 		    	ResUpdate.setAvailability(res.getAvailability());
-		    	ResUpdate.setParentRessource(res.getParentRessource());
+		    	ResUpdate.setChildRessources(res.getChildRessources());
 		        ResRepo.save(ResUpdate);
 		        return ResUpdate;
 		    } 
