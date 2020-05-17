@@ -119,7 +119,7 @@ const Availability = (props) => {
     const handleAdd = () => {
         const newAvailability = {startDate, endDate, rhythm, frequency, endOfSeries}
         props.addAvailability(newAvailability)
-        //props.setAvailabilities(props.availability => [...props.availabilityavailability, newAvailability]);
+        props.editedAvailability(true)
     };
 
 
@@ -154,7 +154,6 @@ const Availability = (props) => {
     return (
         <React.Fragment>
             <Container>
-                <Form id="availabilityAdd" onSubmit={(e) => handleSubmit(e)}>
                     <Form.Row>
                         <Form.Label><h5>Erster verfügbarer Zeitraum</h5></Form.Label>
                     </Form.Row>
@@ -303,7 +302,6 @@ const Availability = (props) => {
                             </tbody>
                         </Table> 
                     </Form.Row>
-                </Form>
         </Container>
     </React.Fragment>
     )

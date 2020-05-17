@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react"
 import { Typeahead } from "react-bootstrap-typeahead"
-import { getUsers, getEmployees, getCustomers, getProcedures } from "./requests"
+import { getUsers, getEmployees, getCustomers, getProcedures, getRoles } from "./requests"
 import { set } from "mobx"
 
 function ObjectPicker({ DbObject, setState, initial }) {
@@ -25,7 +25,8 @@ function ObjectPicker({ DbObject, setState, initial }) {
             case 'procedure': getProcedureData(); break;
             case 'resource': getResourceData(); break;
             case 'resourceType': getResourceTypeData(); break;
-            case 'position': getPositionData()
+            case 'position': getPositionData(); break;
+            case 'role': getRoleData();
         }
     }, [])
 
@@ -69,9 +70,20 @@ function ObjectPicker({ DbObject, setState, initial }) {
         })
     }
 
+    async function getRoleData() {
+        const res = await getRoles()
+        const result = res.data.map((item) => {
+            return {
+                ...item
+            }   
+        })
+        setOptions(result)
+        setLabelKey("name")
+    }
+
     return (
         <React.Fragment>
-            <Typeahead
+            {/* <Typeahead
                 clearButton
                 placeholder= {labels[DbObject] + " wählen"}
                 multiple
@@ -80,8 +92,18 @@ function ObjectPicker({ DbObject, setState, initial }) {
                 onChange={setState}
                 labelKey={labelKey}
                 selectHintOnEnter
+            /> */}
+            <Typeahead
+                clearButton
+                placeholder= {labels[DbObject] + " wählen"}
+                options={options}
+                id="basic-typeahead"
+                onChange={setState}
+                labelKey={labelKey}
+                selectHintOnEnter
             />
         </React.Fragment>
+        
     )
 }
 

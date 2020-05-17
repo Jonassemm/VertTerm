@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react"
 import { Container, Form, Col, Tabs, Tab } from "react-bootstrap"
 import { Formik } from "formik"
-import AvaiabilityForm from "../availability/AvailabilityForm"
+import Avaiability from "../availability/Availability"
 import ObjectPicker from "../ObjectPicker"
 import {addProcedure} from "./ProcedureRequests"
 

@@ -1,41 +1,46 @@
 import React ,{useState, useEffect} from 'react'
-import {Form, Table, Card, Col, Container, Button, InputGroup} from 'react-bootstrap'
-import {useParams} from "react-router-dom"
-import {observer} from "mobx-react"
-import { Link } from 'react-router-dom'
-import Layout from "./Layout"
-import {useHistory} from 'react-router-dom';
+import {Form, Table, Col, Container, Button, InputGroup, Tabs, Tab } from 'react-bootstrap'
 import Availability from "../availability/Availability"
+import ObjectPicker from "../ObjectPicker"
 
 import {
   addEmployee,
   updateEmployee,
+  deleteEmployee,
   getAllRoles,
   getAllPositions,
-  getEmployee,
-  deleteEmployee
+  getAllRestrictions
 } from "./UserRequests";
 import { set } from 'mobx'
 
 
 function EmployeeForm({ onCancel, edit, selected }) {
   
+  //Editing
   const [edited, setEdited] = useState(false)
 
+  //Tabs
+  const [tabKey, setTabKey] = useState('general')
+
+  //User
   const [firstName, setFirstname] = useState("")
   const [lastName, setLastname] = useState("")
   const [username, setUsername] = useState("") 
   const [password, setPassword] = useState("")
-  const [systemStatus, setSystemStatus] = useState("ACTIVE")
+  const [systemStatus, setSystemStatus] = useState("active")
+  //Availability
   const [availability, setAvailability] = useState([])
-
+  //Position
   const [position, setPosition] = useState(null)
   const [choosablePositions, setChoosablePositions] = useState([])
-
+  //Role
   let firstSelectedRole = null // to add the first role wich is listed when click on "Hinzufügen"
   const [selectedRole, setSelectedRole] = useState(null)
   const [roles, setRoles] = useState([])
   const [choosableRoles, setChoosableRoles] = useState([])//([{name: "Standard"}])
+  //Restrictions
+  const [restrictions, setRestrictions] = useState([])
+  const [choosableRestrictions, setChoosableRestrictions] = useState([])
   
   //HANDEL CHANGE
   const handleFirstnameChange = event => {setFirstname(event.target.value); setEdited(true)}
@@ -55,13 +60,20 @@ function EmployeeForm({ onCancel, edit, selected }) {
     loadChoosablePosition();
     if(edit) {
         setFirstname(selected.firstName)
-        setLastname(selected.LastName)
+        setLastname(selected.lastName)
         setUsername(selected.username)
         setPassword(selected.password)
         setSystemStatus(selected.systemStatus)
         setRoles(selected.roles)
-        //setPosition(selected.Position)
-        //setAvailability(selected.availability)
+        setPosition(selected.Position)
+        const Availability_test = {startDate: new Date(), endDate: new Date(), endOfSeries: null, frequency: null, rhythm: "Einmalig"}
+        if(selected.availability != null || selected.availability != undefined) {
+          setAvailability(selected.availability);
+          console.log("SET SELECTED AVAIL:")
+          console.log(selected.availability)
+        } else {
+          setAvailability([Availability_test]);
+        }
     } 
   }, [])
 
@@ -83,8 +95,8 @@ function EmployeeForm({ onCancel, edit, selected }) {
         alert("An error occoured while updating a user")
       } 
     } else {
-        //var id = Math.random() * (10000 - 0) + 0;
-        const employeeData = {firstName, lastName, username, password, systemStatus, roles, position, availability}
+        var id = Math.random() * (10000 - 0) + 0;
+        const employeeData = {id, firstName, lastName, username, password, systemStatus, roles, position, availability}
         try {
           console.log("AXIOS: addEmployee()")
           await addEmployee(employeeData);
@@ -106,68 +118,46 @@ function EmployeeForm({ onCancel, edit, selected }) {
         onCancel()
   }
 
-  //---------------------------------CURRENT_USER---------------------------------
-  //LOAD USER
- /*  const loadUser = async () => {
-  var data = [];
-    try {
-      console.log("AXIOS: loadUser()");
-      //Load response-data
-      const response = await getEmployee(selected.id);
-      data = response.data;
-    } catch (error) {
-      console.log(Object.keys(error), error.message);
-      alert("An error occoured while loading a user");
-    }
-    //Extract response-data
-    const {firstName, lastName, username, password, systemStatus, roles} = data;
-    //Save response-data
-    setFirstname(firstName);
-    setLastname(lastName);
-    setUsername(username);
-    setPassword(password);
-    //setPosition(position);
-    setSystemStatus(systemStatus);
-    if(roles != null) {
-      roles.map((role) => {
-        if(role.name != null) //ensure not to save empty roles
-        setRoles(choosableRoles => [...choosableRoles, role]);
-      }) 
-    }
-  }; */
-
   //---------------------------------USER-ROLES---------------------------------
   //ADD USER ROLES (TABLE)
   const addRole = () => {
-    if(roles.some(roles => roles.name === selectedRole) || (roles.some(roles => roles.name === firstSelectedRole) && (selectedRole==null))) {
-      alert("Rolle bereits vorhanden!");
-    } else if (selectedRole == null) { //NO ROLE SELECTED
-        if(firstSelectedRole == null ) //NO ROLES FOR DROPDOWN
-        {
-          alert("Keine Rolle zum hinzufügen gefunden");
-        } else { // ONE ROLE SELECTED IN DROPDOWN
-          choosableRoles.map((role, index) => {
-            if(role.name == firstSelectedRole) { //ADD THE ROLE WICH IS SELECTED
-              setRoles(roles => [...roles, role]);
-
-            }
+    if(selectedRole != null) {
+      if(selectedRole.length > 0) {
+        //choose the one single role in this array
+        var selected = null
+          selectedRole.map((role)=> {
+            selected = role
           })
+
+        if(roles.some(roles => roles.name === selected.name)) {
+          alert("Rolle bereits vorhanden!");
+        } else {
+          if(choosableRoles.some(roles => roles.name === selected.name)) {
+            choosableRoles.map((role, index) => {
+              if(role.name == selected.name) {
+                setRoles(roles => [...roles, role]);
+                setEdited(true)
+              }
+            })
+          }else {
+            alert("Rolle darf nicht zugewiesen werden!")
+          }
         }
-    } else { // ROLE SELECTED
-      choosableRoles.map((role, index) => {
-        if(role.name == selectedRole) {
-          setRoles(roles => [...roles, role]);
-        }
-      })
+      } else {
+        alert("Bitte Rolle auswählen!")
+      }
+    } else {
+      alert("Bitte Rolle auswählen!")
     }
   };
 
   //REMOVE USER ROLES (ROLE-TABLE)
   const removeRole = (index) => {
-    console.table(roles);
-    roles.splice((index),1); // remove role at "index" and just remove "1" role
-    setRoles([...roles]);
-    console.table(roles);
+    console.table(roles)
+    roles.splice((index),1) // remove role at "index" and just remove "1" role
+    setRoles([...roles])
+    setEdited(true)
+    console.table(roles)
   };
 
   //---------------------------------ALL-ROLES---------------------------------
@@ -191,12 +181,12 @@ function EmployeeForm({ onCancel, edit, selected }) {
   const loadChoosablePosition = async () => {
     var data = [];
     try{ 
-      //const response = await getAllPositions();
-      //data = response.data;
-      data = [{id:"1", name:"Position1", description:"Erste Position"},{id:"2", name:"Position2", description:"Zweite Position"}]
+      const response = await getAllPositions();
+      data = response.data;
     }catch (error) {
       console.log(Object.keys(error), error.message)
-      alert("An error occoured while loading choosable positions")
+      //alert("An error occoured while loading choosable positions")
+      data = [{id:"1", name:"Position1", description:"Erste Position"},{id:"2", name:"Position2", description:"Zweite Position"}]
     }
     data.map((singlePosition, index) => {
       if(index == 0) {
@@ -206,9 +196,31 @@ function EmployeeForm({ onCancel, edit, selected }) {
     })
   };
 
+
+    //---------------------------------ALL-RESTRICTIONS---------------------------------
+  //LOAD (RESSTRICTION-DROPDOWN)
+  const loadChoosableRestrictions = async () => {
+    var data = [];
+    try{ 
+      const response = await getAllRestrictions();
+      data = response.data; 
+    }catch (error) {
+      console.log(Object.keys(error), error.message)
+      //alert("An error occoured while loading choosable restrictions")
+    }
+    data.map((restriction) => {
+      setChoosableRestrictions(choosableRestrictions => [...choosableRestrictions, restriction]);
+    })
+  };
+
+
   //---------------------------------Availability---------------------------------
   const addAvailability = (newAvailability) => {
-    setAvailability(availability => [...availability, newAvailability]);
+    if(availability == []) {
+      setAvailability([newAvailability])
+    }else {
+      setAvailability(availability => [...availability, newAvailability]);  
+    }
   }
 
   const editedAvailability = (isEdited) => {
@@ -269,151 +281,153 @@ function EmployeeForm({ onCancel, edit, selected }) {
       <Container>
         <Form id="employeeAdd" onSubmit={(e) => handleSubmit(e)}>
         <h5 style={{fontWeight: "bold"}}>{edit ? "Mitarbeiter bearbeiten" : "Mitarbeiter hinzufügen"}</h5>
-        <Form.Row>
-          <Form.Group as={Col} md="5" >
-            <Form.Label>Vorname:</Form.Label>
-            <Form.Control
-              required
-              name="firstname"
-              type="text"
-              placeholder="Vorname"
-              value={firstName || ""}
-              onChange={handleFirstnameChange}
-            />
-            <Form.Control.Feedback>Passt!</Form.Control.Feedback>
-          </Form.Group>
-          <Form.Group as={Col} md="5">
-            <Form.Label>Nachname:</Form.Label>
-            <Form.Control
-              required
-              name="lastname"
-              type="text"
-              placeholder="Nachname"
-              value={lastName || ""}
-              onChange={handleLastnameChange}
-            />
-            <Form.Control.Feedback>Passt!</Form.Control.Feedback>
-          </Form.Group>
-          
-          <Form.Group as={Col} md="2">
-              <Form.Label>Benutzerkonto:</Form.Label>
-              <Form.Check
-                  required
-                  type="radio"
-                  label="Aktiviert"
-                  name="systemStatus"
-                  value="ACTIVE"
-                  checked={systemStatus == "ACTIVE"}
-                  id="SystemStatusAktive"
-                  onChange={handleSystemStatusChange}
-              />
-              <Form.Check
-                  required
-                  type="radio"
-                  label="Deaktiviert"
-                  name="systemStatus"
-                  id="SystemStatusInaktive"
-                  value="INACTIVE"
-                  checked={systemStatus == "INACTIVE"}
-                  onChange={handleSystemStatusChange}
-              />
-          </Form.Group>
-        </Form.Row>
-        <Form.Row>
-          <Form.Group as={Col} md="5" >
-              <Form.Label>Benutzername:</Form.Label>
-              <InputGroup>
+          <Tabs
+            id="controlled-tab"
+            activekey={tabKey}
+            onSelect={key => setTabKey(key)}
+          >
+            <Tab eventKey="general" title="Allgemein">
+              <Form.Row style={{marginTop: "25px"}}>
+                <Form.Group as={Col} md="5" >
+                  <Form.Label>Vorname:</Form.Label>
                   <Form.Control
-                  required
-                  name="username"
-                  type="text"
-                  placeholder="Benutzername"
-                  value={username || ""}
-                  onChange={handleUsernameChange}
+                    required
+                    name="firstname"
+                    type="text"
+                    placeholder="Vorname"
+                    value={firstName || ""}
+                    onChange={handleFirstnameChange}
                   />
-                  <Form.Control.Feedback type="invalid">
-                  Bitte geben Sie ein Benutzernamen ein.
-                  </Form.Control.Feedback>
-              </InputGroup>
-          </Form.Group>
-          <Form.Group as={Col} md="5">
-              <Form.Label>Passwort:</Form.Label>
-              <InputGroup>
+                  <Form.Control.Feedback>Passt!</Form.Control.Feedback>
+                </Form.Group>
+                <Form.Group as={Col} md="5">
+                  <Form.Label>Nachname:</Form.Label>
                   <Form.Control
-                  required
-                  name="password"
-                  type="password"
-                  placeholder="Passwort"
-                  value={password || ""}
-                  onChange={handlePasswordChange}
+                    required
+                    name="lastname"
+                    type="text"
+                    placeholder="Nachname"
+                    value={lastName || ""}
+                    onChange={handleLastnameChange}
                   />
-                  <Form.Control.Feedback type="invalid">
-                  Bitte gebben Sie ein Passwort ein.
-                  </Form.Control.Feedback>
-              </InputGroup>
-              </Form.Group>
-        </Form.Row>
-        <Form.Row>
-          <Form.Group as={Col} md="5">
-            <Form.Label>Rolle hinzufügen:</Form.Label>
-              <Container style={{display: "flex", flexWrap: "nowrap"}}>
-                  <select onChange={handleSelectedRoleChange} className="custom-select">
-                      {renderRoleDropdown()}
-                  </select>
-                <Button onClick={addRole} style={{marginLeft: "20px"}}>Hinzufügen</Button>
-              </Container> 
-          </Form.Group>
-          <Form.Group as={Col} md="3">
-            <Form.Label>Position:</Form.Label>
-            <Container style={{display: "flex", flexWrap: "nowrap"}}>
-                <select onChange={handleSelectedPositionChange} className="custom-select">
-                    {renderPositionDropdown()}
-                </select>
-            </Container>
-          </Form.Group>
-          {/*
-          <Form.Group as={Col} md="3">
-            <Form.Label>Verfügbarkeiten:</Form.Label>
-            <Container style={{display: "flex", flexWrap: "nowrap"}}>
-              <Button as={Link} to={"/employee/availability/"+ selected.id} variant="info">Zu den Verfügbarkeiten</Button>
-            </Container>
-          </Form.Group> 
-          */}
-        </Form.Row>
-        <Form.Row>
-            <Form.Group as={Col} md="5">
-                <Table striped hover variant="dark">
-                  <thead>
-                      <tr>
-                          <th>Zugewiesene Rollen</th>
-                      </tr>
-                  </thead>
-                  <tbody>
-                    {renderRoleTable()}
-                  </tbody>
-                </Table> 
-            </Form.Group>
-        </Form.Row>
-        <hr style={{ border: "0,5px solid #999999" }}/>
-        <Form.Row>
-          <Container style={{textAlign: "right"}}>
-          {edit ? 
-            <Button variant="danger" onClick={handleDeleteUser} style={{marginRight: "20px"}}>Löschen</Button> :
-            null
-          }
-          <Button variant="secondary" onClick={onCancel} style={{marginRight: "20px"}}>Abbrechen</Button>
-          {(edit ? edited ? 
-            <Button variant="success" type="submit">Übernehmen</Button>:
-            null : <Button variant="success"  type="submit">Mitarbeiter anlegen</Button>)
-          }
-          </Container>
-        </Form.Row>
-        <Form.Row>
-          <Availability availability={availability} addAvailability={addAvailability} editedAvailability={editedAvailability}/>
-        </Form.Row>
-      </Form>
-    </Container>
-  </React.Fragment>
+                  <Form.Control.Feedback>Passt!</Form.Control.Feedback>
+                </Form.Group>
+                
+                <Form.Group as={Col} md="2">
+                    <Form.Label>Benutzerkonto:</Form.Label>
+                    <Form.Check
+                        required
+                        type="radio"
+                        label="Aktiviert"
+                        name="systemStatus"
+                        value="active"
+                        checked={systemStatus == "active"}
+                        id="SystemStatusAktive"
+                        onChange={handleSystemStatusChange}
+                    />
+                    <Form.Check
+                        required
+                        type="radio"
+                        label="Deaktiviert"
+                        name="systemStatus"
+                        id="SystemStatusInaktive"
+                        value="inactive"
+                        checked={systemStatus == "inactive"}
+                        onChange={handleSystemStatusChange}
+                    />
+                </Form.Group>
+              </Form.Row>
+              <Form.Row>
+                <Form.Group as={Col} md="5" >
+                    <Form.Label>Benutzername:</Form.Label>
+                    <InputGroup>
+                        <Form.Control
+                        required
+                        name="username"
+                        type="text"
+                        placeholder="Benutzername"
+                        value={username || ""}
+                        onChange={handleUsernameChange}
+                        />
+                        <Form.Control.Feedback type="invalid">
+                        Bitte geben Sie ein Benutzernamen ein.
+                        </Form.Control.Feedback>
+                    </InputGroup>
+                </Form.Group>
+                <Form.Group as={Col} md="5">
+                    <Form.Label>Passwort:</Form.Label>
+                    <InputGroup>
+                        <Form.Control
+                        required
+                        name="password"
+                        type="password"
+                        placeholder="Passwort"
+                        value={password || ""}
+                        onChange={handlePasswordChange}
+                        />
+                        <Form.Control.Feedback type="invalid">
+                        Bitte gebben Sie ein Passwort ein.
+                        </Form.Control.Feedback>
+                    </InputGroup>
+                    </Form.Group>
+              </Form.Row>
+              <Form.Row>
+                <Form.Group as={Col} md="5">
+                  <Form.Label>Rolle hinzufügen:</Form.Label>
+                    <Container style={{display: "flex", flexWrap: "nowrap"}}>
+                      <ObjectPicker 
+                          setState={setSelectedRole}
+                          DbObject="role" />
+                      <Button onClick={addRole} style={{marginLeft: "20px"}}>Hinzufügen</Button>
+                    </Container> 
+                </Form.Group>
+                <Form.Group as={Col} md="3">
+                  <Form.Label>Position:</Form.Label>
+                  <Container style={{display: "flex", flexWrap: "nowrap"}}>
+                      <select onChange={handleSelectedPositionChange} className="custom-select">
+                          {renderPositionDropdown()}
+                      </select>
+                  </Container>
+                </Form.Group>
+              </Form.Row>
+              <Form.Row>
+                  <Form.Group as={Col} md="5">
+                      <Table style={{border: "2px solid #AAAAAA"}} striped hover variant="ligth">
+                        <thead>
+                            <tr>
+                                <th>Zugewiesene Rollen</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                          {renderRoleTable()}
+                        </tbody>
+                      </Table> 
+                  </Form.Group>
+              </Form.Row>
+            </Tab>
+            <Tab eventKey="availability" title="Verfügbarkeit">
+              <Form.Row style={{marginTop: "25px"}}>
+                <Availability availability={availability} addAvailability={addAvailability} editedAvailability={editedAvailability}/>
+              </Form.Row>
+            </Tab>
+          </Tabs>
+          <hr style={{ border: "0,5px solid #999999" }}/>
+              <Form.Row>
+                <Container style={{textAlign: "right"}}>
+                {edit ? 
+                  <Button variant="danger" onClick={handleDeleteUser} style={{marginRight: "20px"}}>Löschen</Button> :
+                  null
+                }
+                <Button variant="secondary" onClick={onCancel} style={{marginRight: "20px"}}>Abbrechen</Button>
+                {(edit ? edited ? 
+                  <Button variant="success" type="submit">Übernehmen</Button>:
+                  null : <Button variant="success"  type="submit">Mitarbeiter anlegen</Button>)
+                }
+                </Container>
+              </Form.Row>
+        </Form>
+      </Container>
+    </React.Fragment>
   )
 }
 

@@ -17,6 +17,7 @@ import Home from "./components/Home"
 //lazy loaded pages
 const UserList = React.lazy(() => import('./components/user/UserList'))
 const RolePage = React.lazy(() => import("./components/roleComponents/RolePage"))
+const PositionPage = React.lazy(() => import("./components/position/PositionPage"))
 const HomePage = React.lazy(() => import('./components/calendarComponents/HomePage'))
 const ProcedurePage = React.lazy(() => import("./components/procedureComponents/ProcedurePage"))
 

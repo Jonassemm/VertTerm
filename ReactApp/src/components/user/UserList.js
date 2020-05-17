@@ -49,6 +49,11 @@ export default function UserList(props) {
                     console.log(Object.keys(error), error.message)
                     alert("An error occoured while loading userlist")
                 }
+                /* data.map((user, index) => {
+                    const {id, username, availability} = user
+                    console.log(username)
+                    console.log(availability)       
+                    }) */
               break;
             case "customer":
                 try {
@@ -153,11 +158,13 @@ export default function UserList(props) {
     const tableBody =
         userList.map((item, index) => { 
             var status
-            if(item.systemStatus == "ACTIVE") {
+            if(item.systemStatus == "active") {
                 status = "Aktiviert"
-            }else if (item.systemStatus == "INACTIVE") {
+            }else if (item.systemStatus == "inactive") {
                 status = "Deaktiviert"
-            }else {
+            }else if (item.systemStatus == "deleted") {
+                status = "gelöscht"
+            } else {
                 status = "UNDIFINED"
             }
             return ([
