@@ -61,10 +61,12 @@ function OverviewPage({
     modal,              //input form
     data,               //table data of the desired object
     editModalText,      //optional prop for overwriting the title of the edit modal
+    modalSize,          //optional prop for customize modal size -> ["sm", "lg", "xl"]
     refreshData}) {
     const [showNewModal, setShowNewModal] = useState(false)
     const [showEditModal, setShowEditModal] = useState(false)
     const [selectedItem, setSelectedItem] = useState({})
+
 
     const handleClick = event => {
         if(event.target.type != "button"){
@@ -86,16 +88,16 @@ function OverviewPage({
 
     return (
         <Style>
-            <Modal centered show={showEditModal} onHide={hideModals}>
+            <Modal size={modalSize} centered show={showEditModal} onHide={hideModals}>
                 <Modal.Header>
-                    <Modal.Title>{editModalText || selectedItem.name}</Modal.Title>
+                    <Modal.Title>{editModalText || selectedItem.name || selectedItem.username}</Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
                     {modal(hideModals,true,selectedItem)}
                 </Modal.Body>
             </Modal>
 
-            <Modal centered show={showNewModal} onHide={hideModals}>
+            <Modal size={modalSize} centered show={showNewModal} onHide={hideModals}>
                 <Modal.Header>
                     <Modal.Title>{newItemText}</Modal.Title>
                 </Modal.Header>

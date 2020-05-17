@@ -6,7 +6,7 @@ export const addEmployee = data => axios.post(`${APIURL}/api/User/`, data)
 export const updateEmployee = (userID,data) => axios.put(`${APIURL}/api/User/${userID}`, data) 
 export const getEmployeeList = () => axios.get(`${APIURL}/api/User/`) 
 export const getEmployee = userID => axios.get(`${APIURL}/api/User/${userID}`) 
-export const removeEmployee = userID => axios.delete(`${APIURL}/api/User/${userID}`)
+export const deleteEmployee = userID => axios.delete(`${APIURL}/api/User/${userID}`)
 //Customers
 export const addCustomer = data => axios.post(`${APIURL}/api/Customer/`, data) 
 export const updateCustomer = (userID,data) => axios.put(`${APIURL}/api/Customer/${userID}`, data) 
