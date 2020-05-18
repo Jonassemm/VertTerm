@@ -3,7 +3,7 @@ import { Typeahead } from "react-bootstrap-typeahead"
 import { getUsers, getEmployees, getCustomers, getProcedures, getRoles } from "./requests"
 import { set } from "mobx"
 
-function ObjectPicker({ DbObject, setState, initial }) {
+function ObjectPicker({ DbObject, setState, state, initial }) {
     const [options, setOptions] = useState([])
     const [labelKey, setLabelKey] = useState("")
     const labels = {
@@ -57,7 +57,12 @@ function ObjectPicker({ DbObject, setState, initial }) {
     }
 
     async function getPositionData() {   //API missing
-
+        data = [{id:"1", name:"Position1", description:"Erste Position"},{id:"2", name:"Position2", description:"Zweite Position"}]
+        const result = data.map((item) => {
+            return {
+                ...item
+            }
+        })
     }
 
     async function getProcedureData() {
@@ -83,22 +88,14 @@ function ObjectPicker({ DbObject, setState, initial }) {
 
     return (
         <React.Fragment>
-            {/* <Typeahead
-                clearButton
-                placeholder= {labels[DbObject] + " wählen"}
-                multiple
-                options={options}
-                id="basic-typeahead"
-                onChange={setState}
-                labelKey={labelKey}
-                selectHintOnEnter
-            /> */}
             <Typeahead
                 clearButton
                 placeholder= {labels[DbObject] + " wählen"}
+                //multiple
                 options={options}
                 id="basic-typeahead"
                 onChange={setState}
+                selected={state} //new
                 labelKey={labelKey}
                 selectHintOnEnter
             />

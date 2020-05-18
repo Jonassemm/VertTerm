@@ -132,15 +132,15 @@ const Availability = (props) => {
           return ( 
             props.availability.map((SingleAvailability, index) =>(
               <tr key={index}>
-                <td><Form.Control readOnly type="text" name={"availability"+ index} style={{width: "170px"}}
+                <td><Form.Control readOnly type="text" name={"availability"+ index} style={{width: "180px"}}
                     value={new Intl.DateTimeFormat('de-DE', options).format(SingleAvailability.startDate)}/></td>
-                <td><Form.Control readOnly type="text" name={"availability"+ index} style={{width: "170px"}}
+                <td><Form.Control readOnly type="text" name={"availability"+ index} style={{width: "180px"}}
                     value={new Intl.DateTimeFormat('de-DE', options).format(SingleAvailability.endDate)}/></td>
                 <td><Form.Control readOnly type="text" name={"availability"+ index} 
                     value={SingleAvailability.rhythm}/></td>
                 <td><Form.Control readOnly type="text" name={"availability"+ index} style={{width: "120px"}}
                     value={SingleAvailability.rhythm == availabilityRhythm.once ? "-" : SingleAvailability.frequency}/></td>
-                <td><Form.Control readOnly type="text" name={"availability"+ index} style={{width: "170px"}}
+                <td><Form.Control readOnly type="text" name={"availability"+ index} style={{width: "18s0px"}}
                     value={ SingleAvailability.rhythm == availabilityRhythm.once ? "-" :
                             SingleAvailability.endOfSeries != null ? new Intl.DateTimeFormat('de-DE', options).format(SingleAvailability.endOfSeries) :
                             "Ohne Ende"}/></td>
@@ -161,33 +161,33 @@ const Availability = (props) => {
                         <Form.Group style={{display: "flex", flexWrap: "nowrap"}} as={Col} md="6">
                             <Form.Label style={{marginRight: "20px"}}>Start</Form.Label>
                             <DatePicker
-                            required
-                            selected={startDate}
-                            onChange={handleStartDateChange}
-                            showTimeSelect
-                            timeFormat="HH:mm"
-                            timeIntervals={5}
-                            timeCaption="Uhrzeit"
-                            dateFormat="d.M.yyyy / HH:mm"
+                                required
+                                selected={startDate}
+                                onChange={handleStartDateChange}
+                                showTimeSelect
+                                timeFormat="HH:mm"
+                                timeIntervals={5}
+                                timeCaption="Uhrzeit"
+                                dateFormat="d.M.yyyy / HH:mm"
                             />
                         </Form.Group>
                         <Form.Group style={{display: "flex", flexWrap: "nowrap"}} as={Col} md="6">
                             <Form.Label style={{marginRight: "20px"}}>Ende</Form.Label>
                             <DatePicker 
-                            required
-                            selected={endDate}
-                            onChange={handleEndDateChange}
-                            showTimeSelect
-                            timeFormat="HH:mm"
-                            timeIntervals={5}
-                            timeCaption="Uhrzeit"
-                            dateFormat="d.M.yyyy / HH:mm"
+                                required
+                                selected={endDate}
+                                onChange={handleEndDateChange}
+                                showTimeSelect
+                                timeFormat="HH:mm"
+                                timeIntervals={5}
+                                timeCaption="Uhrzeit"
+                                dateFormat="d.M.yyyy / HH:mm"
                             />
                         </Form.Group>
                     </Form.Row>
                         <hr style={{ border: "0,5px dashed #999999" }}/>
                     <Form.Row>
-                        <Form.Label><h5>Serienoptionen</h5> <h6>(aktuell: {rhythm == availabilityRhythm.once ? "OHNE": "MIT"} Serie)</h6></Form.Label>
+                        <Form.Label><h5>Serienoptionen</h5></Form.Label>
                     </Form.Row>
                     <Form.Row >
                         <Form.Group style={{display: "flex", flexWrap: "nowrap"}} as={Col} md="7">

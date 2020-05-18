@@ -64,13 +64,14 @@ function EmployeeForm({ onCancel, edit, selected }) {
         setUsername(selected.username)
         setPassword(selected.password)
         setSystemStatus(selected.systemStatus)
+        //const test_role = {"id":"5ec1243689b22604c5644173","name":"ANONYMOUS_ROLE","description":null,"rights":[{"id":"5ec1243689b22604c5644169","name":"OWN_USER_DATA_READ","description":null}]}
         setRoles(selected.roles)
-        setPosition(selected.Position)
+        const test_position = {id:"2", name:"Position2", description:"Zweite Position"}
+        //setPosition(selected.Position)
+        setPosition(test_position)
         const Availability_test = {startDate: new Date(), endDate: new Date(), endOfSeries: null, frequency: null, rhythm: "Einmalig"}
         if(selected.availability != null || selected.availability != undefined) {
           setAvailability(selected.availability);
-          console.log("SET SELECTED AVAIL:")
-          console.log(selected.availability)
         } else {
           setAvailability([Availability_test]);
         }
@@ -82,8 +83,6 @@ function EmployeeForm({ onCancel, edit, selected }) {
   const handleSubmit = async event => {
     event.preventDefault();//reload the page after clicking "Enter"
     if(edit) {
-      /* console.log("useEffect-Call: loadUser");
-      loadUser(); */
       var id = selected.id
       const updateData = {id, firstName, lastName, username, password, systemStatus, roles, position, availability}
       try {
@@ -216,11 +215,7 @@ function EmployeeForm({ onCancel, edit, selected }) {
 
   //---------------------------------Availability---------------------------------
   const addAvailability = (newAvailability) => {
-    if(availability == []) {
-      setAvailability([newAvailability])
-    }else {
-      setAvailability(availability => [...availability, newAvailability]);  
-    }
+    setAvailability(availability => [...availability, newAvailability]);
   }
 
   const editedAvailability = (isEdited) => {
@@ -229,7 +224,7 @@ function EmployeeForm({ onCancel, edit, selected }) {
 
 
   //---------------------------------RENDERING---------------------------------
-  // DYNAMIC ROLE-DROPDOWN
+  /* // DYNAMIC ROLE-DROPDOWN
   function renderRoleDropdown() {
     if (choosableRoles.length > 0) {
       return choosableRoles.map((role, index) => {
@@ -242,10 +237,10 @@ function EmployeeForm({ onCancel, edit, selected }) {
     } else {
         return (<option disabled key={0}>KEINE ROLLEN VORHANDEN</option>);
     }
-  };
+  }; */
 
   // DYNAMIC POSITION-DROPDOWN
-  function renderPositionDropdown() {
+  /* function renderPositionDropdown() {
     if (choosablePositions.length > 0) {
       return choosablePositions.map((singlePosition, index) => {
           const {name} = singlePosition;
@@ -254,7 +249,7 @@ function EmployeeForm({ onCancel, edit, selected }) {
     } else {
         return (<option disabled key={0}>KEINE POSITIONEN VORHANDEN</option>);
     }
-  };
+  }; */
 
   // DYNAMIC ROLE-TABLE
   function renderRoleTable() {
@@ -384,9 +379,16 @@ function EmployeeForm({ onCancel, edit, selected }) {
                 <Form.Group as={Col} md="3">
                   <Form.Label>Position:</Form.Label>
                   <Container style={{display: "flex", flexWrap: "nowrap"}}>
-                      <select onChange={handleSelectedPositionChange} className="custom-select">
-                          {renderPositionDropdown()}
-                      </select>
+                      {edit ? 
+                          <ObjectPicker 
+                            setState={setPosition}
+                            DbObject="position" />:
+                          <ObjectPicker // if form is loading, this picker should display the position of this user
+                            setState={setPosition}
+                            DbObject="position" 
+                            selected={position}/>
+                      }
+
                   </Container>
                 </Form.Group>
               </Form.Row>
