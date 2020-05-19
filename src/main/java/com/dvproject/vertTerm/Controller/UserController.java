@@ -31,7 +31,7 @@ import com.dvproject.vertTerm.repository.UserRepository;
 
 
 @RestController
-@RequestMapping("/api/User")
+@RequestMapping("/User")
 public class UserController
 {
 	@Autowired

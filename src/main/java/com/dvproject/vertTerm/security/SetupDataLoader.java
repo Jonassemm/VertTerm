@@ -16,11 +16,13 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.dvproject.vertTerm.Model.Availability;
 import com.dvproject.vertTerm.Model.AvailabilityRhythm;
+import com.dvproject.vertTerm.Model.Customer;
 import com.dvproject.vertTerm.Model.Employee;
 import com.dvproject.vertTerm.Model.Right;
 import com.dvproject.vertTerm.Model.Role;
 import com.dvproject.vertTerm.Model.Status;
 import com.dvproject.vertTerm.Model.User;
+import com.dvproject.vertTerm.repository.CustomerRepository;
 import com.dvproject.vertTerm.repository.EmployeeRepository;
 import com.dvproject.vertTerm.repository.RightRepository;
 import com.dvproject.vertTerm.repository.RoleRepository;
@@ -35,6 +37,9 @@ public class SetupDataLoader implements ApplicationListener<ContextRefreshedEven
 
 	@Autowired
 	private EmployeeRepository employeeRepository;
+	
+	@Autowired
+	private CustomerRepository customerRepository;
 
 	@Autowired
 	private RoleRepository roleRepository;
@@ -58,19 +63,6 @@ public class SetupDataLoader implements ApplicationListener<ContextRefreshedEven
 
 		alreadySetup = true;
 	}
-
-	@Transactional
-	private Right createRightIfNotFound(String name) {
-		Right right = rightRepository.findByName(name);
-
-		if (right == null) {
-			right = new Right();
-			right.setName(name);
-			rightRepository.save(right);
-		}
-
-		return right;
-	}
 	
 	@Transactional
 	private Right createRightIfNotFound(String name, String description) {
@@ -90,21 +82,27 @@ public class SetupDataLoader implements ApplicationListener<ContextRefreshedEven
 		List<Right> rights = new ArrayList<Right>();
 
 		// user-rights
-		rights.add(createRightIfNotFound("OWN_USER_DATA_READ"));
-		rights.add(createRightIfNotFound("OWN_USER_DATA_WRITE"));
-		rights.add(createRightIfNotFound("USERS_DATA_READ"));
-		rights.add(createRightIfNotFound("USERS_DATA_WRITE"));
+		rights.add(createRightIfNotFound("OWN_USER_DATA_READ", "Lesen der Benutzerdaten des eigenen Benutzers erlaubt"));
+		rights.add(createRightIfNotFound("OWN_USER_DATA_WRITE", "Ändern der Benutzerdaten des eigenen Benutzers erlaubt"));
+		rights.add(createRightIfNotFound("USERS_DATA_READ", "Lesen der Benutzerdaten aller Benutzer erlaubt"));
+		rights.add(createRightIfNotFound("USER_STATUS_WRITE", "Ändern des Benutzerstatus erlaubt"));
+		rights.add(createRightIfNotFound("USERS_DATA_WRITE", "Ändern der Benutzerdaten aller Benutzer erlaubt"));
 		// user-role-rights
-		rights.add(createRightIfNotFound("OWN_USER_ROLES_READ"));
+		rights.add(createRightIfNotFound("OWN_USER_ROLES_READ", "Lesen der Rollendaten des eigenen Benutzers erlaubt"));
+		rights.add(createRightIfNotFound("USER_ROLES_READ", "Lesen der Benutzerrollen erlaubt"));
+		rights.add(createRightIfNotFound("USER_ROLES_WRITE", "Ändern der Benutzerrollen erlaubt"));
 		// user-right-rights
-		rights.add(createRightIfNotFound("OWN_USER_RIGHTS_READ"));
+		rights.add(createRightIfNotFound("OWN_USER_RIGHTS_READ", "Lesen der Rechtedaten des eigenen Benutzers erlaubt"));
+		rights.add(createRightIfNotFound("USER_RIGHTS_READ", "Lesen der Benutzerrechte erlaubt"));
 
 		// role-rights
-		rights.add(createRightIfNotFound("ROLES_WRITE"));
-		rights.add(createRightIfNotFound("ROLES_READ"));
+		rights.add(createRightIfNotFound("ROLES_WRITE", "Ändern der Rollendaten aller möglichen Rollen erlaubt"));
+		rights.add(createRightIfNotFound("ROLES_READ", "Lesen der Rollendaten aller Rollen erlaubt"));
+		rights.add(createRightIfNotFound("ROLE_RIGHTS_READ", "Lesen der Rechte aller Rollen erlaubt"));
+		rights.add(createRightIfNotFound("ROLE_RIGHTS_WRITE", "Ändern der Rechte aller Rollen erlaubt"));
 
 		// right-rights
-		rights.add(createRightIfNotFound("RIGHTS_READ"));
+		rights.add(createRightIfNotFound("RIGHTS_READ", "Lesen der Rechtedaten aller möglichen Rechte erlaubt"));
 
 		return rights;
 	}
@@ -112,7 +110,7 @@ public class SetupDataLoader implements ApplicationListener<ContextRefreshedEven
 	private List<Right> setUpAnonymusUserRights() {
 		List<Right> rights = new ArrayList<Right>();
 
-		rights.add(createRightIfNotFound("OWN_USER_DATA_READ"));
+		rights.add(createRightIfNotFound("OWN_USER_DATA_READ", "Lesen der Benutzerdaten des eigenen Benutzers erlaubt"));
 
 		return rights;
 	}
@@ -137,6 +135,22 @@ public class SetupDataLoader implements ApplicationListener<ContextRefreshedEven
 
 		if (user == null) {
 			user = new User();
+			user.setUsername(username);
+			user.setPassword(passwordEncoder.encode(password));
+			user.setRoles(roles);
+			user.setSystemStatus(Status.ACTIVE);
+			userRepository.save(user);
+		}
+
+		return user;
+	}
+	
+	@Transactional
+	private User createCustomerIfNotFound(String username, String password, List<Role> roles) {
+		Customer user = customerRepository.findByUsername(username);
+
+		if (user == null) {
+			user = new Customer();
 			user.setUsername(username);
 			user.setPassword(passwordEncoder.encode(password));
 			user.setRoles(roles);

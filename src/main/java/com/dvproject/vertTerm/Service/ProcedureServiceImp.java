@@ -31,11 +31,6 @@ public class ProcedureServiceImp implements ProcedureService {
 	}
 
 	@Override
-	public Procedure getProcedure(String id) {
-		return this.getProcedureInternal(id);
-	}
-
-	@Override
 	public List<Procedure> getProcedures(String[] ids) {
 		return procedureRepository.findByIds(ids);
 	}
@@ -99,7 +94,16 @@ public class ProcedureServiceImp implements ProcedureService {
 		if (procedureRepository.findById(procedure.getId()).isPresent()) {
 			throw new ResourceNotFoundException("Procedure with the given id (" + procedure.getId() + ") exists on the database. Use the update method.");
 		}
-		return null;
+		return procedure;
+	}
+
+	@Override
+	public Procedure updateProcedure(Procedure procedure) {
+		if (procedureRepository.findById(procedure.getId()).isPresent()) {
+			return procedureRepository.save(procedure);
+		} else {
+			throw new ResourceNotFoundException("No procedure with the given id (" + procedure.getId() + ") can be found.");
+		}
 	}
 
 	@Override

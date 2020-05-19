@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -35,7 +36,12 @@ public class ProcedureController {
 	}
 	
 	@GetMapping("/{id}")
-	public List<Procedure> getProcedure (@PathVariable String[] ids){
+	public List<Procedure> getProcedure (@PathVariable String id){
+		return procedureService.getProcedures(new String [] {id});
+	}
+	
+	@GetMapping("/")
+	public List<Procedure> getProcedureRequestParam (@RequestParam String [] ids){
 		return procedureService.getProcedures(ids);
 	}
 	
@@ -71,8 +77,9 @@ public class ProcedureController {
 	
 	@GetMapping("/{id}/isAvailable")
 	public boolean isAvailable (@PathVariable String id,
-			@RequestBody List<Date> dates) {
-		return procedureService.isAvailableBetween(id, dates.get(0), dates.get(1));
+			@RequestParam Date startdate,
+			@RequestParam Date enddate) {
+		return procedureService.isAvailableBetween(id, startdate, enddate);
 	}
 	
 	@PostMapping("")
@@ -81,7 +88,13 @@ public class ProcedureController {
 	}
 
 	@PutMapping("")
-	public Procedure updateProceduredata (@RequestBody Procedure procedure) {
+	public Procedure updateProcedure (@RequestBody Procedure procedure) {
+		return procedureService.updateProcedure(procedure);
+	}
+
+	@PutMapping("/{id}/Data")
+	public Procedure updateProceduredata (@PathVariable String id, 
+			@RequestBody Procedure procedure) {
 		return procedureService.updateProceduredata(procedure);
 	}
 

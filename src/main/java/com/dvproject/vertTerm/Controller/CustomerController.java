@@ -18,7 +18,7 @@ import com.dvproject.vertTerm.Model.Customer;
 import com.dvproject.vertTerm.repository.CustomerRepository;
 
 @RestController
-@RequestMapping("/api/Customer")
+@RequestMapping("/Customer")
 public class CustomerController {
     @Autowired
     CustomerRepository repo;

@@ -20,7 +20,7 @@ import com.dvproject.vertTerm.Model.User;
 import com.dvproject.vertTerm.Service.RoleService;
 
 @RestController
-@RequestMapping(value= "/api/Role")
+@RequestMapping(value= "/Role")
 public class RoleController
 {
 	@Autowired

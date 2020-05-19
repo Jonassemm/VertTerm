@@ -13,8 +13,6 @@ import com.dvproject.vertTerm.Model.Restriction;
 public interface ProcedureService {
 	//GET
 	List<Procedure> getAllProcedures();
-
-	Procedure getProcedure(String id);
 	
 	List<Procedure> getProcedures(String[] ids);
 
@@ -38,6 +36,8 @@ public interface ProcedureService {
 	Procedure insertProcedure(Procedure procedure);
 
 	//PUT
+	Procedure updateProcedure(Procedure procedure);
+	
 	Procedure updateProceduredata(Procedure procedure);
 
 	List<ProcedureRelation> updatePrecedingProcedures(String id, List<ProcedureRelation> precedingProcedures);

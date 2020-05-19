@@ -18,7 +18,7 @@ import com.dvproject.vertTerm.Model.Employee;
 import com.dvproject.vertTerm.repository.EmployeeRepository;
 
 @RestController
-@RequestMapping("/api/Employee")
+@RequestMapping("/Employee")
 public class EmployeeController {
     @Autowired
     EmployeeRepository repo;

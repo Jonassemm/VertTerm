@@ -18,7 +18,7 @@ import com.dvproject.vertTerm.Model.Role;
 import com.dvproject.vertTerm.Service.ResourceService;
 
 @RestController
-@RequestMapping(value= "/api/Resource")
+@RequestMapping(value= "/Resource")
 public class RessourceController {
 
 	

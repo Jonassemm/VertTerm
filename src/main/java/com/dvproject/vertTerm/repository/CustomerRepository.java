@@ -8,8 +8,7 @@ import org.springframework.data.mongodb.repository.Query;
 
 import com.dvproject.vertTerm.Model.Customer;
 
-public interface CustomerRepository extends MongoRepository<Customer, String>
-{
+public interface CustomerRepository extends MongoRepository<Customer, String>{
 	@Override
 	@Query("{'_class' : 'com.dvproject.vertTerm.Model.Customer'}")
 	List<Customer> findAll();

@@ -27,7 +27,7 @@ import com.dvproject.vertTerm.Service.UserService;
 import com.dvproject.vertTerm.repository.UserRepository;
 
 @RestController
-@RequestMapping(value= "/api/Right")
+@RequestMapping(value= "/Right")
 public class RightController
 {
 	
