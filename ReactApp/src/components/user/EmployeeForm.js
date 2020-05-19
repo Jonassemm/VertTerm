@@ -29,7 +29,7 @@ function EmployeeForm({ onCancel, edit, selected }) {
   const [password, setPassword] = useState("")
   const [systemStatus, setSystemStatus] = useState("active")
   //Availability
-  const [availability, setAvailability] = useState([])
+  const [availabilities, setAvailabilities] = useState([])
   //Position
   const [position, setPosition] = useState(null)
   const [choosablePositions, setChoosablePositions] = useState([])
@@ -69,11 +69,12 @@ function EmployeeForm({ onCancel, edit, selected }) {
         const test_position = {id:"2", name:"Position2", description:"Zweite Position"}
         //setPosition(selected.Position)
         setPosition(test_position)
-        const Availability_test = {startDate: new Date(), endDate: new Date(), endOfSeries: null, frequency: null, rhythm: "Einmalig"}
-        if(selected.availability != null || selected.availability != undefined) {
-          setAvailability(selected.availability);
+        //const Availability_test = {startDate: new Date(), endDate: new Date(), endOfSeries: null, frequency: null, rhythm: "Einmalig"}
+        if(selected.availabilities != null || selected.availabilities != undefined) {
+          setAvailabilities(selected.availabilities);
         } else {
-          setAvailability([Availability_test]);
+          //setAvailabilities([Availability_test]);
+          alert("EmployeeForm Z. 77")
         }
     } 
   }, [])
@@ -84,7 +85,7 @@ function EmployeeForm({ onCancel, edit, selected }) {
     event.preventDefault();//reload the page after clicking "Enter"
     if(edit) {
       var id = selected.id
-      const updateData = {id, firstName, lastName, username, password, systemStatus, roles, position, availability}
+      const updateData = {id, firstName, lastName, username, password, systemStatus, roles, position, availabilities}
       try {
         console.log("AXIOS: updateEmployee()")
         console.log(updateData)
@@ -95,7 +96,7 @@ function EmployeeForm({ onCancel, edit, selected }) {
       } 
     } else {
         var id = Math.random() * (10000 - 0) + 0;
-        const employeeData = {id, firstName, lastName, username, password, systemStatus, roles, position, availability}
+        const employeeData = {id, firstName, lastName, username, password, systemStatus, roles, position, availabilities}
         try {
           console.log("AXIOS: addEmployee()")
           await addEmployee(employeeData);
@@ -215,7 +216,7 @@ function EmployeeForm({ onCancel, edit, selected }) {
 
   //---------------------------------Availability---------------------------------
   const addAvailability = (newAvailability) => {
-    setAvailability(availability => [...availability, newAvailability]);
+    setAvailabilities(availabilities => [...availabilities, newAvailability]);
   }
 
   const editedAvailability = (isEdited) => {
@@ -409,7 +410,7 @@ function EmployeeForm({ onCancel, edit, selected }) {
             </Tab>
             <Tab eventKey="availability" title="Verfügbarkeit">
               <Form.Row style={{marginTop: "25px"}}>
-                <Availability availability={availability} addAvailability={addAvailability} editedAvailability={editedAvailability}/>
+                <Availability availabilities={availabilities} addAvailability={addAvailability} editedAvailability={editedAvailability}/>
               </Form.Row>
             </Tab>
           </Tabs>

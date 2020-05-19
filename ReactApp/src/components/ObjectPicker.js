@@ -57,7 +57,8 @@ function ObjectPicker({ DbObject, setState, state, initial }) {
     }
 
     async function getPositionData() {   //API missing
-        data = [{id:"1", name:"Position1", description:"Erste Position"},{id:"2", name:"Position2", description:"Zweite Position"}]
+        //TEST DATA
+        var data = [{id:"1", name:"Position1", description:"Erste Position"},{id:"2", name:"Position2", description:"Zweite Position"}]
         const result = data.map((item) => {
             return {
                 ...item
@@ -95,7 +96,7 @@ function ObjectPicker({ DbObject, setState, state, initial }) {
                 options={options}
                 id="basic-typeahead"
                 onChange={setState}
-                selected={state} //new
+                selected={state} //new (to display the value in editing-mode)
                 labelKey={labelKey}
                 selectHintOnEnter
             />

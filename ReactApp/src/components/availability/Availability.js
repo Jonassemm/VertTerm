@@ -1,16 +1,17 @@
 import React ,{useState} from 'react'
 import {Form, Table, Col, Container, Button} from 'react-bootstrap';
-
 import DatePicker from "react-datepicker"
 import "react-datepicker/dist/react-datepicker.css"
+
+var moment = require('moment'); 
 
 
 /* ---------------------------------------------------------FOR USAGE---------------------------------------------------------
 -> Usage in your Form:
-    <AvailabilityForm  availability={availability} addAvailability={addAvailability} editedAvailability={editedAvailability}/>
+    <AvailabilityForm  availabilities={availabilities} addAvailability={addAvailability} editedAvailability={editedAvailability}/>
 
 -> Make sure you have a state for your availabilities as an array like this: 
-    const [availability, setAvailability] = useState([])
+    const [availabilities, setAvailabilities] = useState([])
 
 -> Make sure you have a state for representing an edit:
     const [edited, setEdited] = useState(false)
@@ -18,7 +19,7 @@ import "react-datepicker/dist/react-datepicker.css"
 -> Create the following two functions in your Form
 
     const addAvailability = (newAvailability) => {
-        setAvailability(availability => [...availability, newAvailability]);
+        setAvailabilities(availabilities => [...availabilities, newAvailability]);
     }
 
     const editedAvailability = (isEdited) => {
@@ -54,7 +55,19 @@ function setDate() {
         hours = 0;
     }
     date.setHours(hours);
-    return date;
+
+   /*  TESTS
+    var ds = "13.01.2003 13:45";
+    var d = moment(ds, "DD.MM.yyyy HH:mm").toDate();
+    var dss = moment(d).format("DD.MM.YYYY HH:mm").toString();
+    console.log("PAT:")
+    console.log(d)
+    console.log(dss)
+    console.log(ds) */
+
+    const resultDate = moment(date).format("DD.MM.YYYY HH:mm").toString()
+
+    return resultDate;
 }
 
 
@@ -65,29 +78,57 @@ const Availability = (props) => {
     //props.editedAvailability
 
     const availabilityRhythm ={
-        once: "Einmalig",
-        dayly: "Täglich",
-        weekly: "Wöchtenlich",
-        monthly: "Monatlich",
-        yearly: "Jährlich"
+        oneTime: "oneTime",
+        daily: "daily",
+        weekly: "weekly",
+        monthly: "monthly",
+        yearly: "yearly",
+    }
+
+    function availabilityRhythmGE(rhythm) {
+        var translation
+        switch(rhythm) {
+            case "oneTime": translation = "Einmalig"
+            break;
+            case "daily": translation = "Täglich"
+            break;
+            case "weekly": translation = "Wöchentlich"
+            break;
+            case "monthly": translation = "Monatlich"
+            break;
+            case "yearly": translation = "Jährlich"
+            break;
+            default: translation = "Translation-Error"
+        }
+        return translation;
     }
 
     //Availability
     const [startDate, setStartDate] = useState(setDate)
     const [endDate, setEndDate] = useState(setDate)
-    const [rhythm, setRhythm] = useState(availabilityRhythm.once)
-    const [frequency, setFrequency] = useState(null)
+    const [rhythm, setRhythm] = useState(availabilityRhythm.oneTime)
+    const [frequency, setFrequency] = useState(1)
     const [endOfSeries, setEndOfSeries] = useState(null)
 
     const [withSeriesEnd, setWithSeriesEnd] = useState(false)
     
     /* const [availabilities, setAvailabilities] = useState([]) */
  
-    const handleStartDateChange = date => {setStartDate(date); setEndDate(date); props.editedAvailability(true)}
-    const handleEndDateChange = date => {setEndDate(date); props.editedAvailability(true)}
-    const handleEndOfSeriesChange = date => {setEndOfSeries(date); props.editedAvailability(true)}
+    const handleStartDateChange = date => {
+        setStartDate(moment(date).format("DD.MM.YYYY HH:mm").toString())
+        setEndDate(moment(date).format("DD.MM.YYYY HH:mm").toString()) 
+        props.editedAvailability(true)
+    }
+    const handleEndDateChange = date => {
+        setEndDate(moment(date).format("DD.MM.YYYY HH:mm").toString())
+        props.editedAvailability(true)
+    }
+    const handleEndOfSeriesChange = date => {
+        setEndOfSeries(moment(date).format("DD.MM.YYYY HH:mm").toString())
+        props.editedAvailability(true)
+    }
     const handleRhythmChange = data => {
-        if(data.target.value != availabilityRhythm.once) {
+        if(data.target.value != availabilityRhythm.oneTime) {
             setFrequency(1)
         }else {
             setFrequency(null)
@@ -96,8 +137,8 @@ const Availability = (props) => {
         props.editedAvailability(true)
     }
     const handleFrequencyChange = data =>  {    
-        if(rhythm == availabilityRhythm.once) {
-            setFrequency(null)
+        if(rhythm == availabilityRhythm.oneTime) {
+            setFrequency(1)
         }else {
             setFrequency(data.target.value)
         }
@@ -117,6 +158,12 @@ const Availability = (props) => {
     //---------------------------------Availability---------------------------------
     //ADD
     const handleAdd = () => {
+        //var formatStartDate = moment(startDate).format("DD.MM.YYYY HH:mm")
+        //var formatEndDate = moment(endDate).format("DD.MM.YYYY HH:mm")
+        if(endOfSeries != null) {
+            //var formatEndOfSeries = moment(endOfSeries).format("DD.MM.YYYY HH:mm")   
+        }
+        
         const newAvailability = {startDate, endDate, rhythm, frequency, endOfSeries}
         props.addAvailability(newAvailability)
         props.editedAvailability(true)
@@ -127,22 +174,23 @@ const Availability = (props) => {
     function renderAvailabilityTable() {
         const options = { weekday: 'short', day: 'numeric', month: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit'};
         //const options = {year: 'numeric', weekday: 'long', month: '2-digit',day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit'}
-        if(props.availability.length > 0)
+        //new Intl.DateTimeFormat('de-DE', options).format(SingleAvailability.startDate
+        if(props.availabilities.length > 0)
         {
           return ( 
-            props.availability.map((SingleAvailability, index) =>(
+            props.availabilities.map((SingleAvailability, index) =>(
               <tr key={index}>
                 <td><Form.Control readOnly type="text" name={"availability"+ index} style={{width: "180px"}}
-                    value={new Intl.DateTimeFormat('de-DE', options).format(SingleAvailability.startDate)}/></td>
+                    value={startDate}/></td>
                 <td><Form.Control readOnly type="text" name={"availability"+ index} style={{width: "180px"}}
-                    value={new Intl.DateTimeFormat('de-DE', options).format(SingleAvailability.endDate)}/></td>
+                    value={endDate}/></td>
                 <td><Form.Control readOnly type="text" name={"availability"+ index} 
-                    value={SingleAvailability.rhythm}/></td>
+                    value={availabilityRhythmGE(SingleAvailability.rhythm)}/></td>
                 <td><Form.Control readOnly type="text" name={"availability"+ index} style={{width: "120px"}}
-                    value={SingleAvailability.rhythm == availabilityRhythm.once ? "-" : SingleAvailability.frequency}/></td>
+                    value={SingleAvailability.rhythm == availabilityRhythm.oneTime ? "-" : SingleAvailability.frequency}/></td>
                 <td><Form.Control readOnly type="text" name={"availability"+ index} style={{width: "18s0px"}}
-                    value={ SingleAvailability.rhythm == availabilityRhythm.once ? "-" :
-                            SingleAvailability.endOfSeries != null ? new Intl.DateTimeFormat('de-DE', options).format(SingleAvailability.endOfSeries) :
+                    value={ SingleAvailability.rhythm == availabilityRhythm.oneTime ? "-" :
+                            SingleAvailability.endOfSeries != null ? SingleAvailability.endOfSeries :
                             "Ohne Ende"}/></td>
                 <td><Button>Beenden</Button></td>
               </tr>
@@ -162,7 +210,7 @@ const Availability = (props) => {
                             <Form.Label style={{marginRight: "20px"}}>Start</Form.Label>
                             <DatePicker
                                 required
-                                selected={startDate}
+                                selected={moment(startDate, "dd.MM.yyyy HH:mm").toDate()}
                                 onChange={handleStartDateChange}
                                 showTimeSelect
                                 timeFormat="HH:mm"
@@ -175,7 +223,7 @@ const Availability = (props) => {
                             <Form.Label style={{marginRight: "20px"}}>Ende</Form.Label>
                             <DatePicker 
                                 required
-                                selected={endDate}
+                                selected={moment(endDate, "dd.MM.yyyy HH:mm").toDate()}
                                 onChange={handleEndDateChange}
                                 showTimeSelect
                                 timeFormat="HH:mm"
@@ -198,14 +246,14 @@ const Availability = (props) => {
                                     name="rhythm" 
                                     label="Einmalig"
                                     type='radio' 
-                                    value={availabilityRhythm.once}
+                                    value={availabilityRhythm.oneTime}
                                     onChange={handleRhythmChange} 
                                     id={`rhythm-non`} />
                                 <Form.Check inline 
                                     name="rhythm" 
                                     label="Täglich" 
                                     type='radio' 
-                                    value={availabilityRhythm.dayly} 
+                                    value={availabilityRhythm.daily} 
                                     onChange={handleRhythmChange} 
                                     id={`rhythm-dayly`} />
                                 <Form.Check inline 
@@ -234,12 +282,12 @@ const Availability = (props) => {
                         <Form.Group style={{display: "flex", flexWrap: "nowrap"}} as={Col} md="5">
                             <Form.Label style={{margin: "3px 20px 0px 0px"}}>Wiederholungsintervall:</Form.Label>
                             <Form.Control
-                                disabled={rhythm == availabilityRhythm.once}
+                                disabled={rhythm == availabilityRhythm.oneTime}
                                 style={{width: "70px", height: "30px"}}
                                 name="frequency"
                                 type="text"
                                 placeholder="1"
-                                value={frequency || ""}
+                                value={frequency || 1}
                                 onChange={handleFrequencyChange}
                             />
                         </Form.Group>
@@ -247,7 +295,7 @@ const Availability = (props) => {
                     <Form.Row>
                         <Form.Group as={Col} md="4">
                             <Form.Check
-                                disabled={rhythm == availabilityRhythm.once}
+                                disabled={rhythm == availabilityRhythm.oneTime}
                                 style={{marginRight: "20px"}}
                                 name="endOfSeries" 
                                 label="Mit Ende" 
@@ -257,8 +305,8 @@ const Availability = (props) => {
                                 checked={withSeriesEnd}
                                 id={`withSeriesEnd`} />
                             <DatePicker
-                                disabled={!withSeriesEnd || rhythm == availabilityRhythm.once}
-                                selected={withSeriesEnd ? endOfSeries : null}
+                                disabled={!withSeriesEnd || rhythm == availabilityRhythm.oneTime}
+                                selected={endOfSeries != null ? moment(endOfSeries, "dd.MM.yyyy HH:mm").toDate() : null}
                                 onChange={handleEndOfSeriesChange}
                                 showTimeSelect
                                 timeFormat="HH:mm"
@@ -269,7 +317,7 @@ const Availability = (props) => {
                         </Form.Group>
                         <Form.Group as={Col} md="3">
                             <Form.Check
-                                disabled={rhythm == availabilityRhythm.once}
+                                disabled={rhythm == availabilityRhythm.oneTime}
                                 name="endOfSeries" 
                                 label="Ohne Ende" 
                                 type='radio' 
