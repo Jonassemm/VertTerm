@@ -83,26 +83,26 @@ public class SetupDataLoader implements ApplicationListener<ContextRefreshedEven
 
 		// user-rights
 		rights.add(createRightIfNotFound("OWN_USER_DATA_READ", "Lesen der Benutzerdaten des eigenen Benutzers erlaubt"));
-		rights.add(createRightIfNotFound("OWN_USER_DATA_WRITE", "Ändern der Benutzerdaten des eigenen Benutzers erlaubt"));
+		rights.add(createRightIfNotFound("OWN_USER_DATA_WRITE", "Ã„ndern der Benutzerdaten des eigenen Benutzers erlaubt"));
 		rights.add(createRightIfNotFound("USERS_DATA_READ", "Lesen der Benutzerdaten aller Benutzer erlaubt"));
-		rights.add(createRightIfNotFound("USER_STATUS_WRITE", "Ändern des Benutzerstatus erlaubt"));
-		rights.add(createRightIfNotFound("USERS_DATA_WRITE", "Ändern der Benutzerdaten aller Benutzer erlaubt"));
+		rights.add(createRightIfNotFound("USER_STATUS_WRITE", "Ã„ndern des Benutzerstatus erlaubt"));
+		rights.add(createRightIfNotFound("USERS_DATA_WRITE", "Ã„ndern der Benutzerdaten aller Benutzer erlaubt"));
 		// user-role-rights
 		rights.add(createRightIfNotFound("OWN_USER_ROLES_READ", "Lesen der Rollendaten des eigenen Benutzers erlaubt"));
 		rights.add(createRightIfNotFound("USER_ROLES_READ", "Lesen der Benutzerrollen erlaubt"));
-		rights.add(createRightIfNotFound("USER_ROLES_WRITE", "Ändern der Benutzerrollen erlaubt"));
+		rights.add(createRightIfNotFound("USER_ROLES_WRITE", "Ã„ndern der Benutzerrollen erlaubt"));
 		// user-right-rights
 		rights.add(createRightIfNotFound("OWN_USER_RIGHTS_READ", "Lesen der Rechtedaten des eigenen Benutzers erlaubt"));
 		rights.add(createRightIfNotFound("USER_RIGHTS_READ", "Lesen der Benutzerrechte erlaubt"));
 
 		// role-rights
-		rights.add(createRightIfNotFound("ROLES_WRITE", "Ändern der Rollendaten aller möglichen Rollen erlaubt"));
+		rights.add(createRightIfNotFound("ROLES_WRITE", "Ã„ndern der Rollendaten aller mÃ¶glichen Rollen erlaubt"));
 		rights.add(createRightIfNotFound("ROLES_READ", "Lesen der Rollendaten aller Rollen erlaubt"));
 		rights.add(createRightIfNotFound("ROLE_RIGHTS_READ", "Lesen der Rechte aller Rollen erlaubt"));
-		rights.add(createRightIfNotFound("ROLE_RIGHTS_WRITE", "Ändern der Rechte aller Rollen erlaubt"));
+		rights.add(createRightIfNotFound("ROLE_RIGHTS_WRITE", "Ã„ndern der Rechte aller Rollen erlaubt"));
 
 		// right-rights
-		rights.add(createRightIfNotFound("RIGHTS_READ", "Lesen der Rechtedaten aller möglichen Rechte erlaubt"));
+		rights.add(createRightIfNotFound("RIGHTS_READ", "Lesen der Rechtedaten aller mÃ¶glichen Rechte erlaubt"));
 
 		return rights;
 	}
