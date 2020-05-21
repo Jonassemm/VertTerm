@@ -1,57 +1,49 @@
 package com.dvproject.vertTerm.Controller;
 
 import com.dvproject.vertTerm.Model.Employee;
-import com.dvproject.vertTerm.repository.EmployeeRepository;
+import com.dvproject.vertTerm.Service.Service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Optional;
 
 @RestController
-@RequestMapping("/Employee")
+@RequestMapping("/Employees")
 public class EmployeeController {
     @Autowired
-    EmployeeRepository repo;
+    Service<Employee> service;
 
 
     @GetMapping()
     public @ResponseBody
-    List<Employee> getEmployees()
+    List<Employee> get()
     {
-        return repo.findAll();
+        return service.getAll();
     }
 
     @GetMapping("/{id}")
     public @ResponseBody
-    Employee getEmployee(@PathVariable String id)
+    Employee get(@PathVariable String id)
     {
-        Optional<Employee> employee = repo.findById(id);
-        return employee.orElse(null);
+        return service.getById(id);
     }
 
     @PostMapping()
-    public Employee CreateEmployee(@RequestBody Employee newEmployee)
+    public @ResponseBody
+    Employee create(@RequestBody Employee newEmployee)
     {
-        if(!repo.existsById(newEmployee.getId()))
-            return repo.save(newEmployee);
-        else return null;
+        return service.create(newEmployee);
     }
 
     @PutMapping("/{id}")
-    public Employee UpdateEmployee(@RequestBody Employee newEmployee, @PathVariable String id)
+    public Employee UpdateEmployee(@RequestBody Employee newEmployee)
     {
-        Optional<Employee> oldEmployee = repo.findById(id);
-        if(oldEmployee.isPresent() && newEmployee.getId().equals(id)){
-            return repo.save(newEmployee);
-        }
-        else return null;
+        return service.update(newEmployee);
     }
 
     @DeleteMapping("/{id}")
     public boolean DeleteEmployee(@PathVariable String id)
     {
-        repo.deleteById(id);
-        return !repo.existsById(id);
+        return service.delete(id);
     }
 }
