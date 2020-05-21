@@ -19,13 +19,13 @@ public class UserController
 	public @ResponseBody
 	List<User> getUsers()
 	{
-		return service.getAllUsers();
+		return service.getAll();
 	}
 
 	@GetMapping("/{id}")
 	public @ResponseBody
 	User getUser(@PathVariable String id)
 	{
-		return service.getUserWithId(id);
+		return service.getById(id);
 	}
 }

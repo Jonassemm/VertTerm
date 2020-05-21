@@ -1,29 +1,48 @@
 package com.dvproject.vertTerm.Service;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-
+import com.dvproject.vertTerm.Model.Position;
+import com.dvproject.vertTerm.repository.PositionRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.rest.webmvc.ResourceNotFoundException;
 import org.springframework.stereotype.Service;
 
-import com.dvproject.vertTerm.Model.Position;
-import com.dvproject.vertTerm.repository.PositionRepository;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 
 @Service
 public class PositionServiceImp implements PositionService {
 	@Autowired
-	private PositionRepository positionRepository;
+	private PositionRepository repo;
 
 	@Override
-	public List<Position> getAllPositions() {
-		return positionRepository.findAll();
+	public List<Position> getAll() {
+		return repo.findAll();
+	}
+
+	@Override
+	public Position getById(String id) {
+		Optional<Position> position = repo.findById(id);
+		return position.orElse(null);
+	}
+
+	@Override
+	public Position update(Position position) {
+		if (position.getId() != null && repo.findById(position.getId()).isPresent()) {
+			return repo.save(position);
+		}
+		return null;
+	}
+
+	@Override
+	public boolean delete(String id) {
+		repo.delete(this.getPositionsInternal(id));
+		return repo.existsById(id);
 	}
 
 	@Override
 	public List<Position> getPositions(String[] ids) {
-		List<Position> positions = new ArrayList<Position> ();
+		List<Position> positions = new ArrayList<> ();
 		
 		for (String id : ids) {
 			positions.add(this.getPositionsInternal(id));
@@ -33,28 +52,14 @@ public class PositionServiceImp implements PositionService {
 	}
 
 	@Override
-	public Position insertPosition(Position position) {
+	public Position create(Position position) {
 		if (position.getId() == null) {
-			return positionRepository.save(position);
+			return repo.save(position);
 		}
-		if (positionRepository.findById(position.getId()).isPresent()) {
+		if (repo.findById(position.getId()).isPresent()) {
 			throw new ResourceNotFoundException("Procedure with the given id (" + position.getId() + ") exists on the database. Use the update method.");
 		}
 		return null;
-	}
-
-	@Override
-	public Position updatePosition(Position position) {
-		if (position.getId() != null && positionRepository.findById(position.getId()).isPresent()) {
-			return positionRepository.save(position);
-		}
-		return null;
-	}
-
-	@Override
-	public boolean deletePosition(String id) {
-		positionRepository.delete(this.getPositionsInternal(id));
-		return this.isDeleted(id);
 	}
 	
 	private Position getPositionsInternal(String id){
@@ -62,16 +67,11 @@ public class PositionServiceImp implements PositionService {
 			throw new ResourceNotFoundException("The id of the given procedure is null");
 		}
 		
-		Optional<Position> position = positionRepository.findById(id);
+		Optional<Position> position = repo.findById(id);
 		if (position.isPresent()) {
 			return position.get();
 		} else {
 			throw new ResourceNotFoundException("No procedure with the given id (" + id + ") can be found.");
 		}
 	}
-	
-	private boolean isDeleted (String id) {
-		return positionRepository.findById(id).isEmpty();
-	}
-
 }

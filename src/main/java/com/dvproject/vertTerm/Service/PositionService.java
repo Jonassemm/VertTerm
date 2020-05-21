@@ -1,21 +1,10 @@
 package com.dvproject.vertTerm.Service;
 
-import java.util.List;
-
 import com.dvproject.vertTerm.Model.Position;
 
-public interface PositionService {
+import java.util.List;
+
+public interface PositionService extends Service<Position>{
 	//GET
-	List<Position> getAllPositions ();
-	
 	List<Position> getPositions(String [] ids);
-	
-	//POST
-	Position insertPosition(Position position);
-	
-	//PUT
-	Position updatePosition(Position position);
-	
-	//DELETE
-	boolean deletePosition(String id);
 }

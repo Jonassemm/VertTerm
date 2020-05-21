@@ -1,21 +1,11 @@
 package com.dvproject.vertTerm.Controller;
 
-import java.util.List;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.RestController;
-
 import com.dvproject.vertTerm.Model.Position;
 import com.dvproject.vertTerm.Service.PositionService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/Positions")
@@ -26,7 +16,7 @@ public class PositionController {
 	
 	@GetMapping
 	public List<Position> getAllPositions () {
-		return positionService.getAllPositions();
+		return positionService.getAll();
 	}
 	
 	@GetMapping("/{id}")
@@ -41,17 +31,17 @@ public class PositionController {
 	
 	@PostMapping
 	private Position insertPosition (@RequestBody Position position) {
-		return positionService.insertPosition(position);
+		return positionService.create(position);
 	}
 	
 	@PutMapping
 	private Position updatePosition (@RequestBody Position position) {
-		return positionService.updatePosition(position);
+		return positionService.update(position);
 	}
 	
 	@DeleteMapping("/{id}")
 	private boolean deletePosition (@PathVariable String id) {
-		return positionService.deletePosition(id);
+		return positionService.delete(id);
 	}
 
 }

@@ -1,20 +1,15 @@
 package com.dvproject.vertTerm.Service;
 
+import com.dvproject.vertTerm.Model.*;
+
 import java.util.Date;
 import java.util.List;
 
-import com.dvproject.vertTerm.Model.Availability;
-import com.dvproject.vertTerm.Model.Position;
-import com.dvproject.vertTerm.Model.Procedure;
-import com.dvproject.vertTerm.Model.ProcedureRelation;
-import com.dvproject.vertTerm.Model.ResourceType;
-import com.dvproject.vertTerm.Model.Restriction;
-
 public interface ProcedureService {
 	//GET
-	List<Procedure> getAllProcedures();
+	List<Procedure> getAll();
 	
-	List<Procedure> getProcedures(String[] ids);
+	List<Procedure> getByIds(String[] ids);
 
 	List<ProcedureRelation> getPrecedingProcedures(String id);
 	
@@ -33,10 +28,10 @@ public interface ProcedureService {
 	boolean isAvailableBetween(String id, Date startdate, Date enddate);
 
 	//POST
-	Procedure insertProcedure(Procedure procedure);
+	Procedure create(Procedure procedure);
 
 	//PUT
-	Procedure updateProcedure(Procedure procedure);
+	Procedure update(Procedure procedure);
 	
 	Procedure updateProceduredata(Procedure procedure);
 
@@ -53,6 +48,6 @@ public interface ProcedureService {
 	List<Restriction> updateProcedureRestrictions(String id, List<Restriction> restrictions);
 
 	//DELETE
-	Procedure deleteProcedure(String id);
+	Procedure delete(String id);
 
 }

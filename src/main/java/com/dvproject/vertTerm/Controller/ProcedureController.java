@@ -1,27 +1,12 @@
 package com.dvproject.vertTerm.Controller;
 
+import com.dvproject.vertTerm.Model.*;
+import com.dvproject.vertTerm.Service.ProcedureService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.*;
+
 import java.util.Date;
 import java.util.List;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.RestController;
-
-import com.dvproject.vertTerm.Model.Availability;
-import com.dvproject.vertTerm.Model.Position;
-import com.dvproject.vertTerm.Model.Procedure;
-import com.dvproject.vertTerm.Model.ProcedureRelation;
-import com.dvproject.vertTerm.Model.ResourceType;
-import com.dvproject.vertTerm.Model.Restriction;
-import com.dvproject.vertTerm.Service.ProcedureService;
 
 @RestController
 @RequestMapping("/Procedures")
@@ -32,17 +17,17 @@ public class ProcedureController {
 	
 	@GetMapping("")
 	public List<Procedure> getAllProcedures () {
-		return procedureService.getAllProcedures();
+		return procedureService.getAll();
 	}
 	
 	@GetMapping("/{id}")
 	public List<Procedure> getProcedure (@PathVariable String id){
-		return procedureService.getProcedures(new String [] {id});
+		return procedureService.getByIds(new String [] {id});
 	}
 	
 	@GetMapping("/")
 	public List<Procedure> getProcedureRequestParam (@RequestParam String [] ids){
-		return procedureService.getProcedures(ids);
+		return procedureService.getByIds(ids);
 	}
 	
 	@GetMapping("/{id}/PrecedingProcedure")
@@ -84,12 +69,12 @@ public class ProcedureController {
 	
 	@PostMapping("")
 	public Procedure insertProcedure (@RequestBody Procedure procedure){
-		return procedureService.insertProcedure(procedure);
+		return procedureService.create(procedure);
 	}
 
 	@PutMapping("")
 	public Procedure updateProcedure (@RequestBody Procedure procedure) {
-		return procedureService.updateProcedure(procedure);
+		return procedureService.update(procedure);
 	}
 
 	@PutMapping("/{id}/Data")
@@ -136,7 +121,7 @@ public class ProcedureController {
 	
 	@DeleteMapping("/{id}")
 	public boolean deleteProcedure (@PathVariable String id) {
-		procedureService.deleteProcedure(id);
+		procedureService.delete(id);
 		return procedureService.isDeleted(id);
 	}
 }

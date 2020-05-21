@@ -1,30 +1,14 @@
 package com.dvproject.vertTerm.Controller;
 
-import java.security.Principal;
-import java.util.ArrayList;
-import java.util.List;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.RestController;
-
 import com.dvproject.vertTerm.Model.Right;
 import com.dvproject.vertTerm.Model.Role;
 import com.dvproject.vertTerm.Model.User;
 import com.dvproject.vertTerm.Service.RightService;
 import com.dvproject.vertTerm.Service.UserService;
-import com.dvproject.vertTerm.repository.UserRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping(value= "/Right")
@@ -37,11 +21,11 @@ public class RightController
 	private UserService  userService; 
 	@GetMapping()
 	public List<Right> getAllRights() {
-	    return rightService.getAllRights();
+	    return rightService.getAll();
 	}
 	 @GetMapping("/{id}")
 	 public  @ResponseBody  Right getRightById(@PathVariable String id) {
-	     return rightService.getRightById(id);
+	     return rightService.getById(id);
 	 }
 	 @GetMapping("/users/{id}")
 	 public  List<User> getListUserswithRight(@PathVariable String id) {

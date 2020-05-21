@@ -1,21 +1,10 @@
 package com.dvproject.vertTerm.Controller;
-import java.util.List;
-
-import org.springframework.beans.factory.annotation.Autowired;
-
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.RestController;
-
 import com.dvproject.vertTerm.Model.Resource;
-import com.dvproject.vertTerm.Model.Role;
 import com.dvproject.vertTerm.Service.ResourceService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping(value= "/Resource")
@@ -27,24 +16,24 @@ public class RessourceController {
 
 	 @GetMapping()
 	 public List<Resource> getAllResources() {
-	    return resservice.getAllResources();
+	    return resservice.getAll();
 	 }
 	
 	 @GetMapping("/{id}")
 	 public  @ResponseBody  Resource getResourceById(@PathVariable String id) {
-	     return resservice.getResourceById(id);
+	     return resservice.getById(id);
 	 }
 	 
 	 @PostMapping()
 	 public Resource createResource(@RequestBody Resource res) {
-	     return resservice.createResource(res);
+	     return resservice.create(res);
      }
     
 
 	@PutMapping("{id}")
     public Resource  updateResource(@PathVariable String id,@RequestBody Resource res) {
 	     res.setId(id);
-		 return resservice.updateResource(res);
+		 return resservice.update(res);
 	 }
 	 //   TODO
 	//	 @PutMapping("/ava/{id}")
@@ -59,7 +48,7 @@ public class RessourceController {
 
 	 @DeleteMapping("/{id}")
 	 public void deleteResource(@PathVariable String id) {
-		 resservice.deleteResourceById(id);
+		 resservice.delete(id);
 	  }
 
 }
