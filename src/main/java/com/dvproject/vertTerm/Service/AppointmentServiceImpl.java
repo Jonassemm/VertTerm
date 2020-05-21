@@ -1,8 +1,8 @@
 package com.dvproject.vertTerm.Service;
 
 import com.dvproject.vertTerm.Model.Appointment;
+import com.dvproject.vertTerm.repository.AppointmentRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.data.rest.webmvc.ResourceNotFoundException;
 
 import java.util.List;
@@ -11,7 +11,7 @@ import java.util.Optional;
 public class AppointmentServiceImpl implements Service<Appointment> {
 
     @Autowired
-    MongoRepository<Appointment, String> repo;
+    AppointmentRepository repo;
 
     @Override
     public List<Appointment> getAll() {
