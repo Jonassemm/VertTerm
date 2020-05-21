@@ -5,7 +5,7 @@ import com.dvproject.vertTerm.Model.Resource;
 
 import java.util.List;
 
-public interface ResourceService extends Service<Resource> {
+public interface ResourceService extends BasicService<Resource> {
 
 //	Resource updateResourceAvailability(Resource res);
 //	

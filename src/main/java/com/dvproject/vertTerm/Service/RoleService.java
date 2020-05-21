@@ -6,7 +6,7 @@ import com.dvproject.vertTerm.Model.User;
 
 import java.util.List;
 
-public interface RoleService extends Service<Role>{
+public interface RoleService extends BasicService<Role> {
     
     List<Right> getRoleRights(String id);
     

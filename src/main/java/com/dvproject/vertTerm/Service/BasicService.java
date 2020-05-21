@@ -2,7 +2,7 @@ package com.dvproject.vertTerm.Service;
 
 import java.util.List;
 
-public interface Service<T> {
+public interface BasicService<T> {
     //GET
     List<T> getAll ();
     T getById (String id);
