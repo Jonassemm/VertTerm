@@ -1,116 +1,70 @@
 import React ,{useState, useEffect} from 'react'
 import {Form, Table, Card, Col, Container, Button, InputGroup} from 'react-bootstrap'
-import {useParams} from "react-router-dom"
-import {observer} from "mobx-react"
-import Layout from "./Layout"
-import {useHistory} from 'react-router-dom';
+import ObjectPicker from "../ObjectPicker"
 
-import Availability from "../availability/AvailabilityForm"
 import {
   addCustomer,
   updateCustomer,
   getAllRoles,
-  getAllPositions,
   getCustomer,
-  getAllUsers
+  getAllRestrictions
 } from "./UserRequests";
 
-const styles = {
-  radioFullBox: {
-
-  },
-  radioBox: {
-    color: 'black',
-    display: 'flex',
-    height: '80px',
-    width: '120px',
-    border: '5px',
-    background: '#dadada',
-    flexDirection: 'column'
-  },
-  radioLabel: {
-    background: 'blue'
-  },
-  radioButton: {
-    background: 'green',
-    flexDirection: 'row',
-    flexBasis: '70%',
-    margin: '0px 0px 0px 5px'
-  }
-}
 
 
-function CustomerForm(props) {
+function CustomerForm({ onCancel, edit, selected, userType }) {
   
-  const history = useHistory();
+  const [edited, setEdited] = useState(false)
 
   const [firstName, setFirstname] = useState("")
   const [lastName, setLastname] = useState("")
   const [username, setUsername] = useState("") 
   const [password, setPassword] = useState("")
-  const [systemStatus, setSystemStatus] = useState("ACTIVE")
-
-  const [position, setPosition] = useState(null)
-  const [choosablePositions, setChoosablePositions] = useState([])
-
-  const [supervisor, setSupervisor] = useState(null)
-  const [choosableSupervisors, setChoosableSupervisors] = useState([])
+  const [systemStatus, setSystemStatus] = useState("active")
 
   let firstSelectedRole = null // to add the first role wich is listed when click on "Hinzufügen"
   const [selectedRole, setSelectedRole] = useState(null)
   const [roles, setRoles] = useState([])
   const [choosableRoles, setChoosableRoles] = useState([])//([{name: "Standard"}])
-  //EDIT
-  const [currentUser, setCurrentUser] = useState(null)
-  const {userId} = useParams() //graps userId from URL
+
+  const [restrictions, setRestrictions] = useState([])
+  const [choosableRestrictions, setChoosableRestrictions] = useState([])
 
   //HANDEL CHANGE
-  const handleFirstnameChange = data => setFirstname(data.target.value)
-  const handleLastnameChange = data => setLastname(data.target.value)
-  const handleUsernameChange = data => setUsername(data.target.value)
-  const handlePasswordChange = data => setPassword(data.target.value)
-  const handleSelectedRoleChange = data => setSelectedRole(data.target.value)
-  const handleSelectedPositionChange = data =>  setPosition(choosablePositions[data.target.value])
-  const handleSelectedSupervisorChange = data => setSupervisor(choosableSupervisors[data.target.value])
-  const handleSystemStatusChange = data => setSystemStatus(data.target.value)
+  const handleFirstnameChange = data => {setFirstname(data.target.value); setEdited(true)}
+  const handleLastnameChange = data => {setLastname(data.target.value); setEdited(true)}
+  const handleUsernameChange = data => {setUsername(data.target.value); setEdited(true)}
+  const handlePasswordChange = data => {setPassword(data.target.value); setEdited(true)}
+  const handleSelectedRoleChange = data => {setSelectedRole(data.target.value); setEdited(true)}
+  const handleSystemStatusChange = data => {setSystemStatus(data.target.value); setEdited(true)}
 
 
   useEffect(() => {
     console.log("useEffect-Call: loadChoosableRoles");
     loadChoosableRoles();
-    console.log("useEffect-Call: loadChoosablePositions");
-    loadChoosablePosition();
-    console.log("useEffect-Call: loadChoosableSupervisors");
-    loadChoosableSupervisors();
-    switch(props.type) {
-      case "edit":
-        console.log("useEffect-Call: loadUser");
-        loadUser();
-        break;
-      case "add":
-        break;
-    }
+    if(edit) {
+      console.log("useEffect-Call: loadUser");
+      loadUser();
+    } 
   }, [])
 
   //---------------------------------SUBMIT---------------------------------
   const handleSubmit = async event => {
     event.preventDefault();//reload the page after clicking "Enter"
-    switch(props.type) {
-      case "edit":
-        console.log("useEffect-Call: loadUser");
-        loadUser();
-        var id = userId
-        const updateData = {id, firstName, lastName, username, password, systemStatus, roles}
-        try {
-          console.log("AXIOS: updateCustomer()")
-          console.log(updateData)
-          await updateCustomer(userId, updateData);
-        } catch (error) {
-          console.log(Object.keys(error), error.message)
-          alert("An error occoured while updating a user")
-        }
-        break;
-      case "add":
+    if(edit) {
+      console.log("useEffect-Call: loadUser");
+      loadUser();
+      var id = selected.id
+      const updateData = {id, firstName, lastName, username, password, systemStatus, roles}
+      try {
+        console.log("AXIOS: updateCustomer()")
+        console.log(updateData)
+        await updateCustomer(id, updateData);
+      } catch (error) {
+        console.log(Object.keys(error), error.message)
+        alert("An error occoured while updating a customer")
+      } 
+    } else {
         var id = Math.random() * (10000 - 0) + 0;
         const customerData = {id, firstName, lastName, username, password, systemStatus, roles}
         try {
@@ -118,13 +72,21 @@ function CustomerForm(props) {
           await addCustomer(customerData);
         } catch (error) {
           console.log(Object.keys(error), error.message)
-          alert("An error occoured while adding a user")
-        }
-        break;
-    }
-    //REDIRECT
-    history.push('/customer/list');
+          alert("An error occoured while adding a customer")
+        } 
+    } 
+    onCancel()
   };
+
+  //DELETE USER
+  const handleDeleteUser = async  (index) => {
+    const answer = confirm("Möchten Sie diesen Kunden wirklich löschen? ")
+        if (answer) {
+            const res = await deleteCustomer(selected.id)
+            console.log(res)
+        }
+        onCancel()
+  }
 
   //---------------------------------CURRENT_USER---------------------------------
   //LOAD USER
@@ -133,21 +95,19 @@ function CustomerForm(props) {
     try {
       console.log("AXIOS: loadUser()");
       //Load response-data
-      const response = await getCustomer(userId);
+      const response = await getCustomer(selected.id);
       data = response.data;
     } catch (error) {
       console.log(Object.keys(error), error.message);
       alert("An error occoured while loading a user");
     }
     //Extract response-data
-    const {firstName, lastName, username, password, systemStatus, roles, supervisor} = data;
+    const {firstName, lastName, username, password, systemStatus, roles} = data;
     //Save response-data
     setFirstname(firstName);
     setLastname(lastName);
     setUsername(username);
     setPassword(password);
-    //setPosition(position);
-    setSupervisor(supervisor);
     setSystemStatus(systemStatus);
     if(roles != null) {
       roles.map((role) => {
@@ -161,28 +121,34 @@ function CustomerForm(props) {
   //---------------------------------USER-ROLES---------------------------------
   //ADD USER ROLES (TABLE)
   const addRole = () => {
-    if(roles.some(roles => roles.name === selectedRole) || (roles.some(roles => roles.name === firstSelectedRole) && (selectedRole==null))) {
-      alert("Rolle bereits vorhanden!");
-    } else if (selectedRole == null) { //NO ROLE SELECTED
-        if(firstSelectedRole == null ) //NO ROLES FOR DROPDOWN
-        {
-          alert("Keine Rolle zum hinzufügen gefunden");
-        } else { // ONE ROLE SELECTED IN DROPDOWN
-          choosableRoles.map((role, index) => {
-            if(role.name == firstSelectedRole) { //ADD THE ROLE WICH IS SELECTED
-              setRoles(roles => [...roles, role]);
-
-            }
+    if(selectedRole != null) {
+      if(selectedRole.length > 0) {
+        //choose the one single role in this array
+        var selected = null
+          selectedRole.map((role)=> {
+            selected = role
           })
-        }
-    } else { // ROLE SELECTED
-      choosableRoles.map((role, index) => {
-        if(role.name == selectedRole) {
-          setRoles(roles => [...roles, role]);
-        }
-      })
-    }
 
+        if(roles.some(roles => roles.name === selected.name)) {
+          alert("Rolle bereits vorhanden!");
+        } else {
+          if(choosableRoles.some(roles => roles.name === selected.name)) {
+            choosableRoles.map((role, index) => {
+              if(role.name == selected.name) {
+                setRoles(roles => [...roles, role]);
+                setEdited(true)
+              }
+            })
+          }else {
+            alert("Rolle darf nicht zugewiesen werden!")
+          }
+        }
+      } else {
+        alert("Bitte Rolle auswählen!")
+      }
+    } else {
+      alert("Bitte Rolle auswählen!")
+    }
   };
 
   //REMOVE USER ROLES (ROLE-TABLE)
@@ -205,59 +171,27 @@ function CustomerForm(props) {
       alert("An error occoured while loading choosable roles")
     }
     data.map((role) => {
-      setChoosableRoles(choosableRoles => [...choosableRoles, role]);
-    })
-
-  };
-
-  //---------------------------------ALL-POSITIONS---------------------------------
-  //LOAD (POSITION-DROPDOWN)
-  const loadChoosablePosition = async () => {
-    var data = [];
-    try{ 
-      //const response = await getAllPositions();
-      //data = response.data;
-      data = [{id:"1", name:"Position1", description:"Erste Position"},{id:"2", name:"Position2", description:"Zweite Position"}]
-    }catch (error) {
-      console.log(Object.keys(error), error.message)
-      alert("An error occoured while loading choosable positions")
-    }
-    data.map((singlePosition, index) => {
-      if(index == 0) {
-        setPosition(singlePosition) // set first default selected position to be ready for submit
+      if(role.name != "ADMIN_ROLE") {
+        setChoosableRoles(choosableRoles => [...choosableRoles, role]);
       }
-      setChoosablePositions(choosablePositions => [...choosablePositions, singlePosition]);
     })
   };
 
-  //---------------------------------RENDERING---------------------------------
-  //LOAD (SUPERVISOR-DROPDOWN)
-  const loadChoosableSupervisors = async () => {
+  //---------------------------------ALL-RESTRICTIONS---------------------------------
+  //LOAD (RESSTRICTION-DROPDOWN)
+  const loadChoosableRestrictions = async () => {
     var data = [];
     try{ 
-      const response = await getAllUsers();
+      const response = await getAllRestrictions();
       data = response.data;
     }catch (error) {
       console.log(Object.keys(error), error.message)
-      alert("An error occoured while loading choosable Supervisors")
+      alert("An error occoured while loading choosable restrictions")
     }
-    var setFirstValue = true
-    data.map((singleSupervisor, index) => {
-      const {id} = singleSupervisor
-      if(singleSupervisor.firstName != null && singleSupervisor.lastName != null)
-      {
-        if(props.type != "edit" || id != userId) { //skip selected user as supervisor
-
-          if(setFirstValue) {
-              setSupervisor(singleSupervisor) // set first default selected and valid supervisor to be ready for submit
-              setFirstValue = false
-          }
-          setChoosableSupervisors(choosableSupervisors => [...choosableSupervisors, singleSupervisor]);
-        }
-      }
+    data.map((restriction) => {
+      setChoosableRestrictions(choosableRestrictions => [...choosableRestrictions, restriction]);
     })
   };
-
 
   //---------------------------------RENDERING---------------------------------
   // DYNAMIC ROLE-DROPDOWN
@@ -275,29 +209,7 @@ function CustomerForm(props) {
     }
   };
 
-  // DYNAMIC POSITION-DROPDOWN
-  function renderPositionDropdown() {
-    if (choosablePositions.length > 0) {
-      return choosablePositions.map((singlePosition, index) => {
-          const {name} = singlePosition;
-          return (<option key={index} value={index}>{name}</option>);
-      })
-    } else {
-        return (<option disabled key={0}>KEINE POSITIONEN VORHANDEN</option>);
-    }
-  };
 
-  // DYNAMIC SUPERVISOR-DROPDOWN
-  function renderSupervisorDropdown() {
-    if (choosableSupervisors.length > 0) {
-      return choosableSupervisors.map((singleSupervisor, index) => {
-        const {firstName, lastName, username} = singleSupervisor;
-        return (<option key={index} value={index}>{firstName}, {lastName} ({username})</option>);
-      })
-    } else {
-        return (<option disabled key={0}>KEINE BENUTZER VORHANDEN</option>);
-    }
-  };
 
   // DYNAMIC ROLE-TABLE
   function renderRoleTable() {
@@ -319,13 +231,11 @@ function CustomerForm(props) {
     }
   };
 
-
    return (
-    <Layout>
-      <Card style={{marginBottom: "50px"}} className={"border border-dark bg-dark text-white"}>
+    <React.Fragment>
+      <Container>
         <Form id="customerAdd" onSubmit={(e) => handleSubmit(e)}>
-          <Card.Header><h3>{props.type === "edit" ? "Kunde bearbeiten" : "Kunde hinzufügen"}</h3></Card.Header>
-          <Card.Body>
+          <h5 style={{fontWeight: "bold"}}>{edit ? "Kunde bearbeiten" : "Kunde hinzufügen"}</h5>
             <Form.Row>
               <Form.Group as={Col} md="5" >
                 <Form.Label>Vorname:</Form.Label>
@@ -359,8 +269,8 @@ function CustomerForm(props) {
                       type="radio"
                       label="Aktiviert"
                       name="systemStatus"
-                      value="ACTIVE"
-                      checked={systemStatus == "ACTIVE"}
+                      value="active"
+                      checked={systemStatus == "active"}
                       id="SystemStatusAktive"
                       onChange={handleSystemStatusChange}
                   />
@@ -370,8 +280,8 @@ function CustomerForm(props) {
                       label="Deaktiviert"
                       name="systemStatus"
                       id="SystemStatusInaktive"
-                      value="INACTIVE"
-                      checked={systemStatus == "INACTIVE"}
+                      value="inactive"
+                      checked={systemStatus == "inactive"}
                       onChange={handleSystemStatusChange}
                   />
               </Form.Group>
@@ -414,16 +324,23 @@ function CustomerForm(props) {
               <Form.Group as={Col} md="5">
                 <Form.Label>Rolle hinzufügen:</Form.Label>
                   <Container style={{display: "flex", flexWrap: "nowrap"}}>
-                      <select onChange={handleSelectedRoleChange} className="custom-select">
-                          {renderRoleDropdown()}
-                      </select>
+                       <ObjectPicker 
+                          setState={setSelectedRole}
+                          DbObject="role" />
                     <Button onClick={addRole} style={{marginLeft: "20px"}}>Hinzufügen</Button>
                   </Container> 
               </Form.Group>
+
+
+              <Form.Group as={Col} md="5">
+                <Form.Label>Einschränkungen:</Form.Label>
+              </Form.Group>
+
+
             </Form.Row>
             <Form.Row>
                 <Form.Group as={Col} md="5">
-                    <Table striped hover variant="light">
+                    <Table style={{border: "2px solid #AAAAAA"}} striped hover variant="ligth">
                       <thead>
                           <tr>
                               <th>Zugewiesene Rollen</th>
@@ -435,25 +352,26 @@ function CustomerForm(props) {
                     </Table> 
                 </Form.Group>
             </Form.Row>
-            {//<Availability/>
-            }
-        </Card.Body>
-        <Card.Footer style={{textAlign: "right"}}>
-            {props.type === "edit" ? 
-              <Button variant="secondary" onClick={() => history.push('/customer/list')} style={{marginRight: "20px"}}>Abbrechen</Button> :
-              <Button variant="secondary" onClick={() => history.push('/')} style={{marginRight: "20px"}}>Abbrechen</Button>
-            }
-          <Button size="md" variant="success" type="submit">
-            {props.type === "edit" ? "Übernehmen" : "Kunde anlegen"}
-          </Button>
-        </Card.Footer>
+        <Form.Row>
+        <Container style={{textAlign: "right"}}>
+          {edit ? 
+                <Button variant="danger" onClick={handleDeleteUser} style={{marginRight: "20px"}}>Löschen</Button> :
+                null
+          }
+          <Button variant="secondary" onClick={onCancel} style={{marginRight: "20px"}}>Abbrechen</Button>
+          {(edit ? edited ? 
+            <Button variant="success" type="submit">Übernehmen</Button>:
+            null : <Button variant="success"  type="submit">Kunde anlegen</Button>)
+          }
+          </Container>
+        </Form.Row>
       </Form>
-    </Card>
-  </Layout>
+    </Container>
+  </React.Fragment>
   )
 }
 
-export default observer(CustomerForm)
+export default CustomerForm
 
 
     

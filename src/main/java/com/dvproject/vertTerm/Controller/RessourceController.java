@@ -1,4 +1,5 @@
 package com.dvproject.vertTerm.Controller;
+
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,10 +18,15 @@ import org.springframework.web.bind.annotation.RestController;
 import com.dvproject.vertTerm.Model.Resource;
 import com.dvproject.vertTerm.Model.Restriction;
 import com.dvproject.vertTerm.Model.Role;
+import com.dvproject.vertTerm.Model.Resource;
 import com.dvproject.vertTerm.Service.ResourceService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
-@RequestMapping(value= "/api/Resource")
+@RequestMapping(value= "/Resource")
 public class RessourceController {
 
 	
@@ -29,12 +35,12 @@ public class RessourceController {
 
 	 @GetMapping()
 	 public List<Resource> getAllResources() {
-	    return resservice.getAllResources();
+	    return resservice.getAll();
 	 }
 	
 	 @GetMapping("/{id}")
 	 public  @ResponseBody  Resource getResourceById(@PathVariable String id) {
-	     return resservice.getResourceById(id);
+	     return resservice.getById(id);
 	 }
 	 
 	 @GetMapping("/res")
@@ -54,14 +60,14 @@ public class RessourceController {
 	 
 	 @PostMapping()
 	 public Resource createResource(@RequestBody Resource res) {
-	     return resservice.createResource(res);
+	     return resservice.create(res);
      }
     
 
 	@PutMapping("{id}")
     public Resource  updateResource(@PathVariable String id,@RequestBody Resource res) {
 	     res.setId(id);
-		 return resservice.updateResource(res);
+		 return resservice.update(res);
 	 }
 	   
 		 @PutMapping("/ava/{id}")
@@ -78,6 +84,7 @@ public class RessourceController {
 	 @DeleteMapping("/{id}")
 	 public boolean deleteResource(@PathVariable String id) {
 		return resservice.deleteResourceById(id);
-	  }
+
+  }
 
 }

@@ -4,19 +4,27 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-@Document
+@Document("position")
 public class Position {
     @Id
-    private int id;
+    private String id;
     @Indexed(unique = true)
     private String name;
     private String description;
     
-    public int getId() {
+    public Position () {
+    }
+    
+    public Position (String name, String description) {
+    	this.setName(name);
+    	this.setDescription(description);
+    }
+    
+    public String getId() {
         return id;
     }
     
-    public void setId(int id) {
+    public void setId(String id) {
         this.id = id;
     }
     

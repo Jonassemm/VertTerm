@@ -1,26 +1,12 @@
 package com.dvproject.vertTerm.Controller;
 
+import com.dvproject.vertTerm.Model.*;
+import com.dvproject.vertTerm.Service.ProcedureService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.*;
+
 import java.util.Date;
 import java.util.List;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.RestController;
-
-import com.dvproject.vertTerm.Model.Availability;
-import com.dvproject.vertTerm.Model.Position;
-import com.dvproject.vertTerm.Model.Procedure;
-import com.dvproject.vertTerm.Model.ProcedureRelation;
-import com.dvproject.vertTerm.Model.ResourceType;
-import com.dvproject.vertTerm.Model.Restriction;
-import com.dvproject.vertTerm.Service.ProcedureService;
 
 @RestController
 @RequestMapping("/Procedures")
@@ -31,12 +17,17 @@ public class ProcedureController {
 	
 	@GetMapping("")
 	public List<Procedure> getAllProcedures () {
-		return procedureService.getAllProcedures();
+		return procedureService.getAll();
 	}
 	
 	@GetMapping("/{id}")
-	public List<Procedure> getProcedure (@PathVariable String[] ids){
-		return procedureService.getProcedures(ids);
+	public List<Procedure> getProcedure (@PathVariable String id){
+		return procedureService.getByIds(new String [] {id});
+	}
+	
+	@GetMapping("/")
+	public List<Procedure> getProcedureRequestParam (@RequestParam String [] ids){
+		return procedureService.getByIds(ids);
 	}
 	
 	@GetMapping("/{id}/PrecedingProcedure")
@@ -71,17 +62,24 @@ public class ProcedureController {
 	
 	@GetMapping("/{id}/isAvailable")
 	public boolean isAvailable (@PathVariable String id,
-			@RequestBody List<Date> dates) {
-		return procedureService.isAvailableBetween(id, dates.get(0), dates.get(1));
+			@RequestParam Date startdate,
+			@RequestParam Date enddate) {
+		return procedureService.isAvailableBetween(id, startdate, enddate);
 	}
 	
 	@PostMapping("")
 	public Procedure insertProcedure (@RequestBody Procedure procedure){
-		return procedureService.insertProcedure(procedure);
+		return procedureService.create(procedure);
 	}
 
 	@PutMapping("")
-	public Procedure updateProceduredata (@RequestBody Procedure procedure) {
+	public Procedure updateProcedure (@RequestBody Procedure procedure) {
+		return procedureService.update(procedure);
+	}
+
+	@PutMapping("/{id}/Data")
+	public Procedure updateProceduredata (@PathVariable String id, 
+			@RequestBody Procedure procedure) {
 		return procedureService.updateProceduredata(procedure);
 	}
 
@@ -123,7 +121,7 @@ public class ProcedureController {
 	
 	@DeleteMapping("/{id}")
 	public boolean deleteProcedure (@PathVariable String id) {
-		procedureService.deleteProcedure(id);
+		procedureService.delete(id);
 		return procedureService.isDeleted(id);
 	}
 }

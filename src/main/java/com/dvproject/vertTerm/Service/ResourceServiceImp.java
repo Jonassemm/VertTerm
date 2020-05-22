@@ -1,5 +1,6 @@
 package com.dvproject.vertTerm.Service;
 
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -14,6 +15,17 @@ import com.dvproject.vertTerm.Model.Restriction;
 import com.dvproject.vertTerm.Model.Status;
 import com.dvproject.vertTerm.repository.RessourceRepository;
 
+import com.dvproject.vertTerm.Model.Employee;
+import com.dvproject.vertTerm.Model.Resource;
+import com.dvproject.vertTerm.repository.RessourceRepository;
+import net.springboot.javaguides.exception.ResourceExsistException;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.rest.webmvc.ResourceNotFoundException;
+import org.springframework.stereotype.Service;
+
+import java.util.List;
+import java.util.Optional;
+
 @Service
 public class ResourceServiceImp implements ResourceService {
 
@@ -23,6 +35,7 @@ public class ResourceServiceImp implements ResourceService {
 	
 
 	//@PreAuthorize("hasAuthority('RESOURCE_DATA_WRITE')")
+
 	public Resource createResource (Resource res) {
 	      if (this.ResRepo.findByName(res.getName()) == null)
 	   	     return ResRepo.save(res);
@@ -30,17 +43,23 @@ public class ResourceServiceImp implements ResourceService {
 		   		throw new ResourceNotFoundException("Resource with the given id :" + res.getId() + " already exists");
 	        }
 			return null;
-	}
+
+	public Resource create(Resource res) {
+	      if(this.ResRepo.findByName(res.getName()).isEmpty())
+	   	   return ResRepo.save(res);
+	         else 
+	           throw new ResourceExsistException("Record already exists");
+}
 	
 	
 	//@PreAuthorize("hasAuthority('RESOURCE_DATA_READ')")
-	public List<Resource> getAllResources() {
+	public List<Resource> getAll() {
 		 return this.ResRepo.findAll();
 	}
 
 
 	//@PreAuthorize("hasAuthority('RESOURCE_DATA_READ')")
-	public Resource getResourceById(String id) {
+	public Resource getById(String id) {
 		  Optional<Resource> ResDb = this.ResRepo.findById(id);
 	       if (ResDb.isPresent()) {
 	           return ResDb.get();
@@ -77,6 +96,9 @@ public class ResourceServiceImp implements ResourceService {
 	
 	//@PreAuthorize("hasAuthority('RESOURCE_DATA_WRITE')")
 	public Resource updateResource(Resource res) {
+
+	//@PreAuthorize("hasAuthority('RESOURCE_WRITE')")
+	public Resource update(Resource res) {
 		  Optional<Resource> ResDb = this.ResRepo.findById(res.getId());
 		    if (ResDb.isPresent()) {
 		    	Resource ResUpdate = ResDb.get();
@@ -101,6 +123,17 @@ public class ResourceServiceImp implements ResourceService {
 	public boolean deleteResourceById(String id) {
 	    Resource Res = getResourceById(id);
 		return Res.getStatus() == Status.DELETED;
+
+	@Override
+	public boolean delete(String id) {
+	   Optional<Resource> ResDb = this.ResRepo.findById(id);
+	       if (ResDb.isPresent()) {
+	           this.ResRepo.delete(ResDb.get());
+	       } else {
+	           throw new ResourceNotFoundException("Record not found with id : " + id);
+	       }
+		return ResRepo.existsById(id);
+		
 	}
 	
 	

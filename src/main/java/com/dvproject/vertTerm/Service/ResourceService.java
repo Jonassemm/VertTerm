@@ -1,7 +1,5 @@
 package com.dvproject.vertTerm.Service;
 
-import java.util.List;
-
 import com.dvproject.vertTerm.Model.Employee;
 import com.dvproject.vertTerm.Model.Resource;
 import com.dvproject.vertTerm.Model.Restriction;
@@ -13,6 +11,16 @@ public interface ResourceService {
     List<Resource> getAllResources();
     
     Resource getResourceById(String id);
+
+import java.util.List;
+
+public interface ResourceService extends BasicService<Resource> {
+
+//	Resource updateResourceAvailability(Resource res);
+//	
+//	Resource updateEmployeePermission(String resID,String empID,String roleID);
+    
+    List<Employee> getAllResourceEmps();
     
     List<Resource> getResources(String[] ids);
     

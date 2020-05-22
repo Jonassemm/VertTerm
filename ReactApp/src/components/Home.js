@@ -1,7 +1,7 @@
 import React, {useEffect} from "react"
 import {Jumbo} from "./Jumbo"
 
-export const Home = () => {
+export default function Home() {
     return (
     <div>
        <Jumbo/>

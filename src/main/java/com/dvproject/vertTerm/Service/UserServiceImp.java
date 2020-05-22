@@ -1,36 +1,68 @@
 package com.dvproject.vertTerm.Service;
 
+import com.dvproject.vertTerm.Model.Right;
+import com.dvproject.vertTerm.Model.Role;
+import com.dvproject.vertTerm.Model.User;
+import com.dvproject.vertTerm.repository.UserRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.rest.webmvc.ResourceNotFoundException;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.stereotype.Service;
+
 import java.security.Principal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.stereotype.Service;
-
-import com.dvproject.vertTerm.Model.Right;
-import com.dvproject.vertTerm.Model.Role;
-import com.dvproject.vertTerm.Model.User;
-import com.dvproject.vertTerm.repository.UserRepository;
-
 @Service
 public class UserServiceImp implements UserService {
     @Autowired
-    private UserRepository userRepository;
+    private UserRepository repo;
 
     @PreAuthorize("hasAuthority('USERS_DATA_READ')")
-    public List<User> getAllUsers() {
-	List<User> users = userRepository.findAll();
+    public List<User> getAll() {
+	List<User> users = repo.findAll();
 	return obfuscatePassword(users);
     }
 
-    @PreAuthorize("hasAuthority('OWN_USER_DATA_READ')")
+	@PreAuthorize("hasAuthority('USERS_DATA_READ')")
+	@Override
+	public User getById(String id) {
+		Optional<User> user = repo.findById(id);
+		return user.map(this::obfuscatePassword).orElse(null);
+	}
+
+	@Override
+	public User create(User newInstance) {
+		if (newInstance.getId() == null) {
+			return repo.save(newInstance);
+		}
+		if (repo.findById(newInstance.getId()).isPresent()) {
+			throw new ResourceNotFoundException("Instance with the given id (" + newInstance.getId() + ") exists on the database. Use the update method.");
+		}
+		return null;
+	}
+
+	@Override
+	public User update(User updatedInstance) {
+		if (updatedInstance.getId() != null && repo.findById(updatedInstance.getId()).isPresent()) {
+			return repo.save(updatedInstance);
+		}
+		return null;
+	}
+
+	@Override
+	public boolean delete(String id) {
+		repo.deleteById(id);
+		return repo.existsById(id);
+	}
+
+	@PreAuthorize("hasAuthority('OWN_USER_DATA_READ')")
     public User getOwnUser(Principal principal) {
 	User user = null;
 	
 	if (principal != null) {
-	    user = userRepository.findByUsername(principal.getName());
+	    user = repo.findByUsername(principal.getName());
 	    user = obfuscatePassword(user);
 	}
 
@@ -42,16 +74,10 @@ public class UserServiceImp implements UserService {
 	List<User> users = new ArrayList<>();
 
 	for (String username : usernames) {
-	    users.add(userRepository.findByUsername(username));
+	    users.add(repo.findByUsername(username));
 	}
 
 	return obfuscatePassword(users);
-    }
-
-    @PreAuthorize("hasAuthority('USERS_DATA_READ')")
-    public User getUserWithId(String id) {
-	Optional<User> user = userRepository.findById(id);
-	return user.map(this::obfuscatePassword).orElse(null);
     }
 
     @PreAuthorize("hasAuthority('OWN_USER_ROLES_READ')")
@@ -68,14 +94,14 @@ public class UserServiceImp implements UserService {
 
     @PreAuthorize("hasAuthority('ROLES_READ')")
     public List<Role> getUserRolesWithId(String id) {
-	User user = getUserWithId(id);
+	User user = getById(id);
 
 	return user.getRoles();
     }
 
     @PreAuthorize("hasAuthority('RIGHTS_READ')")
     public List<Right> getUserRightsWithId(String id) {
-	return getRights(getUserWithId(id));
+	return getRights(getById(id));
     }
 
     private List<Right> getRights(User user) {

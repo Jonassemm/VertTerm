@@ -1,5 +1,6 @@
 package com.dvproject.vertTerm.Controller;
 
+
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,13 +17,18 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.dvproject.vertTerm.Model.ResourceType;
+
 import com.dvproject.vertTerm.Model.Right;
 import com.dvproject.vertTerm.Model.Role;
 import com.dvproject.vertTerm.Model.User;
 import com.dvproject.vertTerm.Service.RoleService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
-@RequestMapping(value= "/api/Role")
+@RequestMapping(value= "/Role")
 public class RoleController
 {
 	@Autowired
@@ -30,12 +36,12 @@ public class RoleController
 	
 	 @GetMapping()
      public  @ResponseBody  List<Role> getAllRole() {
-		 return roleService.getAllRoles();
+		 return roleService.getAll();
 	 }
 	
 	 @GetMapping("/{id}")
 	 public  @ResponseBody  Role getRoleById(@PathVariable String id) {
-	     return roleService.getRoleById(id);
+	     return roleService.getById(id);
 	 }
 		
 	 @GetMapping("/roles")
@@ -67,19 +73,20 @@ public class RoleController
 	 
 	 @PostMapping()
 	 public Role createRole(@RequestBody Role role) {
-	     return roleService.createRole(role);
+	     return roleService.create(role);
      }
 
 	 @PutMapping("/{id}")
 	 public  Role updateRole(@PathVariable String id, @RequestBody Role role) {
 	      role.setId(id);
-	      return roleService.updateRole(role);
+	      return roleService.update(role);
 	 }
     
 	 @DeleteMapping("/{id}")
+
 	 public boolean deleteRole(@PathVariable String id) {
 	     return  roleService.deleteRoleById(id);
-	  }
+  }
 
 	 
 }

@@ -1,28 +1,19 @@
-import React, {useState, useEffect, Fragment} from 'react'
-import {Card, Table, Button, Modal} from 'react-bootstrap';
-import {useHistory} from 'react-router-dom';
-import Layout from "./Layout"
+import React, {useState, useEffect} from 'react'
+import CustomerForm from "./CustomerForm"
+import EmployeeForm from "./EmployeeForm"
+import OverviewPage from "../OverviewPage"
 
 
 import {observer} from "mobx-react"
 import {
     getEmployeeList,
     getCustomerList,
-    removeEmployee,
-    removeCustomer
   } from "./UserRequests";
-import { remove } from 'mobx';
+
 
 export default function UserList(props) {
-  
-    const [showRemoveConfirmModal, setShowRemoveConfirmModal] = useState(false)
-    const [removeIndex, setRemoveIndex] = useState(null)
 
-    const history = useHistory();
     const [userList, setUserList] = useState([])
-
-    const handleRemoveIndexChange = data => {setRemoveIndex(data.target.value); showModal();}
-    
 
     useEffect( () => {
         loadUserList()
@@ -46,6 +37,11 @@ export default function UserList(props) {
                     console.log(Object.keys(error), error.message)
                     alert("An error occoured while loading userlist")
                 }
+                /* data.map((user, index) => {
+                    const {id, username, availability} = user
+                    console.log(username)
+                    console.log(availability)       
+                    }) */
               break;
             case "customer":
                 try {
@@ -65,115 +61,74 @@ export default function UserList(props) {
         setUserList(data)
     }
 
-
-    //REMOVE USER
-    const removeUser = async  (index) => {
-        switch(props.userType) {
-        case "employee":
-            try {
-                console.log("AXIOS: removeEmployee()")
-                await removeEmployee(userList[index].id);
-                userList.splice((index),1)
-                setUserList([...userList])
-              } catch (error) {
-                console.log(Object.keys(error), error.message)
-                alert("An error occoured while removing a employee")
-              }
-          break;
-        case "customer":
-            try {
-                console.log("AXIOS: removeCustomer()")
-                await removeCustomer(userList[index].id);
-                userList.splice((index),1)
-                setUserList([...userList])
-              } catch (error) {
-                console.log(Object.keys(error), error.message)
-                alert("An error occoured while removing a customer")
-              }
-          break;
-        }
-      }
-
-    const hideModal = () => {
-        setShowRemoveConfirmModal(false)
-    }
-
-    const showModal = () => {
-        console.log("MODAL")
-        setShowRemoveConfirmModal(true)
-    }
-
-    const handleRemoveUser = () => {
-        removeUser(removeIndex)
-        setShowRemoveConfirmModal(false)
-    }
-
-    //---------------------------------RENDERING---------------------------------
-    //DYNAMIC TABLE
-    function renderTableBody() {
-        if (userList != null) {
-            return userList.map((user, index) => {
-                const {id, username, firstName, lastName, systemStatus} = user
-                return (
-                    <tr key={index}>
-                        <td>{username}</td>
-                        <td>{firstName}</td>
-                        <td>{lastName}</td>
-                        <td>{systemStatus}</td>
-                        <td style={{width: "300px"}}>
-                            <Button  variant="info" onClick={() => history.push(props.userType == "employee" ? '/employee/edit/'+id : '/customer/edit/'+id )} style={{marginRight:"5px"}}>Ansicht</Button>
-                            {//<Button onClick={() => {if(window.confirm('Wollen Sie diesen Benutzer wirklich entfernen?')){removeUser(index)};}}  id={id}>Entfernen</Button>
-                            }<Button variant="danger" onClick={handleRemoveIndexChange} value={index} id={id}>Entfernen</Button>
-                        </td>
-                    </tr>
-                )
-            })
-        } else {
-            return (
-                <tr align="center">
-                    <td colSpan="5">Kein Benutzer vorhanden</td>
-                </tr>
+    const tableBody =
+        userList.map((item, index) => { 
+            var status
+            switch(item.systemStatus) {
+                case "active":
+                    status = "Aktiviert"
+                break;
+                case "inactive":
+                    status = "Deaktiviert"
+                break;
+                case "deleted":
+                    status = "Gelöscht"
+                break;
+                default: status = "UNDIFINED"
+            }
+            return ([
+                index + 1,
+                item.username,
+                item.lastName,
+                item.firstName,
+                status]
             )
-        }
+        })
+
+    const modalEmployee = (onCancel,edit,selectedItem) => {
+        return (
+            <EmployeeForm
+                onCancel={onCancel}
+                edit={edit}
+                selected={selectedItem}
+            />
+        )
+    }
+
+    const modalCustomer = (onCancel,edit,selectedItem) => {
+        return (
+            <CustomerForm
+                onCancel={onCancel}
+                edit={edit}
+                selected={selectedItem}
+            />
+        )
     }
 
     return (
-    <Layout>
-        <div className="page">
-            <Modal show={showRemoveConfirmModal} onHide={hideModal}>
-                    <Modal.Header closeButton>
-                        <Modal.Title>Benutzer entfernen</Modal.Title>
-                    </Modal.Header>
-
-                    <Modal.Body>
-                        <p>Soll der Benutzer wirklich gelöscht werden? </p>
-                    </Modal.Body>
-
-                    <Modal.Footer>
-                        <Button variant="secondary"onClick={hideModal}>Nein</Button>
-                        <Button variant="danger" onClick={handleRemoveUser}>Ja</Button>
-                    </Modal.Footer>
-            </Modal>
-            <Card className={"border border-dark bg-dark text-white"}>
-                <Card.Header>{props.heading}</Card.Header>
-                <Card.Body>
-                    <Table striped hover variant="dark">
-                        <thead>
-                            <tr>
-                                <th>Benutzername</th>
-                                <th>Nachname</th>
-                                <th>Vorname</th>
-                                <th>Status</th>
-                                <th>AKTION</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {renderTableBody()}
-                        </tbody>
-                    </Table>
-                </Card.Body>
-            </Card>
-        </div>
-    </Layout>
+        <React.Fragment>
+            {props.userType == "employee" ? 
+                <OverviewPage
+                    pageTitle="Mitarbeiter"
+                    newItemText="Neuer Mitarbeiter"
+                    tableHeader={["#", "Benutzername", "Nachname", "Vorname", "Status"]}
+                    tableBody={tableBody}
+                    modal={modalEmployee}
+                    data={userList}
+                    modalSize="xl"
+                    refreshData={loadUserList}
+                /> :
+                <OverviewPage
+                    pageTitle="Kunde"
+                    newItemText="Neuer Kunde"
+                    tableHeader={["#", "Benutzername", "Nachname", "Vorname", "Status"]}
+                    tableBody={tableBody}
+                    modal={modalCustomer}
+                    data={userList}
+                    modalSize="xl"
+                    refreshData={loadUserList}
+                />
+            }
+        </React.Fragment>
    )
 }

@@ -3,23 +3,20 @@ package com.dvproject.vertTerm.Service;
 import java.util.List;
 
 import com.dvproject.vertTerm.Model.ResourceType;
+
 import com.dvproject.vertTerm.Model.Right;
 import com.dvproject.vertTerm.Model.Role;
 import com.dvproject.vertTerm.Model.User;
 
-public interface RoleService {
-	
-    Role createRole(Role role);
+import java.util.List;
 
-    Role updateRole(Role role);
-
-    List<Role> getAllRoles();
-
-    Role getRoleById(String id);
 
     List<Role> getRoles(String[] ids);
     
     boolean deleteRoleById(String id);
+
+public interface RoleService extends BasicService<Role> {
+
     
     List<Right> getRoleRights(String id);
     

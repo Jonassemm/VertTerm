@@ -9,4 +9,6 @@ import com.dvproject.vertTerm.Model.Position;
 public interface PositionRepository extends MongoRepository<Position, String>
 {
     Optional<Position> findById (String id);
+    
+    Position save (Position position);
 }

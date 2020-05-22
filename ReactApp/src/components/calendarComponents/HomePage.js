@@ -8,8 +8,8 @@ import CalendarForm from "./CalendarForm"
 import { observer } from "mobx-react"
 import { getCalendar } from "./requests"
 import styled from "styled-components"
-import Loader from "react-loader-spinner"
 import Axios from "axios"
+import "react-big-calendar/lib/css/react-big-calendar.css"
 
 const Style = styled.div`
 .loadview {
@@ -94,7 +94,7 @@ function HomePage({ calendarStore }){
     return (
         <Style>
         <div className="page">
-            {loading ? <div className="loadview"><Loader type="TailSpin" color="#00BFFF" height={80} width={80}/></div> : null}
+            {loading ? <div className="loadview"><div>Loading</div></div> : null}
         
             <Modal show={showAddModal} onHide={hideModals}>
                 <Modal.Header closeButton>
