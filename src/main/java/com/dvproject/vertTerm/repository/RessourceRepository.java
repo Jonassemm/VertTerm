@@ -8,5 +8,5 @@ import com.dvproject.vertTerm.Model.Resource;
 
 public interface RessourceRepository extends MongoRepository<Resource, String> {
 	 Optional<Resource> findById (String id);
-	 Optional<Resource> findByName(String name);
+	Resource findByName(String name);
 }

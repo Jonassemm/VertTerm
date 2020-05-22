@@ -10,6 +10,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.dvproject.vertTerm.Model.ResourceType;
 import com.dvproject.vertTerm.Model.Right;
 //import com.dvproject.vertTerm.Model.Right;
 import com.dvproject.vertTerm.Model.Role;
@@ -29,35 +30,9 @@ public class RoleServiceImp implements RoleService {
    private RoleRepository RoleRepo;
    @Autowired
    private UserRepository userRepo;
-    
+   @Autowired
+   private UserService userService;
 
-   //@PreAuthorize("hasAuthority('ROLES_WRITE')") 
-   public Role createRole(Role role) {
-      if(this.RoleRepo.findByName(role.getName()) == null)
-	   return RoleRepo.save(role);
-      else 
-    	throw new ResourceExsistException("Record already exists" );
-     // return null;
-   }
-
- 
-   //@PreAuthorize("hasAuthority('ROLE_RIGHTS_WRITE','ROLES_WRITE')")  
-   public Role updateRole(Role role) {
-	   Optional <Role> RoleDb = this.RoleRepo.findById(role.getId());
-	    if (RoleDb.isPresent()) {
-	        Role RoleUpdate = RoleDb.get();
-	        RoleUpdate.setId(role.getId());
-	        RoleUpdate.setName(role.getName());
-	        RoleUpdate.setDescription(role.getDescription());
-	        RoleUpdate.setRights(role.getRights());
-	        RoleRepo.save(RoleUpdate);
-	        return RoleUpdate;
-	    } 
-	    else {
-	        throw new ResourceNotFoundException("Record not found with id : " + role.getId());
-	    } 
-   }
-   
    
    //@PreAuthorize("hasAuthority('ROLES_READ')") 
    public List <Role> getAllRoles() {
@@ -71,24 +46,63 @@ public class RoleServiceImp implements RoleService {
        if (RoleDb.isPresent()) {
            return RoleDb.get();
        } else {
-           throw new ResourceNotFoundException("Record not found with id : " + id);
+    		throw new ResourceNotFoundException("Resource with the given id :" +id + " already exists");
        }
    }
    
+	// @PreAuthorize("hasAuthority('USER_ROLE_READ')") 
+	public List<Role> getRoles(String[] ids) {
+	   	List<Role> Roles = new ArrayList<Role> ();
 
+	   	for (String id : ids) {
+	   		Roles.add(this.getRoleById(id));
+	   	}
+
+	   	return Roles;
+	}
     
-   public void deleteRoleById(String id) {
+	
+	   //@PreAuthorize("hasAuthority('ROLES_WRITE')") 
+	   public Role createRole(Role role) {
+	      if(this.RoleRepo.findByName(role.getName()) == null)
+		   return RoleRepo.save(role);
+	       if (RoleRepo.findById(role.getId()).isPresent()) {
+		   		throw new ResourceNotFoundException("Role with the given id :" + role.getId() + " already exists");
+		   	    
+		   	 }
+	       return null;
+		    
+	   }
+
+	 
+	   //@PreAuthorize("hasAuthority('ROLE_RIGHTS_WRITE','ROLES_WRITE')")  
+	   public Role updateRole(Role role) {
+		   Optional <Role> RoleDb = this.RoleRepo.findById(role.getId());
+		    if (RoleDb.isPresent()) {
+		        Role RoleUpdate = RoleDb.get();
+		        RoleUpdate.setId(role.getId());
+		        RoleUpdate.setName(role.getName());
+		        RoleUpdate.setDescription(role.getDescription());
+		        RoleUpdate.setRights(role.getRights());
+		        RoleRepo.save(RoleUpdate);
+		        return RoleUpdate;
+		    } 
+		    else {
+		    	throw new ResourceNotFoundException("Resource with the given id :" +role.getId() + " already exists");
+		    } 
+	   }
+	   
+      public boolean  deleteRoleById(String id) {
        Optional <Role> RoleDb = this.RoleRepo.findById(id);
 
        if (RoleDb.isPresent()) {
            this.RoleRepo.delete(RoleDb.get());
-       } else {
-           throw new ResourceNotFoundException("Record not found with id : " + id);
-       }
+       }      
+   	   return RoleDb.isPresent();
 
    }
 
- //@PreAuthorize("hasAuthority('ROLE_RIGHTS_READ','ROLES_READ')") 
+    //@PreAuthorize("hasAuthority('ROLE_RIGHTS_READ','ROLES_READ')") 
 	public List<Right> getRoleRights(String id) {
 		List<Right> rights=new ArrayList<Right>(); 
 		Role role = getRoleById(id);
@@ -124,16 +138,56 @@ public class RoleServiceImp implements RoleService {
 		        return RoleUpdate;
 		    } 
 		    else {
-		        throw new ResourceNotFoundException("Record not found with id : " + role.getId());
+		    	throw new ResourceNotFoundException("Resource with the given id :" +role.getId() + " already exists");
 		    } 
 	}
 
 	// TODO
 	// @PreAuthorize("hasAuthority('USER_ROLE_WRITE')") 
-//	public  updateRoleUsers(String id) {
-//		// TODO Auto-generated method stub
-//		return null;
-//	}
+	public  List<User> updateRoleUsers(String id,String[] Uids) {
+	// TODO Auto-generated method stub
+		List<User> userslist = new ArrayList<User> ();
+		List<User> Allusers = userRepo.findAll();
+		Role role=getRoleById(id);
+		List<String> UserIds = List.of(Uids);
+		for(User user : Allusers) {
+		    if (UserIds.contains(user.getId())) 
+	     	{
+	   			if(AddRole(role,user))
+   			       if (!userslist.contains(user)) 
+   			    	   userslist.add(user);	 
+			}
+		    else {
+	   		   	  RemoveRole(role,user);
+	   		     // userslist.add(user);
+	   		}
+	   	}
+	    return userslist;
+	}
+	public boolean AddRole(Role role,User user) {
+		  Optional <User> UserDB = this.userRepo.findById(user.getId());
+		  List<Role> roles = user.getRoles();
+		   if (!(roles.contains(role))) {
+		     roles.add(role);
+		     User UserRoleUpdate = UserDB.get();
+		     UserRoleUpdate.setRoles(roles);
+		     userRepo.save(UserRoleUpdate);
+		     return true;
+	      }  	
+	  	  else
+	      return false;
+	}
+	public void RemoveRole(Role role,User user) {
+		  Optional <User> UserDB = this.userRepo.findById(user.getId());
+		  List<Role> roles = user.getRoles();
+		  if (roles.contains(role)) {
+			 roles.remove(role);
+		     User UserRoleUpdate = UserDB.get();
+		     UserRoleUpdate.setRoles(roles);
+		     userRepo.save(UserRoleUpdate);			     
+	     }  	
+	     
+	}
 
 }
 

@@ -4,28 +4,35 @@ import java.util.List;
 
 import com.dvproject.vertTerm.Model.Employee;
 import com.dvproject.vertTerm.Model.Resource;
+import com.dvproject.vertTerm.Model.Restriction;
+import com.dvproject.vertTerm.Model.Role;
 
 public interface ResourceService {
 	
-	Resource createResource(Resource res);
-	Resource updateResource(Resource res);
-
-//	Resource updateResourceAvailability(Resource res);
-//	
-//	Resource updateEmployeePermission(String resID,String empID,String roleID);
 	
     List<Resource> getAllResources();
     
-    List<Employee> getAllResourceEmps();
-
     Resource getResourceById(String id);
-
-    void deleteResourceById(String id);
     
-//    void updateResourceDependencies(String ResID ,String ParResID ,List<String> ChildResIDs);
-//
-//    void getResourceDependencies (String ResID);
+    List<Resource> getResources(String[] ids);
     
+    Resource createResource(Resource res);
+	
+    Resource updateResource(Resource res);
+    
+    boolean deleteResourceById(String id);
+    
+    Resource updateResourceAvailability(Resource res);
+    
+   
+    List<Restriction> getResourceDependencies (String ResID);
+   
+    Resource updateResourceDependencies(Resource res);
+    
+    //TODO
+    // 
+    // List<Employee> getAllResourceEmps();
+    // Resource updateEmployeePermission(String resID,String empID,String roleID);
     // createResourceFailure 
     // updateResourceFailure 
 }

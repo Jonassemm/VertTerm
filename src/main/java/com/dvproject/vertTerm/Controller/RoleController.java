@@ -11,9 +11,11 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.dvproject.vertTerm.Model.ResourceType;
 import com.dvproject.vertTerm.Model.Right;
 import com.dvproject.vertTerm.Model.Role;
 import com.dvproject.vertTerm.Model.User;
@@ -35,7 +37,12 @@ public class RoleController
 	 public  @ResponseBody  Role getRoleById(@PathVariable String id) {
 	     return roleService.getRoleById(id);
 	 }
-    
+		
+	 @GetMapping("/roles")
+	     private List<Role> getRoles(@RequestParam String [] ids) {
+			return roleService.getRoles(ids);
+		}
+	    
 	 @GetMapping("/rights/{id}") 
      public  @ResponseBody  List<Right> getRoleRights(@PathVariable String id) {
 		 return roleService.getRoleRights(id);
@@ -52,11 +59,11 @@ public class RoleController
 		 return roleService.updateRoleRights(role);
 	 }
 	
-	 //TODO
-	//	 @GetMapping("/users/edit/{id}") 
-	//     public  @ResponseBody  updateRoleUsers(@PathVariable String id) {
-	//		 return roleService.updateRoleUsers(id);
-	//	 }
+	 //TODO es gibt einen Bug
+	 @PutMapping("/users/edit/{id}") 
+     public  @ResponseBody List<User> updateRoleUsers(@PathVariable String id, @RequestParam String[] Uids) {
+		 return roleService.updateRoleUsers(id,Uids);
+	 }
 	 
 	 @PostMapping()
 	 public Role createRole(@RequestBody Role role) {
@@ -70,8 +77,8 @@ public class RoleController
 	 }
     
 	 @DeleteMapping("/{id}")
-	 public void deleteRole(@PathVariable String id) {
-	       roleService.deleteRoleById(id);
+	 public boolean deleteRole(@PathVariable String id) {
+	     return  roleService.deleteRoleById(id);
 	  }
 
 	 
