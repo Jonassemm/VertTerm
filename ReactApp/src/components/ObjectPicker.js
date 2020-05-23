@@ -3,6 +3,11 @@ import { Typeahead } from "react-bootstrap-typeahead"
 import { getUsers, getEmployees, getCustomers, getProcedures } from "./requests"
 import { set } from "mobx"
 
+// when using this Object you have to give 3 props:
+// DbObject: defining what Object you want to pick (select out of predefined list below)
+// setState: the setState method for the state in your Form
+// initial: an Array with the values which have to be initally selected
+
 function ObjectPicker({ DbObject, setState, initial }) {
     const [options, setOptions] = useState([])
     const [labelKey, setLabelKey] = useState("")
