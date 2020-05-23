@@ -1,43 +1,26 @@
 package com.dvproject.vertTerm.Service;
 
-import java.util.Calendar;
-import java.util.Date;
-import java.util.List;
-import java.util.Optional;
-import java.util.TimeZone;
-
+import com.dvproject.vertTerm.Model.*;
+import com.dvproject.vertTerm.repository.ProcedureRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.rest.webmvc.ResourceNotFoundException;
 import org.springframework.stereotype.Service;
 
-import com.dvproject.vertTerm.Model.Availability;
-import com.dvproject.vertTerm.Model.AvailabilityRhythm;
-import com.dvproject.vertTerm.Model.Position;
-import com.dvproject.vertTerm.Model.Procedure;
-import com.dvproject.vertTerm.Model.ProcedureRelation;
-import com.dvproject.vertTerm.Model.ResourceType;
-import com.dvproject.vertTerm.Model.Restriction;
-import com.dvproject.vertTerm.Model.Status;
-import com.dvproject.vertTerm.repository.ProcedureRepository;
+import java.util.*;
 
 @Service
 public class ProcedureServiceImp implements ProcedureService {
 	@Autowired
-	private ProcedureRepository procedureRepository;
+	private ProcedureRepository repo;
 
 	@Override
-	public List<Procedure> getAllProcedures() {
-		return procedureRepository.findAll();
+	public List<Procedure> getAll() {
+		return repo.findAll();
 	}
 
 	@Override
-	public Procedure getProcedure(String id) {
-		return this.getProcedureInternal(id);
-	}
-
-	@Override
-	public List<Procedure> getProcedures(String[] ids) {
-		return procedureRepository.findByIds(ids);
+	public List<Procedure> getByIds(String[] ids) {
+		return repo.findByIds(ids);
 	}
 
 	@Override
@@ -73,7 +56,7 @@ public class ProcedureServiceImp implements ProcedureService {
 	@Override
 	public boolean isAvailableBetween (String id, Date startdate, Date enddate) {
 		List<Availability> availabilities = getProcedureInternal(id).getAvailabilities();
-		boolean isAvailable = false;
+		boolean isAvailable;
 		
 		for (Availability availability : availabilities) {
 			if (! (availability.getStartDate().after(startdate) && (availability.getEndOfSeries() == null || availability.getEndOfSeries().before(enddate)))) {
@@ -92,14 +75,23 @@ public class ProcedureServiceImp implements ProcedureService {
 	}
 
 	@Override
-	public Procedure insertProcedure(Procedure procedure) {
+	public Procedure create(Procedure procedure) {
 		if (procedure.getId() == null) {
-			return procedureRepository.save(procedure);
+			return repo.save(procedure);
 		}
-		if (procedureRepository.findById(procedure.getId()).isPresent()) {
+		if (repo.findById(procedure.getId()).isPresent()) {
 			throw new ResourceNotFoundException("Procedure with the given id (" + procedure.getId() + ") exists on the database. Use the update method.");
 		}
-		return null;
+		return procedure;
+	}
+
+	@Override
+	public Procedure update(Procedure procedure) {
+		if (repo.findById(procedure.getId()).isPresent()) {
+			return repo.save(procedure);
+		} else {
+			throw new ResourceNotFoundException("No procedure with the given id (" + procedure.getId() + ") can be found.");
+		}
 	}
 
 	@Override
@@ -112,7 +104,7 @@ public class ProcedureServiceImp implements ProcedureService {
 		oldProcedure.setPricePerInvocation(procedure.getPricePerInvocation());
 		oldProcedure.setDurationInMinutes(procedure.getDurationInMinutes());
 		
-		return procedureRepository.save(oldProcedure);
+		return repo.save(oldProcedure);
 	}
 	
 	@Override
@@ -120,7 +112,7 @@ public class ProcedureServiceImp implements ProcedureService {
 		Procedure procedure = getProcedureInternal(id);
 		
 		procedure.setPrecedingRelations(precedingProcedures);
-		procedureRepository.save(procedure);
+		repo.save(procedure);
 		
 		return getProcedureInternal(id).getPrecedingRelations();
 	}
@@ -130,7 +122,7 @@ public class ProcedureServiceImp implements ProcedureService {
 		Procedure procedure = getProcedureInternal(id);
 		
 		procedure.setSubsequentRelations(subsequentProcedures);
-		procedureRepository.save(procedure);
+		repo.save(procedure);
 		
 		return getProcedureInternal(id).getSubsequentRelations();
 	}
@@ -140,7 +132,7 @@ public class ProcedureServiceImp implements ProcedureService {
 		Procedure procedure = getProcedureInternal(id);
 		
 		procedure.setNeededResourceTypes(resourceTypes);
-		procedureRepository.save(procedure);
+		repo.save(procedure);
 		
 		return getProcedureInternal(id).getNeededResourceTypes();
 	}
@@ -150,7 +142,7 @@ public class ProcedureServiceImp implements ProcedureService {
 		Procedure procedure = getProcedureInternal(id);
 		
 		procedure.setNeededEmployeePositions(positions);
-		procedureRepository.save(procedure);
+		repo.save(procedure);
 		
 		return getProcedureInternal(id).getNeededEmployeePositions();
 	}
@@ -160,7 +152,7 @@ public class ProcedureServiceImp implements ProcedureService {
 		Procedure procedure = getProcedureInternal(id);
 		
 		procedure.setAvailabilities(availabilities);
-		procedureRepository.save(procedure);
+		repo.save(procedure);
 		
 		return getProcedureInternal(id).getAvailabilities();
 	}
@@ -170,18 +162,18 @@ public class ProcedureServiceImp implements ProcedureService {
 		Procedure procedure = getProcedureInternal(id);
 		
 		procedure.setRestrictions(restrictions);
-		procedureRepository.save(procedure);
+		repo.save(procedure);
 		
 		return getProcedureInternal(id).getRestrictions();
 	}
 
 	@Override
-	public Procedure deleteProcedure(String id) {
+	public Procedure delete(String id) {
 		Procedure procedure = getProcedureInternal(id);
 
 		procedure.setStatus(Status.DELETED);
 
-		return procedureRepository.save(procedure);
+		return repo.save(procedure);
 	}
 	
 	public boolean isDeleted (String id) {
@@ -195,7 +187,7 @@ public class ProcedureServiceImp implements ProcedureService {
 			throw new ResourceNotFoundException("The id of the given procedure is null");
 		}
 		
-		Optional<Procedure> procedureDB = procedureRepository.findById(id);
+		Optional<Procedure> procedureDB = repo.findById(id);
 		
 		if (procedureDB.isPresent()) {
 			return procedureDB.get();
@@ -206,7 +198,7 @@ public class ProcedureServiceImp implements ProcedureService {
 	
 	private boolean isBetween (Calendar startdate, Calendar enddate, Calendar availStartdate, Calendar availEnddate, 
 			AvailabilityRhythm rhythm) {
-		boolean isBetween = false;
+		boolean isBetween;
 		switch (rhythm) {
 			case DAILY:
 				isBetween = true;

@@ -14,29 +14,29 @@ public class Availability {
 	private AvailabilityRhythm rhythm;
 	
 	/**
-	 * defines the frequenzy of the rhythm (e.g. 2 -> every two rhythms)
+	 * defines the frequency of the rhythm (e.g. 2 -> every two rhythms)
 	 */
-	private int frequenzy;
+	private int frequency;
 	private Date endOfSeries;
 	
 	public Availability (Date startDate, Date endDate, AvailabilityRhythm rythm) {
 		this(startDate, endDate, rythm, 1);
 	}
 	
-	public Availability (Date startDate, Date endDate, AvailabilityRhythm rhythm, int frequenzy) {
+	public Availability (Date startDate, Date endDate, AvailabilityRhythm rhythm, int frequency) {
 		this.startDate = startDate;
 		this.endDate = endDate;
 		this.rhythm = rhythm;
-		this.frequenzy = frequenzy;
+		this.frequency = frequency;
 	}
 	
 	@PersistenceConstructor
-	public Availability (Date startDate, Date endDate, AvailabilityRhythm rhythm, Date endOfSeries, int frequenzy) {
+	public Availability (Date startDate, Date endDate, AvailabilityRhythm rhythm, Date endOfSeries, int frequency) {
 		this.startDate = startDate;
 		this.endDate = endDate;
 		this.endOfSeries = endOfSeries;
 		this.rhythm = rhythm;
-		this.frequenzy = frequenzy;
+		this.frequency = frequency;
 	}
 	
 	public Availability () {
@@ -54,8 +54,8 @@ public class Availability {
 		return rhythm;
 	}
 	
-	public int getFrequenzy() {
-		return frequenzy;
+	public int getFrequency() {
+		return frequency;
 	}
 	
 	public Date getEndOfSeries() {
@@ -64,6 +64,22 @@ public class Availability {
 	
 	public void setEndOfSeries(Date endOfSeries) {
 		this.endOfSeries = endOfSeries;
+	}
+
+	public void setStartDate(Date startDate) {
+		this.startDate = startDate;
+	}
+
+	public void setEndDate(Date endDate) {
+		this.endDate = endDate;
+	}
+
+	public void setRhythm(AvailabilityRhythm rhythm) {
+		this.rhythm = rhythm;
+	}
+
+	public void setFrequency(int frequency) {
+		this.frequency = frequency;
 	}
 	
 }

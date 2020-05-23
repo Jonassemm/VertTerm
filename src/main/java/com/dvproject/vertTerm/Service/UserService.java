@@ -1,20 +1,17 @@
 package com.dvproject.vertTerm.Service;
 
-import java.security.Principal;
-import java.util.List;
-
 import com.dvproject.vertTerm.Model.Right;
 import com.dvproject.vertTerm.Model.Role;
 import com.dvproject.vertTerm.Model.User;
 
-public interface UserService
-{
-    List<User> getAllUsers();
+import java.security.Principal;
+import java.util.List;
+
+public interface UserService extends BasicService<User> {
     User getOwnUser(Principal principal);
     List<Role> getOwnUserRoles (Principal principal);
     List<Right> getOwnUserRights (Principal principal);
     List<User> getUsersWithUsernames (String [] usernames);
-    User getUserWithId (String id);
     List<Role> getUserRolesWithId (String id);
     List<Right> getUserRightsWithId (String id);
 }

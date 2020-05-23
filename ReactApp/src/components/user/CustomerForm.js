@@ -1,15 +1,13 @@
 import React ,{useState, useEffect} from 'react'
 import {Form, Table, Card, Col, Container, Button, InputGroup} from 'react-bootstrap'
-import {useParams} from "react-router-dom"
-import {observer} from "mobx-react"
-import Layout from "./Layout"
-import {useHistory} from 'react-router-dom';
+import ObjectPicker from "../ObjectPicker"
 
 import {
   addCustomer,
   updateCustomer,
   getAllRoles,
-  getCustomer
+  getCustomer,
+  getAllRestrictions
 } from "./UserRequests";
 
 
@@ -22,12 +20,15 @@ function CustomerForm({ onCancel, edit, selected, userType }) {
   const [lastName, setLastname] = useState("")
   const [username, setUsername] = useState("") 
   const [password, setPassword] = useState("")
-  const [systemStatus, setSystemStatus] = useState("ACTIVE")
+  const [systemStatus, setSystemStatus] = useState("active")
 
   let firstSelectedRole = null // to add the first role wich is listed when click on "Hinzufügen"
   const [selectedRole, setSelectedRole] = useState(null)
   const [roles, setRoles] = useState([])
   const [choosableRoles, setChoosableRoles] = useState([])//([{name: "Standard"}])
+
+  const [restrictions, setRestrictions] = useState([])
+  const [choosableRestrictions, setChoosableRestrictions] = useState([])
 
   //HANDEL CHANGE
   const handleFirstnameChange = data => {setFirstname(data.target.value); setEdited(true)}
@@ -120,28 +121,34 @@ function CustomerForm({ onCancel, edit, selected, userType }) {
   //---------------------------------USER-ROLES---------------------------------
   //ADD USER ROLES (TABLE)
   const addRole = () => {
-    if(roles.some(roles => roles.name === selectedRole) || (roles.some(roles => roles.name === firstSelectedRole) && (selectedRole==null))) {
-      alert("Rolle bereits vorhanden!");
-    } else if (selectedRole == null) { //NO ROLE SELECTED
-        if(firstSelectedRole == null ) //NO ROLES FOR DROPDOWN
-        {
-          alert("Keine Rolle zum hinzufügen gefunden");
-        } else { // ONE ROLE SELECTED IN DROPDOWN
-          choosableRoles.map((role, index) => {
-            if(role.name == firstSelectedRole) { //ADD THE ROLE WICH IS SELECTED
-              setRoles(roles => [...roles, role]);
-
-            }
+    if(selectedRole != null) {
+      if(selectedRole.length > 0) {
+        //choose the one single role in this array
+        var selected = null
+          selectedRole.map((role)=> {
+            selected = role
           })
-        }
-    } else { // ROLE SELECTED
-      choosableRoles.map((role, index) => {
-        if(role.name == selectedRole) {
-          setRoles(roles => [...roles, role]);
-        }
-      })
-    }
 
+        if(roles.some(roles => roles.name === selected.name)) {
+          alert("Rolle bereits vorhanden!");
+        } else {
+          if(choosableRoles.some(roles => roles.name === selected.name)) {
+            choosableRoles.map((role, index) => {
+              if(role.name == selected.name) {
+                setRoles(roles => [...roles, role]);
+                setEdited(true)
+              }
+            })
+          }else {
+            alert("Rolle darf nicht zugewiesen werden!")
+          }
+        }
+      } else {
+        alert("Bitte Rolle auswählen!")
+      }
+    } else {
+      alert("Bitte Rolle auswählen!")
+    }
   };
 
   //REMOVE USER ROLES (ROLE-TABLE)
@@ -170,6 +177,21 @@ function CustomerForm({ onCancel, edit, selected, userType }) {
     })
   };
 
+  //---------------------------------ALL-RESTRICTIONS---------------------------------
+  //LOAD (RESSTRICTION-DROPDOWN)
+  const loadChoosableRestrictions = async () => {
+    var data = [];
+    try{ 
+      const response = await getAllRestrictions();
+      data = response.data;
+    }catch (error) {
+      console.log(Object.keys(error), error.message)
+      alert("An error occoured while loading choosable restrictions")
+    }
+    data.map((restriction) => {
+      setChoosableRestrictions(choosableRestrictions => [...choosableRestrictions, restriction]);
+    })
+  };
 
   //---------------------------------RENDERING---------------------------------
   // DYNAMIC ROLE-DROPDOWN
@@ -209,7 +231,6 @@ function CustomerForm({ onCancel, edit, selected, userType }) {
     }
   };
 
-
    return (
     <React.Fragment>
       <Container>
@@ -248,8 +269,8 @@ function CustomerForm({ onCancel, edit, selected, userType }) {
                       type="radio"
                       label="Aktiviert"
                       name="systemStatus"
-                      value="ACTIVE"
-                      checked={systemStatus == "ACTIVE"}
+                      value="active"
+                      checked={systemStatus == "active"}
                       id="SystemStatusAktive"
                       onChange={handleSystemStatusChange}
                   />
@@ -259,8 +280,8 @@ function CustomerForm({ onCancel, edit, selected, userType }) {
                       label="Deaktiviert"
                       name="systemStatus"
                       id="SystemStatusInaktive"
-                      value="INACTIVE"
-                      checked={systemStatus == "INACTIVE"}
+                      value="inactive"
+                      checked={systemStatus == "inactive"}
                       onChange={handleSystemStatusChange}
                   />
               </Form.Group>
@@ -303,16 +324,23 @@ function CustomerForm({ onCancel, edit, selected, userType }) {
               <Form.Group as={Col} md="5">
                 <Form.Label>Rolle hinzufügen:</Form.Label>
                   <Container style={{display: "flex", flexWrap: "nowrap"}}>
-                      <select onChange={handleSelectedRoleChange} className="custom-select">
-                          {renderRoleDropdown()}
-                      </select>
+                       <ObjectPicker 
+                          setState={setSelectedRole}
+                          DbObject="role" />
                     <Button onClick={addRole} style={{marginLeft: "20px"}}>Hinzufügen</Button>
                   </Container> 
               </Form.Group>
+
+
+              <Form.Group as={Col} md="5">
+                <Form.Label>Einschränkungen:</Form.Label>
+              </Form.Group>
+
+
             </Form.Row>
             <Form.Row>
                 <Form.Group as={Col} md="5">
-                    <Table striped hover variant="dark" >
+                    <Table style={{border: "2px solid #AAAAAA"}} striped hover variant="ligth">
                       <thead>
                           <tr>
                               <th>Zugewiesene Rollen</th>

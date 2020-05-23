@@ -1,31 +1,26 @@
 package com.dvproject.vertTerm.Service;
+import com.dvproject.vertTerm.Model.Employee;
+import com.dvproject.vertTerm.Model.Resource;
+import com.dvproject.vertTerm.Model.Restriction;
+import com.dvproject.vertTerm.Model.Role;
 
 import java.util.List;
 
-import com.dvproject.vertTerm.Model.Employee;
-import com.dvproject.vertTerm.Model.Resource;
 
-public interface ResourceService {
-	
-	Resource createResource(Resource res);
-	Resource updateResource(Resource res);
+public interface ResourceService extends BasicService<Resource> {
 
-//	Resource updateResourceAvailability(Resource res);
-//	
-//	Resource updateEmployeePermission(String resID,String empID,String roleID);
-	
-    List<Resource> getAllResources();
+    List<Resource> getResources(String[] ids);
+	    
+    Resource updateResourceAvailability(Resource res);
     
-    List<Employee> getAllResourceEmps();
+    List<Restriction> getResourceDependencies (String ResID);
+   
+    Resource updateResourceDependencies(Resource res);
 
-    Resource getResourceById(String id);
-
-    void deleteResourceById(String id);
-    
-//    void updateResourceDependencies(String ResID ,String ParResID ,List<String> ChildResIDs);
-//
-//    void getResourceDependencies (String ResID);
-    
-    // createResourceFailure 
+    //TODO
+    // 
+    // List<Employee> getAllResourceEmps();
+    // Resource updateEmployeePermission(String resID,String empID,String roleID);
+        // createResourceFailure 
     // updateResourceFailure 
 }

@@ -2,30 +2,26 @@ package com.dvproject.vertTerm.Service;
 
 import java.util.List;
 
+import com.dvproject.vertTerm.Model.ResourceType;
+
 import com.dvproject.vertTerm.Model.Right;
 import com.dvproject.vertTerm.Model.Role;
 import com.dvproject.vertTerm.Model.User;
 
-public interface RoleService {
-	
-    Role createRole(Role role);
+import java.util.List;
 
-    Role updateRole(Role role);
 
-    List<Role> getAllRoles();
+public interface RoleService extends BasicService<Role> {
 
-    Role getRoleById(String id);
-
-    void deleteRoleById(String id);
-    
+	List<Role> getRoles(String[] ids);
+	 
     List<Right> getRoleRights(String id);
     
     Role updateRoleRights(Role role);
     
-    List<User>  getRoleUsers(String id);
+    List<User> getRoleUsers(String id);
     
-    //TODO
-    // updateRoleUsers(String id);
+    List<User> updateRoleUsers(String id,String[] Uids);
  
 }
 

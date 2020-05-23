@@ -74,7 +74,7 @@ const PositionForm = ({ onCancel, edit, selected }) => {
                     </Form.Row>
                     <hr style={{ border: "0,5px solid #999999" }}/>
                     <Container style={{textAlign: "right"}}>
-                        <Button style={{ marginRight: "10px" }} variant="danger" onClick={handleDeletePosition}>Löschen</Button>
+                        {edit ? <Button style={{ marginRight: "10px" }} variant="danger" onClick={handleDeletePosition}>Löschen</Button> : null}
                         <Button style={{ marginRight: "10px" }} onClick={onCancel} variant="secondary">Abbrechen</Button>
                         {(edit ? edited ? 
                             <Button variant="success"  type="submit">Übernehmen</Button>:
