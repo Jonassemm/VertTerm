@@ -85,7 +85,7 @@ public class RoleController
 	 @DeleteMapping("/{id}")
 
 	 public boolean deleteRole(@PathVariable String id) {
-	     return  roleService.deleteRoleById(id);
+	     return  roleService.delete(id);
   }
 
 	 

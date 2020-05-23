@@ -25,33 +25,24 @@ public class ResourceTypeServiceImp implements ResourceTypeService {
    private ResourceTypeRepository ResourceTypeRepo;
 
 	//@PreAuthorize("hasAuthority('RESOURCETYPE_DATA_READ')")
-   public List<ResourceType> getAllResourceType() {
+   public List<ResourceType> getAll() {
    	  return this.ResourceTypeRepo.findAll();
    }
    
 	//@PreAuthorize("hasAuthority('RESOURCETYPE_DATA_READ')")
-   public ResourceType getResourceTypeById(String id) {
-     Optional <ResourceType> ResTypDb = this.ResourceTypeRepo.findById(id);
-    if (ResTypDb.isPresent()) {
-        return ResTypDb.get();
-    } else {
-        throw new ResourceNotFoundException("Record not found with id : " + id);
-    }
-   }
-   
-	//@PreAuthorize("hasAuthority('RESOURCETYPE_DATA_READ')")
-   public List<ResourceType> getResourceTypes(String[] ids) {
-   	List<ResourceType> ResTypes = new ArrayList<ResourceType> ();
+	public ResourceType getById(String id) {
+		  Optional <ResourceType> ResTypDb = this.ResourceTypeRepo.findById(id);
+		    if (ResTypDb.isPresent()) {
+		        return ResTypDb.get();
+		    } else {
+		    	throw new ResourceNotFoundException("Resource with the given id :" +id + " already exists");
+		    }
+	
+	}
+	   
 
-   	for (String id : ids) {
-   		ResTypes.add(this.getResourceTypeById(id));
-   	}
-
-   	return ResTypes;
-   }
-   
 	//@PreAuthorize("hasAuthority('RESOURCETYPE_DATA_WRITE')")
-   public ResourceType createResourceType(ResourceType restype) {
+   public ResourceType create(ResourceType restype) {
 	     if(this.ResourceTypeRepo.findByName(restype.getName()) == null)
 	  	   return ResourceTypeRepo.save(restype);
 	       if (ResourceTypeRepo.findById(restype.getId()).isPresent()) {
@@ -61,35 +52,39 @@ public class ResourceTypeServiceImp implements ResourceTypeService {
 	    
 }
 
-//@PreAuthorize("hasAuthority('RESOURCETYPE_DATA_WRITE')")
-public ResourceType updateResourceType(ResourceType restype) {
-	   Optional <ResourceType> ResTypDb = this.ResourceTypeRepo.findById(restype.getId());
-	    if (ResTypDb.isPresent()) {
-	    	ResourceType ResTypUpdate = ResTypDb.get();
-	        ResTypUpdate.setId(restype.getId());
-	        ResTypUpdate.setName(restype.getName());
-	        ResTypUpdate.setDescription(restype.getDescription());
-	        ResourceTypeRepo.save(ResTypUpdate);
-	        return ResTypUpdate;
-	    } 
+    //@PreAuthorize("hasAuthority('RESOURCETYPE_DATA_WRITE')")
+    public ResourceType update(ResourceType restype) {
+		if (restype.getId() != null && ResourceTypeRepo.findById(restype.getId()).isPresent()) {
+			return ResourceTypeRepo.save(restype);
+		}
 	    else {
 	        throw new ResourceNotFoundException("ResourceType with the given id : " + restype.getId()  + " not found ");
 	    } 
 }
 
 
-
 	//@PreAuthorize("hasAuthority('RESOURCETYPE_DATA_WRITE')")
-	public void deleteResourceTypeById(String id) {
+	public boolean delete(String id) {
 	  Optional <ResourceType> ResTypDb = this.ResourceTypeRepo.findById(id);
 
       if (ResTypDb.isPresent()) {
-          this.ResourceTypeRepo.delete(ResTypDb.get());
+    	    this.ResourceTypeRepo.delete(ResTypDb.get());
       } else {
           throw new ResourceNotFoundException("ResourceType with the given id : " + id + " not found ");
       }
+      return ResourceTypeRepo.existsById(id);
+	}
 
-}
+	//@PreAuthorize("hasAuthority('RESOURCETYPE_DATA_READ')")
+	   public List<ResourceType> getResourceTypes(String[] ids) {
+	   	List<ResourceType> ResTypes = new ArrayList<ResourceType> ();
+
+	   	for (String id : ids) {
+	   		ResTypes.add(this.getById(id));
+	   	}
+
+	   	return ResTypes;
+	   }
 
 
 }

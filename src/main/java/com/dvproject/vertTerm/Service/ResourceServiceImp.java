@@ -15,16 +15,6 @@ import com.dvproject.vertTerm.Model.Restriction;
 import com.dvproject.vertTerm.Model.Status;
 import com.dvproject.vertTerm.repository.RessourceRepository;
 
-import com.dvproject.vertTerm.Model.Employee;
-import com.dvproject.vertTerm.Model.Resource;
-import com.dvproject.vertTerm.repository.RessourceRepository;
-import net.springboot.javaguides.exception.ResourceExsistException;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.rest.webmvc.ResourceNotFoundException;
-import org.springframework.stereotype.Service;
-
-import java.util.List;
-import java.util.Optional;
 
 @Service
 public class ResourceServiceImp implements ResourceService {
@@ -34,57 +24,48 @@ public class ResourceServiceImp implements ResourceService {
 	private RessourceRepository ResRepo;
 	
 
-	//@PreAuthorize("hasAuthority('RESOURCE_DATA_WRITE')")
+		//@PreAuthorize("hasAuthority('RESOURCE_DATA_READ')")
+		public List<Resource> getAll() {
+			 return this.ResRepo.findAll();
+		}
 
-	public Resource createResource (Resource res) {
-	      if (this.ResRepo.findByName(res.getName()) == null)
-	   	     return ResRepo.save(res);
-	        if (ResRepo.findById(res.getId()).isPresent()) {
-		   		throw new ResourceNotFoundException("Resource with the given id :" + res.getId() + " already exists");
-	        }
-			return null;
 
-	public Resource create(Resource res) {
-	      if(this.ResRepo.findByName(res.getName()).isEmpty())
-	   	   return ResRepo.save(res);
-	         else 
-	           throw new ResourceExsistException("Record already exists");
-}
+		//@PreAuthorize("hasAuthority('RESOURCE_DATA_READ')")
+		public Resource getById(String id) {
+			  Optional<Resource> ResDb = this.ResRepo.findById(id);
+		       if (ResDb.isPresent()) 
+		           return ResDb.get();
+		       else 
+		    	   throw new ResourceNotFoundException("Resource with the given id :" + id + " already exists");
+			      
+        }
+
+		//@PreAuthorize("hasAuthority('RESOURCE_DATA_WRITE')")
+		   public Resource create(Resource res) {
+			      if(this.ResRepo.findByName(res.getName()) == null)  
+			   	   return ResRepo.save(res);
+			         else 
+			        throw new ResourceNotFoundException("Resource with the given id :" + res.getId() + " already exists");
+			       
+			}
+
 	
+		//@PreAuthorize("hasAuthority('RESOURCE_DATA_READ')")
+		public List<Resource> getResources(String[] ids) {
+		   	List<Resource> Resources = new ArrayList<Resource> ();
 	
-	//@PreAuthorize("hasAuthority('RESOURCE_DATA_READ')")
-	public List<Resource> getAll() {
-		 return this.ResRepo.findAll();
-	}
-
-
-	//@PreAuthorize("hasAuthority('RESOURCE_DATA_READ')")
-	public Resource getById(String id) {
-		  Optional<Resource> ResDb = this.ResRepo.findById(id);
-	       if (ResDb.isPresent()) {
-	           return ResDb.get();
-	       } else {
-	    		throw new ResourceNotFoundException("Resource with the given id :" +id + " already exists");
-	      		
-	       }
-	}
+		   	for (String id : ids) {
+		   		Resources.add(this.getById(id));
+		   	}
 	
-	//@PreAuthorize("hasAuthority('RESOURCE_DATA_READ')")
-	public List<Resource> getResources(String[] ids) {
-	   	List<Resource> Resources = new ArrayList<Resource> ();
-
-	   	for (String id : ids) {
-	   		Resources.add(this.getResourceById(id));
-	   	}
-
-	   	return Resources;
-	}
+		   	return Resources;
+		}
 	
 	
 	//@PreAuthorize("hasAuthority('RESOURCE_DATA_READ')")
 	public List<Restriction> getResourceDependencies(String id) {
 		  List<Restriction> dep = new ArrayList<Restriction>();
-		  Resource res = getResourceById(id);
+		  Resource res = getById(id);
 		  for (Restriction rest : res.getRestrictions()) 
 		  { 
 			  if (!dep.contains(rest)) 
@@ -95,44 +76,28 @@ public class ResourceServiceImp implements ResourceService {
     }
 	
 	//@PreAuthorize("hasAuthority('RESOURCE_DATA_WRITE')")
-	public Resource updateResource(Resource res) {
-
-	//@PreAuthorize("hasAuthority('RESOURCE_WRITE')")
 	public Resource update(Resource res) {
-		  Optional<Resource> ResDb = this.ResRepo.findById(res.getId());
-		    if (ResDb.isPresent()) {
-		    	Resource ResUpdate = ResDb.get();
-		    	ResUpdate.setId(res.getId());
-		    	ResUpdate.setName(res.getName());
-		    	ResUpdate.setDescription(res.getDescription());
-		    	ResUpdate.setAvailability(res.getAvailability());
-		    	ResUpdate.setAvailabilities(res.getAvailabilities());
-		    	ResUpdate.setChildRessources(res.getChildRessources());
-		    	ResUpdate.setResourceTyp(res.getResourceTyp());
-		    	ResUpdate.setStatus(res.getStatus());
-		    	ResUpdate.setRestrictions(res.getRestrictions());
-		        ResRepo.save(ResUpdate);
-		        return ResUpdate;
-		    } 
+		if (res.getId() != null && ResRepo.findById(res.getId()).isPresent()) {
+			return ResRepo.save(res);
+		}
+	  
 		    else {
-		    	throw new ResourceNotFoundException("Resource with the given id :" +res.getId() + " already exists");  
+		    	throw new ResourceNotFoundException("Resource with the given id :" +res.getId() + "not found");  
 		    } 
 	}
 	
 	//@PreAuthorize("hasAuthority('RESOURCE_STATUS_WRITE')")
-	public boolean deleteResourceById(String id) {
-	    Resource Res = getResourceById(id);
+	public boolean delete(String id) {
+	    Resource Res = getById(id);
 		return Res.getStatus() == Status.DELETED;
 
-	@Override
-	public boolean delete(String id) {
-	   Optional<Resource> ResDb = this.ResRepo.findById(id);
-	       if (ResDb.isPresent()) {
-	           this.ResRepo.delete(ResDb.get());
-	       } else {
-	           throw new ResourceNotFoundException("Record not found with id : " + id);
-	       }
-		return ResRepo.existsById(id);
+//	   Optional<Resource> ResDb = this.ResRepo.findById(id);
+//	       if (ResDb.isPresent()) {
+//	           this.ResRepo.delete(ResDb.get());
+//	       } else {
+//	           throw new ResourceNotFoundException("Record not found with id : " + id);
+//	       }
+//		return ResRepo.existsById(id);
 		
 	}
 	
@@ -165,7 +130,8 @@ public class ResourceServiceImp implements ResourceService {
 			    	throw new ResourceNotFoundException("Resource with the given id :" +res.getId() + " already exists");
 			      	      
 			    }
-	     } 
+	     }
+
 
 		
 //		@Override

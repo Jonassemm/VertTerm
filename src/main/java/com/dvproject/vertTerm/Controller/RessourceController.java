@@ -63,7 +63,6 @@ public class RessourceController {
 	     return resservice.create(res);
      }
     
-
 	@PutMapping("{id}")
     public Resource  updateResource(@PathVariable String id,@RequestBody Resource res) {
 	     res.setId(id);
@@ -83,7 +82,7 @@ public class RessourceController {
 
 	 @DeleteMapping("/{id}")
 	 public boolean deleteResource(@PathVariable String id) {
-		return resservice.deleteResourceById(id);
+		return resservice.delete(id);
 
   }
 

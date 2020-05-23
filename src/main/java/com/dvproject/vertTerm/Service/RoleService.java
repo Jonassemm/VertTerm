@@ -11,13 +11,10 @@ import com.dvproject.vertTerm.Model.User;
 import java.util.List;
 
 
-    List<Role> getRoles(String[] ids);
-    
-    boolean deleteRoleById(String id);
-
 public interface RoleService extends BasicService<Role> {
 
-    
+	List<Role> getRoles(String[] ids);
+	 
     List<Right> getRoleRights(String id);
     
     Role updateRoleRights(Role role);

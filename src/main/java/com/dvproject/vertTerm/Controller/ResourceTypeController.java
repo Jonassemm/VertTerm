@@ -26,12 +26,12 @@ public class ResourceTypeController
 	
 	 @GetMapping()
      public  @ResponseBody  List<ResourceType> getAllResourceType() {
-		 return restypService.getAllResourceType();
+		 return restypService.getAll();
 	 }
 	
 	 @GetMapping("/{id}")
 	 public  @ResponseBody  ResourceType getResourceTypeById(@PathVariable String id) {
-	     return restypService.getResourceTypeById(id);
+	     return restypService.getById(id);
 	 }
 	
 	@GetMapping("/ResTypes")
@@ -41,18 +41,18 @@ public class ResourceTypeController
     	
 	 @PostMapping()
 	 public ResourceType createResourceType(@RequestBody ResourceType restype) {
-	     return restypService.createResourceType(restype);
+	     return restypService.create(restype);
      }
 
 	 @PutMapping("/{id}")
 	 public  ResourceType updateResourceType(@PathVariable String id, @RequestBody ResourceType restype) {
 		 restype.setId(id);
-	      return restypService.updateResourceType(restype);
+	      return restypService.update(restype);
 	 }
     
 	 @DeleteMapping("/{id}")
 	 public void deleteResourceType(@PathVariable String id) {
-		 restypService.deleteResourceTypeById(id);
+		 restypService.delete(id);
 	  }
 
 }
