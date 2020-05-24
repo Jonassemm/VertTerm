@@ -1,7 +1,7 @@
-import {getAllUsers, getCustomerList, getEmployeeList} from "./user/UserRequests"
+import {getAllUsers, getCustomerList, getEmployeeList} from "./userComponents/UserRequests"
 import {getProcedures} from "./procedureComponents/ProcedureRequests"
 import {getRoles} from "./roleComponents/RoleRequests"
-import {getAllPositions} from "./position/PositionRequests"
+import {getAllPositions} from "./positionComponents/PositionRequests"
 
 
 export const getUsers = getAllUsers

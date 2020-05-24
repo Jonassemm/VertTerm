@@ -1,8 +1,8 @@
 import axios from "axios"
-import {APIURL} from "./../../APIConfig"
+import {APIURL} from "../../APIConfig"
 
-import {getRoles} from "./../roleComponents/RoleRequests"
-import {getAllPositions} from "./../position/PositionRequests"
+import {getRoles} from "../roleComponents/RoleRequests"
+import {getAllPositions} from "../positionComponents/PositionRequests"
 
 //Employee
 export const addEmployee = data => axios.post(`${APIURL}/api/Employees/`, data) 

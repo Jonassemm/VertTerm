@@ -3,7 +3,7 @@ import { Container, Form, Col, Tabs, Tab, Button } from "react-bootstrap"
 import { Formik } from "formik"
 import ObjectPicker from "../ObjectPicker"
 import { addProcedure } from "./ProcedureRequests"
-import Availability from "../availability/Availability"
+import Availability from "../availabilityComponents/Availability"
 
 function ProcedureForm({ onCancel, edit, selected }) {
     const [enterPrice, setEnterPrice] = useState(false)

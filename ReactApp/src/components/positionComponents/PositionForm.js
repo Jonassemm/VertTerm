@@ -28,12 +28,14 @@ const PositionForm = ({ onCancel, edit, selected }) => {
 
     const handleSubmit = async event => {
         event.preventDefault()
-        const data = { name: name, description: description}
         let res = {}
         if (!edit) {
+            const data = {name, description}
             res = await addPosition(data)
         } else {
-            res = await editPosition(selected.id, data)
+            var id = selected.id
+            const data = {id, name, description}
+            res = await editPosition(id, data)
         }
         console.log(res)
         onCancel()

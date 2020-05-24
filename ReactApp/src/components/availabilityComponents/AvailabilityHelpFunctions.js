@@ -1,3 +1,5 @@
+import React from 'react'
+import {Form, Button} from 'react-bootstrap';
 var moment = require('moment'); 
 
 export function setDate() {
@@ -97,7 +99,7 @@ function availabilityRhythmGE(rhythm) {
 }
 
 //---------------------------------RENDERING---------------------------------
-export function renderAvailabilityTable(allAvailabilities) {
+export function renderAvailabilityTable(allAvailabilities, availabilityRhythm, handleCancleAvailability) {
     if(allAvailabilities.length > 0)
     {
       return ( 

@@ -273,7 +273,7 @@ const Availability = (props) => {
                                 </tr>
                             </thead>
                             <tbody>
-                                {renderAvailabilityTable(props.availabilities)}
+                                {renderAvailabilityTable(props.availabilities, availabilityRhythm, handleCancleAvailability)}
                             </tbody>
                         </Table> 
                     </Form.Row>
