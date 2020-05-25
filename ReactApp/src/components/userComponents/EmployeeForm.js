@@ -1,6 +1,6 @@
 import React ,{useState, useEffect} from 'react'
 import {Form, Table, Col, Container, Button, InputGroup, Tabs, Tab } from 'react-bootstrap'
-import Availability from "../availability/Availability"
+import Availability from "../availabilityComponents/Availability"
 import ObjectPicker from "../ObjectPicker"
 
 import {
@@ -31,7 +31,7 @@ function EmployeeForm({ onCancel, edit, selected }) {
   //Availability
   const [availabilities, setAvailabilities] = useState([])
   //Position
-  const [position, setPosition] = useState(null)
+  const [position, setPosition] = useState([])
   const [choosablePositions, setChoosablePositions] = useState([])
   //Role
   let firstSelectedRole = null // to add the first role wich is listed when click on "Hinzufügen"
@@ -50,12 +50,11 @@ function EmployeeForm({ onCancel, edit, selected }) {
   const handleSelectedRoleChange = event => {setSelectedRole(event.target.value); setEdited(true)}
   const handleSelectedPositionChange = event =>  {setPosition(choosablePositions[event.target.value]); setEdited(true)}
   const handleSystemStatusChange = event => {setSystemStatus(event.target.value); setEdited(true)}
-  
-
+  const handlePositionChange = data => {console.log(toString(data)); setPosition(data); setEdited(true)}
 
   useEffect(() => {
     console.log("useEffect-Call: loadChoosableRoles");
-    loadChoosableRoles();
+    loadChoosableRoles(); 
     console.log("useEffect-Call: loadChoosablePositions");
     loadChoosablePosition();
     if(edit) {
@@ -64,17 +63,14 @@ function EmployeeForm({ onCancel, edit, selected }) {
         setUsername(selected.username)
         setPassword(selected.password)
         setSystemStatus(selected.systemStatus)
-        //const test_role = {"id":"5ec1243689b22604c5644173","name":"ANONYMOUS_ROLE","description":null,"rights":[{"id":"5ec1243689b22604c5644169","name":"OWN_USER_DATA_READ","description":null}]}
-        setRoles(selected.roles)
-        const test_position = {id:"2", name:"Position2", description:"Zweite Position"}
-        //setPosition(selected.Position)
-        setPosition(test_position)
-        //const Availability_test = {startDate: new Date(), endDate: new Date(), endOfSeries: null, frequency: null, rhythm: "Einmalig"}
+        if(selected.roles != null) {
+          setRoles(selected.roles)
+        }
+        if(selected.position != null) {
+          setPosition(selected.position)
+        }
         if(selected.availabilities != null || selected.availabilities != undefined) {
           setAvailabilities(selected.availabilities);
-        } else {
-          //setAvailabilities([Availability_test]);
-          alert("EmployeeForm Z. 77")
         }
     } 
   }, [])
@@ -88,15 +84,13 @@ function EmployeeForm({ onCancel, edit, selected }) {
       const updateData = {id, firstName, lastName, username, password, systemStatus, roles, position, availabilities}
       try {
         console.log("AXIOS: updateEmployee()")
-        console.log(updateData)
         await updateEmployee(id, updateData);
       } catch (error) {
         console.log(Object.keys(error), error.message)
         alert("An error occoured while updating a user")
       } 
     } else {
-        var id = Math.random() * (10000 - 0) + 0;
-        const employeeData = {id, firstName, lastName, username, password, systemStatus, roles, position, availabilities}
+        const employeeData = {firstName, lastName, username, password, systemStatus, roles, position, availabilities}
         try {
           console.log("AXIOS: addEmployee()")
           await addEmployee(employeeData);
@@ -109,11 +103,10 @@ function EmployeeForm({ onCancel, edit, selected }) {
   };
 
   //DELETE USER
-  const handleDeleteUser = async  (index) => {
+  const handleDeleteUser = async () => {
     const answer = confirm("Möchten Sie diesen Mitarbeiter wirklich löschen? ")
         if (answer) {
-            const res = await deleteEmployee(selected.id)
-            console.log(res)
+            await deleteEmployee(selected.id)
         }
         onCancel()
   }
@@ -153,11 +146,9 @@ function EmployeeForm({ onCancel, edit, selected }) {
 
   //REMOVE USER ROLES (ROLE-TABLE)
   const removeRole = (index) => {
-    console.table(roles)
     roles.splice((index),1) // remove role at "index" and just remove "1" role
     setRoles([...roles])
     setEdited(true)
-    console.table(roles)
   };
 
   //---------------------------------ALL-ROLES---------------------------------
@@ -185,8 +176,8 @@ function EmployeeForm({ onCancel, edit, selected }) {
       data = response.data;
     }catch (error) {
       console.log(Object.keys(error), error.message)
-      //alert("An error occoured while loading choosable positions")
-      data = [{id:"1", name:"Position1", description:"Erste Position"},{id:"2", name:"Position2", description:"Zweite Position"}]
+      alert("An error occoured while loading choosable positions")
+      //data = [{id:"1", name:"Position1", description:"Erste Position"},{id:"2", name:"Position2", description:"Zweite Position"}]
     }
     data.map((singlePosition, index) => {
       if(index == 0) {
@@ -206,7 +197,7 @@ function EmployeeForm({ onCancel, edit, selected }) {
       data = response.data; 
     }catch (error) {
       console.log(Object.keys(error), error.message)
-      //alert("An error occoured while loading choosable restrictions")
+      alert("An error occoured while loading choosable restrictions")
     }
     data.map((restriction) => {
       setChoosableRestrictions(choosableRestrictions => [...choosableRestrictions, restriction]);
@@ -219,7 +210,14 @@ function EmployeeForm({ onCancel, edit, selected }) {
     setAvailabilities(availabilities => [...availabilities, newAvailability]);
   }
 
-  const editedAvailability = (isEdited) => {
+  const updateAvailabilities = (newAvailabilities) => {
+    setAvailabilities([])
+    newAvailabilities.map((SingleAvailability)=> {
+      setAvailabilities(availabilities => [...availabilities, SingleAvailability]);
+    })
+  }
+
+  const editedAvailabilities = (isEdited) => {
     setEdited(isEdited)
   }
 
@@ -310,7 +308,7 @@ function EmployeeForm({ onCancel, edit, selected }) {
                 </Form.Group>
                 
                 <Form.Group as={Col} md="2">
-                    <Form.Label>Benutzerkonto:</Form.Label>
+                    <Form.Label>Benutzerstatus:</Form.Label>
                     <Form.Check
                         required
                         type="radio"
@@ -377,18 +375,28 @@ function EmployeeForm({ onCancel, edit, selected }) {
                       <Button onClick={addRole} style={{marginLeft: "20px"}}>Hinzufügen</Button>
                     </Container> 
                 </Form.Group>
-                <Form.Group as={Col} md="3">
+                <Form.Group as={Col} md="5">
                   <Form.Label>Position:</Form.Label>
                   <Container style={{display: "flex", flexWrap: "nowrap"}}>
                       {edit ? 
                           <ObjectPicker 
-                            setState={setPosition}
-                            DbObject="position" />:
-                          <ObjectPicker // if form is loading, this picker should display the position of this user
-                            setState={setPosition}
-                            DbObject="position" 
-                            selected={position}/>
+                            setState={handlePositionChange}
+                            DbObject="position"
+                            //initial ={position} // if form is loading, this picker should display the position of this user
+                            />:
+                          <ObjectPicker 
+                            setState={handlePositionChange}
+                            DbObject="position"/>
                       }
+                      <Form.Control
+                        style = {{marginLeft: "20px"}}
+                        readOnly
+                        name="position"
+                        type="position"
+                        placeholder="Keine Position "
+                        value={position.name || ""}
+                        //onChange={}
+                        />
 
                   </Container>
                 </Form.Group>
@@ -410,7 +418,11 @@ function EmployeeForm({ onCancel, edit, selected }) {
             </Tab>
             <Tab eventKey="availability" title="Verfügbarkeit">
               <Form.Row style={{marginTop: "25px"}}>
-                <Availability availabilities={availabilities} addAvailability={addAvailability} editedAvailability={editedAvailability}/>
+                <Availability 
+                  availabilities={availabilities} 
+                  addAvailability={addAvailability}
+                  updateAvailabilities={updateAvailabilities} 
+                  editedAvailabilities={setEdited}/>
               </Form.Row>
             </Tab>
           </Tabs>

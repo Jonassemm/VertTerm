@@ -1,9 +1,14 @@
 import React, { useState, useEffect } from "react"
 import { Typeahead } from "react-bootstrap-typeahead"
-import { getUsers, getEmployees, getCustomers, getProcedures, getRoles } from "./requests"
+import { getUsers, getEmployees, getCustomers, getProcedures, getRoles, getPositions} from "./requests"
 import { set } from "mobx"
 
-function ObjectPicker({ DbObject, setState, state, initial }) {
+// when using this Object you have to give 3 props:
+// DbObject: defining what Object you want to pick (select out of predefined list below)
+// setState: the setState method for the state in your Form
+// initial: an Array with the values which have to be initally selected
+
+function ObjectPicker({ DbObject, setState, initial }) {
     const [options, setOptions] = useState([])
     const [labelKey, setLabelKey] = useState("")
     const labels = {
@@ -57,13 +62,14 @@ function ObjectPicker({ DbObject, setState, state, initial }) {
     }
 
     async function getPositionData() {   //API missing
-        //TEST DATA
-        var data = [{id:"1", name:"Position1", description:"Erste Position"},{id:"2", name:"Position2", description:"Zweite Position"}]
-        const result = data.map((item) => {
+        const res = await getPositions()
+        const result = res.data.map((item) => {
             return {
                 ...item
             }
         })
+        setOptions(result)
+        setLabelKey("name")
     }
 
     async function getProcedureData() {
@@ -96,7 +102,7 @@ function ObjectPicker({ DbObject, setState, state, initial }) {
                 options={options}
                 id="basic-typeahead"
                 onChange={setState}
-                selected={state} //new (to display the value in editing-mode)
+                selected={initial} //new (to display the value in editing-mode)
                 labelKey={labelKey}
                 selectHintOnEnter
             />

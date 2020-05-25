@@ -65,8 +65,7 @@ function CustomerForm({ onCancel, edit, selected, userType }) {
         alert("An error occoured while updating a customer")
       } 
     } else {
-        var id = Math.random() * (10000 - 0) + 0;
-        const customerData = {id, firstName, lastName, username, password, systemStatus, roles}
+        const customerData = {firstName, lastName, username, password, systemStatus, roles}
         try {
           console.log("AXIOS: addCustomer()")
           await addCustomer(customerData);

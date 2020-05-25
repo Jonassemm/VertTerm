@@ -45,6 +45,7 @@ function ProcedurePage() {
                 modal={modal}
                 data={procedures}
                 refreshData={prepareProcedures} 
+                modalSize="xl"
             />
         </React.Fragment>
     )
