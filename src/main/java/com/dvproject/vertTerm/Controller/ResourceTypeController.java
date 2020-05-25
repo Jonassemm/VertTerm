@@ -24,7 +24,7 @@ public class ResourceTypeController
 	@Autowired
     private ResourceTypeService restypService;  
 	
-	 @GetMapping()
+	 @GetMapping
      public  @ResponseBody  List<ResourceType> getAllResourceType() {
 		 return restypService.getAll();
 	 }
@@ -34,7 +34,7 @@ public class ResourceTypeController
 	     return restypService.getById(id);
 	 }
 	
-	@GetMapping("/ResTypes")
+	@GetMapping("/")
      private List<ResourceType> getResourceTypes(@RequestParam String [] ids) {
 		return restypService.getResourceTypes(ids);
 	}
@@ -51,8 +51,8 @@ public class ResourceTypeController
 	 }
     
 	 @DeleteMapping("/{id}")
-	 public void deleteResourceType(@PathVariable String id) {
-		 restypService.delete(id);
+	 public boolean deleteResourceType(@PathVariable String id) {
+		return restypService.delete(id);
 	  }
 
 }

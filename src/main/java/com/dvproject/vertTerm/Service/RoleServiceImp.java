@@ -4,6 +4,7 @@ import com.dvproject.vertTerm.Model.Right;
 import com.dvproject.vertTerm.Model.Role;
 import com.dvproject.vertTerm.Model.Status;
 import com.dvproject.vertTerm.Model.User;
+import com.dvproject.vertTerm.repository.RightRepository;
 import com.dvproject.vertTerm.repository.RoleRepository;
 import com.dvproject.vertTerm.repository.UserRepository;
 import net.springboot.javaguides.exception.ResourceExsistException;
@@ -31,6 +32,8 @@ public class RoleServiceImp implements RoleService {
    private RoleRepository RoleRepo;
    @Autowired
    private UserRepository userRepo;
+   @Autowired
+   private RightRepository rightRepo;
 
    @Autowired
    private UserService userService;
@@ -40,7 +43,7 @@ public class RoleServiceImp implements RoleService {
       if(this.RoleRepo.findByName(role.getName()) == null)
 	   return RoleRepo.save(role);
       else {
-	    	throw new ResourceNotFoundException("Resource with the given id :" +role.getId() + "already exsist");  
+	    	throw new ResourceNotFoundException("Role with the given id :" +role.getId() + "already exsist");  
 	    } 
      // return null;
    }
@@ -52,7 +55,7 @@ public class RoleServiceImp implements RoleService {
 			return RoleRepo.save(role);
 		}
 	   else {
-	  	throw new ResourceNotFoundException("Resource with the given id :" +role.getId() + "not found");  
+	  	throw new ResourceNotFoundException("Role with the given id :" +role.getId() + "not found");  
 	   } 	
    }
    
@@ -123,66 +126,118 @@ public class RoleServiceImp implements RoleService {
 
 	
     //@PreAuthorize("hasAuthority('ROLE_RIGHTS_WRITE')") 
-	public Role updateRoleRights(Role role) {
-		 Optional <Role> RoleDb = this.RoleRepo.findById(role.getId());
+	public List<Right> updateRoleRights(String id,String[] Rids) {
+		 List<Right> rights = new ArrayList<> ();
+		 List<Right> Allrights = rightRepo.findAll();
+		 List<String> RightIds = List.of(Rids);
+		 for (Right r : Allrights)
+		 {   String rid=r.getId();
+			 if (RightIds.contains(rid)) 
+		   		{
+				 if (!rights.contains(r)) 
+					 rights.add(r);	
+		   		}
+		 }
+		 		
+		 Optional <Role> RoleDb = this.RoleRepo.findById(id);
 		 if (RoleDb.isPresent()) {
 		        Role RoleUpdate = RoleDb.get();
-		        RoleUpdate.setRights(role.getRights());
+		        RoleUpdate.setRights(rights);
 		        RoleRepo.save(RoleUpdate);
-		        return RoleUpdate;
+		        return rights;
 		    } 
 		    else {
-		    	throw new ResourceNotFoundException("Resource with the given id :" +role.getId() + " not found");
+		    	throw new ResourceNotFoundException("Role with the given id :" +id + " not found");
 		    } 
 	}
 
 	// TODO
 	// @PreAuthorize("hasAuthority('USER_ROLE_WRITE')") 
 	public  List<User> updateRoleUsers(String id,String[] Uids) {
-	// TODO Auto-generated method stub
-		List<User> userslist = new ArrayList<> ();
-		List<User> Allusers = userRepo.findAll();
-		Role role=getById(id);
+		List<User> Addusers = new ArrayList<> ();
+		List<User> Removeusers = new ArrayList<> ();
+		List<User> userslist = new ArrayList<> ();	
+		Role role=this.getById(id);
+    	List<User> Allusers = userRepo.findAll();
 		List<String> UserIds = List.of(Uids);
-		for(User user : Allusers) {
-		    if (UserIds.contains(user.getId())) 
-	     	{
-	   			if(AddRole(role,user))
-   			       if (!userslist.contains(user)) 
-   			    	   userslist.add(user);	 
-			}
-		    else {
-	   		   	  RemoveRole(role,user);
-	   		     // userslist.add(user);
-	   		}
-	   	}
-	    return userslist;
-	}
-	public boolean AddRole(Role role,User user) {
-		  Optional <User> UserDB = this.userRepo.findById(user.getId());
-		  List<Role> roles = user.getRoles();
-		   if (!(roles.contains(role))) {
-		     roles.add(role);
-		     User UserRoleUpdate = UserDB.get();
-		     UserRoleUpdate.setRoles(roles);
-		     userRepo.save(UserRoleUpdate);
-		     return true;
-	      }  	
-	  	  else
-	      return false;
-	}
-	public void RemoveRole(Role role,User user) {
-		  Optional <User> UserDB = this.userRepo.findById(user.getId());
-		  List<Role> roles = user.getRoles();
-		  if (roles.contains(role)) {
-			 roles.remove(role);
-		     User UserRoleUpdate = UserDB.get();
-		     UserRoleUpdate.setRoles(roles);
-		     userRepo.save(UserRoleUpdate);			     
-	     }  	
-	     
-	}
+		List<String> roles=new ArrayList<> ();  			
+		
+		for (User user : Allusers) {
+			String uid=user.getId();
+			 for (Role r : user.getRoles())
+			 {   
+				 roles.add(r.getId()); 
+			 }
+			 		if (UserIds.contains(uid)) 
+			   		{	 if (!(roles.contains(id)) )
+			   		    {    
+			   			      if (!Addusers.contains(user)) 
+			    		        	Addusers.add(user);					          
+			    		}
+			   		  
+			   		}
+			        else if(roles.size() > 1)
+			        { 	
+				        	if (roles.contains(id))
+				    	    {  
+				    		  if (!Removeusers.contains(user)) 
+				    			  Removeusers.add(user);					          				          
+					    	}	
+				        				        	
+	    			 }
+			 		roles=new ArrayList<> ();
+		   }
+		
+		List<User> aus=	AddRole(role,Addusers);
+		List<User> res = RemoveRole(id,Removeusers);
 
+	    for (User ru: res)
+			 userslist.add(ru); 
+			 
+		for (User au: aus)
+			 userslist.add(au);   
+		  
+	    return userslist ;
+	}
+	public List<User> AddRole(Role role,List<User> users) {
+		List<User> userslist = new ArrayList<> ();	
+		 for(User u : users) {
+			  List<Role> Userroles = u.getRoles() ;
+			  Optional <User> UserDB = this.userRepo.findById(u.getId());		     	 
+			  Userroles.add(role);
+		      User UserRoleUpdate = UserDB.get();
+		      UserRoleUpdate.setRoles(Userroles);
+		      userRepo.save(UserRoleUpdate);
+		      userslist.add(UserRoleUpdate);
+	 	  }	
+		 return userslist;
+	}
+	public List<User> RemoveRole(String id,List<User> users) {
+		
+		List<User> userslist = new ArrayList<> ();	
+		for(User u : users) {
+			  List<Role> Userroles = new ArrayList<> ();
+			  List<String> r = new ArrayList<> ();
+			  for (Role roles : u.getRoles())
+			  {    
+				     r.add(roles.getId());
+	   		         if (!(r.contains(id)) )
+	    			 {  
+	    		        if (!Userroles.contains(roles)) 
+	    		        	Userroles.add(roles);					          
+	    			 }
+			  }
+			 
+		      Optional <User> UserDB = this.userRepo.findById(u.getId());
+		      User UserRoleUpdate = UserDB.get();
+		      UserRoleUpdate.setRoles(Userroles);
+		      userRepo.save(UserRoleUpdate);
+		      userslist.add(u);
+		    
+	 	  }	
+
+		  return userslist;
+	}
 }
 
 

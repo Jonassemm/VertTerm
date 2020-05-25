@@ -17,7 +17,7 @@ public interface RoleService extends BasicService<Role> {
 	 
     List<Right> getRoleRights(String id);
     
-    Role updateRoleRights(Role role);
+    List<Right> updateRoleRights(String id,String[] Rids);
     
     List<User> getRoleUsers(String id);
     
