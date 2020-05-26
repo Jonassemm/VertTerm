@@ -1,16 +1,18 @@
 import React, { useState, useEffect } from "react"
 import { Typeahead } from "react-bootstrap-typeahead"
 import { getUsers, getEmployees, getCustomers, getProcedures, getRoles, getPositions} from "./requests"
-import { set } from "mobx"
 
-// when using this Object you have to give 3 props:
+// when using this Object you have to give 4 props:
 // DbObject: defining what Object you want to pick (select out of predefined list below)
 // setState: the setState method for the state in your Form
 // initial: an Array with the values which have to be initally selected
+// multiple: defining whether multiple values can be selected
 
-function ObjectPicker({ DbObject, setState, initial }) {
+function ObjectPicker({ DbObject, setState, initial, multiple }) {
     const [options, setOptions] = useState([])
     const [labelKey, setLabelKey] = useState("")
+    const [selected, setSelected] = useState([])
+    const [init, setInit] = useState(false)
     const labels = {
         user: "Benutzer",
         employee: "Mitarbeiter",
@@ -22,7 +24,6 @@ function ObjectPicker({ DbObject, setState, initial }) {
     }
 
     useEffect(() => {
-        console.log(DbObject)
         switch (DbObject) {
             case 'user':
             case 'employee': 
@@ -34,6 +35,24 @@ function ObjectPicker({ DbObject, setState, initial }) {
             case 'role': getRoleData();
         }
     }, [])
+
+    useEffect(() => {
+        buildInitialValues()
+    }, [init])
+
+    function buildInitialValues() {
+        if(initial){
+            let init = []
+            initial.some(item => {
+                for(let i = 0; i < options.length; i++){
+                    if(item.id == options[i].id){
+                        init.push(options[i])
+                    }
+                }
+            })
+            setSelected(init)
+        }
+    }
 
     async function getUserData() {
         let res = []
@@ -51,14 +70,17 @@ function ObjectPicker({ DbObject, setState, initial }) {
         })
         setOptions(result)
         setLabelKey("labelKey")
+        setInit(true)
     }
 
     async function getResourceData() {   //API missing
-
+        setLabelKey("")
+        setInit(true)
     }
 
     async function getResourceTypeData() { //API missing
-
+        setLabelKey("")
+        setInit(true)
     }
 
     async function getPositionData() {   //API missing
@@ -70,27 +92,37 @@ function ObjectPicker({ DbObject, setState, initial }) {
         })
         setOptions(result)
         setLabelKey("name")
+        setInit(true)
     }
 
     async function getProcedureData() {
         const res = await getProcedures()
-        const result = res.data.map(() => {
+        const result = res.data.map(item => {
             return {
                 ...item,
                 labelKey: item.name
             }
         })
+        setOptions(result)
+        setLabelKey("name")
+        setInit(true)
     }
 
     async function getRoleData() {
         const res = await getRoles()
-        const result = res.data.map((item) => {
+        const result = res.data.map(item => {
             return {
                 ...item
             }   
         })
         setOptions(result)
         setLabelKey("name")
+        setInit(true)
+    }
+
+    const handleChange = event => {
+        setSelected(event)
+        setState(event)
     }
 
     return (
@@ -98,11 +130,11 @@ function ObjectPicker({ DbObject, setState, initial }) {
             <Typeahead
                 clearButton
                 placeholder= {labels[DbObject] + " wählen"}
-                //multiple
+                multiple = {multiple || false}
                 options={options}
                 id="basic-typeahead"
-                onChange={setState}
-                selected={initial} //new (to display the value in editing-mode)
+                onChange={handleChange}
+                selected={selected}
                 labelKey={labelKey}
                 selectHintOnEnter
             />

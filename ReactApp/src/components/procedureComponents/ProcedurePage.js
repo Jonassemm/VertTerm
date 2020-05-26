@@ -8,7 +8,7 @@ function ProcedurePage() {
 
     async function prepareProcedures() {
         const res = await getProcedures()
-        const result = res.map(item => {
+        const result = res.data.map(item => {
             return { ...item }
         })
         setProcedudres(result)
@@ -19,9 +19,12 @@ function ProcedurePage() {
     }, [])
 
     const tableBody =
-        procedures.map(item => {
+        procedures.map((item,index) => {
             return ([
-
+               index + 1,
+               item.name,
+               item.description,
+               item.status 
             ])
         })
 

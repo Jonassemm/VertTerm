@@ -3,5 +3,4 @@ node_modules
 .settings
 .vscode
 node
-ReactApp\dist\
-ReactApp\package-lock.json
+ReactApp/dist
