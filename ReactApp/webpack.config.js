@@ -1,6 +1,7 @@
 const path = require('path')
 const webpack = require('webpack')
 const HtmlWebPackPlugin = require('html-webpack-plugin')
+const BrotliPlugin = require('brotli-webpack-plugin')
 
 module.exports = {
   entry: './src/index.js',
@@ -13,7 +14,6 @@ module.exports = {
     port: 3001,
     historyApiFallback: true
   },
-  devtool: "#inline-source-map",
   module: {
     rules: [
       {
@@ -39,6 +39,15 @@ module.exports = {
     new HtmlWebPackPlugin({
       template: "./dist/template/index.html",
       filename: "./index.html"
-    })
+    }),
+     new webpack.DefinePlugin({
+      'process.env.NODE_ENV': JSON.stringify('production')
+     }),
+     /* new BrotliPlugin({
+      asset: '[path].br[query]',
+      test: /\.(js|css|html|svg)$/,
+      threshold: 10240,
+      minRatio: 0.8
+    })  */
   ]
 };

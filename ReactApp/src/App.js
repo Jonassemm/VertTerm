@@ -11,12 +11,21 @@ import NavBar from './components/NavBar'
 import Footer from './components/Footer';
 // preloaded pages
 import Home from "./components/Home"
+import BookingForm from "./components/calendarComponents/BookingForm"
 //lazy loaded pages
-const UserList = React.lazy(() => import('./components/user/UserList'))
+/* const UserList = React.lazy(() => import('./components/user/UserList'))
 const RolePage = React.lazy(() => import("./components/roleComponents/RolePage"))
 const PositionPage = React.lazy(() => import("./components/position/PositionPage"))
 const HomePage = React.lazy(() => import('./components/calendarComponents/HomePage'))
-const ProcedurePage = React.lazy(() => import("./components/procedureComponents/ProcedurePage"))
+const ProcedurePage = React.lazy(() => import("./components/procedureComponents/ProcedurePage")) */
+
+import UserList from './components/user/UserList'
+import RolePage from "./components/roleComponents/RolePage"
+import PositionPage from "./components/position/PositionPage"
+import HomePage from './components/calendarComponents/HomePage'
+import ProcedurePage from "./components/procedureComponents/ProcedurePage"
+
+
 
 
 export default observer(function App({ userStore, calendarStore }) {
@@ -35,6 +44,7 @@ export default observer(function App({ userStore, calendarStore }) {
             <Route exact path="/role" component={() => (<RolePage userStore={userStore} />)} />
             <Route path="/position" exact component={() => <PositionPage />} />
             <Route exact path="/procedure" component={() => (<ProcedurePage />)} />
+            <Route exact path="/booking" component={() => (<BookingForm/>)}/>
           </Switch>
         </div>
       </Suspense>

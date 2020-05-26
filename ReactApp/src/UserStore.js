@@ -33,17 +33,11 @@ class UserStore {
     }
 
     async getData() {
-        try {
-            await getUserData(this.userID)
-                .then(res => {
-                    this.setRoles(res.data.roles.map(item => {
+            const res = await getUserData(this.userID)
+            this.setRoles(res.data.roles.map(item => {
                         return (item.name)
 
                     }))
-                })
-        } catch (error) {
-
-        }
     }
 
     deleteCurrentUser() {

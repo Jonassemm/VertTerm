@@ -1,0 +1,33 @@
+.parent {
+    width: 100%;
+    display: flex;
+}
+
+.nameCol {
+    width: 30%;
+}
+
+.wrap {
+    width: 70%;
+    display: flex;
+    flex-wrap: wrap;
+}
+
+.box {
+    height: 50px;
+    display: flex;
+    width: 70%;
+}
+
+.innerboxleft {
+    width: 30%;
+}
+
+.innerbox {
+    width: 70%;
+}
+
+.selectType {
+    text-align: right;
+  
+}
