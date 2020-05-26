@@ -11,39 +11,39 @@ import java.util.List;
 @RequestMapping("/Appointments")
 public class AppointmentController {
     @Autowired
-    BasicService<Appointment> basicService;
+    BasicService<Appointment> service;
 
 
     @GetMapping()
     public @ResponseBody
     List<Appointment> get()
     {
-        return basicService.getAll();
+        return service.getAll();
     }
 
     @GetMapping("/{id}")
     public @ResponseBody
     Appointment get(@PathVariable String id)
     {
-        return basicService.getById(id);
+        return service.getById(id);
     }
 
     @PostMapping()
     public @ResponseBody
     Appointment create(@RequestBody Appointment newAppointment)
     {
-        return basicService.create(newAppointment);
+        return service.create(newAppointment);
     }
 
     @PutMapping("/{id}")
     public Appointment UpdateAppointment(@RequestBody Appointment newAppointment)
     {
-        return basicService.update(newAppointment);
+        return service.update(newAppointment);
     }
 
     @DeleteMapping("/{id}")
     public boolean DeleteAppointment(@PathVariable String id)
     {
-        return basicService.delete(id);
+        return service.delete(id);
     }
 }

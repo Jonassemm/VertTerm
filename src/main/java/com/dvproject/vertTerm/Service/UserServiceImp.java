@@ -1,8 +1,6 @@
 package com.dvproject.vertTerm.Service;
 
-import com.dvproject.vertTerm.Model.Right;
-import com.dvproject.vertTerm.Model.Role;
-import com.dvproject.vertTerm.Model.User;
+import com.dvproject.vertTerm.Model.*;
 import com.dvproject.vertTerm.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.rest.webmvc.ResourceNotFoundException;
@@ -24,6 +22,23 @@ public class UserServiceImp implements UserService {
 	List<User> users = repo.findAll();
 	return obfuscatePassword(users);
     }
+
+    //@PreAuthorize("hasAuthority('USERS_DATA_READ')")
+	public List<User> getAll(Status status) {
+		List<User> users = null;
+		switch(status){
+			case ACTIVE:
+				users = repo.findAllActive();
+				break;
+			case INACTIVE:
+				users = repo.findAllInactive();
+				break;
+			case DELETED:
+				users = repo.findAllDeleted();
+				break;
+		}
+		return (users);
+	}
 
 	@PreAuthorize("hasAuthority('USERS_DATA_READ')")
 	@Override

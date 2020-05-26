@@ -12,6 +12,15 @@ public interface EmployeeRepository extends MongoRepository<Employee, String>{
 	@Override
 	@Query("{'_class' : 'com.dvproject.vertTerm.Model.Employee'}")
 	List<Employee> findAll();
+
+	@Query("{'systemStatus' : 'ACTIVE', '_class' : 'com.dvproject.vertTerm.Model.Employee'}")
+    List<Employee> findAllActive();
+
+    @Query("{'systemStatus' : 'INACTIVE', '_class' : 'com.dvproject.vertTerm.Model.Employee'}")
+    List<Employee> findAllInactive();
+
+    @Query("{'systemStatus' : 'DELETED', '_class' : 'com.dvproject.vertTerm.Model.Employee'}")
+    List<Employee> findAllDeleted();
 	
     @Query("{'_id' : ?0, '_class' : 'com.dvproject.vertTerm.Model.Employee'}")
     Optional<Employee> findById (String id);

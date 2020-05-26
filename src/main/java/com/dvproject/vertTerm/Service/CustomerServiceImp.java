@@ -1,16 +1,19 @@
 package com.dvproject.vertTerm.Service;
 
 import com.dvproject.vertTerm.Model.Customer;
+import com.dvproject.vertTerm.Model.Employee;
+import com.dvproject.vertTerm.Model.Status;
 import com.dvproject.vertTerm.repository.CustomerRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.rest.webmvc.ResourceNotFoundException;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
 
 @Service
-public class CustomerServiceImp implements BasicService<Customer> {
+public class CustomerServiceImp implements CustomerService {
 
     @Autowired
     CustomerRepository repo;
@@ -18,6 +21,23 @@ public class CustomerServiceImp implements BasicService<Customer> {
     @Override
     public List<Customer> getAll() {
         return repo.findAll();
+    }
+
+    //@PreAuthorize("hasAuthority('USERS_DATA_READ')")
+    public List<Customer> getAll(Status status) {
+        List<Customer> users = null;
+        switch(status){
+            case ACTIVE:
+                users = repo.findAllActive();
+                break;
+            case INACTIVE:
+                users = repo.findAllInactive();
+                break;
+            case DELETED:
+                users = repo.findAllDeleted();
+                break;
+        }
+        return (users);
     }
 
     @Override
