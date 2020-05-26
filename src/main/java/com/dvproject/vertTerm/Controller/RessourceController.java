@@ -28,12 +28,11 @@ import java.util.List;
 @RestController
 @RequestMapping(value= "/Resource")
 public class RessourceController {
-
 	
 	 @Autowired
 	 private ResourceService resservice;
 
-	 @GetMapping()
+	 @GetMapping
 	 public List<Resource> getAllResources() {
 	    return resservice.getAll();
 	 }
@@ -43,19 +42,9 @@ public class RessourceController {
 	     return resservice.getById(id);
 	 }
 	 
-	 @GetMapping("/res")
+	 @GetMapping("/")
 	 public  @ResponseBody  List<Resource> getResources(@RequestParam String[] ids) {
 	     return resservice.getResources(ids);
-	 }
-	 
-	 @GetMapping("/dep/{id}")
-	 public @ResponseBody List<Restriction> getResourceDependencies(@PathVariable String id){
-	    return resservice.getResourceDependencies(id);
-	 }
-	 @PutMapping("/dep/{id}")
-	 public  Resource updateResourceDependencies(@PathVariable String id,@RequestBody Resource res) {
-	     res.setId(id);
-	     return resservice.updateResourceDependencies(res);
 	 }
 	 
 	 @PostMapping()
@@ -63,22 +52,28 @@ public class RessourceController {
 	     return resservice.create(res);
      }
     
-	@PutMapping("{id}")
+	@PutMapping("/{id}")
     public Resource  updateResource(@PathVariable String id,@RequestBody Resource res) {
 	     res.setId(id);
 		 return resservice.update(res);
 	 }
 	   
-		 @PutMapping("/ava/{id}")
-			 public Resource  updateResourceAvailability(@PathVariable String id,@RequestBody Resource res) {
-			 res.setId(id);
-			 return resservice.updateResourceAvailability(res);
-		 }
-			 
-	//	 @PutMapping("/emp/{id}")
-	//	 public   updateEmployeePermission() {
-	//
-	//	 }
+//	 @PutMapping("/ava/{id}")
+//	  public Resource  updateResourceAvailability(@PathVariable String id,@RequestBody Resource res) {
+//		 res.setId(id);
+//		 return resservice.updateResourceAvailability(res);
+//	 }
+	
+	 @GetMapping("/dep/{id}")
+	 public @ResponseBody List<Restriction> getResourceDependencies(@PathVariable String id){
+	    return resservice.getResourceDependencies(id);
+	 }
+	 @PutMapping("/dep/{id}")
+	 public  List<Restriction> updateResourceDependencies(@PathVariable String id,@RequestParam String[] Rids) {
+	 
+	     return resservice.updateResourceDependencies(id,Rids);
+	 }
+	 	 
 
 	 @DeleteMapping("/{id}")
 	 public boolean deleteResource(@PathVariable String id) {

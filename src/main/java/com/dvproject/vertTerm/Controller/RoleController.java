@@ -34,7 +34,7 @@ public class RoleController
 	@Autowired
     private RoleService roleService;  
 	
-	 @GetMapping()
+	 @GetMapping
      public  @ResponseBody  List<Role> getAllRole() {
 		 return roleService.getAll();
 	 }
@@ -44,8 +44,8 @@ public class RoleController
 	     return roleService.getById(id);
 	 }
 		
-	 @GetMapping("/roles")
-	     private List<Role> getRoles(@RequestParam String [] ids) {
+	 @GetMapping("/")
+	 public List<Role> getRoles(@RequestParam String [] ids) {
 			return roleService.getRoles(ids);
 		}
 	    
@@ -59,14 +59,13 @@ public class RoleController
 		 return roleService.getRoleUsers(id);
 	 }
 	
-	 @PutMapping("/rights/edit/{id}") 
-     public  @ResponseBody  Role updateRoleRights(@PathVariable String id, @RequestBody Role role) {
-		 role.setId(id);
-		 return roleService.updateRoleRights(role);
+	 @PutMapping("/rights/{id}") 
+     public  @ResponseBody  List<Right> updateRoleRights(@PathVariable String id, @RequestParam String[] Rids) {	
+		 return roleService.updateRoleRights(id,Rids);
 	 }
 	
 	 //TODO es gibt einen Bug
-	 @PutMapping("/users/edit/{id}") 
+	 @PutMapping("/users/{id}") 
      public  @ResponseBody List<User> updateRoleUsers(@PathVariable String id, @RequestParam String[] Uids) {
 		 return roleService.updateRoleUsers(id,Uids);
 	 }

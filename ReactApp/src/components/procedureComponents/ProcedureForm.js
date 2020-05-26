@@ -2,7 +2,7 @@ import React, { useEffect, useState, useRef } from "react"
 import { Container, Form, Col, Tabs, Tab, Button } from "react-bootstrap"
 import ObjectPicker from "../ObjectPicker"
 import { addProcedure, deleteProcedure, editProcedure } from "./ProcedureRequests"
-import Availability from "../availability/Availability"
+import Availability from "../availabilityComponents/Availability"
 
 function ProcedureForm({ onCancel, edit, selected }) {
     const [tabKey, setTabKey] = useState('general')

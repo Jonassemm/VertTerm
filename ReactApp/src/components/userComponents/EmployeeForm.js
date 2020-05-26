@@ -1,6 +1,6 @@
 import React ,{useState, useEffect} from 'react'
 import {Form, Table, Col, Container, Button, InputGroup, Tabs, Tab } from 'react-bootstrap'
-import Availability from "../availability/Availability"
+import Availability from "../availabilityComponents/Availability"
 import ObjectPicker from "../ObjectPicker"
 
 import {
@@ -50,11 +50,11 @@ function EmployeeForm({ onCancel, edit, selected }) {
   const handleSelectedRoleChange = event => {setSelectedRole(event.target.value); setEdited(true)}
   const handleSelectedPositionChange = event =>  {setPosition(choosablePositions[event.target.value]); setEdited(true)}
   const handleSystemStatusChange = event => {setSystemStatus(event.target.value); setEdited(true)}
-  const handlePositionChange = data => {setPosition(data); setEdited(true)}
+  const handlePositionChange = data => {console.log(toString(data)); setPosition(data); setEdited(true)}
 
   useEffect(() => {
     console.log("useEffect-Call: loadChoosableRoles");
-    loadChoosableRoles();
+    loadChoosableRoles(); 
     console.log("useEffect-Call: loadChoosablePositions");
     loadChoosablePosition();
     if(edit) {
@@ -63,13 +63,14 @@ function EmployeeForm({ onCancel, edit, selected }) {
         setUsername(selected.username)
         setPassword(selected.password)
         setSystemStatus(selected.systemStatus)
-        setRoles(selected.roles)
-        setPosition(selected.position)
+        if(selected.roles != null) {
+          setRoles(selected.roles)
+        }
+        if(selected.position != null) {
+          setPosition(selected.position)
+        }
         if(selected.availabilities != null || selected.availabilities != undefined) {
           setAvailabilities(selected.availabilities);
-        } else {
-          //setAvailabilities([Availability_test]);
-          alert("selected.availabilities = undefined or null")
         }
     } 
   }, [])
@@ -307,7 +308,7 @@ function EmployeeForm({ onCancel, edit, selected }) {
                 </Form.Group>
                 
                 <Form.Group as={Col} md="2">
-                    <Form.Label>Benutzerkonto:</Form.Label>
+                    <Form.Label>Benutzerstatus:</Form.Label>
                     <Form.Check
                         required
                         type="radio"
@@ -421,7 +422,7 @@ function EmployeeForm({ onCancel, edit, selected }) {
                   availabilities={availabilities} 
                   addAvailability={addAvailability}
                   updateAvailabilities={updateAvailabilities} 
-                  editedAvailabilities={editedAvailabilities}/>
+                  editedAvailabilities={setEdited}/>
               </Form.Row>
             </Tab>
           </Tabs>

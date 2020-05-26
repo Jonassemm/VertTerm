@@ -15,12 +15,14 @@ public interface ResourceService extends BasicService<Resource> {
     
     List<Restriction> getResourceDependencies (String ResID);
    
-    Resource updateResourceDependencies(Resource res);
+	List<Restriction> updateResourceDependencies(String id,String[] rids);
 
     //TODO
     // 
     // List<Employee> getAllResourceEmps();
     // Resource updateEmployeePermission(String resID,String empID,String roleID);
-        // createResourceFailure 
+    // Ressourcenangestelltenrollen bearbeiten 
+    // createResourceFailure 
     // updateResourceFailure 
+	// Ressourcenzeiten anzeigen
 }

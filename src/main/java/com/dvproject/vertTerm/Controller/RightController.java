@@ -19,7 +19,7 @@ public class RightController
 	private RightService rightService;
 	@Autowired
 	private UserService  userService; 
-	@GetMapping()
+	@GetMapping
 	public List<Right> getAllRights() {
 	    return rightService.getAll();
 	}
@@ -31,7 +31,7 @@ public class RightController
 	 public  List<User> getListUserswithRight(@PathVariable String id) {
 		   return rightService.getListUserswithRight(id);
 	 }
-	 @GetMapping("/Roles/{id}")
+	 @GetMapping("/roles/{id}")
 	 public  List<Role> getLisRoleswithRight(@PathVariable String id) {
 		   return rightService.getListRoleswithRight(id);
 	 }
