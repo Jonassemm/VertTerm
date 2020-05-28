@@ -6,9 +6,12 @@ import javax.validation.constraints.NotNull;
 
 import org.springframework.data.mongodb.core.mapping.DBRef;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+
 public class ProcedureRelation {
-	
+	@JsonFormat(shape = JsonFormat.Shape.NUMBER)
 	private Duration minDifference;
+	@JsonFormat(shape = JsonFormat.Shape.NUMBER)
 	private Duration maxDifference;
 	@DBRef
 	@NotNull

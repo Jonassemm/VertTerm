@@ -23,9 +23,7 @@ public class Procedure implements Serializable {
 	@NotNull
 	private Status status;
 	
-	@DBRef
 	private List<ProcedureRelation> precedingRelations;
-	@DBRef
 	private List<ProcedureRelation> subsequentRelations;
 	
 	@DBRef

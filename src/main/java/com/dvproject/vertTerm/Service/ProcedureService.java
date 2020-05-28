@@ -5,9 +5,9 @@ import com.dvproject.vertTerm.Model.*;
 import java.util.Date;
 import java.util.List;
 
-public interface ProcedureService {
+public interface ProcedureService extends BasicService <Procedure>{
 	//GET
-	List<Procedure> getAll();
+	List<Procedure> getAll(Status status);
 	
 	List<Procedure> getByIds(String[] ids);
 
@@ -23,16 +23,9 @@ public interface ProcedureService {
 	
 	List<Restriction> getProcedureRestrictions(String id);
 	
-	boolean isDeleted(String id);
-	
 	boolean isAvailableBetween(String id, Date startdate, Date enddate);
-
-	//POST
-	Procedure create(Procedure procedure);
-
-	//PUT
-	Procedure update(Procedure procedure);
 	
+	//PUT
 	Procedure updateProceduredata(Procedure procedure);
 
 	List<ProcedureRelation> updatePrecedingProcedures(String id, List<ProcedureRelation> precedingProcedures);
@@ -46,8 +39,5 @@ public interface ProcedureService {
 	List<Availability> updateAllAvailabilities(String id, List<Availability> availabilities);
 	
 	List<Restriction> updateProcedureRestrictions(String id, List<Restriction> restrictions);
-
-	//DELETE
-	Procedure delete(String id);
 
 }

@@ -2,10 +2,9 @@ package com.dvproject.vertTerm.security;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Calendar;
-import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
-import java.util.TimeZone;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationListener;
@@ -14,8 +13,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.dvproject.vertTerm.Model.Availability;
-import com.dvproject.vertTerm.Model.AvailabilityRhythm;
 import com.dvproject.vertTerm.Model.Customer;
 import com.dvproject.vertTerm.Model.Employee;
 import com.dvproject.vertTerm.Model.Right;
@@ -49,12 +46,16 @@ public class SetupDataLoader implements ApplicationListener<ContextRefreshedEven
 
 	@Autowired
 	private PasswordEncoder passwordEncoder;
+	
+	private static Map <String, Right> rights = new HashMap<String, Right>();
 
 	@Transactional
 	public void onApplicationEvent(ContextRefreshedEvent event) {
 		if (alreadySetup)
 			return;
-
+		
+		setupRights();
+		
 		Role adminRole = createRoleIfNotFound("ADMIN_ROLE", setUpAdminRights());
 		Role userRole = createRoleIfNotFound("ANONYMOUS_ROLE", setUpAnonymusUserRights());
 
@@ -62,6 +63,60 @@ public class SetupDataLoader implements ApplicationListener<ContextRefreshedEven
 		createUserIfNotFound("anonymousUser", "password", Arrays.asList(userRole));
 
 		alreadySetup = true;
+	}
+	
+	private void setupRights () {
+		// user
+		setupRight("OWN_USER_READ", "Lesen des eigenen Benutzers erlaubt");
+		setupRight("OWN_USER_WRITE", "ƒndern des eigenen Benutzers erlaubt");
+		setupRight("USER_READ", "Lesen aller Benutzers erlaubt");
+		setupRight("USER_WRITE", "ƒndern aller Benutzers erlaubt");
+		
+		// employee
+		setupRight("OWN_EMPLOYEE_READ", "Lesen des eigenen Angestellten erlaubt");
+		setupRight("OWN_EMPLOYEE_WRITE", "ƒndern des eigenen Angestellten erlaubt");
+		setupRight("EMPLOYEE_READ", "Lesen aller Angestellter erlaubt");
+		setupRight("EMPLOYEE_WRITE", "ƒndern aller Angestellter erlaubt");
+		
+		// position
+		setupRight("POSITION_READ", "Lesen aller Positionen erlaubt");
+		setupRight("POSITION_WRITE", "ƒndern aller Positionen erlaubt");
+		
+		// customer
+		setupRight("OWN_CUSTOMER_READ", "Lesen des eigenen Kunden erlaubt");
+		setupRight("OWN_CUSTOMER_WRITE", "ƒndern des eigenen Kunden erlaubt");
+		setupRight("CUSTOMER_READ", "Lesen aller Kunden erlaubt");
+		setupRight("CUSTOMER_WRITE", "ƒndern aller Kunden erlaubt");
+		
+		// role
+		setupRight("ROLE_READ", "Lesen aller Kunden erlaubt");
+		setupRight("ROLE_WRITE", "ƒndern aller Kunden erlaubt");
+		
+		// right
+		setupRight("RIGHT_READ", "Lesen aller Rechte erlaubt");
+		
+		// resource
+		setupRight("RESOURCE_READ", "Lesen aller Ressourcen erlaubt");
+		setupRight("RESOURCE_WRITE", "ƒndern aller Ressourcen erlaubt");
+		
+		// resourceType
+		setupRight("RESOURCE_TYPE_READ", "Lesen aller Ressourcentypen erlaubt");
+		setupRight("RESOURCE_TYPE_WRITE", "ƒndern aller Ressourcentypen erlaubt");
+		
+		// procedure
+		setupRight("PROCEDURE_TYPE_READ", "Lesen aller Prozeduren erlaubt");
+		setupRight("PROCEDURE_TYPE_WRITE", "ƒndern aller Prozeduren erlaubt");
+		
+		// appointment
+		setupRight("OWN_APPOINTMENT_READ", "Lesen der eigenen Termine erlaubt");
+		setupRight("OWN_APPOINTMENT_WRITE", "ƒndern der eigenen Termine erlaubt");
+		setupRight("APPOINTMENT_READ", "Lesen aller Termine erlaubt");
+		setupRight("APPOINTMENT_WRITE", "ƒndern aller Termine erlaubt");
+	}
+	
+	private void setupRight (String name, String description) {
+		Right right = createRightIfNotFound(name, description);
+		rights.put(right.getName(), right);
 	}
 	
 	@Transactional
@@ -79,40 +134,19 @@ public class SetupDataLoader implements ApplicationListener<ContextRefreshedEven
 	}
 
 	private List<Right> setUpAdminRights() {
-		List<Right> rights = new ArrayList<Right>();
+		List<Right> adminRights = new ArrayList<Right>();
+		
+		rights.forEach((name, right) -> adminRights.add(right));
 
-		// user-rights
-		rights.add(createRightIfNotFound("OWN_USER_DATA_READ", "Lesen der Benutzerdaten des eigenen Benutzers erlaubt"));
-		rights.add(createRightIfNotFound("OWN_USER_DATA_WRITE", "√Ñndern der Benutzerdaten des eigenen Benutzers erlaubt"));
-		rights.add(createRightIfNotFound("USERS_DATA_READ", "Lesen der Benutzerdaten aller Benutzer erlaubt"));
-		rights.add(createRightIfNotFound("USER_STATUS_WRITE", "√Ñndern des Benutzerstatus erlaubt"));
-		rights.add(createRightIfNotFound("USERS_DATA_WRITE", "√Ñndern der Benutzerdaten aller Benutzer erlaubt"));
-		// user-role-rights
-		rights.add(createRightIfNotFound("OWN_USER_ROLES_READ", "Lesen der Rollendaten des eigenen Benutzers erlaubt"));
-		rights.add(createRightIfNotFound("USER_ROLES_READ", "Lesen der Benutzerrollen erlaubt"));
-		rights.add(createRightIfNotFound("USER_ROLES_WRITE", "√Ñndern der Benutzerrollen erlaubt"));
-		// user-right-rights
-		rights.add(createRightIfNotFound("OWN_USER_RIGHTS_READ", "Lesen der Rechtedaten des eigenen Benutzers erlaubt"));
-		rights.add(createRightIfNotFound("USER_RIGHTS_READ", "Lesen der Benutzerrechte erlaubt"));
-
-		// role-rights
-		rights.add(createRightIfNotFound("ROLES_WRITE", "√Ñndern der Rollendaten aller m√∂glichen Rollen erlaubt"));
-		rights.add(createRightIfNotFound("ROLES_READ", "Lesen der Rollendaten aller Rollen erlaubt"));
-		rights.add(createRightIfNotFound("ROLE_RIGHTS_READ", "Lesen der Rechte aller Rollen erlaubt"));
-		rights.add(createRightIfNotFound("ROLE_RIGHTS_WRITE", "√Ñndern der Rechte aller Rollen erlaubt"));
-
-		// right-rights
-		rights.add(createRightIfNotFound("RIGHTS_READ", "Lesen der Rechtedaten aller m√∂glichen Rechte erlaubt"));
-
-		return rights;
+		return adminRights;
 	}
 
 	private List<Right> setUpAnonymusUserRights() {
-		List<Right> rights = new ArrayList<Right>();
-
-		rights.add(createRightIfNotFound("OWN_USER_DATA_READ", "Lesen der Benutzerdaten des eigenen Benutzers erlaubt"));
-
-		return rights;
+		List<Right> anonymousRights = new ArrayList<Right>();
+		
+		anonymousRights.add(rights.get("OWN_USER_READ"));
+		
+		return anonymousRights;
 	}
 
 	@Transactional
@@ -146,7 +180,7 @@ public class SetupDataLoader implements ApplicationListener<ContextRefreshedEven
 	}
 	
 	@Transactional
-	private User createCustomerIfNotFound(String username, String password, List<Role> roles) {
+	private Customer createCustomerIfNotFound(String username, String password, List<Role> roles) {
 		Customer user = customerRepository.findByUsername(username);
 
 		if (user == null) {
@@ -171,17 +205,6 @@ public class SetupDataLoader implements ApplicationListener<ContextRefreshedEven
 			user.setPassword(passwordEncoder.encode(password));
 			user.setSystemStatus(Status.ACTIVE);
 			user.setRoles(roles);
-			
-			Calendar cal = Calendar.getInstance(TimeZone.getTimeZone("GMT"));
-			cal.set(2020, 5, 1, 8, 0, 0);
-			Date start = cal.getTime();
-			cal.clear();
-
-			cal.set(2020, 5, 1, 18, 0, 0);
-			Date end = cal.getTime();
-			
-			Availability avail = new Availability (start, end, AvailabilityRhythm.DAILY);
-			user.setAvailabilities(Arrays.asList(avail));
 			userRepository.save(user);
 		}
 

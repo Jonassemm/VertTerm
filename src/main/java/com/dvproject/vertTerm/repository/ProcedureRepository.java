@@ -13,4 +13,13 @@ public interface ProcedureRepository extends MongoRepository<Procedure, String> 
 	
 	@Query("{_id: { $in : ?0}}")
 	List<Procedure> findByIds (String [] ids);
+	
+	@Query("{'systemStatus' : 'ACTIVE'}")
+	List<Procedure> findAllActive();
+	
+	@Query("{'systemStatus' : 'INACTIVE'}")
+	List<Procedure> findAllInactive();
+	
+	@Query("{'systemStatus' : 'DELETED'}")
+	List<Procedure> findAllDeleted();
 }

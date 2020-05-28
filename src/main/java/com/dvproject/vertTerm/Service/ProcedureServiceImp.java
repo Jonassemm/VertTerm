@@ -17,45 +17,64 @@ public class ProcedureServiceImp implements ProcedureService {
 	public List<Procedure> getAll() {
 		return repo.findAll();
 	}
+	
+	@Override
+	public List<Procedure> getAll(Status status) {
+		switch (status) {
+			case ACTIVE:
+				return repo.findAllActive();
+			case INACTIVE:
+				return repo.findAllInactive();
+			case DELETED:
+				return repo.findAllDeleted();
+			default:
+				throw new IllegalArgumentException ("The given status does not exist");
+		}
+	}
 
 	@Override
 	public List<Procedure> getByIds(String[] ids) {
 		return repo.findByIds(ids);
 	}
+	
+	@Override
+	public Procedure getById(String id) {
+		return getProcedureFromDB(id);
+	}
 
 	@Override
 	public List<ProcedureRelation> getPrecedingProcedures(String id) {
-		return getProcedureInternal(id).getPrecedingRelations();
+		return getProcedureFromDB(id).getPrecedingRelations();
 	}
 
 	@Override
 	public List<ProcedureRelation> getSubsequentProcedures(String id) {
-		return getProcedureInternal(id).getSubsequentRelations();
+		return getProcedureFromDB(id).getSubsequentRelations();
 	}
 
 	@Override
 	public List<ResourceType> getNeededResourceTypes(String id) {
-		return this.getProcedureInternal(id).getNeededResourceTypes();
+		return this.getProcedureFromDB(id).getNeededResourceTypes();
 	}
 
 	@Override
 	public List<Position> getNeededPositions(String id) {
-		return this.getProcedureInternal(id).getNeededEmployeePositions();
+		return this.getProcedureFromDB(id).getNeededEmployeePositions();
 	}
 
 	@Override
 	public List<Availability> getAllAvailabilities(String id) {
-		return this.getProcedureInternal(id).getAvailabilities();
+		return this.getProcedureFromDB(id).getAvailabilities();
 	}
 
 	@Override
 	public List<Restriction> getProcedureRestrictions(String id) {
-		return this.getProcedureInternal(id).getRestrictions();
+		return this.getProcedureFromDB(id).getRestrictions();
 	}
 
 	@Override
 	public boolean isAvailableBetween (String id, Date startdate, Date enddate) {
-		List<Availability> availabilities = getProcedureInternal(id).getAvailabilities();
+		List<Availability> availabilities = getProcedureFromDB(id).getAvailabilities();
 		boolean isAvailable;
 		
 		for (Availability availability : availabilities) {
@@ -96,7 +115,7 @@ public class ProcedureServiceImp implements ProcedureService {
 
 	@Override
 	public Procedure updateProceduredata(Procedure procedure) {
-		Procedure oldProcedure = getProcedureInternal(procedure.getId());
+		Procedure oldProcedure = getProcedureFromDB(procedure.getId());
 		
 		oldProcedure.setName(procedure.getName());
 		oldProcedure.setDescription(procedure.getDescription());
@@ -109,80 +128,74 @@ public class ProcedureServiceImp implements ProcedureService {
 	
 	@Override
 	public List<ProcedureRelation> updatePrecedingProcedures(String id, List<ProcedureRelation> precedingProcedures) {
-		Procedure procedure = getProcedureInternal(id);
+		Procedure procedure = getProcedureFromDB(id);
 		
 		procedure.setPrecedingRelations(precedingProcedures);
 		repo.save(procedure);
 		
-		return getProcedureInternal(id).getPrecedingRelations();
+		return getProcedureFromDB(id).getPrecedingRelations();
 	}
 
 	@Override
 	public List<ProcedureRelation> updateSubsequentProcedures(String id, List<ProcedureRelation> subsequentProcedures) {
-		Procedure procedure = getProcedureInternal(id);
+		Procedure procedure = getProcedureFromDB(id);
 		
 		procedure.setSubsequentRelations(subsequentProcedures);
 		repo.save(procedure);
 		
-		return getProcedureInternal(id).getSubsequentRelations();
+		return getProcedureFromDB(id).getSubsequentRelations();
 	}
 
 	@Override
 	public List<ResourceType> updateNeededResourceTypes(String id, List<ResourceType> resourceTypes) {
-		Procedure procedure = getProcedureInternal(id);
+		Procedure procedure = getProcedureFromDB(id);
 		
 		procedure.setNeededResourceTypes(resourceTypes);
 		repo.save(procedure);
 		
-		return getProcedureInternal(id).getNeededResourceTypes();
+		return getProcedureFromDB(id).getNeededResourceTypes();
 	}
 
 	@Override
 	public List<Position> updateNeededPositions(String id, List<Position> positions) {
-		Procedure procedure = getProcedureInternal(id);
+		Procedure procedure = getProcedureFromDB(id);
 		
 		procedure.setNeededEmployeePositions(positions);
 		repo.save(procedure);
 		
-		return getProcedureInternal(id).getNeededEmployeePositions();
+		return getProcedureFromDB(id).getNeededEmployeePositions();
 	}
 
 	@Override
 	public List<Availability> updateAllAvailabilities(String id, List<Availability> availabilities) {
-		Procedure procedure = getProcedureInternal(id);
+		Procedure procedure = getProcedureFromDB(id);
 		
 		procedure.setAvailabilities(availabilities);
 		repo.save(procedure);
 		
-		return getProcedureInternal(id).getAvailabilities();
+		return getProcedureFromDB(id).getAvailabilities();
 	}
 
 	@Override
 	public List<Restriction> updateProcedureRestrictions(String id, List<Restriction> restrictions) {
-		Procedure procedure = getProcedureInternal(id);
+		Procedure procedure = getProcedureFromDB(id);
 		
 		procedure.setRestrictions(restrictions);
 		repo.save(procedure);
 		
-		return getProcedureInternal(id).getRestrictions();
-	}
-
-	@Override
-	public Procedure delete(String id) {
-		Procedure procedure = getProcedureInternal(id);
-
-		procedure.setStatus(Status.DELETED);
-
-		return repo.save(procedure);
+		return getProcedureFromDB(id).getRestrictions();
 	}
 	
-	public boolean isDeleted (String id) {
-		Procedure procedure = getProcedureInternal(id);
+	@Override
+	public boolean delete(String id) {
+		this.deleteFromDB(id);
+		
+		Procedure procedure = getProcedureFromDB(id);
 		
 		return procedure.getStatus() == Status.DELETED;
 	}
 
-	private Procedure getProcedureInternal(String id) {
+	private Procedure getProcedureFromDB(String id) {
 		if (id == null) {
 			throw new ResourceNotFoundException("The id of the given procedure is null");
 		}
@@ -234,6 +247,14 @@ public class ProcedureServiceImp implements ProcedureService {
 		Calendar calendar = Calendar.getInstance(TimeZone.getTimeZone("GMT"));
 		calendar.setTime(date);
 		return calendar;
+	}
+	
+	private Procedure deleteFromDB (String id) {
+		Procedure procedure = getProcedureFromDB(id);
+
+		procedure.setStatus(Status.DELETED);
+
+		return repo.save(procedure);
 	}
 
 }

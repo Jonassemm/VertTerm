@@ -20,6 +20,16 @@ public class ProcedureController {
 		return procedureService.getAll();
 	}
 	
+//	@GetMapping("/{status}")
+//	public List<Procedure> getAllProceduresWithStatus (@PathVariable Status status) {
+//		return procedureService.getAll(status);
+//	}
+	
+	@GetMapping("/active")
+	public List<Procedure> getAllProceduresWithStatus () {
+		return procedureService.getAll(Status.ACTIVE);
+	}
+	
 	@GetMapping("/{id}")
 	public List<Procedure> getProcedure (@PathVariable String id){
 		return procedureService.getByIds(new String [] {id});
@@ -122,6 +132,6 @@ public class ProcedureController {
 	@DeleteMapping("/{id}")
 	public boolean deleteProcedure (@PathVariable String id) {
 		procedureService.delete(id);
-		return procedureService.isDeleted(id);
+		return procedureService.delete(id);
 	}
 }

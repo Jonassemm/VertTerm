@@ -10,7 +10,7 @@ import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-@Document("ressource")
+@Document("resource")
 public class Resource implements Serializable{
 	private static final long serialVersionUID = 7443614129275947603L;
 	
@@ -24,7 +24,7 @@ public class Resource implements Serializable{
 	@NotNull
 	private Status status;
 	@DBRef
-	private List<Resource> childRessources;
+	private List<Resource> childResources;
 	@DBRef
 	private List<Restriction> restrictions;
 	@DBRef
@@ -78,12 +78,12 @@ public class Resource implements Serializable{
 		this.status = status;
 	}
 
-	public List<Resource> getChildRessources() {
-		return childRessources;
+	public List<Resource> getChildResources() {
+		return childResources;
 	}
 
-	public void setChildRessources(List<Resource> childRessources) {
-		this.childRessources = childRessources;
+	public void setChildResources(List<Resource> childResources) {
+		this.childResources = childResources;
 	}
 
 	public List<Restriction> getRestrictions() {
