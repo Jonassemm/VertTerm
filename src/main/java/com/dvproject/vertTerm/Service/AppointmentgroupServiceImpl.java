@@ -19,9 +19,6 @@ public class AppointmentgroupServiceImpl implements AppointmentgroupService {
 
 	@Autowired
 	private AppointmentRepository appoint;
-	
-	@Autowired
-	private StatusService statusService;
 
 	@Override
 	public List<Appointmentgroup> getAll() {
@@ -44,7 +41,7 @@ public class AppointmentgroupServiceImpl implements AppointmentgroupService {
 	@Override
 	public Appointmentgroup update(Appointmentgroup updatedInstance) {
 		if (repo.existsById(updatedInstance.getId())) {
-			if (! statusService.isUpdateable(updatedInstance.getStatus())) {
+			if (! StatusService.isUpdateable(updatedInstance.getStatus())) {
 				throw new IllegalArgumentException("The given procedure is not updateable");
 			}
 			return repo.save(updatedInstance);
