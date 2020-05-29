@@ -15,7 +15,7 @@ export const addCustomer = data => axios.post(`${APIURL}/api/Customers/`, data)
 export const updateCustomer = (userID,data) => axios.put(`${APIURL}/api/Customers/${userID}`, data) 
 export const getCustomerList = () => axios.get(`${APIURL}/api/Customers/`) 
 export const getCustomer = userID => axios.get(`${APIURL}/api/Customers/${userID}`) 
-export const removeCustomer = userID => axios.delete(`${APIURL}/api/Customers/${userID}`)
+export const deleteCustomer = userID => axios.delete(`${APIURL}/api/Customers/${userID}`)
 
 //USERS
 export const getAllUsers = () => axios.get(`${APIURL}/api/User/`) 

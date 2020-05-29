@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from "react"
 import { Typeahead } from "react-bootstrap-typeahead"
-import { getUsers, getEmployees, getCustomers, getProcedures, getRoles, getPositions} from "./requests"
+import { getUsers, getEmployees, getCustomers, getProcedures, getRoles, getPositions, getResourcetypes, getResources} from "./requests"
 
 // when using this Object you have to give 4 props:
 // DbObject: defining what Object you want to pick (select out of predefined list below)
 // setState: the setState method for the state in your Form
 // initial: an Array with the values which have to be initally selected
-// multiple: defining whether multiple values can be selected
+// multiple: defining whether multiple values can be selected (as boolean)
 
 function ObjectPicker({ DbObject, setState, initial, multiple }) {
     const [options, setOptions] = useState([])
@@ -20,7 +20,8 @@ function ObjectPicker({ DbObject, setState, initial, multiple }) {
         procedure: "Prozedur",
         resource: "Ressource",
         resourceType: "Ressourcentyp",
-        position: "Position"
+        position: "Position",
+        restriction: "Einschränkung"
     }
 
     useEffect(() => {
@@ -32,7 +33,8 @@ function ObjectPicker({ DbObject, setState, initial, multiple }) {
             case 'resource': getResourceData(); break;
             case 'resourceType': getResourceTypeData(); break;
             case 'position': getPositionData(); break;
-            case 'role': getRoleData();
+            case 'role': getRoleData(); break;
+            case 'restriction': getRestrictionData();
         }
     }, [])
 
@@ -73,17 +75,31 @@ function ObjectPicker({ DbObject, setState, initial, multiple }) {
         setInit(true)
     }
 
-    async function getResourceData() {   //API missing
-        setLabelKey("")
+    async function getResourceData() {  
+        const res = await getResources()
+        const result = res.data.map((item) => {
+            return {
+                ...item
+            }
+        })
+        setOptions(result)
+        setLabelKey("name")
         setInit(true)
     }
 
-    async function getResourceTypeData() { //API missing
-        setLabelKey("")
+    async function getResourceTypeData() { 
+        const res = await getResourcetypes()
+        const result = res.data.map((item) => {
+            return {
+                ...item
+            }
+        })
+        setOptions(result)
+        setLabelKey("name")
         setInit(true)
     }
 
-    async function getPositionData() {   //API missing
+    async function getPositionData() { 
         const res = await getPositions()
         const result = res.data.map((item) => {
             return {
@@ -117,6 +133,19 @@ function ObjectPicker({ DbObject, setState, initial, multiple }) {
         })
         setOptions(result)
         setLabelKey("name")
+        setInit(true)
+    }
+
+
+    async function getRestrictionData() { //API missing
+       /*  const res = await getRescriction()
+        const result = res.data.map(item => {
+            return {
+                ...item
+            }   
+        })
+        setOptions(result)
+        setLabelKey("name") */
         setInit(true)
     }
 

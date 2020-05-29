@@ -5,6 +5,7 @@ import ObjectPicker from "../ObjectPicker"
 import {
   addCustomer,
   updateCustomer,
+  deleteCustomer,
   getAllRoles,
   getCustomer,
   getAllRestrictions
@@ -80,6 +81,7 @@ function CustomerForm({ onCancel, edit, selected, userType }) {
   //DELETE USER
   const handleDeleteUser = async  (index) => {
     const answer = confirm("Möchten Sie diesen Kunden wirklich löschen? ")
+    console.log(answer)
         if (answer) {
             const res = await deleteCustomer(selected.id)
             console.log(res)

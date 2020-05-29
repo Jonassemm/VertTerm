@@ -9,7 +9,12 @@ var moment = require('moment');
 
 /* ---------------------------------------------------------FOR USAGE---------------------------------------------------------
 -> Usage in your Form:
-    <AvailabilityForm  availabilities={availabilities} addAvailability={addAvailability} editedAvailabilities={editedAvailabilities}/>
+    <AvailabilityForm  
+        availabilities={availabilities} 
+        addAvailability={addAvailability}
+        updateAvailabilities={updateAvailabilities} 
+        editedAvailabilities={setEdited}
+    />
 
 -> Make sure you have a state for your availabilities as an array like this: 
     const [availabilities, setAvailabilities] = useState([])
@@ -23,9 +28,13 @@ var moment = require('moment');
         setAvailabilities(availabilities => [...availabilities, newAvailability]);
     }
 
-    const editedAvailabilities = (isEdited) => {
-        setEdited(isEdited)
-    } 
+    const updateAvailabilities = (newAvailabilities) => {
+      setAvailabilities([]) 
+      newAvailabilities.map((SingleAvailability)=> {
+        setAvailabilities(availabilities => [...availabilities, SingleAvailability]);
+      })
+    }
+
 ----------------------------------------------------------------------------------------------------------------------------*/
 
 const Availability = (props) => {

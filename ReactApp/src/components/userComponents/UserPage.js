@@ -2,6 +2,7 @@ import React, {useState, useEffect} from 'react'
 import CustomerForm from "./CustomerForm"
 import EmployeeForm from "./EmployeeForm"
 import OverviewPage from "../OverviewPage"
+import UserForm from "./UserForm"
 
 
 import {observer} from "mobx-react"
@@ -87,20 +88,22 @@ export default function UserList(props) {
 
     const modalEmployee = (onCancel,edit,selectedItem) => {
         return (
-            <EmployeeForm
+            <UserForm //EmployeeForm
                 onCancel={onCancel}
                 edit={edit}
                 selected={selectedItem}
+                type={"employee"}
             />
         )
     }
 
     const modalCustomer = (onCancel,edit,selectedItem) => {
         return (
-            <CustomerForm
+            <UserForm //CustomerForm
                 onCancel={onCancel}
                 edit={edit}
                 selected={selectedItem}
+                type={"customer"}
             />
         )
     }
@@ -110,7 +113,7 @@ export default function UserList(props) {
             {props.userType == "employee" ? 
                 <OverviewPage
                     pageTitle="Mitarbeiter"
-                    newItemText="Neuer Mitarbeiter"
+                    newItemText="Neuer Benutzer"
                     tableHeader={["#", "Benutzername", "Nachname", "Vorname", "Status"]}
                     tableBody={tableBody}
                     modal={modalEmployee}
@@ -119,8 +122,8 @@ export default function UserList(props) {
                     refreshData={loadUserList}
                 /> :
                 <OverviewPage
-                    pageTitle="Kunde"
-                    newItemText="Neuer Kunde"
+                    pageTitle="Kunden"
+                    newItemText="Neuer Benutzer"
                     tableHeader={["#", "Benutzername", "Nachname", "Vorname", "Status"]}
                     tableBody={tableBody}
                     modal={modalCustomer}
