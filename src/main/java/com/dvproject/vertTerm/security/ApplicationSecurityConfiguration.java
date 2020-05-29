@@ -48,6 +48,9 @@ public class ApplicationSecurityConfiguration extends WebSecurityConfigurerAdapt
 
 	@Autowired
 	private UserRepository userRepository;
+	
+	@Autowired
+	private SetupDataLoader setupData;
 
 	@Override
 	protected void configure(HttpSecurity http) throws Exception {
@@ -89,13 +92,17 @@ public class ApplicationSecurityConfiguration extends WebSecurityConfigurerAdapt
 	private List<GrantedAuthority> getAuthoritiesOfAnonymousUsers() {
 		List<GrantedAuthority> authorities = new ArrayList<GrantedAuthority>();
 		Role anonymousRole = roleReposiroty.findByName("ANONYMOUS_ROLE");
-
+		List<Right> rights = null;
+		
 		if (anonymousRole == null) {
-			authorities.add(new SimpleGrantedAuthority("NO_RIGHTS"));
+			setupData.setupRights();
+			rights = setupData.setUpAnonymusUserRights();
 		} else {
-			for (Right right : anonymousRole.getRights()) {
-				authorities.add(new SimpleGrantedAuthority(right.getName()));
-			}
+			rights = anonymousRole.getRights();
+		}
+		
+		for (Right right : rights) {
+			authorities.add(new SimpleGrantedAuthority(right.getName()));
 		}
 
 		return authorities;

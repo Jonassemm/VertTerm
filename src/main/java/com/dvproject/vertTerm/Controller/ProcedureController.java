@@ -2,6 +2,7 @@ package com.dvproject.vertTerm.Controller;
 
 import com.dvproject.vertTerm.Model.*;
 import com.dvproject.vertTerm.Service.ProcedureService;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -20,14 +21,9 @@ public class ProcedureController {
 		return procedureService.getAll();
 	}
 	
-//	@GetMapping("/{status}")
-//	public List<Procedure> getAllProceduresWithStatus (@PathVariable Status status) {
-//		return procedureService.getAll(status);
-//	}
-	
-	@GetMapping("/active")
-	public List<Procedure> getAllProceduresWithStatus () {
-		return procedureService.getAll(Status.ACTIVE);
+	@GetMapping("/Status")
+	public List<Procedure> getAllProceduresWithStatus (@RequestBody Status status) {
+		return procedureService.getAll(status);
 	}
 	
 	@GetMapping("/{id}")

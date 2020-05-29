@@ -4,7 +4,6 @@ import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
 
-import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 
 import org.springframework.data.annotation.Id;
@@ -29,7 +28,7 @@ public class Appointment implements Serializable {
 	@DBRef
 	private Procedure bookedProcedure;
 	@DBRef
-	@NotEmpty
+	@NotNull
 	private User bookedCustomer;
 	@DBRef
 	private List<Employee> bookedEmployees;
