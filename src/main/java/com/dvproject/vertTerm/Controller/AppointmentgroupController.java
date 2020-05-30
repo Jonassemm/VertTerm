@@ -10,10 +10,12 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.dvproject.vertTerm.Model.Appointmentgroup;
+import com.dvproject.vertTerm.Model.Optimizationstrategy;
 import com.dvproject.vertTerm.Model.Status;
 import com.dvproject.vertTerm.Service.AppointmentgroupService;
 
@@ -35,27 +37,41 @@ public class AppointmentgroupController {
 	}
 	
 	@GetMapping("/{id}")
-	private Appointmentgroup getAppointmentGroup (@PathVariable String id) {
+	public Appointmentgroup getAppointmentGroup (@PathVariable String id) {
 		return appointmentgroupService.getById(id);
 	}
 	
 	@GetMapping("/Appointment/{id}")
-	private Appointmentgroup getAppointmentGroupByAppointmentId (@PathVariable String id) {
+	public Appointmentgroup getAppointmentGroupByAppointmentId (@PathVariable String id) {
 		return appointmentgroupService.getAppointmentgroupWithAppointmentID(id);
 	}
 	
+	@GetMapping("/Optimize")
+	public Appointmentgroup getOptimizedSuggestion (
+			@RequestBody Appointmentgroup appointmentgroup,
+			@RequestParam Optimizationstrategy optimizationstrategy) {
+		//TODO
+		return appointmentgroupService.getOptimizedSuggestion(appointmentgroup, optimizationstrategy);
+	}
+	
 	@PostMapping("")
-	private Appointmentgroup insertAppointmentgroup (@RequestBody Appointmentgroup appointmentgroup) {
+	public Appointmentgroup insertAppointmentgroup (@RequestBody Appointmentgroup appointmentgroup) {
 		return appointmentgroupService.create(appointmentgroup);
 	}
 	
 	@PutMapping("")
-	private Appointmentgroup updateAppointmentgroup (@RequestBody Appointmentgroup appointmentgroup) {
+	public Appointmentgroup updateAppointmentgroup (@RequestBody Appointmentgroup appointmentgroup) {
 		return appointmentgroupService.update(appointmentgroup);
 	}
 	
+	@GetMapping("/Book")
+	public Appointmentgroup bookAppointments (@RequestBody Appointmentgroup appointmentgroup) {
+		//TODO
+		return null;
+	}
+	
 	@DeleteMapping("/{id}")
-	private boolean deleteAppointmentGroup (@PathVariable String id) {
+	public boolean deleteAppointmentGroup (@PathVariable String id) {
 		return appointmentgroupService.delete(id);
 	}
 }

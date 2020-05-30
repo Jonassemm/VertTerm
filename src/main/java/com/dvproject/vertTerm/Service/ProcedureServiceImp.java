@@ -11,24 +11,24 @@ import java.util.*;
 @Service
 public class ProcedureServiceImp implements ProcedureService {
 	@Autowired
-	private ProcedureRepository repo;
+	private ProcedureRepository procedureRepository;
 	
 	@Autowired
 	private AvailabilityServiceImpl availabilityService;
 
 	@Override
 	public List<Procedure> getAll() {
-		return repo.findAll();
+		return procedureRepository.findAll();
 	}
 
 	@Override
 	public List<Procedure> getAll(Status status) {
-		return repo.findByStatus(status);
+		return procedureRepository.findByStatus(status);
 	}
 
 	@Override
 	public List<Procedure> getByIds(String[] ids) {
-		return repo.findByIds(ids);
+		return procedureRepository.findByIds(ids);
 	}
 
 	@Override
@@ -75,9 +75,9 @@ public class ProcedureServiceImp implements ProcedureService {
 	@Override
 	public Procedure create(Procedure procedure) {
 		if (procedure.getId() == null) {
-			return repo.save(procedure);
+			return procedureRepository.save(procedure);
 		}
-		if (repo.findById(procedure.getId()).isPresent()) {
+		if (procedureRepository.findById(procedure.getId()).isPresent()) {
 			throw new IllegalArgumentException("Procedure with the given id (" + procedure.getId()
 					+ ") exists on the database. Use the update method.");
 		}
@@ -90,7 +90,7 @@ public class ProcedureServiceImp implements ProcedureService {
 		
 		testUpdatebility(oldProcedure.getStatus());
 		
-		return repo.save(procedure);
+		return procedureRepository.save(procedure);
 	}
 
 	@Override
@@ -105,7 +105,7 @@ public class ProcedureServiceImp implements ProcedureService {
 		oldProcedure.setPricePerInvocation(procedure.getPricePerInvocation());
 		oldProcedure.setDurationInMinutes(procedure.getDurationInMinutes());
 
-		return repo.save(oldProcedure);
+		return procedureRepository.save(oldProcedure);
 	}
 
 	@Override
@@ -115,7 +115,7 @@ public class ProcedureServiceImp implements ProcedureService {
 		testUpdatebility(procedure.getStatus());
 
 		procedure.setPrecedingRelations(precedingProcedures);
-		repo.save(procedure);
+		procedureRepository.save(procedure);
 
 		return getProcedureFromDB(id).getPrecedingRelations();
 	}
@@ -127,7 +127,7 @@ public class ProcedureServiceImp implements ProcedureService {
 		testUpdatebility(procedure.getStatus());
 
 		procedure.setSubsequentRelations(subsequentProcedures);
-		repo.save(procedure);
+		procedureRepository.save(procedure);
 
 		return getProcedureFromDB(id).getSubsequentRelations();
 	}
@@ -139,7 +139,7 @@ public class ProcedureServiceImp implements ProcedureService {
 		testUpdatebility(procedure.getStatus());
 
 		procedure.setNeededResourceTypes(resourceTypes);
-		repo.save(procedure);
+		procedureRepository.save(procedure);
 
 		return getProcedureFromDB(id).getNeededResourceTypes();
 	}
@@ -151,7 +151,7 @@ public class ProcedureServiceImp implements ProcedureService {
 		testUpdatebility(procedure.getStatus());
 
 		procedure.setNeededEmployeePositions(positions);
-		repo.save(procedure);
+		procedureRepository.save(procedure);
 
 		return getProcedureFromDB(id).getNeededEmployeePositions();
 	}
@@ -163,7 +163,7 @@ public class ProcedureServiceImp implements ProcedureService {
 		testUpdatebility(procedure.getStatus());
 
 		procedure.setAvailabilities(availabilities);
-		repo.save(procedure);
+		procedureRepository.save(procedure);
 
 		return getProcedureFromDB(id).getAvailabilities();
 	}
@@ -175,7 +175,7 @@ public class ProcedureServiceImp implements ProcedureService {
 		testUpdatebility(procedure.getStatus());
 
 		procedure.setRestrictions(restrictions);
-		repo.save(procedure);
+		procedureRepository.save(procedure);
 
 		return getProcedureFromDB(id).getRestrictions();
 	}
@@ -192,7 +192,7 @@ public class ProcedureServiceImp implements ProcedureService {
 			throw new NullPointerException("The id of the given procedure is null");
 		}
 
-		Optional<Procedure> procedureDB = repo.findById(id);
+		Optional<Procedure> procedureDB = procedureRepository.findById(id);
 
 		if (procedureDB.isPresent()) {
 			return procedureDB.get();
@@ -206,7 +206,7 @@ public class ProcedureServiceImp implements ProcedureService {
 
 		procedure.setStatus(Status.DELETED);
 
-		return repo.save(procedure);
+		return procedureRepository.save(procedure);
 	}
 	
 	private void testUpdatebility (Status status) {

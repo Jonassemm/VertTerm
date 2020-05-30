@@ -7,7 +7,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.rest.webmvc.ResourceNotFoundException;
 import org.springframework.stereotype.Service;
 
+import com.dvproject.vertTerm.Model.Appointment;
 import com.dvproject.vertTerm.Model.Appointmentgroup;
+import com.dvproject.vertTerm.Model.Optimizationstrategy;
 import com.dvproject.vertTerm.Model.Status;
 import com.dvproject.vertTerm.repository.AppointmentRepository;
 import com.dvproject.vertTerm.repository.AppointmentgroupRepository;
@@ -24,7 +26,7 @@ public class AppointmentgroupServiceImpl implements AppointmentgroupService {
 	public List<Appointmentgroup> getAll() {
 		return appointmentgroupRepository.findAll();
 	}
-	
+
 	@Override
 	public List<Appointmentgroup> getAppointmentgroupsWithStatus(Status status) {
 		return appointmentgroupRepository.findByStatus(status);
@@ -43,6 +45,13 @@ public class AppointmentgroupServiceImpl implements AppointmentgroupService {
 	}
 
 	@Override
+	public Appointmentgroup getOptimizedSuggestion(Appointmentgroup appointmentgroup,
+			Optimizationstrategy optimizationstrategy) {
+		// TODO
+		return null;
+	}
+
+	@Override
 	public Appointmentgroup getById(String id) {
 		return this.getAppointmentInternal(id);
 	}
@@ -50,6 +59,15 @@ public class AppointmentgroupServiceImpl implements AppointmentgroupService {
 	@Override
 	public Appointmentgroup create(Appointmentgroup newInstance) {
 		if (!appointmentgroupRepository.existsById(newInstance.getId())) {
+			List<Appointment> appointments = newInstance.getAppointments();
+
+			for (Appointment appointment : appointments) {
+				if (appointment.getActualStarttime() != null || appointment.getActualEndtime() != null) {
+					throw new IllegalArgumentException(
+							"Appointments have already been booked, no new appointmentgroup can be created with them");
+				}
+			}
+
 			return appointmentgroupRepository.save(newInstance);
 		}
 		return null;
@@ -58,7 +76,7 @@ public class AppointmentgroupServiceImpl implements AppointmentgroupService {
 	@Override
 	public Appointmentgroup update(Appointmentgroup updatedInstance) {
 		if (appointmentgroupRepository.existsById(updatedInstance.getId())) {
-			if (! StatusService.isUpdateable(updatedInstance.getStatus())) {
+			if (!StatusService.isUpdateable(updatedInstance.getStatus())) {
 				throw new IllegalArgumentException("The given procedure is not updateable");
 			}
 			return appointmentgroupRepository.save(updatedInstance);
@@ -74,7 +92,7 @@ public class AppointmentgroupServiceImpl implements AppointmentgroupService {
 
 		return appointmentgroup.getStatus() == Status.DELETED;
 	}
-	
+
 	private Appointmentgroup deleteAppointmentgroup(String id) {
 		Appointmentgroup appointmentgroup = this.getAppointmentInternal(id);
 		appointmentgroup.setStatus(Status.DELETED);

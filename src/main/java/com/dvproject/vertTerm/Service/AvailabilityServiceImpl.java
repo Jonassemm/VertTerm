@@ -27,7 +27,7 @@ public class AvailabilityServiceImpl {
 	 *         given time interval
 	 */
 	public boolean isAvailable(List<Availability> availabilities, Date startdate, Date enddate) {
-		boolean isAvailable;
+		boolean isAvailable = false;
 
 		if (!enddate.after(startdate)) {
 			throw new IllegalArgumentException("The startdate must be before the enddate!");
@@ -38,19 +38,24 @@ public class AvailabilityServiceImpl {
 			if (!(availability.getStartDate().after(startdate)
 					|| (availability.getEndOfSeries() != null && enddate.after(availability.getEndOfSeries())))) {
 
-				// transforms the dates into calendar Objects and calls the respective method to
-				// process this data
+				/*
+				 * transforms the dates into calendar Objects and calls the respective method to
+				 * process this data
+				 */
 				isAvailable = isInBetween(getCalendar(startdate), getCalendar(enddate),
 						getCalendar(availability.getStartDate()), getCalendar(availability.getEndDate()),
 						availability.getRhythm(), availability.getFrequency());
 
-				// if an availability is found for the given time interval, return true
+				/*
+				 * if an availability is found for the given time interval jump out of the loop
+				 * and return true
+				 */
 				if (isAvailable)
-					return true;
+					break;
 			}
 		}
-		// no availablity for the given time interval has been found
-		return false;
+
+		return isAvailable;
 	}
 
 	private boolean isInBetween(Calendar startdate, Calendar enddate, Calendar availStartdate, Calendar availEnddate,
@@ -60,23 +65,20 @@ public class AvailabilityServiceImpl {
 
 		switch (rhythm) {
 		case DAILY:
-			difference = getDaysBetween(startdate, availStartdate);
+			difference = getDaysBetweenDates(startdate, availStartdate);
 			break;
 		case WEEKLY:
-			int availStartDaysMod = getDaysFromEpoch(availStartdate) % 7;
-			int availEndDaysMod = getDaysFromEpoch(availEnddate) % 7;
-			int startDaysMod = getDaysFromEpoch(startdate) % 7;
-			int endDaysMod = getDaysFromEpoch(enddate) % 7;
-
-			int availStartDaysDif = getDaysFromEpoch(availStartdate) / 7;
-			int startDaysDif = getDaysFromEpoch(startdate) / 7;
+			int availStartDaysMod = availStartdate.get(Calendar.DAY_OF_WEEK);
+			int availEndDaysMod = availEnddate.get(Calendar.DAY_OF_WEEK);
+			int startDaysMod = startdate.get(Calendar.DAY_OF_WEEK);
+			int endDaysMod = enddate.get(Calendar.DAY_OF_WEEK);
 
 			availEndDays = normalize(availEndDaysMod, availStartDaysMod, 7);
 			startDays = normalize(startDaysMod, availStartDaysMod, 7);
 			endDays = normalize(endDaysMod, availStartDaysMod, 7);
-			difference = startDaysDif - availStartDaysDif;
+			difference = getDaysBetweenDates(availStartdate, startdate);
 
-			retVal = getDaysBetween(startdate, enddate) < 7;
+			retVal = getDaysBetweenDates(startdate, enddate) < 7;
 
 			break;
 		case MONTHLY:
@@ -94,7 +96,7 @@ public class AvailabilityServiceImpl {
 			difference = startdate.get(Calendar.MONTH) - availStartdate.get(Calendar.MONTH)
 					+ getYearDifference(startdate, availStartdate) * 12;
 
-			retVal = getDaysBetween(startdate, enddate) < 7;
+			retVal = getDaysBetweenDates(startdate, enddate) < 7;
 
 			break;
 		case YEARLY:
@@ -110,7 +112,7 @@ public class AvailabilityServiceImpl {
 			endDays = normalize(endDaysOfYear, availStartDaysOfYear, daysInYearOfAvailabilityStartdate);
 			difference = startdate.get(Calendar.YEAR) - availStartdate.get(Calendar.YEAR);
 
-			retVal = getDaysBetween(startdate, enddate) < 366;
+			retVal = getDaysBetweenDates(startdate, enddate) < 366;
 
 			break;
 		default:
@@ -138,8 +140,8 @@ public class AvailabilityServiceImpl {
 
 		return false;
 	}
-	
-	private int getAmoungOfDaysInYear (Calendar cal) {
+
+	private int getAmoungOfDaysInYear(Calendar cal) {
 		return cal.getActualMaximum(Calendar.DAY_OF_YEAR);
 	}
 
@@ -152,20 +154,12 @@ public class AvailabilityServiceImpl {
 		return date1.get(testCode) <= date2.get(testCode);
 	}
 
-	private int getDaysBetween(Calendar date1, Calendar date2) {
-		return getTimeBetween(date1, date2, ConvertionrateFromMilisToDay);
+	private int getDaysBetweenDates(Calendar date1, Calendar date2) {
+		return getTimeBetweenDates(date1, date2, ConvertionrateFromMilisToDay);
 	}
 
-	private int getTimeBetween(Calendar date1, Calendar date2, int Conversionrate) {
+	private int getTimeBetweenDates(Calendar date1, Calendar date2, int Conversionrate) {
 		return (int) ((date1.getTimeInMillis() - date2.getTimeInMillis()) / Conversionrate);
-	}
-
-	private int getDaysFromEpoch(Calendar date) {
-		return getTimeFromEpoch(date, ConvertionrateFromMilisToDay);
-	}
-
-	private int getTimeFromEpoch(Calendar date, int Conversionrate) {
-		return (int) (date.getTimeInMillis() / Conversionrate);
 	}
 
 	private int getYearDifference(Calendar date1, Calendar date2) {

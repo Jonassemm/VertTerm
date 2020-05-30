@@ -20,6 +20,11 @@ public class ConsumableServiceImpl implements ConsumableService {
 	public List<Consumable> getAll() {
 		return consumableRepository.findAll();
 	}
+	
+	@Override
+	public List<Consumable> getAllWithStatus(Status status) {
+		return consumableRepository.findByStatus(status);
+	}
 
 	@Override
 	public Consumable getById(String id) {
