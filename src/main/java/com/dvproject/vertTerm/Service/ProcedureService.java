@@ -36,7 +36,7 @@ public interface ProcedureService extends BasicService <Procedure>{
 
 	List<Position> updateNeededPositions(String id, List<Position> positions);
 	
-	List<Availability> updateAllAvailabilities(String id, List<Availability> availabilities);
+	List<Availability> updateAvailabilities(String id, List<Availability> availabilities);
 	
 	List<Restriction> updateProcedureRestrictions(String id, List<Restriction> restrictions);
 

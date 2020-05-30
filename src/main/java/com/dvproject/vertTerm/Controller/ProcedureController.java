@@ -116,7 +116,7 @@ public class ProcedureController {
 	@PutMapping("/{id}/Availability")
 	public List<Availability> updateProcedureAvailability (@PathVariable String id,
 			@RequestBody List<Availability> availabilities) {
-		return procedureService.updateAllAvailabilities(id, availabilities);
+		return procedureService.updateAvailabilities(id, availabilities);
 	}
 	
 	@PutMapping("/{id}/Restriction")

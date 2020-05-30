@@ -17,15 +17,19 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
 	private ResponseEntity<Object> handleRessourceNotFoundException(ResourceNotFoundException exception) {
 		return new ResponseEntity<>(exception, HttpStatus.NOT_FOUND);
 	}
-	
+
 	@ExceptionHandler(NullPointerException.class)
-	private ResponseEntity<Object> handleRessourceNotFoundException(NullPointerException exception) {
-		return new ResponseEntity<>(exception, HttpStatus.UNPROCESSABLE_ENTITY);
+	private ResponseEntity<Object> handleRessourceNotFoundException(NullPointerException exception,
+			WebRequest request) {
+		return handleExceptionInternal(exception, exception.getMessage(), new HttpHeaders(),
+				HttpStatus.UNPROCESSABLE_ENTITY, request);
 	}
-	
+
 	@ExceptionHandler(IllegalArgumentException.class)
-	private ResponseEntity<Object> handleIllegalArgumentException (IllegalArgumentException exception){
-		return new ResponseEntity<>(exception, HttpStatus.BAD_REQUEST);
+	private ResponseEntity<Object> handleIllegalArgumentException(IllegalArgumentException exception,
+			WebRequest request) {
+		return handleExceptionInternal(exception, exception.getMessage(), new HttpHeaders(), HttpStatus.BAD_REQUEST,
+				request);
 	}
 
 //	@Override
