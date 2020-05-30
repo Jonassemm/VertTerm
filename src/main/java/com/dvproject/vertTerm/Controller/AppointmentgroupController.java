@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.dvproject.vertTerm.Model.Appointmentgroup;
+import com.dvproject.vertTerm.Model.Status;
 import com.dvproject.vertTerm.Service.AppointmentgroupService;
 
 @RestController
@@ -24,8 +25,13 @@ public class AppointmentgroupController {
 	private AppointmentgroupService appointmentgroupService;
 	
 	@GetMapping("")
-	private List<Appointmentgroup> getAllAppointmentGroups () {
+	public List<Appointmentgroup> getAllAppointmentgroups () {
 		return appointmentgroupService.getAll();
+	}
+	
+	@GetMapping("/Status")
+	public List<Appointmentgroup> getAllAppointmentgroupsWithStatus (@RequestBody Status status){
+		return appointmentgroupService.getAppointmentgroupsWithStatus(status);
 	}
 	
 	@GetMapping("/{id}")
