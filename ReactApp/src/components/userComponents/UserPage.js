@@ -1,6 +1,6 @@
 import React, {useState, useEffect} from 'react'
-import CustomerForm from "./CustomerForm"
-import EmployeeForm from "./EmployeeForm"
+//import CustomerForm from "./CustomerForm"
+//import EmployeeForm from "./EmployeeForm"
 import OverviewPage from "../OverviewPage"
 import UserForm from "./UserForm"
 
@@ -38,12 +38,7 @@ export default function UserList(props) {
                     console.log(Object.keys(error), error.message)
                     alert("An error occoured while loading userlist")
                 }
-                /* data.map((user, index) => {
-                    const {id, username, availability} = user
-                    console.log(username)
-                    console.log(availability)       
-                    }) */
-              break;
+            break;
             case "customer":
                 try {
                     console.log("getCustomerlist")
@@ -57,14 +52,24 @@ export default function UserList(props) {
                     console.log(Object.keys(error), error.message)
                     alert("An error occoured while loading userlist")
                 }
-              break;
+            break;
           }
-        setUserList(data)
+
+        //don't save object with status="deleted"
+        var reducedData = []
+        console.log("original data:")
+        console.log(data)
+        data.map((singleUser) => {
+            if(singleUser.systemStatus != "deleted") {
+                reducedData.push(singleUser)
+            }
+        })
+        setUserList(reducedData)
     }
 
     const tableBody =
         userList.map((item, index) => { 
-            var status
+            var status //translated status
             switch(item.systemStatus) {
                 case "active":
                     status = "Aktiviert"

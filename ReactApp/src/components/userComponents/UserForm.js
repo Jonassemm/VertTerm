@@ -6,10 +6,8 @@ import ObjectPicker from "../ObjectPicker"
 import {
   addEmployee,
   updateEmployee,
-  deleteEmployee,
   addCustomer,
   updateCustomer,
-  deleteCustomer,
   getAllRoles
 } from "./UserRequests";
 
@@ -45,6 +43,9 @@ function UserForm({onCancel, edit, selected, type}) {
   const [choosableRoles, setChoosableRoles] = useState([]) //to avoid picking ADMIN_ROLE as customer
   //Restrictions
   //const [restrictions, setRestrictions] = useState([])
+  //extended userInformation
+  const [extUserInfoAttList, setExtUserInfoAttList] = useState([])
+  const [extUserInfoData, setExtUserInfoData] = useState([])
   
   //HANDEL CHANGE
   const handleFirstnameChange = event => {setFirstname(event.target.value); setEdited(true)}
@@ -53,10 +54,18 @@ function UserForm({onCancel, edit, selected, type}) {
   const handlePasswordChange = event => {setPassword(event.target.value); setEdited(true)}
   const handleSystemStatusChange = event => {setSystemStatus(event.target.value); setEdited(true)}
   const handlePositionChange = data => {console.log(toString(data)); setPosition(data); setEdited(true)}
+  const handleRoleChange = data => {console.log(toString(data)); setRoles(data); setEdited(true)}
+  const handleExtUserInfoDataChange = (e, name) => {
+    console.log(toString(name)); setExtUserInfoDataValue(name, e.target.value); setEdited(true)
+  }
 
   useEffect(() => {
     console.log("useEffect-Call: loadChoosableRoles");
     loadChoosableRoles(); 
+    console.log("useEffect-Call: loadExtandUserInformation")
+    loadExtUserInformation();
+    console.log("useEffect-Call: initialExtUserInfoData")
+    initialExtUserInfoData();
     if(edit) {
         setFirstname(selected.firstName)
         setLastname(selected.lastName)
@@ -75,17 +84,55 @@ function UserForm({onCancel, edit, selected, type}) {
     } 
   }, [])
 
+  //---------------------------------ExtUserInfoData---------------------------------
+  function initialExtUserInfoData() {
+    extUserInfoAttList.map((attName) => {
+      const data = {name: attName.name, value: ""}
+      setExtUserInfoData(extUserInfoData => [...extUserInfoData, data])
+    })
+  }
+
+  function setExtUserInfoDataValue(name, value) {
+    extUserInfoData.map((info)=> {
+      if(info.name == name) {
+        info.value = value
+      }
+    })
+  }
+
+  function getExtUserInfoDataValue(name) {
+    extUserInfoData.map((info) => {
+      if(info.name == name) {
+        return info.value;
+      }
+    })
+  }
+
+
+
   //---------------------------------SUBMIT---------------------------------
   //ADD USER
   const handleSubmit = async event => {
     event.preventDefault();//reload the page after clicking "Enter"
+    console.log(position)
+
+    //ONLY FOR TESTING - will be removed at the time we add position as an array
+    //get the first position of our position-array
+    var firstPosition
+    position.map((pos, index)=> {
+      if(index == 0) {
+        firstPosition = pos
+      }
+    })
+    //ONLY FOR TESTING - END
+
     if(edit) {
       var id = selected.id
       var updateData = {}
       try {
         if(isEmployee){
             console.log("AXIOS: updateEmployee()")
-            updateData = {id, firstName, lastName, username, password, systemStatus, roles, position, availabilities}
+            updateData = {id, firstName, lastName, username, password, systemStatus, roles, position: firstPosition, availabilities}
             await updateEmployee(id, updateData);
         }else {
             console.log("AXIOS: updateCustomer()")
@@ -101,7 +148,7 @@ function UserForm({onCancel, edit, selected, type}) {
         try {
         if(isEmployee){
             console.log("AXIOS: addEmployee()")
-            newData = {firstName, lastName, username, password, systemStatus, roles, position : {}, availabilities}
+            newData = {firstName, lastName, username, password, systemStatus, roles, position: firstPosition, availabilities}
             await addEmployee(newData);
         }else {
             console.log("AXIOS: addCustomer()")
@@ -118,20 +165,55 @@ function UserForm({onCancel, edit, selected, type}) {
 
   //DELETE USER
   const handleDeleteUser = async () => {
+    //ONLY FOR TESTING - will be removed at the time we add position as an array
+    //get the first position of our position-array
+    var firstPosition
+    position.map((pos, index)=> {
+      if(index == 0) {
+        firstPosition = pos
+      }
+    })
+    //ONLY FOR TESTING - END
+
+    const deleteStatus = "deleted" // fix delteStatus
+    const id = selected.id
+    var data = {}
     const answer = confirm("Möchten Sie diesen Mitarbeiter wirklich löschen? ")
-    try {
-        if (answer) {
-            if(isEmployee) {
-                await deleteEmployee(selected.id)
-            } else {
-                await deleteCustomer(selected.id)
-            }
+      if (answer) {
+        try {
+          if(isEmployee) { //delete employee
+              data = {id, firstName, lastName, username, password, systemStatus: deleteStatus, roles, position: firstPosition, availabilities}
+              await updateEmployee(id, data)
+          } else { //delete customer
+              data = {id, firstName, lastName, username, password, systemStatus: deleteStatus , roles}
+              await updateCustomer(id, data);
+          }
+        } catch (error) {
+            console.log(Object.keys(error), error.message)
+            alert("An error occoured while deleting a user")
         }
-    } catch (error) {
-        console.log(Object.keys(error), error.message)
-        alert("An error occoured while deleting a user")
-    }
+      }
         onCancel()
+  }
+
+  const handleDeleteRessource = async () => {
+    // fix delteStatus
+    const deleteStatus = "deleted"
+    //get the single type out of the array (array is needed for ObjectPicker)
+    var resourceType = {}
+    if(type.length > 0) { resourceType = type[0] }
+
+    var data = {name, description, status : deleteStatus, resourceTyp: resourceType, childRessources: childResources, availabilities, restrictions, amountInStock, numberOfUses, pricePerUnit}
+    const answer = confirm("Möchten Sie diese Ressource wirklich löschen? ")
+    try {
+      if (answer) {
+        await editResource(selected.id, data)
+      }
+    } catch (error) {
+      console.log(Object.keys(error), error.message)
+      alert("An error occoured while deleting a resource")
+    } 
+    onCancel()
   }
 
   //---------------------------------USER-ROLES---------------------------------
@@ -167,15 +249,8 @@ function UserForm({onCancel, edit, selected, type}) {
     }
   };
 
-  //REMOVE USER ROLES (ROLE-TABLE)
-  const removeRole = (index) => {
-    roles.splice((index),1) // remove role at "index" and just remove "1" role
-    setRoles([...roles])
-    setEdited(true)
-  };
-
-  //---------------------------------ALL-ROLES---------------------------------
-  //LOAD (ROLE-DROPDOWN)
+  //---------------------------------LOAD---------------------------------
+  //ROLES
   const loadChoosableRoles = async () => {
     var data = [];
     try{ 
@@ -189,13 +264,26 @@ function UserForm({onCancel, edit, selected, type}) {
       if(isEmployee) {
         setChoosableRoles(choosableRoles => [...choosableRoles, role]);
       } else {
-        if(role.name != "ADMIN_ROLE") {
+        if(role.name != "ADMIN_ROLE") { //user cannot add ADMIN_ROLE
           setChoosableRoles(choosableRoles => [...choosableRoles, role]);
         }
       }
     })
   };
-
+  //ExtendUserInfo
+  const loadExtUserInformation = async () => {
+    var data = [];
+    try{ 
+      const response = await getAllExtUserInformation();
+      data = response.data;
+    }catch (error) {
+      console.log(Object.keys(error), error.message)
+      alert("An error occoured while loading extendUserInformation")
+    }
+    data.map((info) => {
+        setExtUserInfoAttList(extUserInfoAttList => [...extUserInfoAttList, info]);
+    })
+  };
 
   
   //---------------------------------Availability---------------------------------
@@ -212,24 +300,26 @@ function UserForm({onCancel, edit, selected, type}) {
 
 
   // DYNAMIC ROLE-TABLE
-  function renderRoleTable() {
-    var emptyRole = false;
-    roles.map((role) => {
-      if(role.name == null)
-      emptyRole = true
-    })
-    if(roles.length > 0 && !emptyRole)
+  function renderExpandUserInformationTable() {
+    if(extUserInfoAttList.length > 0)
     {
       return ( 
-        roles.map((role, index) =>(
+        extUserInfoAttList.map((info, index) =>(
           <tr key={index}>
-            <td><Form.Control readOnly type="text" name={"Rolle"+ index} value={role.name}/></td>
-            <td><Button onClick={()=>removeRole(index)} id={role.name}>Entfernen</Button></td>
+            <td><Form.Control readOnly type="text" name={"userInfo-name"+ index} value={info.name}/></td>
+            <td><Form.Control onChange={handleExtUserInfoDataChange(e, info.name)} value={getExtUserInfoDataValue(info.name) || ""} name={"userInfo-value"+ index} type="text"/></td>
           </tr>
         ))
       );
     }
   };
+
+   /* //REMOVE USER ROLES (ROLE-TABLE)
+   const removeRole = (index) => {
+    roles.splice((index),1) // remove role at "index" and just remove "1" role
+    setRoles([...roles])
+    setEdited(true)
+  }; */
 
    return (
     <React.Fragment>
@@ -340,46 +430,47 @@ function UserForm({onCancel, edit, selected, type}) {
               </Form.Row>
               <Form.Row>
                 <Form.Group as={Col} md="5">
-                <Form.Label>Rolle hinzufügen:</Form.Label>
-                    <Container style={{display: "flex", flexWrap: "nowrap"}}>
+                  <Form.Label>Rollen:</Form.Label>
+                  <Container style={{display: "flex", flexWrap: "nowrap"}}>
                     <ObjectPicker 
-                        setState={setSelectedRole}
-                        DbObject="role" />
-                    <Button onClick={addRole} style={{marginLeft: "20px"}}>Hinzufügen</Button>
-                    </Container> 
+                      setState={handleRoleChange}
+                      DbObject="role"
+                      initial ={roles} 
+                      multiple ={true}
+                    />
+                  </Container>
                 </Form.Group>
                 {isEmployee &&
                   <Form.Group as={Col} md="5">
                     <Form.Label>Position:</Form.Label>
-                    <Container style={{display: "flex", flexWrap: "nowrap"}}>
-                        {
-                            <ObjectPicker 
-                            setState={handlePositionChange}
-                            DbObject="position"
-                            initial ={position} 
-                            multiple ={true}
-                            />
-                        }
-
+                    <Container style={{display: "flex", flexWrap: "nowrap"}}>       
+                      <ObjectPicker 
+                        setState={handlePositionChange}
+                        DbObject="position"
+                        initial ={position} 
+                        multiple ={true}
+                      />
                     </Container>
                   </Form.Group>
                 }
               </Form.Row>
+            </Tab>
+            <Tab eventKey="expand" title="Erweitert">
               <Form.Row>
                   <Form.Group as={Col} md="5">
                       <Table style={{border: "2px solid #AAAAAA"}} striped hover variant="ligth">
                           <thead>
                               <tr>
-                                  <th>Zugewiesene Rollen</th>
+                                  <th>Erweiterte Benutzerinformationen</th>
                               </tr>
                           </thead>
                           <tbody>
-                          {renderRoleTable()}
+                          {renderExpandUserInformationTable()}
                           </tbody>
                       </Table> 
                   </Form.Group>
-              </Form.Row>
-            </Tab>
+                </Form.Row>
+                </Tab>
             {isEmployee &&
                 <Tab eventKey="availability" title="Verfügbarkeit">
                 <Form.Row style={{marginTop: "25px"}}>

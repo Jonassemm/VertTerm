@@ -15,15 +15,17 @@ function ResourcePage() {
             console.log(Object.keys(error), error.message)
             alert("An error occoured while loading all resources")
         }
-
-        reducedData = []
-
+        
+        //don't save object with status="deleted"
+        var reducedData = []
+        console.log("original data:")
+        console.log(data)
         data.map((singleResource) => {
             if(singleResource.status != "deleted") {
                 reducedData.push(singleResource)
             }
           })
-        setResources(data);
+        setResources(reducedData);
     }
 
     useEffect(() => {
@@ -32,15 +34,28 @@ function ResourcePage() {
 
     const tableBody =
         resources.map((item, index) => {
+            var status //translated status
+            switch(item.status) {
+                case "active":
+                    status = "Aktiviert"
+                break;
+                case "inactive":
+                    status = "Deaktiviert"
+                break;
+                case "deleted":
+                    status = "Gelöscht"
+                break;
+                default: status = "UNDIFINED"
+            }
             return (
                 [index + 1,
                 item.name,
                 item.description,
-                item.type,
+                item.resourceTyp.name,
                 item.amountInStock,
                 item.numberOfUses,
                 item.pricePerUnit,
-                item.status]
+                status]
             )
         })
 

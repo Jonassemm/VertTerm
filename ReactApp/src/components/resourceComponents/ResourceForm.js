@@ -46,8 +46,7 @@ const RessourceForm = ({ onCancel, edit, selected }) => {
 
     const handleSubmit = async event => {
         event.preventDefault()
-        //get the single type out of the array (array is needed for ObjectPicker)
-        var resourceType = {}
+        var resourceType = {} //save the first type of the array (ObjectPicker needs array, but DB needs object)
         if(type.length > 0) { resourceType = type[0] }
         
         const data = {name, description, status, resourceTyp: resourceType, childRessources: childResources, availabilities, restrictions, amountInStock, numberOfUses, pricePerUnit}
@@ -61,13 +60,11 @@ const RessourceForm = ({ onCancel, edit, selected }) => {
     }
 
     const handleDeleteRessource = async () => {
-      // fix delteStatus
-      const deleteStatus = "deleted"
-      //get the single type out of the array (array is needed for ObjectPicker)
-      var resourceType = {}
+      const deleteStatus = "deleted" // fix delteStatus
+      var resourceType = {} //save the first type of the array (ObjectPicker needs array, but DB needs object)
       if(type.length > 0) { resourceType = type[0] }
 
-      data = {name, description, status : deleteStatus, resourceTyp: resourceType, childRessources: childResources, availabilities, restrictions, amountInStock, numberOfUses, pricePerUnit}
+      var data = {name, description, status : deleteStatus, resourceTyp: resourceType, childRessources: childResources, availabilities, restrictions, amountInStock, numberOfUses, pricePerUnit}
       const answer = confirm("Möchten Sie diese Ressource wirklich löschen? ")
       try {
         if (answer) {
@@ -168,7 +165,8 @@ const RessourceForm = ({ onCancel, edit, selected }) => {
                         setState={handleChildResourcesChange}
                         DbObject="resource"
                         initial={childResources} 
-                        multiple={true}/>
+                        multiple={true}
+                        exclude={selected}/>
                 </Form.Group>
                 <Form.Group as={Col} md="6">
                   <Form.Label>Einschränkungen:</Form.Label>

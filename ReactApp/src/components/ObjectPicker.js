@@ -7,8 +7,9 @@ import { getUsers, getEmployees, getCustomers, getProcedures, getRoles, getPosit
 // setState: the setState method for the state in your Form
 // initial: an Array with the values which have to be initally selected
 // multiple: defining whether multiple values can be selected (as boolean)
+// exclude: the element which is removed from the selection
 
-function ObjectPicker({ DbObject, setState, initial, multiple }) {
+function ObjectPicker({ DbObject, setState, initial, multiple, exclude = {id: -1} }) {
     const [options, setOptions] = useState([])
     const [labelKey, setLabelKey] = useState("")
     const [selected, setSelected] = useState([])
@@ -58,16 +59,22 @@ function ObjectPicker({ DbObject, setState, initial, multiple }) {
 
     async function getUserData() {
         let res = []
+        let finalResult = []
         switch (DbObject) {
             case 'user': res = await getUsers(); break;
             case 'customer': res = await getCustomers(); break;
             case 'employee': res = await getEmployees()
         }
-
         const result = res.data.map(item => {
             return {
                 ...item,
                 labelKey: item.firstName + " " + item.lastName
+            }
+        })
+        //reduce the selection
+        result.map((item) => {
+            if(item.id != exclude.id && item.systemStatus != "deleted"){
+                finalResult.push(item)
             }
         })
         setOptions(result)
@@ -76,13 +83,15 @@ function ObjectPicker({ DbObject, setState, initial, multiple }) {
     }
 
     async function getResourceData() {  
+        let finalResult = []
         const res = await getResources()
-        const result = res.data.map((item) => {
-            return {
-                ...item
+        res.data.map((item) => {
+            //reduce the selection
+            if(item.id != exclude.id && item.status != "deleted"){
+                finalResult.push(item)
             }
-        })
-        setOptions(result)
+        }) 
+        setOptions(finalResult)
         setLabelKey("name")
         setInit(true)
     }
@@ -146,6 +155,7 @@ function ObjectPicker({ DbObject, setState, initial, multiple }) {
         })
         setOptions(result)
         setLabelKey("name") */
+        setLabelKey("")
         setInit(true)
     }
 

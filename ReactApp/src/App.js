@@ -14,6 +14,7 @@ import Home from "./components/Home"
 import BookingForm from "./components/calendarComponents/BookingForm"
 //lazy loaded pages
 const UserPage = React.lazy(() => import('./components/userComponents/UserPage'))
+const ExtUserInfoPage = React.lazy(() => import('./components/extUserInfoComponents/ExtUserInfoPage'))
 const RolePage = React.lazy(() => import("./components/roleComponents/RolePage"))
 const PositionPage = React.lazy(() => import("./components/positionComponents/PositionPage"))
 const ResourceTypePage = React.lazy(() => import("./components/resourceTypeComponents/ResourceTypePage"))
@@ -43,7 +44,8 @@ export default observer(function App({ userStore, calendarStore }) {
             <Route path="/" exact component={() => <Home />} />
             {hasRole(userStore, ["ADMIN_ROLE"]) && <Route exact path="/customer" component={() => <UserPage userType={"customer"} heading={"Kunden"} />} />}
             {hasRole(userStore, ["ADMIN_ROLE"]) && <Route exact path="/employee" component={() => <UserPage userType={"employee"} heading={"Mitarbeiter"} />} />}
-            {<Route exact path="/resource" component={() => <Resources/>} />}
+            <Route exact path="/extUserInfo" component={() => <ExtUserInfoPage/>} />
+            <Route exact path="/resource" component={() => <Resources/>} />
             <Route exact path="/calendar" component={() => (<HomePage calendarStore={calendarStore} />)} />
             <Route exact path="/role" component={() => (<RolePage userStore={userStore} />)} />
             <Route path="/position" exact component={() => <PositionPage />} />

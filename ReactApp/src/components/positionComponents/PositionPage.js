@@ -18,7 +18,6 @@ function PositionPage() {
         }catch (error) {
           console.log(Object.keys(error), error.message)
           alert("An error occoured while loading all positions")
-          data = [{id:"1", name:"Position1", description:"Erste Position"},{id:"2", name:"Position2", description:"Zweite Position"}]
         }
         setPositions(data);
     };
