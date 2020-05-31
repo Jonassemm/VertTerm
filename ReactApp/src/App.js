@@ -13,6 +13,7 @@ import Footer from './components/Footer';
 import Home from "./components/Home"
 import BookingForm from "./components/calendarComponents/BookingForm"
 //lazy loaded pages
+/*
 const UserList = React.lazy(() => import('./components/userComponents/UserList'))
 const RolePage = React.lazy(() => import("./components/roleComponents/RolePage"))
 const PositionPage = React.lazy(() => import("./components/positionComponents/PositionPage"))
@@ -21,9 +22,9 @@ const ResourcePage = React.lazy(() => import("./components/resourceComponents/Re
 const HomePage = React.lazy(() => import('./components/calendarComponents/HomePage'))
 const ProcedurePage = React.lazy(() => import("./components/procedureComponents/ProcedurePage")) */
 
-import UserList from './components/user/UserList'
+import UserList from './components/userComponents/UserList'
 import RolePage from "./components/roleComponents/RolePage"
-import PositionPage from "./components/position/PositionPage"
+import PositionPage from "./components/positionComponents/PositionPage"
 import HomePage from './components/calendarComponents/HomePage'
 import ProcedurePage from "./components/procedureComponents/ProcedurePage"
 

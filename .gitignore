@@ -4,3 +4,4 @@ node_modules
 .vscode
 node
 ReactApp/dist
+ReactApp/package-lock.json

@@ -8,7 +8,7 @@ import { getUsers, getEmployees, getCustomers, getProcedures, getRoles, getPosit
 // initial: an Array with the values which have to be initally selected
 // multiple: defining whether multiple values can be selected
 
-function ObjectPicker({ DbObject, setState, initial, multiple }) {
+function ObjectPicker({ DbObject, setState, initial, multiple, ident }) {
     const [options, setOptions] = useState([])
     const [labelKey, setLabelKey] = useState("")
     const [selected, setSelected] = useState([])
@@ -122,7 +122,11 @@ function ObjectPicker({ DbObject, setState, initial, multiple }) {
 
     const handleChange = event => {
         setSelected(event)
-        setState(event)
+        if(!ident){
+            setState(event)
+        }else{
+            setState({data: event, ident: ident, DbObject: DbObject})
+        }
     }
 
     return (
