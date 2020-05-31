@@ -62,7 +62,8 @@ public class AppointmentgroupServiceImpl implements AppointmentgroupService {
 			List<Appointment> appointments = newInstance.getAppointments();
 
 			for (Appointment appointment : appointments) {
-				if (appointment.getActualStarttime() != null || appointment.getActualEndtime() != null) {
+				if (appointment.getPlannedStarttime() != null || appointment.getPlannedStarttime() != null
+						|| appointment.getActualStarttime() != null || appointment.getActualEndtime() != null) {
 					throw new IllegalArgumentException(
 							"Appointments have already been booked, no new appointmentgroup can be created with them");
 				}
@@ -81,6 +82,10 @@ public class AppointmentgroupServiceImpl implements AppointmentgroupService {
 			}
 			return appointmentgroupRepository.save(updatedInstance);
 		}
+		return null;
+	}
+	
+	public Appointmentgroup bookAppointmentgroup (String id) {
 		return null;
 	}
 
