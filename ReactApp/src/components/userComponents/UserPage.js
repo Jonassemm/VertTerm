@@ -8,7 +8,7 @@ import UserForm from "./UserForm"
 import {observer} from "mobx-react"
 import {
     getEmployeeList,
-    getCustomerList,
+    getCustomerList
   } from "./UserRequests";
 
 
@@ -19,7 +19,8 @@ export default function UserList(props) {
     useEffect( () => {
         loadUserList()
     },[])
-    
+
+
     //---------------------------------USER---------------------------------
     //LOAD USERLIST
     const loadUserList = async () => {

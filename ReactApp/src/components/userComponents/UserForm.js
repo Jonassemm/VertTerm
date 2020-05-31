@@ -13,7 +13,6 @@ import {
 
 
 function UserForm({onCancel, edit, selected, type}) {
-  
   //Editing
   const [edited, setEdited] = useState(false)
 
@@ -42,7 +41,7 @@ function UserForm({onCancel, edit, selected, type}) {
   const [roles, setRoles] = useState([])
   const [choosableRoles, setChoosableRoles] = useState([]) //to avoid picking ADMIN_ROLE as customer
   //Restrictions
-  //const [restrictions, setRestrictions] = useState([])
+  const [restrictions, setRestrictions] = useState([])
   //extended userInformation
   const [extUserInfoAttList, setExtUserInfoAttList] = useState([])
   const [extUserInfoData, setExtUserInfoData] = useState([])
@@ -54,17 +53,18 @@ function UserForm({onCancel, edit, selected, type}) {
   const handleUsernameChange = event => {setUsername(event.target.value); setEdited(true)}
   const handlePasswordChange = event => {setPassword(event.target.value); setEdited(true)}
   const handleSystemStatusChange = event => {setSystemStatus(event.target.value); setEdited(true)}
-  const handlePositionChange = data => {console.log(toString(data)); setPosition(data); setEdited(true)}
-  const handleRoleChange = data => {console.log(toString(data)); setRoles(data); setEdited(true)}
+  const handlePositionChange = data => {setPosition(data); setEdited(true)}
+  const handleRoleChange = data => {setRoles(data); setEdited(true)}
+  const handleRestrictionChange = data => {setRestrictions(data); setEdited(true)}
   const handleExtUserInfoDataChange = (e, name) => {
     setExtUserInfoDataValue(name, e.target.value); 
     setUserInfoInput(e.target.value); 
     setEdited(true) 
-  }
+  };
 
-  useEffect(() => {
+  useEffect(() => { 
     console.log("useEffect-Call: loadChoosableRoles");
-    loadChoosableRoles(); 
+    loadChoosableRoles();
     console.log("useEffect-Call: loadExtandUserInformation")
     loadExtUserInformation();
     if(edit) {
@@ -221,12 +221,6 @@ function UserForm({onCancel, edit, selected, type}) {
     })
   }
 
-  function test() {
-    console.log(extUserInfoData.find(item => item.name == "E-Mail").value)
-    console.log(choosableRoles)
-    console.log(choosableRoles.find(role => role.name == "ADMIN_ROLE").id)
-  }
-
   //---------------------------------Availability---------------------------------
   const addAvailability = (newAvailability) => {
     setAvailabilities(availabilities => [...availabilities, newAvailability]);
@@ -254,7 +248,6 @@ function UserForm({onCancel, edit, selected, type}) {
       );
     }
   };
-
 
    return (
     <React.Fragment>
@@ -364,27 +357,39 @@ function UserForm({onCancel, edit, selected, type}) {
                 }
               </Form.Row>
               <Form.Row>
-                <Form.Group as={Col} md="5">
+              <Form.Group as={Col} md="5">
                   <Form.Label>Rollen:</Form.Label>
                   <Container style={{display: "flex", flexWrap: "nowrap"}}>
                     {isEmployee &&
                       <ObjectPicker 
                         setState={handleRoleChange}
-                        DbObject="role"
+                        DbObject="employeeRole"
                         initial={roles} 
                         multiple={true}
                       />
                     }{!isEmployee &&
                       <ObjectPicker // customer cannot choose ADMIN_ROLE
                         setState={handleRoleChange}
-                        DbObject="role"
+                        DbObject="customerRole"
                         initial={roles} 
                         multiple={true}
-                        exclude={{id:"5ed269f34ab8b124b241b9a8"}} //hardcoded id of ADMIN_ROLE
                       />
                     }
                   </Container>
                 </Form.Group>
+                <Form.Group as={Col} md="5">
+                  <Form.Label>Einschränkungen:</Form.Label>
+                  <Container style={{display: "flex", flexWrap: "nowrap"}}>
+                    <ObjectPicker 
+                      setState={handleRestrictionChange}
+                      DbObject="restriction"
+                      initial={restrictions} 
+                      multiple={true}
+                    />
+                  </Container>
+                </Form.Group>
+              </Form.Row>
+              <Form.Row>
                 {isEmployee &&
                   <Form.Group as={Col} md="5">
                     <Form.Label>Position:</Form.Label>
@@ -440,7 +445,6 @@ function UserForm({onCancel, edit, selected, type}) {
                   <Button variant="success" type="submit">Übernehmen</Button>:
                   null : <Button variant="success"  type="submit">Benutzer anlegen</Button>)
                 }
-                <Button variant="info" onClick={test} style={{marginRight: "20px"}}>TEST</Button>
                 </Container>
               </Form.Row>
         </Form>

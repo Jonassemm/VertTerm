@@ -40,7 +40,7 @@ const RessourceForm = ({ onCancel, edit, selected }) => {
             setName(selected.name)
             setDescription(selected.description)
             setStatus(selected.status)
-            setType(type => [selected.resourceTyp])
+            setType(type => [selected.resourceType])
             setChildResources(selected.childResources)
             setAvailabilities(selected.availabilities)
         }
@@ -60,20 +60,20 @@ const RessourceForm = ({ onCancel, edit, selected }) => {
 
     const handleSubmit = async event => {
         event.preventDefault()
-        var resourceType = {} 
+        var firstType = {} 
         //save the first type of the array (ObjectPicker needs array, but DB needs object)
-        if(type.length > 0) { resourceType = type[0] }
+        if(type.length > 0) { firstType = type[0] }
         
         var data 
         if(isConsumable) {
-          data = {name, description, status, resourceTyp: resourceType, childResources, availabilities, restrictions, amountInStock, numberOfUses, pricePerUnit}
+          data = {name, description, status, resourceType: firstType, childResources, availabilities, restrictions, amountInStock, numberOfUses, pricePerUnit}
           if(edit) {
             await editConsumable(selected.id, data)
           }else {
             await addConsumable(data)
           }
         }else {
-          data = {name, description, status, resourceTyp: resourceType, childResources, availabilities, restrictions}
+          data = {name, description, status, resourceType: firstType, childResources, availabilities, restrictions}
           if (edit){
             await editResource(selected.id, data)
           }else{
@@ -85,27 +85,27 @@ const RessourceForm = ({ onCancel, edit, selected }) => {
 
     const handleDeleteRessource = async () => {
       const deleteStatus = "deleted" // fix delteStatus
-      var resourceType = {} 
+      var firstType = {} 
       //save the first type of the array (ObjectPicker needs array, but DB needs object)
-      if(type.length > 0) { resourceType = type[0] }
+      if(type.length > 0) { firstType = type[0] }
 
       var data
       const answer = confirm("Möchten Sie diese Ressource wirklich löschen? ")
-      try {
-        if (answer) {
+      if (answer) {
+        try {
           if(isConsumable) {
-            data = {name, description, status : deleteStatus, resourceTyp: resourceType, childResources, availabilities, restrictions, amountInStock, numberOfUses, pricePerUnit}
+            data = {name, description, status : deleteStatus, resourceType: firstType, childResources, availabilities, restrictions, amountInStock, numberOfUses, pricePerUnit}
             await editConsumable(selected.id, data)
           } else {
-            data = {name, description, status : deleteStatus, resourceTyp: resourceType, childResources, availabilities, restrictions}
+            data = {name, description, status : deleteStatus, resourceType: firstType, childResources, availabilities, restrictions}
             await editResource(selected.id, data)
           }
-          
-        }
-      } catch (error) {
-        console.log(Object.keys(error), error.message)
-        alert("An error occoured while deleting a resource")
-      } 
+        } catch (error) {
+          console.log(Object.keys(error), error.message)
+          alert("An error occoured while deleting a resource")
+        } 
+
+      }
       onCancel()
     }
 
@@ -147,10 +147,10 @@ const RessourceForm = ({ onCancel, edit, selected }) => {
                 <Form.Group as={Col} md="4">
                   <Form.Label>Ressourcentyp</Form.Label>
                   <ObjectPicker 
-                          setState={handleTypeChange}
-                          DbObject="resourceType"
-                          initial={type}
-                          multiple={false} />
+                    setState={handleTypeChange}
+                    DbObject="resourceType"
+                    initial={type}
+                    multiple={false} />
                 </Form.Group>
                 
                 <Form.Group as={Col} md="2">

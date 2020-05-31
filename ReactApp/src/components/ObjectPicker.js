@@ -22,6 +22,7 @@ function ObjectPicker({ DbObject, setState, initial, multiple, ident, exclude = 
         resource: "Ressource",
         resourceType: "Ressourcentyp",
         position: "Position",
+        role: "Rolle",
         restriction: "Einschränkung"
     }
 
@@ -34,7 +35,8 @@ function ObjectPicker({ DbObject, setState, initial, multiple, ident, exclude = 
             case 'resource': getResourceData(); break;
             case 'resourceType': getResourceTypeData(); break;
             case 'position': getPositionData(); break;
-            case 'role': getRoleData(); break;
+            case 'customerRole': getRoleData("customer"); break;
+            case 'employeeRole': getRoleData("employee"); break;
             case 'restriction': getRestrictionData();
         }
     }, [])
@@ -133,13 +135,17 @@ function ObjectPicker({ DbObject, setState, initial, multiple, ident, exclude = 
         setInit(true)
     }
 
-    async function getRoleData() {
+    async function getRoleData(userType) {
         let finalResult = []
         const res = await getRoles()
         res.data.map((item) => {
             //reduce the selection
-            if(item.id != exclude.id){
+            if(userType == "employee") {
                 finalResult.push(item)
+            }else { // customer
+                if(item.name != "ADMIN_ROLE"){
+                    finalResult.push(item)
+                }
             }
         }) 
         setOptions(finalResult)

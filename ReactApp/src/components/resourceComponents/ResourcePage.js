@@ -51,7 +51,7 @@ function ResourcePage() {
                 [index + 1,
                 item.name,
                 item.description,
-                item.resourceTyp.name,
+                item.resourceType.name,
                 item.amountInStock,
                 item.numberOfUses,
                 item.pricePerUnit,

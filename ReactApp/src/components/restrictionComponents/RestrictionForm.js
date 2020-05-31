@@ -1,17 +1,15 @@
 import React, { useState, useEffect } from "react"
 import { Form, Table } from "react-bootstrap"
 import { Container, Button } from "react-bootstrap"
-import {addResourceType, deleteResourceType, editResourceType } from "./ResourceTypeRequests"
+import {addRestriction, deleteRestriction, editRestriction } from "./RestrictionRequests"
 
-const ResourceTypeForm = ({ onCancel, edit, selected }) => {
+const RestrictionForm = ({ onCancel, edit, selected }) => {
     const [name, setName] = useState("")
-    const [description, setDescription] = useState("")
     const [edited, setEdited] = useState(false)
 
     useEffect(() => {
         if (edit) {
             setName(selected.name)
-            setDescription(selected.description)
         }
     }, [])
 
@@ -21,38 +19,34 @@ const ResourceTypeForm = ({ onCancel, edit, selected }) => {
         setEdited(true)
     }
 
-    function handleDescriptionChange(event) {
-        setDescription(event.target.value)
-        setEdited(true)
-    }
-
     const handleSubmit = async event => {
         event.preventDefault()
-        const data = { name: name, description: description}
         let res = {}
         if (!edit) {
-            res = await addResourceType(data)
+            const data = {name, description}
+            res = await addRestriction(data)
         } else {
-            res = await editResourceType(selected.id, data)
+            var id = selected.id
+            const data = {id, name, description}
+            res = await editRestriction(id, data)
         }
         console.log(res)
         onCancel()
     }
 
-    const handleDeleteResourceType = async () => {
-        const answer = confirm("Möchten Sie diese Ressourcentyp wirklich löschen?")
+
+    const handleDeleteRestriction = async () => {
+        const answer = confirm("Möchten Sie diese Einschränkung wirklich löschen? ")
         if (answer) {
             try {
-                const res = await deleteResourceType(selected.id)
+                const res = await deleteRestriction(selected.id)
                 console.log(res)
             } catch (error) {
                 console.log(Object.keys(error), error.message)
-                alert("An error occoured while deleting a resource type")
+                alert("An error occoured while deleting a restriction")
             }
         }
         onCancel()
-
-        
     }
 
     return (
@@ -63,29 +57,19 @@ const ResourceTypeForm = ({ onCancel, edit, selected }) => {
                         <Form.Label>Bezeichnung: </Form.Label>
                         <Form.Control
                             type="text"
-                            placeholder="Ressourcentypname"
+                            placeholder="Bezeichnung der Einschränkung"
                             value={name || ""}
                             required
                             onChange={handleNameChange}
                         />
                     </Form.Row>
-                    <Form.Row style={{ marginTop: "10px" }}>
-                        <Form.Label>Beschreibung: </Form.Label>
-                        <Form.Control
-                            as="textarea"
-                            type="text"
-                            placeholder="Weitere Informationen"
-                            value={description || ""}
-                            onChange={handleDescriptionChange}
-                        />
-                    </Form.Row>
                     <hr style={{ border: "0,5px solid #999999" }}/>
                     <Container style={{textAlign: "right"}}>
-                        {edit ? <Button style={{ marginRight: "10px" }} variant="danger" onClick={handleDeleteResourceType}>Löschen</Button> : null}
+                        {edit ? <Button style={{ marginRight: "10px" }} variant="danger" onClick={handleDeleteRestriction}>Löschen</Button> : null}
                         <Button style={{ marginRight: "10px" }} onClick={onCancel} variant="secondary">Abbrechen</Button>
                         {(edit ? edited ? 
                             <Button variant="success"  type="submit">Übernehmen</Button>:
-                            null : <Button variant="success"  type="submit">Ressourcentype anlegen</Button>)
+                            null : <Button variant="success"  type="submit">Einschränkung anlegen</Button>)
                         }
                     </Container>
                 </Form>
@@ -93,5 +77,4 @@ const ResourceTypeForm = ({ onCancel, edit, selected }) => {
         </React.Fragment>
     )
 }
-
-export default ResourceTypeForm
+export default RestrictionForm

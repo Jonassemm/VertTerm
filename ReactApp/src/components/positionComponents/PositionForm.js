@@ -44,8 +44,13 @@ const PositionForm = ({ onCancel, edit, selected }) => {
     const handleDeletePosition = async () => {
         const answer = confirm("Möchten Sie diese Position wirklich löschen? ")
         if (answer) {
-            const res = await deletePosition(selected.id)
-            console.log(res)
+            try {
+                const res = await deletePosition(selected.id)
+                console.log(res)
+            } catch (error) {
+                console.log(Object.keys(error), error.message)
+                alert("An error occoured while deleting a position")
+            }
         }
         onCancel()
     }
