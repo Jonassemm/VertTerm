@@ -7,7 +7,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.rest.webmvc.ResourceNotFoundException;
 import org.springframework.stereotype.Service;
 
+import com.dvproject.vertTerm.Model.Appointment;
 import com.dvproject.vertTerm.Model.Appointmentgroup;
+import com.dvproject.vertTerm.Model.Optimizationstrategy;
 import com.dvproject.vertTerm.Model.Status;
 import com.dvproject.vertTerm.repository.AppointmentRepository;
 import com.dvproject.vertTerm.repository.AppointmentgroupRepository;
@@ -15,14 +17,38 @@ import com.dvproject.vertTerm.repository.AppointmentgroupRepository;
 @Service
 public class AppointmentgroupServiceImpl implements AppointmentgroupService {
 	@Autowired
-	private AppointmentgroupRepository repo;
+	private AppointmentgroupRepository appointmentgroupRepository;
 
 	@Autowired
-	private AppointmentRepository appoint;
+	private AppointmentRepository appointmentRepository;
 
 	@Override
 	public List<Appointmentgroup> getAll() {
-		return repo.findAll();
+		return appointmentgroupRepository.findAll();
+	}
+
+	@Override
+	public List<Appointmentgroup> getAppointmentgroupsWithStatus(Status status) {
+		return appointmentgroupRepository.findByStatus(status);
+	}
+
+	@Override
+	public Appointmentgroup getAppointmentgroupWithAppointmentID(String id) {
+		if (id == null) {
+			throw new NullPointerException("The id of the given appointment is null");
+		}
+		if (appointmentRepository.findById(id).isEmpty()) {
+			throw new ResourceNotFoundException("The id of the given appointment is invalid");
+		}
+
+		return appointmentgroupRepository.findByAppointmentsId(id);
+	}
+
+	@Override
+	public Appointmentgroup getOptimizedSuggestion(Appointmentgroup appointmentgroup,
+			Optimizationstrategy optimizationstrategy) {
+		// TODO
+		return null;
 	}
 
 	@Override
@@ -32,19 +58,28 @@ public class AppointmentgroupServiceImpl implements AppointmentgroupService {
 
 	@Override
 	public Appointmentgroup create(Appointmentgroup newInstance) {
-		if (!repo.existsById(newInstance.getId())) {
-			return repo.save(newInstance);
+		if (!appointmentgroupRepository.existsById(newInstance.getId())) {
+			List<Appointment> appointments = newInstance.getAppointments();
+
+			for (Appointment appointment : appointments) {
+				if (appointment.getActualStarttime() != null || appointment.getActualEndtime() != null) {
+					throw new IllegalArgumentException(
+							"Appointments have already been booked, no new appointmentgroup can be created with them");
+				}
+			}
+
+			return appointmentgroupRepository.save(newInstance);
 		}
 		return null;
 	}
 
 	@Override
 	public Appointmentgroup update(Appointmentgroup updatedInstance) {
-		if (repo.existsById(updatedInstance.getId())) {
-			if (! StatusService.isUpdateable(updatedInstance.getStatus())) {
+		if (appointmentgroupRepository.existsById(updatedInstance.getId())) {
+			if (!StatusService.isUpdateable(updatedInstance.getStatus())) {
 				throw new IllegalArgumentException("The given procedure is not updateable");
 			}
-			return repo.save(updatedInstance);
+			return appointmentgroupRepository.save(updatedInstance);
 		}
 		return null;
 	}
@@ -53,27 +88,15 @@ public class AppointmentgroupServiceImpl implements AppointmentgroupService {
 	public boolean delete(String id) {
 		this.deleteAppointmentgroup(id);
 
-		Appointmentgroup app = this.getAppointmentInternal(id);
+		Appointmentgroup appointmentgroup = this.getAppointmentInternal(id);
 
-		return app.getStatus() == Status.DELETED;
+		return appointmentgroup.getStatus() == Status.DELETED;
 	}
 
 	private Appointmentgroup deleteAppointmentgroup(String id) {
-		Appointmentgroup app = this.getAppointmentInternal(id);
-		app.setStatus(Status.DELETED);
-		return repo.save(app);
-	}
-
-	@Override
-	public Appointmentgroup getAppointmentgroupWithAppointmentID(String id) {
-		if (id == null) {
-			throw new NullPointerException("The id of the given appointment is null");
-		}
-		if (appoint.findById(id).isEmpty()) {
-			throw new ResourceNotFoundException("The id of the given appointment is invalid");
-		}
-
-		return repo.findByAppointmentsId(id);
+		Appointmentgroup appointmentgroup = this.getAppointmentInternal(id);
+		appointmentgroup.setStatus(Status.DELETED);
+		return appointmentgroupRepository.save(appointmentgroup);
 	}
 
 	private Appointmentgroup getAppointmentInternal(String id) {
@@ -81,10 +104,10 @@ public class AppointmentgroupServiceImpl implements AppointmentgroupService {
 			throw new ResourceNotFoundException("The id of the given appointmentgroup is null");
 		}
 
-		Optional<Appointmentgroup> appGr = repo.findById(id);
+		Optional<Appointmentgroup> appointmentgroup = appointmentgroupRepository.findById(id);
 
-		if (appGr.isPresent()) {
-			return appGr.get();
+		if (appointmentgroup.isPresent()) {
+			return appointmentgroup.get();
 		} else {
 			throw new ResourceNotFoundException("No appointmentgroup with the given id (" + id + ") can be found.");
 		}

@@ -11,21 +11,24 @@ import java.util.*;
 @Service
 public class ProcedureServiceImp implements ProcedureService {
 	@Autowired
-	private ProcedureRepository repo;
+	private ProcedureRepository procedureRepository;
+	
+	@Autowired
+	private AvailabilityServiceImpl availabilityService;
 
 	@Override
 	public List<Procedure> getAll() {
-		return repo.findAll();
+		return procedureRepository.findAll();
 	}
 
 	@Override
 	public List<Procedure> getAll(Status status) {
-		return repo.findByStatus(status);
+		return procedureRepository.findByStatus(status);
 	}
 
 	@Override
 	public List<Procedure> getByIds(String[] ids) {
-		return repo.findByIds(ids);
+		return procedureRepository.findByIds(ids);
 	}
 
 	@Override
@@ -62,34 +65,19 @@ public class ProcedureServiceImp implements ProcedureService {
 	public List<Restriction> getProcedureRestrictions(String id) {
 		return this.getProcedureFromDB(id).getRestrictions();
 	}
+	
 
 	@Override
 	public boolean isAvailableBetween(String id, Date startdate, Date enddate) {
-		List<Availability> availabilities = getProcedureFromDB(id).getAvailabilities();
-		boolean isAvailable;
-
-		for (Availability availability : availabilities) {
-			if (!(availability.getStartDate().after(startdate)
-					&& (availability.getEndOfSeries() == null || availability.getEndOfSeries().before(enddate)))) {
-				Date availabilityStartdate = availability.getStartDate();
-				Date availabilityEnddate = availability.getEndDate();
-
-				isAvailable = isBetween(getCalendar(startdate), getCalendar(enddate),
-						getCalendar(availabilityStartdate), getCalendar(availabilityEnddate), availability.getRhythm());
-
-				if (isAvailable)
-					return true;
-			}
-		}
-		return false;
+		return availabilityService.isAvailable(this.getProcedureFromDB(id).getAvailabilities(), startdate, enddate);
 	}
 
 	@Override
 	public Procedure create(Procedure procedure) {
 		if (procedure.getId() == null) {
-			return repo.save(procedure);
+			return procedureRepository.save(procedure);
 		}
-		if (repo.findById(procedure.getId()).isPresent()) {
+		if (procedureRepository.findById(procedure.getId()).isPresent()) {
 			throw new IllegalArgumentException("Procedure with the given id (" + procedure.getId()
 					+ ") exists on the database. Use the update method.");
 		}
@@ -100,20 +88,16 @@ public class ProcedureServiceImp implements ProcedureService {
 	public Procedure update(Procedure procedure) {
 		Procedure oldProcedure = getProcedureFromDB(procedure.getId());
 		
-		if (!StatusService.isUpdateable(oldProcedure.getStatus())) {
-			throw new IllegalArgumentException("The given procedure is not updateable");
-		}
+		testUpdatebility(oldProcedure.getStatus());
 		
-		return repo.save(procedure);
+		return procedureRepository.save(procedure);
 	}
 
 	@Override
 	public Procedure updateProceduredata(Procedure procedure) {
 		Procedure oldProcedure = getProcedureFromDB(procedure.getId());
 
-		if (!StatusService.isUpdateable(oldProcedure.getStatus())) {
-			throw new IllegalArgumentException("The given procedure is not updateable");
-		}
+		testUpdatebility(procedure.getStatus());
 
 		oldProcedure.setName(procedure.getName());
 		oldProcedure.setDescription(procedure.getDescription());
@@ -121,19 +105,17 @@ public class ProcedureServiceImp implements ProcedureService {
 		oldProcedure.setPricePerInvocation(procedure.getPricePerInvocation());
 		oldProcedure.setDurationInMinutes(procedure.getDurationInMinutes());
 
-		return repo.save(oldProcedure);
+		return procedureRepository.save(oldProcedure);
 	}
 
 	@Override
 	public List<ProcedureRelation> updatePrecedingProcedures(String id, List<ProcedureRelation> precedingProcedures) {
 		Procedure procedure = getProcedureFromDB(id);
 
-		if (!StatusService.isUpdateable(procedure.getStatus())) {
-			throw new IllegalArgumentException("The given procedure is not updateable");
-		}
+		testUpdatebility(procedure.getStatus());
 
 		procedure.setPrecedingRelations(precedingProcedures);
-		repo.save(procedure);
+		procedureRepository.save(procedure);
 
 		return getProcedureFromDB(id).getPrecedingRelations();
 	}
@@ -142,12 +124,10 @@ public class ProcedureServiceImp implements ProcedureService {
 	public List<ProcedureRelation> updateSubsequentProcedures(String id, List<ProcedureRelation> subsequentProcedures) {
 		Procedure procedure = getProcedureFromDB(id);
 
-		if (!StatusService.isUpdateable(procedure.getStatus())) {
-			throw new IllegalArgumentException("The given procedure is not updateable");
-		}
+		testUpdatebility(procedure.getStatus());
 
 		procedure.setSubsequentRelations(subsequentProcedures);
-		repo.save(procedure);
+		procedureRepository.save(procedure);
 
 		return getProcedureFromDB(id).getSubsequentRelations();
 	}
@@ -156,12 +136,10 @@ public class ProcedureServiceImp implements ProcedureService {
 	public List<ResourceType> updateNeededResourceTypes(String id, List<ResourceType> resourceTypes) {
 		Procedure procedure = getProcedureFromDB(id);
 
-		if (!StatusService.isUpdateable(procedure.getStatus())) {
-			throw new IllegalArgumentException("The given procedure is not updateable");
-		}
+		testUpdatebility(procedure.getStatus());
 
 		procedure.setNeededResourceTypes(resourceTypes);
-		repo.save(procedure);
+		procedureRepository.save(procedure);
 
 		return getProcedureFromDB(id).getNeededResourceTypes();
 	}
@@ -170,26 +148,22 @@ public class ProcedureServiceImp implements ProcedureService {
 	public List<Position> updateNeededPositions(String id, List<Position> positions) {
 		Procedure procedure = getProcedureFromDB(id);
 
-		if (!StatusService.isUpdateable(procedure.getStatus())) {
-			throw new IllegalArgumentException("The given procedure is not updateable");
-		}
+		testUpdatebility(procedure.getStatus());
 
 		procedure.setNeededEmployeePositions(positions);
-		repo.save(procedure);
+		procedureRepository.save(procedure);
 
 		return getProcedureFromDB(id).getNeededEmployeePositions();
 	}
 
 	@Override
-	public List<Availability> updateAllAvailabilities(String id, List<Availability> availabilities) {
+	public List<Availability> updateAvailabilities(String id, List<Availability> availabilities) {
 		Procedure procedure = getProcedureFromDB(id);
 
-		if (!StatusService.isUpdateable(procedure.getStatus())) {
-			throw new IllegalArgumentException("The given procedure is not updateable");
-		}
+		testUpdatebility(procedure.getStatus());
 
 		procedure.setAvailabilities(availabilities);
-		repo.save(procedure);
+		procedureRepository.save(procedure);
 
 		return getProcedureFromDB(id).getAvailabilities();
 	}
@@ -198,12 +172,10 @@ public class ProcedureServiceImp implements ProcedureService {
 	public List<Restriction> updateProcedureRestrictions(String id, List<Restriction> restrictions) {
 		Procedure procedure = getProcedureFromDB(id);
 
-		if (!StatusService.isUpdateable(procedure.getStatus())) {
-			throw new IllegalArgumentException("The given procedure is not updateable");
-		}
+		testUpdatebility(procedure.getStatus());
 
 		procedure.setRestrictions(restrictions);
-		repo.save(procedure);
+		procedureRepository.save(procedure);
 
 		return getProcedureFromDB(id).getRestrictions();
 	}
@@ -212,9 +184,7 @@ public class ProcedureServiceImp implements ProcedureService {
 	public boolean delete(String id) {
 		this.deleteFromDB(id);
 
-		Procedure procedure = getProcedureFromDB(id);
-
-		return procedure.getStatus() == Status.DELETED;
+		return getProcedureFromDB(id).getStatus() == Status.DELETED;
 	}
 
 	private Procedure getProcedureFromDB(String id) {
@@ -222,7 +192,7 @@ public class ProcedureServiceImp implements ProcedureService {
 			throw new NullPointerException("The id of the given procedure is null");
 		}
 
-		Optional<Procedure> procedureDB = repo.findById(id);
+		Optional<Procedure> procedureDB = procedureRepository.findById(id);
 
 		if (procedureDB.isPresent()) {
 			return procedureDB.get();
@@ -231,52 +201,18 @@ public class ProcedureServiceImp implements ProcedureService {
 		}
 	}
 
-	private boolean isBetween(Calendar startdate, Calendar enddate, Calendar availStartdate, Calendar availEnddate,
-			AvailabilityRhythm rhythm) {
-		boolean isBetween;
-		switch (rhythm) {
-		case DAILY:
-			isBetween = true;
-			break;
-		case WEEKLY:
-			isBetween = availStartdate.get(Calendar.DAY_OF_WEEK) == startdate.get(Calendar.DAY_OF_WEEK)
-					&& enddate.get(Calendar.DAY_OF_WEEK) == availEnddate.get(Calendar.DAY_OF_WEEK);
-			break;
-
-		case MONTHLY:
-			isBetween = availStartdate.get(Calendar.DAY_OF_MONTH) == startdate.get(Calendar.DAY_OF_MONTH)
-					&& enddate.get(Calendar.DAY_OF_MONTH) == availEnddate.get(Calendar.DAY_OF_MONTH);
-			break;
-
-		case YEARLY:
-			isBetween = availStartdate.get(Calendar.DAY_OF_YEAR) == startdate.get(Calendar.DAY_OF_YEAR)
-					&& enddate.get(Calendar.DAY_OF_YEAR) == availEnddate.get(Calendar.DAY_OF_YEAR);
-			break;
-
-		default:
-			return false;
-		}
-		int availabilityDistance = availEnddate.get(Calendar.DAY_OF_YEAR) - availStartdate.get(Calendar.DAY_OF_YEAR);
-		int dayDistance = enddate.get(Calendar.DAY_OF_YEAR) - startdate.get(Calendar.DAY_OF_YEAR);
-		return isBetween && (availabilityDistance == dayDistance)
-				&& (availStartdate.get(Calendar.HOUR_OF_DAY) <= startdate.get(Calendar.HOUR_OF_DAY)
-						&& enddate.get(Calendar.HOUR_OF_DAY) <= availEnddate.get(Calendar.HOUR_OF_DAY))
-				&& (availStartdate.get(Calendar.MINUTE) <= startdate.get(Calendar.MINUTE)
-						&& enddate.get(Calendar.MINUTE) <= availEnddate.get(Calendar.MINUTE));
-	}
-
-	private Calendar getCalendar(Date date) {
-		Calendar calendar = Calendar.getInstance(TimeZone.getTimeZone("GMT"));
-		calendar.setTime(date);
-		return calendar;
-	}
-
 	private Procedure deleteFromDB(String id) {
 		Procedure procedure = getProcedureFromDB(id);
 
 		procedure.setStatus(Status.DELETED);
 
-		return repo.save(procedure);
+		return procedureRepository.save(procedure);
+	}
+	
+	private void testUpdatebility (Status status) {
+		if (!StatusService.isUpdateable(status)) {
+			throw new IllegalArgumentException("The given procedure is not updateable");
+		}
 	}
 
 }

@@ -13,31 +13,31 @@ import java.util.Optional;
 @Service
 public class PositionServiceImp implements PositionService {
 	@Autowired
-	private PositionRepository repo;
+	private PositionRepository positionRepository;
 
 	@Override
 	public List<Position> getAll() {
-		return repo.findAll();
+		return positionRepository.findAll();
 	}
 
 	@Override
 	public Position getById(String id) {
-		Optional<Position> position = repo.findById(id);
+		Optional<Position> position = positionRepository.findById(id);
 		return position.orElse(null);
 	}
 
 	@Override
 	public Position update(Position position) {
-		if (position.getId() != null && repo.findById(position.getId()).isPresent()) {
-			return repo.save(position);
+		if (position.getId() != null && positionRepository.findById(position.getId()).isPresent()) {
+			return positionRepository.save(position);
 		}
 		return null;
 	}
 
 	@Override
 	public boolean delete(String id) {
-		repo.delete(this.getPositionsInternal(id));
-		return repo.existsById(id);
+		positionRepository.delete(this.getPositionsInternal(id));
+		return positionRepository.existsById(id);
 	}
 
 	@Override
@@ -54,9 +54,9 @@ public class PositionServiceImp implements PositionService {
 	@Override
 	public Position create(Position position) {
 		if (position.getId() == null) {
-			return repo.save(position);
+			return positionRepository.save(position);
 		}
-		if (repo.findById(position.getId()).isPresent()) {
+		if (positionRepository.findById(position.getId()).isPresent()) {
 			throw new ResourceNotFoundException("Procedure with the given id (" + position.getId() + ") exists on the database. Use the update method.");
 		}
 		return null;
@@ -67,7 +67,7 @@ public class PositionServiceImp implements PositionService {
 			throw new ResourceNotFoundException("The id of the given procedure is null");
 		}
 		
-		Optional<Position> position = repo.findById(id);
+		Optional<Position> position = positionRepository.findById(id);
 		if (position.isPresent()) {
 			return position.get();
 		} else {

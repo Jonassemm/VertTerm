@@ -28,7 +28,7 @@ public class Resource implements Serializable{
 	@DBRef
 	private List<Restriction> restrictions;
 	@DBRef
-	private ResourceType resourceTyp;
+	private ResourceType resourceType;
 
 	public String getId() {
 		return id;
@@ -94,11 +94,11 @@ public class Resource implements Serializable{
 		this.restrictions = restrictions;
 	}
 
-	public ResourceType getResourceTyp() {
-		return resourceTyp;
+	public ResourceType getResourceType() {
+		return resourceType;
 	}
 
-	public void setResourceTyp(ResourceType resourceTyp) {
-		this.resourceTyp = resourceTyp;
+	public void setResourceType(ResourceType resourceType) {
+		this.resourceType = resourceType;
 	}
 }

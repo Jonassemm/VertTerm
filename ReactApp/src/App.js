@@ -12,21 +12,29 @@ import Footer from './components/Footer';
 // preloaded pages
 import Home from "./components/Home"
 import BookingForm from "./components/calendarComponents/BookingForm"
+import UserPage from './components/user/UserPage'
+import ExtUserInfoPage from "./components/extUserInfoComponents/extUserInfoPage"
+import RolePage from "./components/roleComponents/RolePage"
+import PositionPage from "./components/positionComponents/PositionPage"
+import HomePage from './components/calendarComponents/HomePage'
+import ProcedurePage from "./components/procedureComponents/ProcedurePage" 
+import ResourceTypePage from "./componens/resourceTypeComponents/ResourceTypePage"
+import ResourcePage from "./components/resourceComponents/ResourcePage"
+import Resources from "./components/resourceComponents/ResourcePage"
+
 //lazy loaded pages
 /*
-const UserList = React.lazy(() => import('./components/userComponents/UserList'))
+const UserPage = React.lazy(() => import('./components/userComponents/UserPage'))
+const ExtUserInfoPage = React.lazy(() => import('./components/extUserInfoComponents/ExtUserInfoPage'))
 const RolePage = React.lazy(() => import("./components/roleComponents/RolePage"))
 const PositionPage = React.lazy(() => import("./components/positionComponents/PositionPage"))
 const ResourceTypePage = React.lazy(() => import("./components/resourceTypeComponents/ResourceTypePage"))
 const ResourcePage = React.lazy(() => import("./components/resourceComponents/ResourcePage"))
 const HomePage = React.lazy(() => import('./components/calendarComponents/HomePage'))
-const ProcedurePage = React.lazy(() => import("./components/procedureComponents/ProcedurePage")) */
+const ProcedurePage = React.lazy(() => import("./components/procedureComponents/ProcedurePage"))
+const Resources = React.lazy(() => import("./components/resourceComponents/ResourcePage")) */
 
-import UserList from './components/userComponents/UserList'
-import RolePage from "./components/roleComponents/RolePage"
-import PositionPage from "./components/positionComponents/PositionPage"
-import HomePage from './components/calendarComponents/HomePage'
-import ProcedurePage from "./components/procedureComponents/ProcedurePage"
+
 
 
 
@@ -41,8 +49,10 @@ export default observer(function App({ userStore, calendarStore }) {
         <div style={{ margin: "55px 0px 50px 0px" }}>
           <Switch>
             <Route path="/" exact component={() => <Home />} />
-            {hasRole(userStore, ["ADMIN_ROLE"]) && <Route exact path="/customer/list" component={() => <UserList userType={"customer"} heading={"Kundenliste"} />} />}
-            {hasRole(userStore, ["ADMIN_ROLE"]) && <Route exact path="/employee/list" component={() => <UserList userType={"employee"} heading={"Mitarbeiterliste"} />} />}
+            {hasRole(userStore, ["ADMIN_ROLE"]) && <Route exact path="/customer" component={() => <UserPage userType={"customer"} heading={"Kunden"} />} />}
+            {hasRole(userStore, ["ADMIN_ROLE"]) && <Route exact path="/employee" component={() => <UserPage userType={"employee"} heading={"Mitarbeiter"} />} />}
+            <Route exact path="/extUserInfo" component={() => <ExtUserInfoPage/>} />
+            <Route exact path="/resource" component={() => <Resources/>} />
             <Route exact path="/calendar" component={() => (<HomePage calendarStore={calendarStore} />)} />
             <Route exact path="/role" component={() => (<RolePage userStore={userStore} />)} />
             <Route path="/position" exact component={() => <PositionPage />} />
