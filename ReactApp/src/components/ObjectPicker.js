@@ -134,13 +134,15 @@ function ObjectPicker({ DbObject, setState, initial, multiple, exclude = {id: -1
     }
 
     async function getRoleData() {
+        let finalResult = []
         const res = await getRoles()
-        const result = res.data.map(item => {
-            return {
-                ...item
-            }   
-        })
-        setOptions(result)
+        res.data.map((item) => {
+            //reduce the selection
+            if(item.id != exclude.id){
+                finalResult.push(item)
+            }
+        }) 
+        setOptions(finalResult)
         setLabelKey("name")
         setInit(true)
     }

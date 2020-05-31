@@ -67,7 +67,7 @@ export default function UserList(props) {
         setUserList(reducedData)
     }
 
-    const tableBody =
+    const tableBody = 
         userList.map((item, index) => { 
             var status //translated status
             switch(item.systemStatus) {

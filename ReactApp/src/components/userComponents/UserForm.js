@@ -46,6 +46,7 @@ function UserForm({onCancel, edit, selected, type}) {
   //extended userInformation
   const [extUserInfoAttList, setExtUserInfoAttList] = useState([])
   const [extUserInfoData, setExtUserInfoData] = useState([])
+  const [extUserInfoInput, setUserInfoInput] = useState("") //needed to render page when editing any extUserInfo
   
   //HANDEL CHANGE
   const handleFirstnameChange = event => {setFirstname(event.target.value); setEdited(true)}
@@ -56,7 +57,9 @@ function UserForm({onCancel, edit, selected, type}) {
   const handlePositionChange = data => {console.log(toString(data)); setPosition(data); setEdited(true)}
   const handleRoleChange = data => {console.log(toString(data)); setRoles(data); setEdited(true)}
   const handleExtUserInfoDataChange = (e, name) => {
-    console.log(toString(name)); setExtUserInfoDataValue(name, e.target.value); setEdited(true)
+    setExtUserInfoDataValue(name, e.target.value); 
+    setUserInfoInput(e.target.value); 
+    setEdited(true) 
   }
 
   useEffect(() => {
@@ -64,8 +67,6 @@ function UserForm({onCancel, edit, selected, type}) {
     loadChoosableRoles(); 
     console.log("useEffect-Call: loadExtandUserInformation")
     loadExtUserInformation();
-    console.log("useEffect-Call: initialExtUserInfoData")
-    initialExtUserInfoData();
     if(edit) {
         setFirstname(selected.firstName)
         setLastname(selected.lastName)
@@ -84,30 +85,45 @@ function UserForm({onCancel, edit, selected, type}) {
     } 
   }, [])
 
-  //---------------------------------ExtUserInfoData---------------------------------
-  function initialExtUserInfoData() {
-    extUserInfoAttList.map((attName) => {
-      const data = {name: attName.name, value: ""}
-      setExtUserInfoData(extUserInfoData => [...extUserInfoData, data])
+  //---------------------------------LOAD---------------------------------
+  //ROLES
+  const loadChoosableRoles = async () => {
+    var data = [];
+    try{ 
+      const response = await getAllRoles();
+      data = response.data;
+    }catch (error) {
+      console.log(Object.keys(error), error.message)
+      alert("An error occoured while loading choosable roles")
+    }
+    data.map((role) => {
+        setChoosableRoles(choosableRoles => [...choosableRoles, role]);
     })
-  }
+  };
 
-  function setExtUserInfoDataValue(name, value) {
-    extUserInfoData.map((info)=> {
-      if(info.name == name) {
-        info.value = value
+  //EXTUSERINFO
+  const loadExtUserInformation = async () => {
+    var data = [];
+    try{ 
+      const response = await getAllExtUserInformation();
+      data = response.data;
+    }catch (error) {
+      data = [{id:"1", name:"E-Mail", isRequired: true},{id:"2", name:"Telefon-Nr.", isRequired: false}]
+      console.log(Object.keys(error), error.message)
+      //alert("An error occoured while loading extendUserInformation")
+    }
+    data.map((info) => {
+        setExtUserInfoAttList(extUserInfoAttList => [...extUserInfoAttList, info]);
+    })
+    //initial the ExtUserInfoData-Array for submit
+    const initialData = data.map(name => {
+      return {
+        ...name,
+        value: ""
       }
     })
-  }
-
-  function getExtUserInfoDataValue(name) {
-    extUserInfoData.map((info) => {
-      if(info.name == name) {
-        return info.value;
-      }
-    })
-  }
-
+    setExtUserInfoData(initialData)
+  };
 
 
   //---------------------------------SUBMIT---------------------------------
@@ -196,96 +212,21 @@ function UserForm({onCancel, edit, selected, type}) {
         onCancel()
   }
 
-  const handleDeleteRessource = async () => {
-    // fix delteStatus
-    const deleteStatus = "deleted"
-    //get the single type out of the array (array is needed for ObjectPicker)
-    var resourceType = {}
-    if(type.length > 0) { resourceType = type[0] }
-
-    var data = {name, description, status : deleteStatus, resourceTyp: resourceType, childRessources: childResources, availabilities, restrictions, amountInStock, numberOfUses, pricePerUnit}
-    const answer = confirm("Möchten Sie diese Ressource wirklich löschen? ")
-    try {
-      if (answer) {
-        await editResource(selected.id, data)
+  //---------------------------------ExtUserInfoData---------------------------------
+  const setExtUserInfoDataValue = (name, value) => {
+    extUserInfoData.map((info)=> {
+      if(info.name == name) {
+        info.value = value
       }
-    } catch (error) {
-      console.log(Object.keys(error), error.message)
-      alert("An error occoured while deleting a resource")
-    } 
-    onCancel()
+    })
   }
 
-  //---------------------------------USER-ROLES---------------------------------
-  //ADD USER ROLES (TABLE)
-  const addRole = () => {
-    if(selectedRole != null) {
-      if(selectedRole.length > 0) {
-        //choose the one single role in this array
-        var selected = null
-          selectedRole.map((role)=> {
-            selected = role
-          })
+  function test() {
+    console.log(extUserInfoData.find(item => item.name == "E-Mail").value)
+    console.log(choosableRoles)
+    console.log(choosableRoles.find(role => role.name == "ADMIN_ROLE").id)
+  }
 
-        if(roles.some(roles => roles.name === selected.name)) {
-          alert("Rolle bereits vorhanden!");
-        } else {
-          if(choosableRoles.some(roles => roles.name === selected.name)) {
-            choosableRoles.map((role, index) => {
-              if(role.name == selected.name) {
-                setRoles(roles => [...roles, role]);
-                setEdited(true)
-              }
-            })
-          }else {
-            alert("Rolle darf nicht zugewiesen werden!")
-          }
-        }
-      } else {
-        alert("Bitte Rolle auswählen!")
-      }
-    } else {
-      alert("Bitte Rolle auswählen!")
-    }
-  };
-
-  //---------------------------------LOAD---------------------------------
-  //ROLES
-  const loadChoosableRoles = async () => {
-    var data = [];
-    try{ 
-      const response = await getAllRoles();
-      data = response.data;
-    }catch (error) {
-      console.log(Object.keys(error), error.message)
-      alert("An error occoured while loading choosable roles")
-    }
-    data.map((role) => {
-      if(isEmployee) {
-        setChoosableRoles(choosableRoles => [...choosableRoles, role]);
-      } else {
-        if(role.name != "ADMIN_ROLE") { //user cannot add ADMIN_ROLE
-          setChoosableRoles(choosableRoles => [...choosableRoles, role]);
-        }
-      }
-    })
-  };
-  //ExtendUserInfo
-  const loadExtUserInformation = async () => {
-    var data = [];
-    try{ 
-      const response = await getAllExtUserInformation();
-      data = response.data;
-    }catch (error) {
-      console.log(Object.keys(error), error.message)
-      alert("An error occoured while loading extendUserInformation")
-    }
-    data.map((info) => {
-        setExtUserInfoAttList(extUserInfoAttList => [...extUserInfoAttList, info]);
-    })
-  };
-
-  
   //---------------------------------Availability---------------------------------
   const addAvailability = (newAvailability) => {
     setAvailabilities(availabilities => [...availabilities, newAvailability]);
@@ -298,28 +239,22 @@ function UserForm({onCancel, edit, selected, type}) {
     })
   }
 
-
-  // DYNAMIC ROLE-TABLE
+  //---------------------------------RENDER---------------------------------
+  // DYNAMIC extendetUserInforamtion table
   function renderExpandUserInformationTable() {
     if(extUserInfoAttList.length > 0)
     {
       return ( 
         extUserInfoAttList.map((info, index) =>(
           <tr key={index}>
-            <td><Form.Control readOnly type="text" name={"userInfo-name"+ index} value={info.name}/></td>
-            <td><Form.Control onChange={handleExtUserInfoDataChange(e, info.name)} value={getExtUserInfoDataValue(info.name) || ""} name={"userInfo-value"+ index} type="text"/></td>
+            <td>{info.name}:</td>
+            <td><Form.Control onChange={e => handleExtUserInfoDataChange(e, info.name)} value={extUserInfoData.find(item => item.name == info.name).value || ""} name={"userInfo-value"+ index} type="text"/></td>
           </tr>
         ))
       );
     }
   };
 
-   /* //REMOVE USER ROLES (ROLE-TABLE)
-   const removeRole = (index) => {
-    roles.splice((index),1) // remove role at "index" and just remove "1" role
-    setRoles([...roles])
-    setEdited(true)
-  }; */
 
    return (
     <React.Fragment>
@@ -432,12 +367,22 @@ function UserForm({onCancel, edit, selected, type}) {
                 <Form.Group as={Col} md="5">
                   <Form.Label>Rollen:</Form.Label>
                   <Container style={{display: "flex", flexWrap: "nowrap"}}>
-                    <ObjectPicker 
-                      setState={handleRoleChange}
-                      DbObject="role"
-                      initial ={roles} 
-                      multiple ={true}
-                    />
+                    {isEmployee &&
+                      <ObjectPicker 
+                        setState={handleRoleChange}
+                        DbObject="role"
+                        initial={roles} 
+                        multiple={true}
+                      />
+                    }{!isEmployee &&
+                      <ObjectPicker // customer cannot choose ADMIN_ROLE
+                        setState={handleRoleChange}
+                        DbObject="role"
+                        initial={roles} 
+                        multiple={true}
+                        exclude={{id:"5ed269f34ab8b124b241b9a8"}} //hardcoded id of ADMIN_ROLE
+                      />
+                    }
                   </Container>
                 </Form.Group>
                 {isEmployee &&
@@ -457,11 +402,11 @@ function UserForm({onCancel, edit, selected, type}) {
             </Tab>
             <Tab eventKey="expand" title="Erweitert">
               <Form.Row>
-                  <Form.Group as={Col} md="5">
-                      <Table style={{border: "2px solid #AAAAAA"}} striped hover variant="ligth">
+                  <Form.Group as={Col} md="12">
+                      <Table style={{border: "2px solid #AAAAAA", marginTop: "10px", width: "100%", borderCollapse: "collapse", tableLayout: "fixed"}} striped variant="ligth">
                           <thead>
                               <tr>
-                                  <th>Erweiterte Benutzerinformationen</th>
+                                  <th colSpan="2">Erweiterte Benutzerinformationen</th>
                               </tr>
                           </thead>
                           <tbody>
@@ -495,6 +440,7 @@ function UserForm({onCancel, edit, selected, type}) {
                   <Button variant="success" type="submit">Übernehmen</Button>:
                   null : <Button variant="success"  type="submit">Benutzer anlegen</Button>)
                 }
+                <Button variant="info" onClick={test} style={{marginRight: "20px"}}>TEST</Button>
                 </Container>
               </Form.Row>
         </Form>
