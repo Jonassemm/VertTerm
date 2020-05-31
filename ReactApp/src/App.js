@@ -12,13 +12,13 @@ import Footer from './components/Footer';
 // preloaded pages
 import Home from "./components/Home"
 import BookingForm from "./components/calendarComponents/BookingForm"
-import UserPage from './components/user/UserPage'
+import UserPage from './components/userComponents/UserPage'
 import ExtUserInfoPage from "./components/extUserInfoComponents/extUserInfoPage"
 import RolePage from "./components/roleComponents/RolePage"
 import PositionPage from "./components/positionComponents/PositionPage"
 import HomePage from './components/calendarComponents/HomePage'
 import ProcedurePage from "./components/procedureComponents/ProcedurePage" 
-import ResourceTypePage from "./componens/resourceTypeComponents/ResourceTypePage"
+import ResourceTypePage from "./components/resourceTypeComponents/ResourceTypePage"
 import ResourcePage from "./components/resourceComponents/ResourcePage"
 import Resources from "./components/resourceComponents/ResourcePage"
 
