@@ -18,7 +18,7 @@ export const getCustomer = userID => axios.get(`${APIURL}/api/Customers/${userID
 //export const deleteCustomer = userID => axios.delete(`${APIURL}/api/Customers/${userID}`)
 
 //USERS
-export const getAllUsers = () => axios.get(`${APIURL}/api/User/`) 
+export const getAllUsers = () => axios.get(`${APIURL}/api/Users`) 
 
 //ROLES
 //export const getAllRoles = () => axios.get(`${APIURL}/api/Role/`)

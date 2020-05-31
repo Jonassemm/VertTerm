@@ -12,7 +12,18 @@ import Footer from './components/Footer';
 // preloaded pages
 import Home from "./components/Home"
 import BookingForm from "./components/calendarComponents/BookingForm"
+import UserPage from './components/user/UserPage'
+import ExtUserInfoPage from "./components/extUserInfoComponents/extUserInfoPage"
+import RolePage from "./components/roleComponents/RolePage"
+import PositionPage from "./components/positionComponents/PositionPage"
+import HomePage from './components/calendarComponents/HomePage'
+import ProcedurePage from "./components/procedureComponents/ProcedurePage" 
+import ResourceTypePage from "./componens/resourceTypeComponents/ResourceTypePage"
+import ResourcePage from "./components/resourceComponents/ResourcePage"
+import Resources from "./components/resourceComponents/ResourcePage"
+
 //lazy loaded pages
+/*
 const UserPage = React.lazy(() => import('./components/userComponents/UserPage'))
 const ExtUserInfoPage = React.lazy(() => import('./components/extUserInfoComponents/ExtUserInfoPage'))
 const RolePage = React.lazy(() => import("./components/roleComponents/RolePage"))
@@ -21,13 +32,9 @@ const ResourceTypePage = React.lazy(() => import("./components/resourceTypeCompo
 const ResourcePage = React.lazy(() => import("./components/resourceComponents/ResourcePage"))
 const HomePage = React.lazy(() => import('./components/calendarComponents/HomePage'))
 const ProcedurePage = React.lazy(() => import("./components/procedureComponents/ProcedurePage"))
-const Resources = React.lazy(() => import("./components/resourceComponents/ResourcePage"))
+const Resources = React.lazy(() => import("./components/resourceComponents/ResourcePage")) */
 
-/* import UserPage from './components/user/UserPage'
-import RolePage from "./components/roleComponents/RolePage"
-import PositionPage from "./components/position/PositionPage"
-import HomePage from './components/calendarComponents/HomePage'
-import ProcedurePage from "./components/procedureComponents/ProcedurePage" */
+
 
 
 

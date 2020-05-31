@@ -9,7 +9,7 @@ import { getUsers, getEmployees, getCustomers, getProcedures, getRoles, getPosit
 // multiple: defining whether multiple values can be selected (as boolean)
 // exclude: the element which is removed from the selection
 
-function ObjectPicker({ DbObject, setState, initial, multiple, exclude = {id: -1} }) {
+function ObjectPicker({ DbObject, setState, initial, multiple, ident, exclude = {id: -1} }) {
     const [options, setOptions] = useState([])
     const [labelKey, setLabelKey] = useState("")
     const [selected, setSelected] = useState([])
@@ -163,7 +163,11 @@ function ObjectPicker({ DbObject, setState, initial, multiple, exclude = {id: -1
 
     const handleChange = event => {
         setSelected(event)
-        setState(event)
+        if(!ident){
+            setState(event)
+        }else{
+            setState({data: event, ident: ident, DbObject: DbObject})
+        }
     }
 
     return (
