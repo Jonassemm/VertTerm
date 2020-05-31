@@ -72,24 +72,27 @@ public class ProcedureServiceImp implements ProcedureService {
 		return availabilityService.isAvailable(this.getProcedureFromDB(id).getAvailabilities(), startdate, enddate);
 	}
 
-	public boolean hasCorrectProcedureRelation(Appointmentgroup appointmentgroup) {
+	@Override
+	public boolean hasCorrectProcedureRelation(List<Appointment> appointmentsToTest) {
 		// procedure.id -> appointment
-		Map<String, Appointment> appointments = new HashMap<String, Appointment>();
+		Map<String, Appointment> appointments = new HashMap<>();
 		// procedure.id -> procedure
-		Map<String, Procedure> procedures = new HashMap<String, Procedure>();
+		Map<String, Procedure> procedures = new HashMap<>();
 
-		for (Appointment appointment : appointmentgroup.getAppointments()) {
+		// populate Maps
+		for (Appointment appointment : appointmentsToTest) {
 			String id = appointment.getBookedProcedure().getId();
 			procedures.put(id, this.getProcedureFromDB(id));
 
 			appointments.put(id, appointment);
 		}
 
-		for (Appointment appointment : appointmentgroup.getAppointments()) {
+		for (Appointment appointment : appointmentsToTest) {
 			Procedure procedure = procedures.get(appointment.getBookedProcedure().getId());
 			List<ProcedureRelation> precedingprocedures = procedure.getPrecedingRelations();
 			List<ProcedureRelation> subsequentprocedures = procedure.getSubsequentRelations();
 
+			// test all precedingRelations
 			if (precedingprocedures != null) {
 				for (ProcedureRelation procedureRelation : precedingprocedures) {
 					if (procedures.containsKey(procedureRelation.getProcedure().getId())) {
@@ -103,6 +106,7 @@ public class ProcedureServiceImp implements ProcedureService {
 				}
 			}
 
+			// test all subsequentRelations
 			if (subsequentprocedures != null) {
 				for (ProcedureRelation procedureRelation : subsequentprocedures) {
 					if (procedures.containsKey(procedureRelation.getProcedure().getId())) {
@@ -118,6 +122,74 @@ public class ProcedureServiceImp implements ProcedureService {
 		}
 
 		return true;
+	}
+
+	@Override
+	public boolean isConformingToPositionConditions(Procedure procedure, List<Employee> employees) {
+		List<Employee> employeesToTest = new ArrayList<>(employees);
+
+		if (procedure.getNeededEmployeePositions() == null)
+			return false;
+
+		// test for all positions
+		for (Position position : procedure.getNeededEmployeePositions()) {
+			boolean employeeFound = false;
+
+			// test, whether any remaining employee has the specified position
+			for (Employee employee : employeesToTest) {
+				if (employee.getPosition() == null)
+					return false;
+
+				if (employee.getPosition().getId().equals(position.getId())) {
+					// remove the found employee from the list
+					employeesToTest.remove(employee);
+					employeeFound = true;
+					break;
+				}
+			}
+
+			// continue with the next position if an employee was found
+			if (employeeFound)
+				continue;
+
+			return false;
+		}
+
+		return employeesToTest.isEmpty();
+	}
+
+	@Override
+	public boolean isConformingToResourceTypeConditions(Procedure procedure, List<Resource> resources) {
+		List<Resource> resourcesToTest = new ArrayList<>(resources);
+
+		if (procedure.getNeededResourceTypes() != null)
+			return false;
+
+		// test for all resources
+		for (ResourceType resourceType : procedure.getNeededResourceTypes()) {
+			boolean resourceFound = false;
+
+			// test, whether any remaining resource has the specified resourcetype
+			for (Resource resource : resourcesToTest) {
+				if (resource.getResourceType() == null)
+					return false;
+
+				if (resource.getResourceType().getId().equals(resourceType.getId())) {
+					// remove the found resource from the list
+					resourcesToTest.remove(resource);
+					resourceFound = true;
+					break;
+				}
+			}
+
+			// continue with the next resourcetype if an resource was found
+			if (resourceFound)
+				break;
+
+			return false;
+		}
+
+		return resourcesToTest.isEmpty();
 	}
 
 	@Override
@@ -271,14 +343,14 @@ public class ProcedureServiceImp implements ProcedureService {
 
 	private boolean doAppointmentsConformToProcedureRelation(Appointment startAppointment, Appointment endAppointment,
 			ProcedureRelation procedureRelation) {
-		Calendar enddateToTest = getCalendar(startAppointment.getPlannedEndtime());
-		Calendar startdateToTest = getCalendar(endAppointment.getPlannedStarttime());
+		// the duration between startAppointment.plannedEndtime and
+		// endAppointment.plannedStarttime
+		Duration timeBetween = Duration.between(getCalendar(startAppointment.getPlannedEndtime()).toInstant(),
+				getCalendar(endAppointment.getPlannedStarttime()).toInstant());
 
-		Duration timeBetween = Duration.between(enddateToTest.toInstant(), startdateToTest.toInstant());
-		
-		boolean testStart = timeBetween.compareTo(procedureRelation.getMinDifference()) >= 0;
-		boolean testEnd = timeBetween.compareTo(procedureRelation.getMaxDifference()) <= 0;
-		return testStart && testEnd;
+		// minDifference <= timeBetween && timeBetween <= maxDifference
+		return procedureRelation.getMinDifference().compareTo(timeBetween) <= 0
+				&& timeBetween.compareTo(procedureRelation.getMaxDifference()) <= 0;
 	}
 
 }
