@@ -37,9 +37,7 @@ function UserForm({onCancel, edit, selected, type}) {
   //Position
   const [position, setPosition] = useState([])
   //Role
-  const [selectedRole, setSelectedRole] = useState(null)
   const [roles, setRoles] = useState([])
-  const [choosableRoles, setChoosableRoles] = useState([]) //to avoid picking ADMIN_ROLE as customer
   //Restrictions
   const [restrictions, setRestrictions] = useState([])
   //extended userInformation
@@ -63,8 +61,6 @@ function UserForm({onCancel, edit, selected, type}) {
   };
 
   useEffect(() => { 
-    console.log("useEffect-Call: loadChoosableRoles");
-    loadChoosableRoles();
     console.log("useEffect-Call: loadExtandUserInformation")
     loadExtUserInformation();
     if(edit) {
@@ -86,20 +82,6 @@ function UserForm({onCancel, edit, selected, type}) {
   }, [])
 
   //---------------------------------LOAD---------------------------------
-  //ROLES
-  const loadChoosableRoles = async () => {
-    var data = [];
-    try{ 
-      const response = await getAllRoles();
-      data = response.data;
-    }catch (error) {
-      console.log(Object.keys(error), error.message)
-      alert("An error occoured while loading choosable roles")
-    }
-    data.map((role) => {
-        setChoosableRoles(choosableRoles => [...choosableRoles, role]);
-    })
-  };
 
   //EXTUSERINFO
   const loadExtUserInformation = async () => {
@@ -125,58 +107,87 @@ function UserForm({onCancel, edit, selected, type}) {
     setExtUserInfoData(initialData)
   };
 
+  function validation() {
+    var result = true;
+    var errorMsg 
+    //check position
+    if(isEmployee){
+      if(position.length == 0) { 
+        result = false
+        errorMsg = "noPosition"
+      }
+    }
+    //check roles
+    if(roles.length == 0) { 
+      result = false
+      errorMsg = "noRules"
+    }
+    //print error
+    switch(errorMsg) {
+      case "noRules": 
+        alert("Fehler: Bitte wählen Sie mindestens eine Rolle aus!")
+        break;
+      case "noPosition":
+        alert("Fehler: Bitte wählen Sie mindestens eine Position aus!")
+        break;
+    }
+    return result
+  }
+
 
   //---------------------------------SUBMIT---------------------------------
   //ADD USER
   const handleSubmit = async event => {
     event.preventDefault();//reload the page after clicking "Enter"
-    console.log(position)
-
-    //ONLY FOR TESTING - will be removed at the time we add position as an array
-    //get the first position of our position-array
-    var firstPosition
-    position.map((pos, index)=> {
-      if(index == 0) {
-        firstPosition = pos
-      }
-    })
-    //ONLY FOR TESTING - END
-
-    if(edit) {
-      var id = selected.id
-      var updateData = {}
-      try {
-        if(isEmployee){
-            console.log("AXIOS: updateEmployee()")
-            updateData = {id, firstName, lastName, username, password, systemStatus, roles, position: firstPosition, availabilities}
-            await updateEmployee(id, updateData);
-        }else {
-            console.log("AXIOS: updateCustomer()")
-            updateData = {id, firstName, lastName, username, password, systemStatus, roles}
-            await updateCustomer(id, updateData);
+    if(validation()) {
+      //ONLY FOR TESTING - will be removed at the time we add position as an array
+      //get the first position of our position-array
+      var firstPosition
+      position.map((pos, index)=> {
+        if(index == 0) {
+          firstPosition = pos
         }
-      } catch (error) {
-        console.log(Object.keys(error), error.message)
-        alert("An error occoured while updating a user")
-      } 
-    } else {
-        var newData = {}
+      })
+      //ONLY FOR TESTING - END
+
+      if(edit) {
+        var id = selected.id
+        var updateData = {}
         try {
-        if(isEmployee){
-            console.log("AXIOS: addEmployee()")
-            newData = {firstName, lastName, username, password, systemStatus, roles, position: firstPosition, availabilities}
-            await addEmployee(newData);
-        }else {
-            console.log("AXIOS: addCustomer()")
-            newData = {firstName, lastName, username, password, systemStatus, roles}
-            await addCustomer(newData);
-        }
+          if(isEmployee){
+              console.log("AXIOS: updateEmployee()")
+              updateData = {id, firstName, lastName, username, password, systemStatus, roles, position: firstPosition, availabilities}
+              await updateEmployee(id, updateData);
+          }else {
+              console.log("AXIOS: updateCustomer()")
+              updateData = {id, firstName, lastName, username, password, systemStatus, roles}
+              await updateCustomer(id, updateData);
+          }
         } catch (error) {
           console.log(Object.keys(error), error.message)
-          alert("An error occoured while adding a user")
+          alert("An error occoured while updating a user")
         } 
-    } 
-    onCancel()
+      } else {
+          var newData = {}
+          try {
+          if(isEmployee){
+              console.log("AXIOS: addEmployee()")
+              newData = {firstName, lastName, username, password, systemStatus, roles, position: firstPosition, availabilities}
+              await addEmployee(newData);
+          }else {
+              console.log("AXIOS: addCustomer()")
+              newData = {firstName, lastName, username, password, systemStatus, roles}
+              await addCustomer(newData);
+          }
+          } catch (error) {
+            console.log(Object.keys(error), error.message)
+            alert("An error occoured while adding a user")
+          } 
+      } 
+      onCancel()
+    } else {
+
+    }
   };
 
   //DELETE USER
@@ -190,7 +201,6 @@ function UserForm({onCancel, edit, selected, type}) {
       }
     })
     //ONLY FOR TESTING - END
-
     const deleteStatus = "deleted" // fix delteStatus
     const id = selected.id
     var data = {}
@@ -242,7 +252,7 @@ function UserForm({onCancel, edit, selected, type}) {
         extUserInfoAttList.map((info, index) =>(
           <tr key={index}>
             <td>{info.name}:</td>
-            <td><Form.Control onChange={e => handleExtUserInfoDataChange(e, info.name)} value={extUserInfoData.find(item => item.name == info.name).value || ""} name={"userInfo-value"+ index} type="text"/></td>
+            <td><Form.Control required={info.isRequired} onChange={e => handleExtUserInfoDataChange(e, info.name)} value={extUserInfoData.find(item => item.name == info.name).value || ""} name={"userInfo-value"+ index} type="text"/></td>
           </tr>
         ))
       );
@@ -265,6 +275,8 @@ function UserForm({onCancel, edit, selected, type}) {
                   <Form.Label>Vorname:</Form.Label>
                   <Form.Control
                     required
+                    //pattern="(?=.*[A-Z]{1})(?=.*[a-z]).{2,}"
+                    //title="Vorname muss am Anfang groß geschrieben werden"
                     name="firstname"
                     type="text"
                     placeholder="Vorname"
@@ -278,6 +290,8 @@ function UserForm({onCancel, edit, selected, type}) {
                   <Form.Control
                     required
                     name="lastname"
+                    //pattern="(?=.*[A-Z]{1})(?=.*[a-z]).{2,}"
+                    //title="Nachname muss am Anfang groß geschrieben werden"
                     type="text"
                     placeholder="Nachname"
                     value={lastName || ""}
@@ -316,6 +330,8 @@ function UserForm({onCancel, edit, selected, type}) {
                     <InputGroup>
                         <Form.Control
                         required
+                        //pattern="[A-Za-z0-9]{1,}"
+                        //title="Benutzername darf Klein- und Groß-Buchstaben sowie Zahlen enthalten"
                         name="username"
                         type="text"
                         placeholder="Benutzername"
@@ -332,6 +348,8 @@ function UserForm({onCancel, edit, selected, type}) {
                     <InputGroup>
                         <Form.Control
                         required
+                        //pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}" //min 8 characters with one upper and one lower case letter
+                        //title="Das Passwort muss mindestens 8 Zeichen lang sein und einen Groß- sowie Klein-Buchstaben enthalten"
                         name="password"
                         type="password"
                         placeholder="Passwort"

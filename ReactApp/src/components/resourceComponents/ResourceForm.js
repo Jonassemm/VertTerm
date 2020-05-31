@@ -58,31 +58,54 @@ const RessourceForm = ({ onCancel, edit, selected }) => {
     const handleNumberOfUsesChange = event => {setNumberOfUses(event.target.value); setEdited(true)}
     const handlePricePerUnitChange = event => {setPricePerUnit(event.target.value); setEdited(true)}
 
-    const handleSubmit = async event => {
-        event.preventDefault()
-        var firstType = {} 
-        //save the first type of the array (ObjectPicker needs array, but DB needs object)
-        if(type.length > 0) { firstType = type[0] }
-        
-        var data 
-        if(isConsumable) {
-          data = {name, description, status, resourceType: firstType, childResources, availabilities, restrictions, amountInStock, numberOfUses, pricePerUnit}
-          if(edit) {
-            await editConsumable(selected.id, data)
-          }else {
-            await addConsumable(data)
-          }
-        }else {
-          data = {name, description, status, resourceType: firstType, childResources, availabilities, restrictions}
-          if (edit){
-            await editResource(selected.id, data)
-          }else{
-            await addResource(data)
-          }
-        }
-        onCancel()
+
+    function validation() {
+      var result = true;
+      var errorMsg 
+      //check resourceType
+      if(type.length == 0) { 
+        result = false
+        errorMsg = "noResourceType"
+      }
+      
+      //print error
+      switch(errorMsg) {
+        case "noResourceType": 
+          alert("Fehler: Bitte wählen Sie einen Ressourcentyp aus!")
+          break;
+      }
+      return result
     }
 
+    //---------------------------------SUBMIT---------------------------------
+    //ADD RESOURCE
+    const handleSubmit = async event => {
+        event.preventDefault()
+        if(validation()) {
+          var firstType = {} 
+          //save the first type of the array (ObjectPicker needs array, but DB needs object)
+          if(type.length > 0) { firstType = type[0] }
+          
+          var data 
+          if(isConsumable) {
+            data = {name, description, status, resourceType: firstType, childResources, availabilities, restrictions, amountInStock, numberOfUses, pricePerUnit}
+            if(edit) {
+              await editConsumable(selected.id, data)
+            }else {
+              await addConsumable(data)
+            }
+          }else {
+            data = {name, description, status, resourceType: firstType, childResources, availabilities, restrictions}
+            if (edit){
+              await editResource(selected.id, data)
+            }else{
+              await addResource(data)
+            }
+          }
+          onCancel()
+        }
+    }
+    //DELETE RESOURCE
     const handleDeleteRessource = async () => {
       const deleteStatus = "deleted" // fix delteStatus
       var firstType = {} 
@@ -104,7 +127,6 @@ const RessourceForm = ({ onCancel, edit, selected }) => {
           console.log(Object.keys(error), error.message)
           alert("An error occoured while deleting a resource")
         } 
-
       }
       onCancel()
     }
@@ -137,6 +159,8 @@ const RessourceForm = ({ onCancel, edit, selected }) => {
                   <Form.Label>Bezeichnung:</Form.Label>
                   <Form.Control
                     required
+                    pattern=".{1,50}"//everything allowed but min 1 and max 50 letters
+                    title="Die Bezeichnung muss zwischen 1 und 50 Zeichen beinhalten!"
                     name="name"
                     type="text"
                     placeholder="Ressourcenname"
@@ -226,6 +250,8 @@ const RessourceForm = ({ onCancel, edit, selected }) => {
                     <Form.Label>Bestandsmenge:</Form.Label>
                         <Form.Control
                           required={isConsumable ? true : false}
+                          pattern="[0-9]{1,}" //Only numbers but at least one
+                          title="Die Bestandsmenge muss mindestens 1 betragen!"
                           name="amountInStock"
                           type="text"
                           placeholder="10"
@@ -237,6 +263,8 @@ const RessourceForm = ({ onCancel, edit, selected }) => {
                     <Form.Label>Verwendungsanzahl:</Form.Label>
                         <Form.Control
                           required={isConsumable ? true : false}
+                          pattern="[0-9]{1,}" //Only numbers but at least one
+                          title="Die Anzahl bis eine Ressource aufgebraucht ist muss mindestens 1 sein!"
                           name="numberOfUses"
                           type="text"
                           placeholder="1"
@@ -247,13 +275,12 @@ const RessourceForm = ({ onCancel, edit, selected }) => {
                   <Form.Group as={Col} md="2" >
                     <Form.Label>Einzelpreis:</Form.Label>
                         <Form.Control
-                          required={isConsumable ? true : false}
+                          required={isConsumable ? true : false} 
+                          pattern="(?:[1-9]{1}[0-9]{0,3}|0)[.]{1}[0-9]{2}"//only prices without leading zero
+                          title="Der Preis muss das Format darf keien führende 0 besietzten (Bsp.: 0.00 - 9999,99)!"
                           name="pricePerUnit"
-                          type="number"
-                          step="0.01"
-                          min="0.00"
-                          max="10000.00"
-                          placeholder="1.99"
+                          type="text"
+                          placeholder="0.00 bis 9999.99"
                           value={pricePerUnit || ""}
                           onChange={handlePricePerUnitChange}
                         />

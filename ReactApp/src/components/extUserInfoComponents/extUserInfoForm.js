@@ -59,6 +59,9 @@ const ExtUserInfoForm = ({ onCancel, edit, selected }) => {
                         <Form.Group as={Col} md="12">
                             <Form.Label>Bezeichnung: </Form.Label>
                             <Form.Control
+                                required
+                                pattern=".{1,50}"//everything allowed but min 1 and max 50 letters
+                                title="Die Bezeichnung muss zwischen 1 und 50 Zeichen beinhalten!"
                                 type="text"
                                 placeholder="Attributname"
                                 value={name || ""}
