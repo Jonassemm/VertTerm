@@ -25,6 +25,8 @@ public interface ProcedureService extends BasicService <Procedure>{
 	
 	boolean isAvailableBetween(String id, Date startdate, Date enddate);
 	
+	boolean hasCorrectProcedureRelation(Appointmentgroup appointmentgroup);
+	
 	//PUT
 	Procedure updateProceduredata(Procedure procedure);
 

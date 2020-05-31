@@ -6,13 +6,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.rest.webmvc.ResourceNotFoundException;
 import org.springframework.stereotype.Service;
 
+import java.time.Duration;
 import java.util.*;
 
 @Service
 public class ProcedureServiceImp implements ProcedureService {
 	@Autowired
 	private ProcedureRepository procedureRepository;
-	
+
 	@Autowired
 	private AvailabilityServiceImpl availabilityService;
 
@@ -65,11 +66,58 @@ public class ProcedureServiceImp implements ProcedureService {
 	public List<Restriction> getProcedureRestrictions(String id) {
 		return this.getProcedureFromDB(id).getRestrictions();
 	}
-	
 
 	@Override
 	public boolean isAvailableBetween(String id, Date startdate, Date enddate) {
 		return availabilityService.isAvailable(this.getProcedureFromDB(id).getAvailabilities(), startdate, enddate);
+	}
+
+	public boolean hasCorrectProcedureRelation(Appointmentgroup appointmentgroup) {
+		// procedure.id -> appointment
+		Map<String, Appointment> appointments = new HashMap<String, Appointment>();
+		// procedure.id -> procedure
+		Map<String, Procedure> procedures = new HashMap<String, Procedure>();
+
+		for (Appointment appointment : appointmentgroup.getAppointments()) {
+			String id = appointment.getBookedProcedure().getId();
+			procedures.put(id, this.getProcedureFromDB(id));
+
+			appointments.put(id, appointment);
+		}
+
+		for (Appointment appointment : appointmentgroup.getAppointments()) {
+			Procedure procedure = procedures.get(appointment.getBookedProcedure().getId());
+			List<ProcedureRelation> precedingprocedures = procedure.getPrecedingRelations();
+			List<ProcedureRelation> subsequentprocedures = procedure.getSubsequentRelations();
+
+			if (precedingprocedures != null) {
+				for (ProcedureRelation procedureRelation : precedingprocedures) {
+					if (procedures.containsKey(procedureRelation.getProcedure().getId())) {
+						Appointment appointmentToTest = appointments.get(procedureRelation.getProcedure().getId());
+
+						if (doAppointmentsConformToProcedureRelation(appointmentToTest, appointment, procedureRelation))
+							continue;
+					}
+
+					return false;
+				}
+			}
+
+			if (subsequentprocedures != null) {
+				for (ProcedureRelation procedureRelation : subsequentprocedures) {
+					if (procedures.containsKey(procedureRelation.getProcedure().getId())) {
+						Appointment appointmentToTest = appointments.get(procedureRelation.getProcedure().getId());
+
+						if (doAppointmentsConformToProcedureRelation(appointment, appointmentToTest, procedureRelation))
+							continue;
+					}
+
+					return false;
+				}
+			}
+		}
+
+		return true;
 	}
 
 	@Override
@@ -87,9 +135,9 @@ public class ProcedureServiceImp implements ProcedureService {
 	@Override
 	public Procedure update(Procedure procedure) {
 		Procedure oldProcedure = getProcedureFromDB(procedure.getId());
-		
+
 		testUpdatebility(oldProcedure.getStatus());
-		
+
 		return procedureRepository.save(procedure);
 	}
 
@@ -208,11 +256,29 @@ public class ProcedureServiceImp implements ProcedureService {
 
 		return procedureRepository.save(procedure);
 	}
-	
-	private void testUpdatebility (Status status) {
+
+	private void testUpdatebility(Status status) {
 		if (!StatusService.isUpdateable(status)) {
 			throw new IllegalArgumentException("The given procedure is not updateable");
 		}
+	}
+
+	private Calendar getCalendar(Date date) {
+		Calendar calendar = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
+		calendar.setTime(date);
+		return calendar;
+	}
+
+	private boolean doAppointmentsConformToProcedureRelation(Appointment startAppointment, Appointment endAppointment,
+			ProcedureRelation procedureRelation) {
+		Calendar enddateToTest = getCalendar(startAppointment.getPlannedEndtime());
+		Calendar startdateToTest = getCalendar(endAppointment.getPlannedStarttime());
+
+		Duration timeBetween = Duration.between(enddateToTest.toInstant(), startdateToTest.toInstant());
+		
+		boolean testStart = timeBetween.compareTo(procedureRelation.getMinDifference()) >= 0;
+		boolean testEnd = timeBetween.compareTo(procedureRelation.getMaxDifference()) <= 0;
+		return testStart && testEnd;
 	}
 
 }

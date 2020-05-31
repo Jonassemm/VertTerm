@@ -7,10 +7,14 @@ import com.dvproject.vertTerm.Model.Optimizationstrategy;
 import com.dvproject.vertTerm.Model.Status;
 
 public interface AppointmentgroupService extends BasicService<Appointmentgroup> {
+	//GET
 	Appointmentgroup getAppointmentgroupWithAppointmentID(String id);
 
 	List<Appointmentgroup> getAppointmentgroupsWithStatus(Status status);
 
 	Appointmentgroup getOptimizedSuggestion(Appointmentgroup appointmentgroup,
 			Optimizationstrategy optimizationstrategy);
+	
+	//PUT
+	Appointmentgroup bookAppointmentgroup (String id);
 }
