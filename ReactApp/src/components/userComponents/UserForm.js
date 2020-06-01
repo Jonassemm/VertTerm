@@ -73,7 +73,7 @@ function UserForm({onCancel, edit, selected, type}) {
           setRoles(selected.roles)
         }
         if(selected.position != null) {
-          setPosition(selected.position)
+          setPosition([selected.position]) //CHANGE until position is an array
         }
         if(selected.availabilities != null || selected.availabilities != undefined) {
           setAvailabilities(selected.availabilities);
