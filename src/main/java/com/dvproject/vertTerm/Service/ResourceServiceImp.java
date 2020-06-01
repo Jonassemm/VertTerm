@@ -152,7 +152,7 @@ public class ResourceServiceImp implements ResourceService {
 			 List<Resource> AllResources = ResRepo.findAll();
 			 for (Resource r : AllResources)
 			 {   
-				 ResourceType rt=r.getResourceTyp();
+				 ResourceType rt=r.getResourceType();
 				 if (rt.getId().equals(ResTid))
 			   		{
 					 if (!Resources.contains(r)) 
