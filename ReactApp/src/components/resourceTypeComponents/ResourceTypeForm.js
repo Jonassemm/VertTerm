@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from "react"
 import { Form, Table } from "react-bootstrap"
 import { Container, Button } from "react-bootstrap"
-import {addPosition, deletePosition, editPosition } from "./PositionRequests"
+import {addResourceType, deleteResourceType, editResourceType } from "./ResourceTypeRequests"
 
-const PositionForm = ({ onCancel, edit, selected }) => {
+const ResourceTypeForm = ({ onCancel, edit, selected }) => {
     const [name, setName] = useState("")
     const [description, setDescription] = useState("")
     const [edited, setEdited] = useState(false)
@@ -28,31 +28,31 @@ const PositionForm = ({ onCancel, edit, selected }) => {
 
     const handleSubmit = async event => {
         event.preventDefault()
+        const data = { name: name, description: description}
         let res = {}
         if (!edit) {
-            const data = {name, description}
-            res = await addPosition(data)
+            res = await addResourceType(data)
         } else {
-            var id = selected.id
-            const data = {id, name, description}
-            res = await editPosition(id, data)
+            res = await editResourceType(selected.id, data)
         }
         console.log(res)
         onCancel()
     }
 
-    const handleDeletePosition = async () => {
-        const answer = confirm("Möchten Sie diese Position wirklich löschen? ")
+    const handleDeleteResourceType = async () => {
+        const answer = confirm("Möchten Sie diese Ressourcentyp wirklich löschen?")
         if (answer) {
             try {
-                const res = await deletePosition(selected.id)
+                const res = await deleteResourceType(selected.id)
                 console.log(res)
             } catch (error) {
                 console.log(Object.keys(error), error.message)
-                alert("An error occoured while deleting a position")
+                alert("An error occoured while deleting a resource type")
             }
         }
         onCancel()
+
+        
     }
 
     return (
@@ -66,7 +66,7 @@ const PositionForm = ({ onCancel, edit, selected }) => {
                             pattern=".{1,50}"//everything allowed but min 1 and max 50 letters
                             title="Die Bezeichnung muss zwischen 1 und 50 Zeichen beinhalten!"
                             type="text"
-                            placeholder="Positionsname"
+                            placeholder="Ressourcentypname"
                             value={name || ""}
                             required
                             onChange={handleNameChange}
@@ -84,11 +84,11 @@ const PositionForm = ({ onCancel, edit, selected }) => {
                     </Form.Row>
                     <hr style={{ border: "0,5px solid #999999" }}/>
                     <Container style={{textAlign: "right"}}>
-                        {edit ? <Button style={{ marginRight: "10px" }} variant="danger" onClick={handleDeletePosition}>Löschen</Button> : null}
+                        {edit ? <Button style={{ marginRight: "10px" }} variant="danger" onClick={handleDeleteResourceType}>Löschen</Button> : null}
                         <Button style={{ marginRight: "10px" }} onClick={onCancel} variant="secondary">Abbrechen</Button>
                         {(edit ? edited ? 
                             <Button variant="success"  type="submit">Übernehmen</Button>:
-                            null : <Button variant="success"  type="submit">Position anlegen</Button>)
+                            null : <Button variant="success"  type="submit">Ressourcentype anlegen</Button>)
                         }
                     </Container>
                 </Form>
@@ -97,4 +97,4 @@ const PositionForm = ({ onCancel, edit, selected }) => {
     )
 }
 
-export default PositionForm
+export default ResourceTypeForm

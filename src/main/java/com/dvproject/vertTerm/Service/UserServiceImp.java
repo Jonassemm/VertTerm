@@ -17,7 +17,7 @@ public class UserServiceImp implements UserService {
     @Autowired
     private UserRepository repo;
 
-    @PreAuthorize("hasAuthority('USERS_DATA_READ')")
+    //@PreAuthorize("hasAuthority('USERS_DATA_READ')")
     public List<User> getAll() {
 	List<User> users = repo.findAll();
 	return obfuscatePassword(users);
@@ -40,7 +40,7 @@ public class UserServiceImp implements UserService {
 		return (users);
 	}
 
-	@PreAuthorize("hasAuthority('USERS_DATA_READ')")
+	//@PreAuthorize("hasAuthority('USERS_DATA_READ')")
 	@Override
 	public User getById(String id) {
 		Optional<User> user = repo.findById(id);

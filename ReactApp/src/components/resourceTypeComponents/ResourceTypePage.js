@@ -1,29 +1,29 @@
 import React, { useState, useEffect } from "react"
-import { getAllPositions } from "./PositionRequests"
-import PositionForm from "./PositionForm"
+import { getAllResourceTypes } from "./ResourceTypeRequests"
+import ResourceTypeForm from "./ResourceTypeForm"
 import OverviewPage from "../OverviewPage"
 
-function PositionPage() {
-    const [positions, setPositions] = useState([])
+function ResourceTypePage() {
+    const [resourceTypes, setResourceTypes] = useState([])
 
     useEffect(() => {
-        loadPositions()
+        loadResourceTypes()
     }, [])
 
-    const loadPositions = async () => {
+    const loadResourceTypes = async () => {
         var data = [];
         try{ 
-          const response = await getAllPositions();
+          const response = await getAllResourceTypes();
           data = response.data;
         }catch (error) {
           console.log(Object.keys(error), error.message)
-          alert("An error occoured while loading all positions")
+          alert("An error occoured while loading all resourceTypes")
         }
-        setPositions(data);
+        setResourceTypes(data);
     };
 
     const tableBody =
-        positions.map((item, index) => {
+        resourceTypes.map((item, index) => {
             return ([
                 index + 1,
                 item.name,
@@ -33,7 +33,7 @@ function PositionPage() {
 
     const modal = (onCancel,edit,selectedItem) => {
         return (
-            <PositionForm
+            <ResourceTypeForm
                 onCancel={onCancel}
                 edit={edit}
                 selected={selectedItem}
@@ -44,16 +44,16 @@ function PositionPage() {
     return (
         <React.Fragment>
             <OverviewPage
-                pageTitle="Positionen"
-                newItemText="Neue Position"
+                pageTitle="Ressourcen-Typ"
+                newItemText="Neuen Ressourcentyp"
                 tableHeader={["#", "Bezeichnung", "Beschreibung"]}
                 tableBody={tableBody}
                 modal={modal}
-                data={positions}
-                refreshData={loadPositions}
+                data={resourceTypes}
+                refreshData={loadResourceTypes}
             />
         </React.Fragment>
     )
 }
 
-export default PositionPage
+export default ResourceTypePage

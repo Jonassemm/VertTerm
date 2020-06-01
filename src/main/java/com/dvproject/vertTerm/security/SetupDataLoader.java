@@ -200,13 +200,20 @@ public class SetupDataLoader implements ApplicationListener<ContextRefreshedEven
 		setupRight("RESOURCE_TYPE_WRITE", "Ändern aller Ressourcentypen erlaubt");
 		
 		// procedure
-		setupRight("PROCEDURE_TYPE_READ", "Lesen aller Prozeduren erlaubt");
-		setupRight("PROCEDURE_TYPE_WRITE", "Ändern aller Prozeduren erlaubt");
+		setupRight("PROCEDURE_READ", "Lesen aller Prozeduren erlaubt");
+		setupRight("PROCEDURE_WRITE", "Ändern aller Prozeduren erlaubt");
+		setupRight("PROCEDURE_RELATION_WRITE", "Ändern aller Prozeduren erlaubt");
+		
+		// availability
+		setupRight("OWN_AVAILABILITY_WRITE", "Ändern der eigenen Verfügbarkeiten erlaubt");
+		setupRight("AVAILABILITY_WRITE", "Ändern aller Verfügbarkeiten erlaubt");
 		
 		// appointment
 		setupRight("OWN_APPOINTMENT_READ", "Lesen der eigenen Termine erlaubt");
 		setupRight("OWN_APPOINTMENT_WRITE", "Ändern der eigenen Termine erlaubt");
+		setupRight("OWN_APPOINTMENT_BOOK", "Buchen der eigenen Termine erlaubt");
 		setupRight("APPOINTMENT_READ", "Lesen aller Termine erlaubt");
 		setupRight("APPOINTMENT_WRITE", "Ändern aller Termine erlaubt");
+		setupRight("APPOINTMENT_BOOK", "Buchen aller Termine erlaubt");
 	}
 }

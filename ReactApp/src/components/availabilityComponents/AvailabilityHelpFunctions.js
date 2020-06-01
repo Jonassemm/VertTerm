@@ -70,7 +70,10 @@ export function validateDates(startDateString, endDateString, endOfSeriesString)
 
     if(endOfSeriesString != null) {
         var endOfSeries = moment(endOfSeriesString, "DD.MM.yyyy HH:mm").toDate();
-        if(endOfSeries <= startDate || endOfSeries < endOfSeries) {
+        if(endOfSeries.getTime() <= startDate.getTime() || endOfSeries.getTime() < endDate.getTime()) {
+            console.log(startDate)
+            console.log(endDate)
+
             alert("Ungültiges Serienende! Das Serienende darf nicht vor dem Star und vor dem Ende einer Verfügbarkeit sein!")
             return false
         }

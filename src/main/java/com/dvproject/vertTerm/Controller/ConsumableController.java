@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.dvproject.vertTerm.Model.Consumable;
+import com.dvproject.vertTerm.Model.Status;
 import com.dvproject.vertTerm.Service.ConsumableService;
 
 @RestController
@@ -26,6 +27,11 @@ public class ConsumableController {
 	@GetMapping("")
 	public List<Consumable> getAllConsumables (){
 		return consumableService.getAll();
+	}
+	
+	@GetMapping("/Status")
+	public List<Consumable> getAllConsumablesWithStatus (@RequestBody Status status){
+		return consumableService.getAllWithStatus(status);
 	}
 	
 	@GetMapping("/{id}")

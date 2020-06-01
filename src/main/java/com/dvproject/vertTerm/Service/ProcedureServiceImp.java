@@ -6,29 +6,30 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.rest.webmvc.ResourceNotFoundException;
 import org.springframework.stereotype.Service;
 
+import java.time.Duration;
 import java.util.*;
 
 @Service
 public class ProcedureServiceImp implements ProcedureService {
 	@Autowired
-	private ProcedureRepository repo;
-	
+	private ProcedureRepository procedureRepository;
+
 	@Autowired
 	private AvailabilityServiceImpl availabilityService;
 
 	@Override
 	public List<Procedure> getAll() {
-		return repo.findAll();
+		return procedureRepository.findAll();
 	}
 
 	@Override
 	public List<Procedure> getAll(Status status) {
-		return repo.findByStatus(status);
+		return procedureRepository.findByStatus(status);
 	}
 
 	@Override
 	public List<Procedure> getByIds(String[] ids) {
-		return repo.findByIds(ids);
+		return procedureRepository.findByIds(ids);
 	}
 
 	@Override
@@ -65,7 +66,6 @@ public class ProcedureServiceImp implements ProcedureService {
 	public List<Restriction> getProcedureRestrictions(String id) {
 		return this.getProcedureFromDB(id).getRestrictions();
 	}
-	
 
 	@Override
 	public boolean isAvailableBetween(String id, Date startdate, Date enddate) {
@@ -73,11 +73,131 @@ public class ProcedureServiceImp implements ProcedureService {
 	}
 
 	@Override
+	public boolean hasCorrectProcedureRelation(List<Appointment> appointmentsToTest) {
+		// procedure.id -> appointment
+		Map<String, Appointment> appointments = new HashMap<>();
+		// procedure.id -> procedure
+		Map<String, Procedure> procedures = new HashMap<>();
+
+		// populate Maps
+		for (Appointment appointment : appointmentsToTest) {
+			String id = appointment.getBookedProcedure().getId();
+			procedures.put(id, this.getProcedureFromDB(id));
+
+			appointments.put(id, appointment);
+		}
+
+		for (Appointment appointment : appointmentsToTest) {
+			Procedure procedure = procedures.get(appointment.getBookedProcedure().getId());
+			List<ProcedureRelation> precedingprocedures = procedure.getPrecedingRelations();
+			List<ProcedureRelation> subsequentprocedures = procedure.getSubsequentRelations();
+
+			// test all precedingRelations
+			if (precedingprocedures != null) {
+				for (ProcedureRelation procedureRelation : precedingprocedures) {
+					if (procedures.containsKey(procedureRelation.getProcedure().getId())) {
+						Appointment appointmentToTest = appointments.get(procedureRelation.getProcedure().getId());
+
+						if (doAppointmentsConformToProcedureRelation(appointmentToTest, appointment, procedureRelation))
+							continue;
+					}
+
+					return false;
+				}
+			}
+
+			// test all subsequentRelations
+			if (subsequentprocedures != null) {
+				for (ProcedureRelation procedureRelation : subsequentprocedures) {
+					if (procedures.containsKey(procedureRelation.getProcedure().getId())) {
+						Appointment appointmentToTest = appointments.get(procedureRelation.getProcedure().getId());
+
+						if (doAppointmentsConformToProcedureRelation(appointment, appointmentToTest, procedureRelation))
+							continue;
+					}
+
+					return false;
+				}
+			}
+		}
+
+		return true;
+	}
+
+	@Override
+	public boolean isConformingToPositionConditions(Procedure procedure, List<Employee> employees) {
+		List<Employee> employeesToTest = new ArrayList<>(employees);
+
+		if (procedure.getNeededEmployeePositions() == null)
+			return false;
+
+		// test for all positions
+		for (Position position : procedure.getNeededEmployeePositions()) {
+			boolean employeeFound = false;
+
+			// test, whether any remaining employee has the specified position
+			for (Employee employee : employeesToTest) {
+				if (employee.getPosition() == null)
+					return false;
+
+				if (employee.getPosition().getId().equals(position.getId())) {
+					// remove the found employee from the list
+					employeesToTest.remove(employee);
+					employeeFound = true;
+					break;
+				}
+			}
+
+			// continue with the next position if an employee was found
+			if (employeeFound)
+				continue;
+
+			return false;
+		}
+
+		return employeesToTest.isEmpty();
+	}
+
+	@Override
+	public boolean isConformingToResourceTypeConditions(Procedure procedure, List<Resource> resources) {
+		List<Resource> resourcesToTest = new ArrayList<>(resources);
+
+		if (procedure.getNeededResourceTypes() != null)
+			return false;
+
+		// test for all resources
+		for (ResourceType resourceType : procedure.getNeededResourceTypes()) {
+			boolean resourceFound = false;
+
+			// test, whether any remaining resource has the specified resourcetype
+			for (Resource resource : resourcesToTest) {
+				if (resource.getResourceType() == null)
+					return false;
+
+				if (resource.getResourceType().getId().equals(resourceType.getId())) {
+					// remove the found resource from the list
+					resourcesToTest.remove(resource);
+					resourceFound = true;
+					break;
+				}
+			}
+
+			// continue with the next resourcetype if an resource was found
+			if (resourceFound)
+				break;
+
+			return false;
+		}
+
+		return resourcesToTest.isEmpty();
+	}
+
+	@Override
 	public Procedure create(Procedure procedure) {
 		if (procedure.getId() == null) {
-			return repo.save(procedure);
+			return procedureRepository.save(procedure);
 		}
-		if (repo.findById(procedure.getId()).isPresent()) {
+		if (procedureRepository.findById(procedure.getId()).isPresent()) {
 			throw new IllegalArgumentException("Procedure with the given id (" + procedure.getId()
 					+ ") exists on the database. Use the update method.");
 		}
@@ -87,10 +207,10 @@ public class ProcedureServiceImp implements ProcedureService {
 	@Override
 	public Procedure update(Procedure procedure) {
 		Procedure oldProcedure = getProcedureFromDB(procedure.getId());
-		
+
 		testUpdatebility(oldProcedure.getStatus());
-		
-		return repo.save(procedure);
+
+		return procedureRepository.save(procedure);
 	}
 
 	@Override
@@ -105,7 +225,7 @@ public class ProcedureServiceImp implements ProcedureService {
 		oldProcedure.setPricePerInvocation(procedure.getPricePerInvocation());
 		oldProcedure.setDurationInMinutes(procedure.getDurationInMinutes());
 
-		return repo.save(oldProcedure);
+		return procedureRepository.save(oldProcedure);
 	}
 
 	@Override
@@ -115,7 +235,7 @@ public class ProcedureServiceImp implements ProcedureService {
 		testUpdatebility(procedure.getStatus());
 
 		procedure.setPrecedingRelations(precedingProcedures);
-		repo.save(procedure);
+		procedureRepository.save(procedure);
 
 		return getProcedureFromDB(id).getPrecedingRelations();
 	}
@@ -127,7 +247,7 @@ public class ProcedureServiceImp implements ProcedureService {
 		testUpdatebility(procedure.getStatus());
 
 		procedure.setSubsequentRelations(subsequentProcedures);
-		repo.save(procedure);
+		procedureRepository.save(procedure);
 
 		return getProcedureFromDB(id).getSubsequentRelations();
 	}
@@ -139,7 +259,7 @@ public class ProcedureServiceImp implements ProcedureService {
 		testUpdatebility(procedure.getStatus());
 
 		procedure.setNeededResourceTypes(resourceTypes);
-		repo.save(procedure);
+		procedureRepository.save(procedure);
 
 		return getProcedureFromDB(id).getNeededResourceTypes();
 	}
@@ -151,7 +271,7 @@ public class ProcedureServiceImp implements ProcedureService {
 		testUpdatebility(procedure.getStatus());
 
 		procedure.setNeededEmployeePositions(positions);
-		repo.save(procedure);
+		procedureRepository.save(procedure);
 
 		return getProcedureFromDB(id).getNeededEmployeePositions();
 	}
@@ -163,7 +283,7 @@ public class ProcedureServiceImp implements ProcedureService {
 		testUpdatebility(procedure.getStatus());
 
 		procedure.setAvailabilities(availabilities);
-		repo.save(procedure);
+		procedureRepository.save(procedure);
 
 		return getProcedureFromDB(id).getAvailabilities();
 	}
@@ -175,7 +295,7 @@ public class ProcedureServiceImp implements ProcedureService {
 		testUpdatebility(procedure.getStatus());
 
 		procedure.setRestrictions(restrictions);
-		repo.save(procedure);
+		procedureRepository.save(procedure);
 
 		return getProcedureFromDB(id).getRestrictions();
 	}
@@ -192,7 +312,7 @@ public class ProcedureServiceImp implements ProcedureService {
 			throw new NullPointerException("The id of the given procedure is null");
 		}
 
-		Optional<Procedure> procedureDB = repo.findById(id);
+		Optional<Procedure> procedureDB = procedureRepository.findById(id);
 
 		if (procedureDB.isPresent()) {
 			return procedureDB.get();
@@ -206,13 +326,31 @@ public class ProcedureServiceImp implements ProcedureService {
 
 		procedure.setStatus(Status.DELETED);
 
-		return repo.save(procedure);
+		return procedureRepository.save(procedure);
 	}
-	
-	private void testUpdatebility (Status status) {
+
+	private void testUpdatebility(Status status) {
 		if (!StatusService.isUpdateable(status)) {
 			throw new IllegalArgumentException("The given procedure is not updateable");
 		}
+	}
+
+	private Calendar getCalendar(Date date) {
+		Calendar calendar = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
+		calendar.setTime(date);
+		return calendar;
+	}
+
+	private boolean doAppointmentsConformToProcedureRelation(Appointment startAppointment, Appointment endAppointment,
+			ProcedureRelation procedureRelation) {
+		// the duration between startAppointment.plannedEndtime and
+		// endAppointment.plannedStarttime
+		Duration timeBetween = Duration.between(getCalendar(startAppointment.getPlannedEndtime()).toInstant(),
+				getCalendar(endAppointment.getPlannedStarttime()).toInstant());
+
+		// minDifference <= timeBetween && timeBetween <= maxDifference
+		return procedureRelation.getMinDifference().compareTo(timeBetween) <= 0
+				&& timeBetween.compareTo(procedureRelation.getMaxDifference()) <= 0;
 	}
 
 }

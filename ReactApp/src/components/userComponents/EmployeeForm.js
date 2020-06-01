@@ -47,8 +47,8 @@ function EmployeeForm({ onCancel, edit, selected }) {
   const handleLastnameChange = event => {setLastname(event.target.value); setEdited(true)}
   const handleUsernameChange = event => {setUsername(event.target.value); setEdited(true)}
   const handlePasswordChange = event => {setPassword(event.target.value); setEdited(true)}
-  const handleSelectedRoleChange = event => {setSelectedRole(event.target.value); setEdited(true)}
-  const handleSelectedPositionChange = event =>  {setPosition(choosablePositions[event.target.value]); setEdited(true)}
+  //const handleSelectedRoleChange = event => {setSelectedRole(event.target.value); setEdited(true)}
+  //const handleSelectedPositionChange = event =>  {setPosition(choosablePositions[event.target.value]); setEdited(true)}
   const handleSystemStatusChange = event => {setSystemStatus(event.target.value); setEdited(true)}
   const handlePositionChange = data => {console.log(toString(data)); setPosition(data); setEdited(true)}
 
@@ -180,9 +180,6 @@ function EmployeeForm({ onCancel, edit, selected }) {
       //data = [{id:"1", name:"Position1", description:"Erste Position"},{id:"2", name:"Position2", description:"Zweite Position"}]
     }
     data.map((singlePosition, index) => {
-      if(index == 0) {
-        setPosition(singlePosition) // set first default selected position to be ready for submit
-      }
       setChoosablePositions(choosablePositions => [...choosablePositions, singlePosition]);
     })
   };
@@ -215,10 +212,6 @@ function EmployeeForm({ onCancel, edit, selected }) {
     newAvailabilities.map((SingleAvailability)=> {
       setAvailabilities(availabilities => [...availabilities, SingleAvailability]);
     })
-  }
-
-  const editedAvailabilities = (isEdited) => {
-    setEdited(isEdited)
   }
 
 
@@ -378,25 +371,14 @@ function EmployeeForm({ onCancel, edit, selected }) {
                 <Form.Group as={Col} md="5">
                   <Form.Label>Position:</Form.Label>
                   <Container style={{display: "flex", flexWrap: "nowrap"}}>
-                      {edit ? 
-                          <ObjectPicker 
-                            setState={handlePositionChange}
-                            DbObject="position"
-                            //initial ={position} // if form is loading, this picker should display the position of this user
-                            />:
-                          <ObjectPicker 
-                            setState={handlePositionChange}
-                            DbObject="position"/>
+                      {
+                        <ObjectPicker 
+                          setState={handlePositionChange}
+                          DbObject="position"
+                          initial ={position} 
+                          multiple ={true}
+                          />
                       }
-                      <Form.Control
-                        style = {{marginLeft: "20px"}}
-                        readOnly
-                        name="position"
-                        type="position"
-                        placeholder="Keine Position "
-                        value={position.name || ""}
-                        //onChange={}
-                        />
 
                   </Container>
                 </Form.Group>

@@ -1,3 +1,4 @@
+  
 package com.dvproject.vertTerm.Model;
 
 import java.io.Serializable;
@@ -54,13 +55,6 @@ public class Resource implements Serializable{
 		this.description = description;
 	}
 
-//	public List<Availability> getAvailability() {
-//		return availabilities;
-//	}
-//
-//	public void setAvailability(List<Availability> availabilities) {
-//		this.availabilities = availabilities;
-//	}
 
 	public List<Availability> getAvailabilities() {
 		return availabilities;
@@ -94,11 +88,12 @@ public class Resource implements Serializable{
 		this.restrictions = restrictions;
 	}
 
-	public ResourceType getResourceTyp() {
+	public ResourceType getResourceType() {
 		return resourceType;
 	}
 
-	public void setResourceTyp(ResourceType resourceTyp) {
-		this.resourceType = resourceTyp;
+	public void setResourceType(ResourceType resourceType) {
+		this.resourceType = resourceType;
 	}
 }
+
