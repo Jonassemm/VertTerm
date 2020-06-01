@@ -42,10 +42,17 @@ const ResourceTypeForm = ({ onCancel, edit, selected }) => {
     const handleDeleteResourceType = async () => {
         const answer = confirm("Möchten Sie diese Ressourcentyp wirklich löschen?")
         if (answer) {
-            const res = await deleteResourceType(selected.id)
-            console.log(res)
+            try {
+                const res = await deleteResourceType(selected.id)
+                console.log(res)
+            } catch (error) {
+                console.log(Object.keys(error), error.message)
+                alert("An error occoured while deleting a resource type")
+            }
         }
         onCancel()
+
+        
     }
 
     return (
@@ -55,6 +62,9 @@ const ResourceTypeForm = ({ onCancel, edit, selected }) => {
                     <Form.Row>
                         <Form.Label>Bezeichnung: </Form.Label>
                         <Form.Control
+                            required
+                            pattern=".{1,50}"//everything allowed but min 1 and max 50 letters
+                            title="Die Bezeichnung muss zwischen 1 und 50 Zeichen beinhalten!"
                             type="text"
                             placeholder="Ressourcentypname"
                             value={name || ""}

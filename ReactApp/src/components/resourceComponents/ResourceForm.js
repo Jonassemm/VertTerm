@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react"
 import { Container, Form, Table, Col, Tabs, Tab, Button} from "react-bootstrap"
-import {addResource, editResource } from "./ResourceRequests"
+import {addResource, editResource, addConsumable, editConsumable } from "./ResourceRequests"
 import ObjectPicker from "../ObjectPicker"
 import Availability from "../availabilityComponents/Availability"
 
@@ -21,12 +21,26 @@ const RessourceForm = ({ onCancel, edit, selected }) => {
     const [numberOfUses, setNumberOfUses] = useState(null)
     const [pricePerUnit, setPricePerUnit] = useState(null)
 
+    //if one item was selected update the attribute "isConsumable"
+    if(selected != undefined) {
+      //check if this item is a resource or a consumable
+      if(selected.amountInStock == undefined && 
+        selected.numberOfUses == undefined &&
+        selected.pricePerUnit == undefined) {
+         setIsConsumable(false) //item is resource
+        } else {
+          setIsConsumable(true) //item is consumable
+        }
+    }
+    
+ 
+
     useEffect(() => {
         if (edit) {
             setName(selected.name)
             setDescription(selected.description)
             setStatus(selected.status)
-            setType(type => [selected.resourceTyp])
+            setType(type => [selected.resourceType])
             setChildResources(selected.childResources)
             setAvailabilities(selected.availabilities)
         }
@@ -44,36 +58,76 @@ const RessourceForm = ({ onCancel, edit, selected }) => {
     const handleNumberOfUsesChange = event => {setNumberOfUses(event.target.value); setEdited(true)}
     const handlePricePerUnitChange = event => {setPricePerUnit(event.target.value); setEdited(true)}
 
-    const handleSubmit = async event => {
-        event.preventDefault()
-        var resourceType = {} //save the first type of the array (ObjectPicker needs array, but DB needs object)
-        if(type.length > 0) { resourceType = type[0] }
-        
-        const data = {name, description, status, resourceTyp: resourceType, childRessources: childResources, availabilities, restrictions, amountInStock, numberOfUses, pricePerUnit}
-       
-        if (!edit) {
-            await addResource(data)
-        } else {
-            await editResource(selected.id, data)
-        }
-        onCancel()
+
+    function validation() {
+      var result = true;
+      var errorMsg 
+      //check resourceType
+      if(type.length == 0) { 
+        result = false
+        errorMsg = "noResourceType"
+      }
+      
+      //print error
+      switch(errorMsg) {
+        case "noResourceType": 
+          alert("Fehler: Bitte wählen Sie einen Ressourcentyp aus!")
+          break;
+      }
+      return result
     }
 
+    //---------------------------------SUBMIT---------------------------------
+    //ADD RESOURCE
+    const handleSubmit = async event => {
+        event.preventDefault()
+        if(validation()) {
+          var firstType = {} 
+          //save the first type of the array (ObjectPicker needs array, but DB needs object)
+          if(type.length > 0) { firstType = type[0] }
+          
+          var data 
+          if(isConsumable) {
+            data = {name, description, status, resourceType: firstType, childResources, availabilities, restrictions, amountInStock, numberOfUses, pricePerUnit}
+            if(edit) {
+              await editConsumable(selected.id, data)
+            }else {
+              await addConsumable(data)
+            }
+          }else {
+            data = {name, description, status, resourceType: firstType, childResources, availabilities, restrictions}
+            if (edit){
+              await editResource(selected.id, data)
+            }else{
+              await addResource(data)
+            }
+          }
+          onCancel()
+        }
+    }
+    //DELETE RESOURCE
     const handleDeleteRessource = async () => {
       const deleteStatus = "deleted" // fix delteStatus
-      var resourceType = {} //save the first type of the array (ObjectPicker needs array, but DB needs object)
-      if(type.length > 0) { resourceType = type[0] }
+      var firstType = {} 
+      //save the first type of the array (ObjectPicker needs array, but DB needs object)
+      if(type.length > 0) { firstType = type[0] }
 
-      var data = {name, description, status : deleteStatus, resourceTyp: resourceType, childRessources: childResources, availabilities, restrictions, amountInStock, numberOfUses, pricePerUnit}
+      var data
       const answer = confirm("Möchten Sie diese Ressource wirklich löschen? ")
-      try {
-        if (answer) {
-          await editResource(selected.id, data)
-        }
-      } catch (error) {
-        console.log(Object.keys(error), error.message)
-        alert("An error occoured while deleting a resource")
-      } 
+      if (answer) {
+        try {
+          if(isConsumable) {
+            data = {name, description, status : deleteStatus, resourceType: firstType, childResources, availabilities, restrictions, amountInStock, numberOfUses, pricePerUnit}
+            await editConsumable(selected.id, data)
+          } else {
+            data = {name, description, status : deleteStatus, resourceType: firstType, childResources, availabilities, restrictions}
+            await editResource(selected.id, data)
+          }
+        } catch (error) {
+          console.log(Object.keys(error), error.message)
+          alert("An error occoured while deleting a resource")
+        } 
+      }
       onCancel()
     }
 
@@ -105,6 +159,8 @@ const RessourceForm = ({ onCancel, edit, selected }) => {
                   <Form.Label>Bezeichnung:</Form.Label>
                   <Form.Control
                     required
+                    pattern=".{1,50}"//everything allowed but min 1 and max 50 letters
+                    title="Die Bezeichnung muss zwischen 1 und 50 Zeichen beinhalten!"
                     name="name"
                     type="text"
                     placeholder="Ressourcenname"
@@ -115,10 +171,10 @@ const RessourceForm = ({ onCancel, edit, selected }) => {
                 <Form.Group as={Col} md="4">
                   <Form.Label>Ressourcentyp</Form.Label>
                   <ObjectPicker 
-                          setState={handleTypeChange}
-                          DbObject="resourceType"
-                          initial={type}
-                          multiple={false} />
+                    setState={handleTypeChange}
+                    DbObject="resourceType"
+                    initial={type}
+                    multiple={false} />
                 </Form.Group>
                 
                 <Form.Group as={Col} md="2">
@@ -149,7 +205,6 @@ const RessourceForm = ({ onCancel, edit, selected }) => {
                 <Form.Group as={Col} md="12" >
                     <Form.Label>Beschreibung:</Form.Label>
                         <Form.Control
-                        required
                         name="description"
                         type="text"
                         placeholder="Beschreibung der Ressource"
@@ -177,7 +232,7 @@ const RessourceForm = ({ onCancel, edit, selected }) => {
                         multiple={true}/>
                 </Form.Group>
               </Form.Row>
-              <Form.Row style={{margin: "10px 0px 10px 0px"}}>
+              {!edit && <Form.Row style={{margin: "10px 0px 10px 0px"}}>
                 <Form.Check
                   id="switchIsCunsumable"
                   type="switch"
@@ -188,12 +243,15 @@ const RessourceForm = ({ onCancel, edit, selected }) => {
                   label="Als verbrauchbare Ressource anlegen"
                 />
               </Form.Row>
+              }
               {isConsumable &&
                 <Form.Row>
                   <Form.Group as={Col} md="2" >
                     <Form.Label>Bestandsmenge:</Form.Label>
                         <Form.Control
                           required={isConsumable ? true : false}
+                          pattern="[0-9]{1,}" //Only numbers but at least one
+                          title="Die Bestandsmenge muss mindestens 1 betragen!"
                           name="amountInStock"
                           type="text"
                           placeholder="10"
@@ -205,6 +263,8 @@ const RessourceForm = ({ onCancel, edit, selected }) => {
                     <Form.Label>Verwendungsanzahl:</Form.Label>
                         <Form.Control
                           required={isConsumable ? true : false}
+                          pattern="[0-9]{1,}" //Only numbers but at least one
+                          title="Die Anzahl bis eine Ressource aufgebraucht ist muss mindestens 1 sein!"
                           name="numberOfUses"
                           type="text"
                           placeholder="1"
@@ -215,12 +275,12 @@ const RessourceForm = ({ onCancel, edit, selected }) => {
                   <Form.Group as={Col} md="2" >
                     <Form.Label>Einzelpreis:</Form.Label>
                         <Form.Control
-                          required={isConsumable ? true : false}
+                          required={isConsumable ? true : false} 
+                          pattern="(?:[1-9]{1}[0-9]{0,3}|0)[.]{1}[0-9]{2}"//only prices without leading zero
+                          title="Der Preis muss das Format darf keien führende 0 besietzten (Bsp.: 0.00 - 9999,99)!"
                           name="pricePerUnit"
-                          type="number"
-                          step="any"
-                          min="0"
-                          placeholder="1,99"
+                          type="text"
+                          placeholder="0.00 bis 9999.99"
                           value={pricePerUnit || ""}
                           onChange={handlePricePerUnitChange}
                         />

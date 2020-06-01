@@ -63,17 +63,19 @@ const Availability = (props) => {
     const handleStartDateChange = date => {
         const newDateString = moment(date).format("DD.MM.YYYY HH:mm").toString()
         setStartDate(newDateString)
-        setEndDate(setValidEndDate(newDateString)) 
-        if(withSeriesEnd) {
+        if(endDate <= newDateString) {
+           setEndDate(setValidEndDate(newDateString)) 
+        }
+        if(withSeriesEnd && endOfSeries <= newDateString) {
             setEndOfSeries(setValidEndDate(newDateString))
         }
         props.editedAvailabilities(true)
     }
     const handleEndDateChange = date => {
         const newDateString = moment(date).format("DD.MM.YYYY HH:mm").toString()
-        if(validateDates(startDate, newDateString, endOfSeries)){
+        if(validateDates(startDate, newDateString, newDateString)){
             setEndDate(newDateString)
-            if(withSeriesEnd) {
+            if(withSeriesEnd && endOfSeries < newDateString) {
                 setEndOfSeries(newDateString)
             }
             props.editedAvailabilities(true)

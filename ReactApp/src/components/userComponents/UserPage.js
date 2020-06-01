@@ -8,7 +8,7 @@ import UserForm from "./UserForm"
 import {observer} from "mobx-react"
 import {
     getEmployeeList,
-    getCustomerList,
+    getCustomerList
   } from "./UserRequests";
 
 
@@ -19,7 +19,8 @@ export default function UserList(props) {
     useEffect( () => {
         loadUserList()
     },[])
-    
+
+
     //---------------------------------USER---------------------------------
     //LOAD USERLIST
     const loadUserList = async () => {
@@ -67,7 +68,7 @@ export default function UserList(props) {
         setUserList(reducedData)
     }
 
-    const tableBody =
+    const tableBody = 
         userList.map((item, index) => { 
             var status //translated status
             switch(item.systemStatus) {

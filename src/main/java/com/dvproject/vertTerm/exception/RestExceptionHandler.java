@@ -38,4 +38,11 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
 	     headers.add("Location", "http://localhost:3001/");
 	     return new ResponseEntity<Object>(headers, HttpStatus.OK);
 	 }
+	
+	@ExceptionHandler(javax.validation.ConstraintViolationException.class)
+	public ResponseEntity<Object> handleConstraintViolationException(javax.validation.ConstraintViolationException exception,
+			WebRequest request) {
+		return handleExceptionInternal(exception, exception.getMessage(), new HttpHeaders(), HttpStatus.BAD_REQUEST,
+				request);
+	}
 }

@@ -12,15 +12,15 @@ import Footer from './components/Footer';
 // preloaded pages
 import Home from "./components/Home"
 import BookingForm from "./components/calendarComponents/BookingForm"
-import UserPage from './components/user/UserPage'
+import UserPage from './components/userComponents/UserPage'
 import ExtUserInfoPage from "./components/extUserInfoComponents/extUserInfoPage"
 import RolePage from "./components/roleComponents/RolePage"
 import PositionPage from "./components/positionComponents/PositionPage"
 import HomePage from './components/calendarComponents/HomePage'
 import ProcedurePage from "./components/procedureComponents/ProcedurePage" 
-import ResourceTypePage from "./componens/resourceTypeComponents/ResourceTypePage"
+import ResourceTypePage from "./components/resourceTypeComponents/ResourceTypePage"
 import ResourcePage from "./components/resourceComponents/ResourcePage"
-import Resources from "./components/resourceComponents/ResourcePage"
+import RestrictionPage from "./components/restrictionComponents/RestrictionPage"
 
 //lazy loaded pages
 /*
@@ -32,7 +32,8 @@ const ResourceTypePage = React.lazy(() => import("./components/resourceTypeCompo
 const ResourcePage = React.lazy(() => import("./components/resourceComponents/ResourcePage"))
 const HomePage = React.lazy(() => import('./components/calendarComponents/HomePage'))
 const ProcedurePage = React.lazy(() => import("./components/procedureComponents/ProcedurePage"))
-const Resources = React.lazy(() => import("./components/resourceComponents/ResourcePage")) */
+const ResourcePage = React.lazy(() => import("./components/resourceComponents/ResourcePage"))
+const RestrictionPage = React.lazy(() => import("./components/restrictionComponents/RestrictionPage")) */
 
 
 
@@ -52,7 +53,8 @@ export default observer(function App({ userStore, calendarStore }) {
             {hasRole(userStore, ["ADMIN_ROLE"]) && <Route exact path="/customer" component={() => <UserPage userType={"customer"} heading={"Kunden"} />} />}
             {hasRole(userStore, ["ADMIN_ROLE"]) && <Route exact path="/employee" component={() => <UserPage userType={"employee"} heading={"Mitarbeiter"} />} />}
             <Route exact path="/extUserInfo" component={() => <ExtUserInfoPage/>} />
-            <Route exact path="/resource" component={() => <Resources/>} />
+            <Route exact path="/restriction" component={() => <RestrictionPage/>} />
+            <Route exact path="/resource" component={() => <ResourcePage/>} />
             <Route exact path="/calendar" component={() => (<HomePage calendarStore={calendarStore} />)} />
             <Route exact path="/role" component={() => (<RolePage userStore={userStore} />)} />
             <Route path="/position" exact component={() => <PositionPage />} />
