@@ -11,7 +11,9 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 
 import com.dvproject.vertTerm.Model.Resource;
+import com.dvproject.vertTerm.Model.ResourceType;
 import com.dvproject.vertTerm.Model.Restriction;
+import com.dvproject.vertTerm.Model.Right;
 import com.dvproject.vertTerm.Model.Status;
 import com.dvproject.vertTerm.repository.RessourceRepository;
 import com.dvproject.vertTerm.repository.RestrictionRepository;
@@ -55,6 +57,7 @@ public class ResourceServiceImp implements ResourceService {
 		//@PreAuthorize("hasAuthority('RESOURCE_DATA_WRITE')")
 		public Resource update(Resource res) {
 			if (res.getId() != null && ResRepo.findById(res.getId()).isPresent()) {
+				
 				return ResRepo.save(res);
 			}
 		  
@@ -66,6 +69,8 @@ public class ResourceServiceImp implements ResourceService {
 		//@PreAuthorize("hasAuthority('RESOURCE_STATUS_WRITE')")
 		public boolean delete(String id) {
 		    Resource Res = getById(id);
+			Res.setStatus(Status.DELETED);
+			ResRepo.save(Res);
 			return Res.getStatus() == Status.DELETED;	
 		}
 
@@ -80,7 +85,7 @@ public class ResourceServiceImp implements ResourceService {
 		}
 		
 		//@PreAuthorize("hasAuthority('RESOURCE_DATA_READ')")
-		public List<Restriction> getResourceDependencies(String id) {
+		public List<Restriction> getResourceRestrictions(String id) {
 			  List<Restriction> dep = new ArrayList<Restriction>();
 			  Resource res = getById(id);
 			  for (Restriction rest : res.getRestrictions()) 
@@ -93,22 +98,22 @@ public class ResourceServiceImp implements ResourceService {
 	    }
 	
 	//@PreAuthorize("hasAuthority('RESOURCE_AVAILABILITIES_WRITE')")
-		public Resource updateResourceAvailability(Resource res) {
+		public Resource updateResourceAvailabilities(Resource res) {
 			  Optional<Resource> ResDb = this.ResRepo.findById(res.getId());
 			    if (ResDb.isPresent()) {
 			    	Resource ResUpdate = ResDb.get();
-			    	ResUpdate.setAvailabilities(res.getAvailability());
+			    	ResUpdate.setAvailabilities(res.getAvailabilities());
 			        ResRepo.save(ResUpdate);
 			        return ResUpdate;
 			    } 
 			    else {
-			    	throw new ResourceNotFoundException("Resource with the given id :" + res.getId() + " already exists");
+			    	throw new ResourceNotFoundException("Resource with the given id :" + res.getId() + "not found");  
 			      	
 			    }    
 	     } 
 		
 		//@PreAuthorize("hasAuthority('RESOURCE_DATA_WRITE')")
-		public List<Restriction> updateResourceDependencies(String id,String[] Rids) {
+		public List<Restriction> updateResourceRestrictions(String id,String[] Rids) {
 			 List<Restriction> dep = new ArrayList<Restriction>();
 			 List<Restriction> AllRestrictions = RestsRepo.findAll();
 			 List<String> RestIds = List.of(Rids);				
@@ -129,12 +134,34 @@ public class ResourceServiceImp implements ResourceService {
 			        return dep;
 			    } 
 			    else {
-			    	throw new ResourceNotFoundException("Resource with the given id :" + id + " already exists");
+			    	throw new ResourceNotFoundException("Resource with the given id :" + id + "not found");  
 			      	      
 			    }
-	     }		
+	     }
 
-  
+
+		@Override
+		public List<Resource> getResources(Status status) {
+			return ResRepo.findByStatus(status);
+		}
+
+
+		@Override
+		public List<Resource> getResources(String ResTid) {
+			 List<Resource> Resources = new ArrayList<> ();
+			 List<Resource> AllResources = ResRepo.findAll();
+			 for (Resource r : AllResources)
+			 {   
+				 ResourceType rt=r.getResourceTyp();
+				 if (rt.getId().equals(ResTid))
+			   		{
+					 if (!Resources.contains(r)) 
+						 Resources.add(r);	
+			   		}
+			 }
+			 return Resources;
+		}
+
 }
 
 
