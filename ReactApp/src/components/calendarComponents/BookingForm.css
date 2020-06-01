@@ -1,30 +1,71 @@
+* {
+    box-sizing: border-box;
+}
+
 .parent {
     width: 100%;
     display: flex;
-}
-
-.nameCol {
-    width: 30%;
+    justify-content: space-between;
 }
 
 .wrap {
-    width: 70%;
     display: flex;
-    flex-wrap: wrap;
+    flex-direction: column;
+    width: 55%;
+    border-right: solid #bbb 1px;
+}
+
+.namebox {
+    width: 20%;
 }
 
 .box {
-    height: 50px;
-    display: flex;
-    width: 70%;
+    flex-grow: 1;
+    padding: 3px;
 }
 
-.innerboxleft {
+.middleBox {
+    display: flex;
+    padding-right: 30px;
+    margin-bottom: 5px;
+}
+
+.middleBoxLeft {
+    text-align: center;
     width: 30%;
 }
 
-.innerbox {
+.middleBoxRight {
     width: 70%;
+}
+
+.rightBox {
+    display: flex;
+    flex-direction: column;
+    width: 25%;
+    padding-left: 15px;
+}
+
+.rightBoxTop {
+  display: flex;
+}
+
+.rightBoxBottom {
+    display: flex;
+    margin-top: 5px;
+}
+
+.rightBoxLeft {
+    width: 30%;
+    text-align: center;
+}
+
+.rightBoxRight {
+    width: 70%;
+}
+
+.input {
+    width: 100%;
 }
 
 .selectType {

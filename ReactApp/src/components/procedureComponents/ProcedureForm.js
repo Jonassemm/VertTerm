@@ -22,8 +22,8 @@ function ProcedureForm({ onCancel, edit, selected }) {
     const [pricePerHour, setPricePerHour] = useState(0)
     const [pricePerInvocation, setPricePerInvocation] = useState(0)
     const [restrictions, setRestrictions] = useState([])
-    const [positionCount, setPositionsCount] = useState([])
-    const [resourceTypesCount, setResourceTypeCount] = useState([])
+    const [positionsCount, setPositionsCount] = useState([])
+    const [resourceTypesCount, setResourceTypesCount] = useState([])
 
     useEffect(() => {
         buildInitialValues()
@@ -33,7 +33,7 @@ function ProcedureForm({ onCancel, edit, selected }) {
         if (initialized.current >= 2) {
             setEdited(true)
         } else { initialized.current = initialized.current + 1 }
-    }, [name, description, duration, status, precedingRelations, subsequentRelations, positions, resourceTypes, availabilities, pricePerHour, pricePerInvocation, restrictions])
+    }, [name, description, duration, status, precedingRelations, subsequentRelations, positions, resourceTypes, availabilities, pricePerHour, pricePerInvocation, restrictions, resourceTypesCount, positionsCount])
 
     function buildInitialValues() {
         if (edit) {
@@ -53,7 +53,7 @@ function ProcedureForm({ onCancel, edit, selected }) {
             }
             // sorting out duplicate items
             removeDuplicates(selected.neededEmployeePositions, setPositions, setPositionsCount)
-            removeDuplicates(selected.neededResourceTypes,setResourceTypes,setResourceTypeCount)
+            removeDuplicates(selected.neededResourceTypes, setResourceTypes, setResourceTypesCount)
         }
     }
 
@@ -109,7 +109,7 @@ function ProcedureForm({ onCancel, edit, selected }) {
         //combines the selected positions with the count
         let extendedPositions = []
         for (let i = 0; i < positions.length; i++) {
-            for (let p = 0; p < positionCount[i]; p++) {
+            for (let p = 0; p < positionsCount[i]; p++) {
                 extendedPositions.push({ id: positions[i].id, ref: "position" })
             }
         }
@@ -117,7 +117,7 @@ function ProcedureForm({ onCancel, edit, selected }) {
         let extendedResourceTypes = []
         for (let i = 0; i < resourceTypes.length; i++) {
             for (let p = 0; p < resourceTypesCount[i]; p++) {
-                extendedPositions.push({ id: resourceTypes[i].id, ref: "resourceType" })
+                extendedResourceTypes.push({ id: resourceTypes[i].id, ref: "resourceType" })
             }
         }
 
@@ -135,6 +135,8 @@ function ProcedureForm({ onCancel, edit, selected }) {
             restrictions: restrictions,
             availabilities: availabilities
         }
+
+        console.log(data)
 
         if (!edit) {
             const res = await addProcedure(data)
@@ -154,15 +156,15 @@ function ProcedureForm({ onCancel, edit, selected }) {
                 return 1
             }
         })
-        setPositionsCount(temp)
-        setPositions(data)
+        setResourceTypesCount(temp)
+        setResourceTypes(data)
     }
 
     function setPositionsExt(data) {
         const temp = data.map((item, index) => {
             const ix = positions.findIndex(elem => elem.name == item.name)
             if (ix >= 0) {
-                return positionCount[ix]
+                return positionsCount[ix]
             } else {
                 return 1
             }
@@ -273,11 +275,12 @@ function ProcedureForm({ onCancel, edit, selected }) {
                     </Tab>
                     <Tab eventKey="resources" title="Ressourcen" style={TabStyle}>
                         <Form.Label style={{ marginTop: "5px" }}>Benötigte Ressourcentypen:</Form.Label>
-                        <ObjectPicker DbObject="resourceType" initial={edit ? resourceTypes : []} setState={setResourceTypesExt} multiple={true}></ObjectPicker>
+                        <ObjectPicker DbObject="resourceType" initial={edit ? resourceTypes : []} setState={setResourceTypesExt} multiple={true} />
                         {resourceTypes.map((item, index) => {
                             return (
                                 <Row style={{ marginTop: "5px" }}>
-                                    <Col style={{ textAlign: "right", verticalAlign: "bottom" }}><span>Anzahl {item.name}:</span>
+                                    <Col style={{ textAlign: "right", verticalAlign: "bottom" }}>
+                                        <span>Anzahl {item.name}:</span>
                                     </Col>
                                     <Col>
                                         <Form.Control
@@ -286,14 +289,13 @@ function ProcedureForm({ onCancel, edit, selected }) {
                                             name={index}
                                             value={resourceTypesCount[index] || "1"}
                                             onChange={e => {
-                                                setResourceTypeCount(resourceTypesCount.map((item, index) => {
+                                                setResourceTypesCount(resourceTypesCount.map((item, index) => {
                                                     if (index == e.target.name) {
-                                                        return e.target.value
+                                                        return Number(e.target.value)
                                                     } else {
                                                         return item
                                                     }
                                                 }))
-                                                setEdited(true)
                                             }}
                                         />
                                     </Col>
@@ -310,18 +312,19 @@ function ProcedureForm({ onCancel, edit, selected }) {
                                     <Col>
                                         <Form.Control
                                             type="number"
-                                            min="1"
+                                            min={1}
+                                            id={index}
                                             name={index}
-                                            value={positionCount[index] || "1"}
+                                            value={positionsCount[index] || 1}
                                             onChange={e => {
-                                                setPositionsCount(positionCount.map((item, index) => {
+                                                setPositionsCount(positionsCount.map((item, index) => {
+                                                    console.log(typeof(e.target.value))
                                                     if (index == e.target.name) {
-                                                        return e.target.value
+                                                        return Number(e.target.value)
                                                     } else {
                                                         return item
                                                     }
                                                 }))
-                                                setEdited(true)
                                             }}
                                         />
                                     </Col>
