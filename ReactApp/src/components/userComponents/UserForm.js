@@ -43,7 +43,7 @@ function UserForm({onCancel, edit, selected, type}) {
   //extended userInformation
   const [extUserInfoAttList, setExtUserInfoAttList] = useState([])
   const [extUserInfoData, setExtUserInfoData] = useState([])
-  const [extUserInfoInput, setUserInfoInput] = useState("") //needed to render page when editing any extUserInfo
+  const [extUserInfoInput, setUserInfoInput] = useState() //needed to render page when editing any extUserInfo
   
   //HANDEL CHANGE
   const handleFirstnameChange = event => {setFirstname(event.target.value); setEdited(true)}
@@ -56,7 +56,8 @@ function UserForm({onCancel, edit, selected, type}) {
   const handleRestrictionChange = data => {setRestrictions(data); setEdited(true)}
   const handleExtUserInfoDataChange = (e, name) => {
     setExtUserInfoDataValue(name, e.target.value); 
-    setUserInfoInput(e.target.value); 
+    setUserInfoInput([e.target.value, name]); 
+    console.log(extUserInfoData)
     setEdited(true) 
   };
 
@@ -131,6 +132,7 @@ function UserForm({onCancel, edit, selected, type}) {
         alert("Fehler: Bitte wählen Sie mindestens eine Position aus!")
         break;
     }
+
     return result
   }
 
@@ -263,7 +265,24 @@ function UserForm({onCancel, edit, selected, type}) {
     <React.Fragment>
       <Container>
         <Form id="employeeAdd" onSubmit={(e) => handleSubmit(e)}>
-        <h5 style={{fontWeight: "bold"}}>{initialTypeIsEmployee ? edit ? "Mitarbeiter bearbeiten" : "Mitarbeiter hinzufügen": edit ? "Kunde bearbeiten" : "Kunde hinzufügen"}</h5>
+        <Form.Row style={{ alignItems: "baseline" }}>
+          <Form.Group as={Col}>
+             <h5 style={{fontWeight: "bold"}}>{initialTypeIsEmployee ? edit ? "Mitarbeiter bearbeiten" : "Benutzer hinzufügen": edit ? "Kunde bearbeiten" : "Benutzer hinzufügen"}</h5>
+          </Form.Group>
+          <Form.Group as={Col} style={{textAlign: "right"}}>
+            {!edit  && 
+              <Form.Check //not needed while editing an user
+                id="switchIsEmployee"
+                type="switch"
+                name="isEmployee"
+                value={isEmployee}
+                onChange={e => setIsEmployee(!isEmployee)}
+                checked={isEmployee}
+                label={isEmployee ? "Als Mitarbeiter anlegen": "Als Kunde anlegen"}
+              />
+            }
+          </Form.Group>
+        </Form.Row>
           <Tabs
             id="controlled-tab"
             activekey={tabKey}
@@ -362,17 +381,19 @@ function UserForm({onCancel, edit, selected, type}) {
                     </InputGroup>
                     </Form.Group>
               </Form.Row>
-              <Form.Row style={{margin: "10px 0px 10px 0px"}}>
-                {!edit  && <Form.Check //not needed while editing an user
-                    id="switchIsEmployee"
-                    type="switch"
-                    name="isEmployee"
-                    value={isEmployee}
-                    onChange={e => setIsEmployee(!isEmployee)}
-                    checked={isEmployee}
-                    label="Als Mitarbeiter anlegen"
-                  />
-                }
+              <Form.Row>
+                  <Form.Group as={Col} md="10">
+                      <Table style={{border: "2px solid #AAAAAA", marginTop: "10px", width: "100%", borderCollapse: "collapse", tableLayout: "fixed"}} striped variant="ligth">
+                          <thead>
+                              <tr>
+                                  <th colSpan="2">Erweiterte Benutzerinformationen</th>
+                              </tr>
+                          </thead>
+                          <tbody>
+                          {renderExpandUserInformationTable()}
+                          </tbody>
+                      </Table> 
+                  </Form.Group>
               </Form.Row>
               <Form.Row>
               <Form.Group as={Col} md="5">
@@ -423,22 +444,6 @@ function UserForm({onCancel, edit, selected, type}) {
                 }
               </Form.Row>
             </Tab>
-            <Tab eventKey="expand" title="Erweitert">
-              <Form.Row>
-                  <Form.Group as={Col} md="12">
-                      <Table style={{border: "2px solid #AAAAAA", marginTop: "10px", width: "100%", borderCollapse: "collapse", tableLayout: "fixed"}} striped variant="ligth">
-                          <thead>
-                              <tr>
-                                  <th colSpan="2">Erweiterte Benutzerinformationen</th>
-                              </tr>
-                          </thead>
-                          <tbody>
-                          {renderExpandUserInformationTable()}
-                          </tbody>
-                      </Table> 
-                  </Form.Group>
-                </Form.Row>
-                </Tab>
             {isEmployee &&
                 <Tab eventKey="availability" title="Verfügbarkeit">
                 <Form.Row style={{marginTop: "25px"}}>

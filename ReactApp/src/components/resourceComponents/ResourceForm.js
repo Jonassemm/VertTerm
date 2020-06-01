@@ -31,6 +31,11 @@ const RessourceForm = ({ onCancel, edit, selected }) => {
           setIsConsumable(false) //item is resource
           } else {
             setIsConsumable(true) //item is consumable
+            if(edit) {
+              setAmountInStock(selected.amountInStock)
+              setNumberOfUses(selected.numberOfUses)
+              setPricePerUnit(selected.pricePerUnit)
+            }
           }
       }
       if (edit) {
