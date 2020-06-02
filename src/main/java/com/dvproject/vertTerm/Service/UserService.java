@@ -19,4 +19,5 @@ public interface UserService extends BasicService<User> {
     
     void encodePassword (User user);
     boolean hasPasswordChanged (User user);
+    User getAnonymousUser ();
 }

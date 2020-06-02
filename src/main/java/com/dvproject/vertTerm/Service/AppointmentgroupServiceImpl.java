@@ -170,16 +170,7 @@ public class AppointmentgroupServiceImpl implements AppointmentgroupService {
 	 * @return a new anonymousUser
 	 */
 	private User createNewAnonymousUser() {
-		// TODO:
-		// - get user with username (not username array)
-		// - create new anonymousUser without saving it in the database!
-		// random username or half-random (prefix + random-part)
-		// fix noop password, which can be send
-		// login-link -> ....?username=<username>&password=<password>
-		User user = userService.getUsersWithUsernames(new String[] { "anonymousUser" }).get(0);
-		
-
-		return user;
+		return userService.getAnonymousUser();
 	}
 
 	/**

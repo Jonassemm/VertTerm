@@ -12,6 +12,7 @@ import java.security.Principal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 @Service
 public class UserServiceImp implements UserService {
@@ -171,5 +172,20 @@ public class UserServiceImp implements UserService {
     	User oldUser = this.getById(user.getId());
     	return !oldUser.getPassword().equals(user.getPassword());
     }
+
+	@Override
+	public User getAnonymousUser() {
+		String username = "anonymousUser";
+		User user = this.getUsersWithUsernames(new String [] {username}).get(0);
+		
+		//delete the id, so mongodb creates a new one 
+		user.setId(null);
+		//create unique username
+		user.setUsername(username + repo.count());
+		user.setPassword("{noop}" + UUID.randomUUID().toString());
+		user.setSystemStatus(Status.ACTIVE);
+		
+		return user;
+	}
 
 }

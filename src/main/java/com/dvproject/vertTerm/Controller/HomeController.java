@@ -25,11 +25,16 @@ public class HomeController {
 	@GetMapping("/")
 	public RedirectView login (@RequestParam String username, @RequestParam String password) {
 		UserDetails userDetails = manager.loadUserByUsername(username);
+		
+		if (!userDetails.getPassword().equals("{noop}" + password)) {
+			throw new IllegalArgumentException("");
+		}
+		
 		Authentication auth = new UsernamePasswordAuthenticationToken (userDetails.getUsername(), userDetails.getPassword());
 		SecurityContextHolder.getContext().setAuthentication(auth);
 		
 		RedirectView redirectView = new RedirectView();
-	    redirectView.setUrl("http://localhost:3001/");
+	    redirectView.setUrl("http://localhost:3001/calendar");
 	    return redirectView;
 	}
 }
