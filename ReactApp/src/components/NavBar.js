@@ -43,11 +43,12 @@ function NavBar({ userStore }) {
                 <Navbar.Toggle aria-controls="basic-navbar-nav" />
                 <Navbar.Collapse id="basic-navbar-nav" className="mr-auto">
                     <Nav className="mr-auto">
-                        {//hasRole(userStore, ["ADMIN_ROLE"]) &&
+                        {//hasRole(userStore, ["ADMIN_ROLE"]) && 
                             <NavDropdown className="mr-auto" title="Benutzerverwaltung" id="user-nav-dropdown">
                                 <NavDropdown.Item as={Link} to="/employee">Mitarbeiter</NavDropdown.Item>
                                 <NavDropdown.Item as={Link} to="/customer">Kunden</NavDropdown.Item>
                                 <NavDropdown.Divider />
+                                <NavDropdown.Item as={Link} to="/extUserInfo">Erweiterte Benutzerinformationen</NavDropdown.Item>
                                 <NavDropdown.Item as={Link} to="/position">Positionen</NavDropdown.Item>
                                 <NavDropdown.Item as={Link} to="/role">Rollen</NavDropdown.Item>
                             </NavDropdown>}
