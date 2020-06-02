@@ -54,9 +54,14 @@ public class RessourceController {
 	 public  @ResponseBody  List<Resource> getResources(@RequestBody Status status) {
 	     return resservice.getResources(status);
 	 }
+	 @GetMapping("/restyps/{id}")
+	 public  @ResponseBody  List<ResourceType> getResourceTypes(@PathVariable String id) {
+	     return resservice.getResourceTypes(id);
+	 }
+	 
 	 @GetMapping("/restyp/{id}")
-	 public  @ResponseBody  List<Resource> getResources(@PathVariable String id) {
-	     return resservice.getResources(id);
+	 public  @ResponseBody  List<Resource> getResources(@PathVariable String RTid) {
+	     return resservice.getResources(RTid);
 	 }
 	 @PostMapping()
 	 public Resource createResource(@RequestBody Resource res) {

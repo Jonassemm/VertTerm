@@ -150,6 +150,11 @@ public class ResourceServiceImp implements ResourceService {
 			return ResRepo.findByStatus(status);
 		}
 
+		@Override
+		public List<ResourceType> getResourceTypes(String id) {
+			Resource Resource = getById(id);
+			return Resource.getResourceTypes();
+		}
 
 		@Override
 		public List<Resource> getResources(String ResTid) {
@@ -157,12 +162,15 @@ public class ResourceServiceImp implements ResourceService {
 			 List<Resource> AllResources = ResRepo.findAll();
 			 for (Resource r : AllResources)
 			 {   
-				 ResourceType rt=r.getResourceType();
-				 if (rt.getId().equals(ResTid))
-			   		{
-					 if (!Resources.contains(r)) 
-						 Resources.add(r);	
-			   		}
+				 List<ResourceType> ReTys=r.getResourceTypes();
+				 for (ResourceType RT : ReTys )
+				 {	    String RTID=RT.getId();
+				 		if (RTID.equals(ResTid))
+				   		{
+						 if (!Resources.contains(r)) 
+							 Resources.add(r);	
+				   		}	
+				 }	   
 			 }
 			 return Resources;
 		}
