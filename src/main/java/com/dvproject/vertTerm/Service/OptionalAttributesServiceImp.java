@@ -47,15 +47,19 @@ public OptionalAttributes create(OptionalAttributes OAttribute) {
 
 @Override
 public OptionalAttributes update(OptionalAttributes OAttribute) {
-	  	return OptionalAttributesRepo.save(OAttribute);
-  
+	Optional<OptionalAttributes> OptionalAttributes = OptionalAttributesRepo.findById(OAttribute.getId());
+	if (OptionalAttributes.isPresent()) {
+		return OptionalAttributesRepo.save(OAttribute);
+	}
+	else	
+		throw new ResourceNotFoundException("OptionalAttributes with the given id :" + OAttribute.getId() + " not found");
+		
 }
 
 
 @Override
 public boolean delete(String id) {
 Optional<OptionalAttributes> OptionalAttributes = OptionalAttributesRepo.findById(id);
-	
 	if (OptionalAttributes.isPresent()) {
 		this.OptionalAttributesRepo.delete(OptionalAttributes.get());
 	} else {

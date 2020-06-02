@@ -10,12 +10,12 @@ import com.dvproject.vertTerm.Model.Consumable;
 import com.dvproject.vertTerm.Model.Status;
 
 public interface ConsumableRepository extends MongoRepository<Consumable, String> {
-	@Query("{'_id' : ?0, '_class' : 'com.dvproject.vertTerm.Model.Consumable'}")
+//	@Query("{'_id' : ?0, '_class' : 'com.dvproject.vertTerm.Model.Consumable'}")
 	Optional<Consumable> findById (String id);
 	
-	@Query("'_class' : 'com.dvproject.vertTerm.Model.Consumable'}")
-	List<Consumable> findAll ();
+//	@Query("'_class' : 'com.dvproject.vertTerm.Model.Consumable'}")
+//	List<Consumable> findAll ();
 	
-	@Query("{'status' : ?0, '_class' : 'com.dvproject.vertTerm.Model.Consumable'}")
+//	@Query("{'status' : ?0, '_class' : 'com.dvproject.vertTerm.Model.Consumable'}")
 	List<Consumable> findByStatus (Status status);
 }

@@ -2,6 +2,7 @@ package com.dvproject.vertTerm.Service;
 
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
@@ -10,6 +11,8 @@ import org.springframework.data.rest.webmvc.ResourceNotFoundException;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 
+import com.dvproject.vertTerm.Model.Availability;
+import com.dvproject.vertTerm.Model.Procedure;
 import com.dvproject.vertTerm.Model.Resource;
 import com.dvproject.vertTerm.Model.ResourceType;
 import com.dvproject.vertTerm.Model.Restriction;
@@ -27,7 +30,8 @@ public class ResourceServiceImp implements ResourceService {
 	private RessourceRepository ResRepo;
 	@Autowired
 	private RestrictionRepository RestsRepo;
-	
+	@Autowired
+	private AvailabilityServiceImpl availabilityService;
 
 		//@PreAuthorize("hasAuthority('RESOURCE_DATA_READ')")
 		public List<Resource> getAll() {
@@ -96,18 +100,19 @@ public class ResourceServiceImp implements ResourceService {
 			  return dep; 
 		       
 	    }
-	
+
 	//@PreAuthorize("hasAuthority('RESOURCE_AVAILABILITIES_WRITE')")
-		public Resource updateResourceAvailabilities(Resource res) {
-			  Optional<Resource> ResDb = this.ResRepo.findById(res.getId());
+		public List<Availability> updateResourceAvailabilities(String id, List<Availability> availabilities) {
+			  Optional<Resource> ResDb = this.ResRepo.findById(id);
 			    if (ResDb.isPresent()) {
 			    	Resource ResUpdate = ResDb.get();
+			    	Resource res= getById(id);
 			    	ResUpdate.setAvailabilities(res.getAvailabilities());
 			        ResRepo.save(ResUpdate);
-			        return ResUpdate;
+			        return res.getAvailabilities();
 			    } 
 			    else {
-			    	throw new ResourceNotFoundException("Resource with the given id :" + res.getId() + "not found");  
+			    	throw new ResourceNotFoundException("Resource with the given id :" + id + "not found");  
 			      	
 			    }    
 	     } 
@@ -161,6 +166,25 @@ public class ResourceServiceImp implements ResourceService {
 			 }
 			 return Resources;
 		}
+
+
+		@Override
+		public boolean isResourceAvailableBetween(String id, Date startdate, Date enddate){
+			Resource Res = getById(id);
+			return availabilityService.isAvailable(Res.getAvailabilities(), startdate, enddate);
+		}
+
+
+		@Override
+		public List<Availability> getResourcevailabilities(String ResID) {
+			Resource Res = getById(ResID);
+			return Res.getAvailabilities();
+			
+
+		}
+
+
+	
 
 }
 

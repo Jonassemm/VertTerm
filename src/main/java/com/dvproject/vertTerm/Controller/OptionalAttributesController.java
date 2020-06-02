@@ -40,21 +40,22 @@ public class OptionalAttributesController {
 	 }
 	 
 	 
-	 @PostMapping
-	 public OptionalAttributes createOptionalAttributes(@RequestBody OptionalAttributes opatts) {
-	     return OpAttsService.create(opatts);
-     }
+//	 @PostMapping
+//	 public OptionalAttributes createOptionalAttributes(@RequestBody OptionalAttributes opatts) {
+//	     return OpAttsService.create(opatts);
+//     }
     
-	@PutMapping
-    public OptionalAttributes  updateOptionalAttributes(@RequestBody OptionalAttributes opatts) {	   
+	@PutMapping("/{id}")
+    public OptionalAttributes  updateOptionalAttributes(@PathVariable String id,@RequestBody OptionalAttributes opatts) {	 
+		opatts.setId(id);
 		return OpAttsService.update(opatts);
 	 }
 	   	 	 
 
-	 @DeleteMapping("/{id}")
-	 public boolean deleteOptionalAttributes(@PathVariable String id) {
-		return OpAttsService.delete(id);
+//	 @DeleteMapping("/{id}")
+//	 public boolean deleteOptionalAttributes(@PathVariable String id) {
+//		return OpAttsService.delete(id);
 
-  }
+//  }
 
 }

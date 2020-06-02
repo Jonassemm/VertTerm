@@ -24,7 +24,7 @@ public class ConsumableController {
 	@Autowired
 	private ConsumableService consumableService;
 	
-	@GetMapping("")
+	@GetMapping
 	public List<Consumable> getAllConsumables (){
 		return consumableService.getAll();
 	}
@@ -44,8 +44,9 @@ public class ConsumableController {
 		return consumableService.create(consumable);
 	}
 	
-	@PutMapping
-	public Consumable updateConsumable (@RequestBody Consumable consumable) {
+	@PutMapping("/{id}")
+	public Consumable updateConsumable (@PathVariable String id,@RequestBody Consumable consumable) {
+		consumable.setId(id);
 		return consumableService.update(consumable);
 	}
 	
