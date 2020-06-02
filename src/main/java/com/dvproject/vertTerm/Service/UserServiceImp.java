@@ -157,8 +157,14 @@ public class UserServiceImp implements UserService {
     }
     
     public void encodePassword (User user) {
-    	String encodedPassword = passwordEncoder.encode(user.getPassword());
-    	user.setPassword(encodedPassword);
+    	String password = user.getPassword();
+    	
+    	if (password == null || password.equals("")) {
+    		user.setPassword(this.getById(user.getId()).getPassword());
+    	} else {
+    		String encodedPassword = passwordEncoder.encode(password);
+    		user.setPassword(encodedPassword);
+    	}
     }
     
     public boolean hasPasswordChanged (User user) {
