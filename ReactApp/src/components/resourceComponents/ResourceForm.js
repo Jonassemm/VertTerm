@@ -11,7 +11,7 @@ const RessourceForm = ({ onCancel, edit, selected }) => {
     const [name, setName] = useState("")
     const [description, setDescription] = useState("")
     const [status, setStatus] = useState("active")
-    const [type, setType] = useState([]) // Array with only one Item (for ObjectPicker)
+    const [resourceTypes, setResourceTypes] = useState([]) // Array with only one Item (for ObjectPicker)
     const [childResources, setChildResources] = useState([])
     const [restrictions, setRestrictions] = useState([])
     const [availabilities, setAvailabilities] = useState([])
@@ -32,9 +32,9 @@ const RessourceForm = ({ onCancel, edit, selected }) => {
           } else {
             setIsConsumable(true) //item is consumable
             if(edit) {
-              setAmountInStock(selected.amountInStock)
-              setNumberOfUses(selected.numberOfUses)
-              setPricePerUnit(selected.pricePerUnit)
+              setAmountInStock((selected.amountInStock).toString())
+              setNumberOfUses((selected.numberOfUses).toString())
+              setPricePerUnit(((selected.pricePerUnit / 100).toFixed(2)).toString())
             }
           }
       }
@@ -42,7 +42,7 @@ const RessourceForm = ({ onCancel, edit, selected }) => {
           setName(selected.name)
           setDescription(selected.description)
           setStatus(selected.status)
-          setType([selected.resourceType])
+          setResourceTypes(selected.resourceTypes)
           setChildResources(selected.childResources)
           setAvailabilities(selected.availabilities)
       }
@@ -52,20 +52,20 @@ const RessourceForm = ({ onCancel, edit, selected }) => {
     const handleStatusChange = event => {setStatus(event.target.value); setEdited(true)}
     const handleDescriptionChange = event => {setDescription(event.target.value); setEdited(true)}
     //with ObjectPicker
-    const handleTypeChange = data => {setType(data); setEdited(true)}
+    const handleResourceTypeChange = data => {setResourceTypes(data); setEdited(true)} //setResourceTypes(resourceTypes => [...resourceTypes, data]);
     const handleChildResourcesChange = data => {setChildResources(data); setEdited(true)}
     const handleRestrictionChange = data => {setRestrictions(data); setEdited(true)}
 
-    const handleAmountInStockChange = event => {setAmountInStock(event.target.value); setEdited(true)}
-    const handleNumberOfUsesChange = event => {setNumberOfUses(event.target.value); setEdited(true)}
-    const handlePricePerUnitChange = event => {setPricePerUnit(event.target.value); setEdited(true)}
+    const handleAmountInStockChange = event => {console.log(parseInt(event.target.value)); setAmountInStock(event.target.value); setEdited(true)}
+    const handleNumberOfUsesChange = event => {console.log(parseInt(event.target.value)); setNumberOfUses(event.target.value); setEdited(true)}
+    const handlePricePerUnitChange = event => {console.log(parseInt((parseFloat(event.target.value)*100).toFixed(1))); setPricePerUnit(event.target.value); setEdited(true)}
 
 
     function validation() {
       var result = true;
       var errorMsg 
       //check resourceType
-      if(type.length == 0) { 
+      if(resourceTypes.length == 0) { 
         result = false
         errorMsg = "noResourceType"
       }
@@ -84,20 +84,22 @@ const RessourceForm = ({ onCancel, edit, selected }) => {
     const handleSubmit = async event => {
         event.preventDefault()
         if(validation()) {
-          var firstType = {} 
-          //save the first type of the array (ObjectPicker needs array, but DB needs object)
-          if(type.length > 0) { firstType = type[0] }
-          
+          const amountInStockAsInt = parseInt(amountInStock)
+          const numberOfUsesAsInt = parseInt(numberOfUses)
+          const pricePerUnitAsInt = parseInt((parseFloat(pricePerUnit)*100).toFixed(1))
           var data 
           if(isConsumable) {
-            data = {name, description, status, resourceType: firstType, childResources, availabilities, restrictions, amountInStock, numberOfUses, pricePerUnit}
+            data = {name, description, status, childResources, availabilities, restrictions, resourceTypes,
+                    amountInStock: amountInStockAsInt,
+                    numberOfUses: numberOfUsesAsInt,
+                    pricePerUnit: pricePerUnitAsInt}
             if(edit) {
               await editConsumable(selected.id, data)
             }else {
               await addConsumable(data)
             }
           }else {
-            data = {name, description, status, resourceType: firstType, childResources, availabilities, restrictions}
+            data = {name, description, status, childResources, availabilities, restrictions, resourceTypes}
             if (edit){
               await editResource(selected.id, data)
             }else{
@@ -111,20 +113,22 @@ const RessourceForm = ({ onCancel, edit, selected }) => {
 
     //DELETE RESOURCE
     const handleDeleteRessource = async () => {
-      const deleteStatus = "deleted" // fix delteStatus
-      var firstType = {} 
-      //save the first type of the array (ObjectPicker needs array, but DB needs object)
-      if(type.length > 0) { firstType = type[0] }
-
-      var data
       const answer = confirm("Möchten Sie diese Ressource wirklich löschen? ")
       if (answer) {
+        const deleteStatus = "deleted" // fix delteStatus
+        const amountInStockAsInt = parseInt(amountInStock)
+        const numberOfUsesAsInt = parseInt(numberOfUses)
+        const pricePerUnitAsInt = parseInt((parseFloat(pricePerUnit)*100).toFixed(1))
+        var data
         try {
           if(isConsumable) {
-            data = {name, description, status : deleteStatus, resourceType: firstType, childResources, availabilities, restrictions, amountInStock, numberOfUses, pricePerUnit}
+            data = {name, description, status,  childResources, availabilities, restrictions, resourceTypes,
+              amountInStock: amountInStockAsInt,
+              numberOfUses: numberOfUsesAsInt,
+              pricePerUnit: pricePerUnitAsInt}
             await editConsumable(selected.id, data)
           } else {
-            data = {name, description, status : deleteStatus, resourceType: firstType, childResources, availabilities, restrictions}
+            data = {name, description, status, childResources, availabilities, restrictions, resourceTypes}
             await editResource(selected.id, data)
           }
         } catch (error) {
@@ -153,7 +157,24 @@ const RessourceForm = ({ onCancel, edit, selected }) => {
       <React.Fragment>
         <Container>
           <Form id="resourceAdd" onSubmit={(e) => handleSubmit(e)}>
-          <h5 style={{fontWeight: "bold"}}>{edit ? "Ressource bearbeiten" : "Ressource hinzufügen"}</h5>
+          <Form.Row style={{ alignItems: "baseline" }}>
+            <Form.Group as={Col}>
+              <h5 style={{fontWeight: "bold"}}>{edit ? "Ressource bearbeiten" : "Ressource hinzufügen"}</h5>
+            </Form.Group>
+            <Form.Group as={Col} style={{textAlign: "right"}}>
+              {!edit && 
+                  <Form.Check
+                    id="switchIsCunsumable"
+                    type="switch"
+                    name="isConsumable"
+                    value={isConsumable || true}
+                    onChange={e => setIsConsumable(!isConsumable)}
+                    checked={isConsumable}
+                    label={isConsumable ? "Als verbrauchbare Ressource anlegen": "Als normale Ressource anlegen"}
+                  />
+              }
+            </Form.Group>
+          </Form.Row>
             <Tabs
               id="controlled-tab"
               activekey={tabKey}
@@ -177,10 +198,10 @@ const RessourceForm = ({ onCancel, edit, selected }) => {
                   <Form.Group as={Col} md="4">
                     <Form.Label>Ressourcentyp</Form.Label>
                     <ObjectPicker 
-                      setState={handleTypeChange}
+                      setState={handleResourceTypeChange}
                       DbObject="resourceType"
-                      initial={type}
-                      multiple={false} />
+                      initial={resourceTypes}
+                      multiple={true} />
                   </Form.Group>
                   
                   <Form.Group as={Col} md="2">
@@ -222,12 +243,19 @@ const RessourceForm = ({ onCancel, edit, selected }) => {
                 <Form.Row>
                   <Form.Group as={Col} md="6">
                     <Form.Label>Unterressourcen:</Form.Label>
-                      <ObjectPicker 
+                      {edit && <ObjectPicker 
                           setState={handleChildResourcesChange}
-                          DbObject="resource"
+                          DbObject="childResource"
                           initial={childResources} 
                           multiple={true}
-                          exclude={selected}/>
+                          selectedItem={selected}/>
+                      }
+                      {!edit && <ObjectPicker 
+                          setState={handleChildResourcesChange}
+                          DbObject="childResource"
+                          initial={childResources} 
+                          multiple={true}/>
+                      }
                   </Form.Group>
                   <Form.Group as={Col} md="6">
                     <Form.Label>Einschränkungen:</Form.Label>
@@ -238,18 +266,6 @@ const RessourceForm = ({ onCancel, edit, selected }) => {
                           multiple={true}/>
                   </Form.Group>
                 </Form.Row>
-                {!edit && <Form.Row style={{margin: "10px 0px 10px 0px"}}>
-                  <Form.Check
-                    id="switchIsCunsumable"
-                    type="switch"
-                    name="isConsumable"
-                    value={isConsumable || true}
-                    onChange={e => setIsConsumable(!isConsumable)}
-                    checked={isConsumable}
-                    label="Als verbrauchbare Ressource anlegen"
-                  />
-                </Form.Row>
-                }
                 {isConsumable &&
                   <Form.Row>
                     <Form.Group as={Col} md="2" >

@@ -9,7 +9,7 @@ import { getUsers, getEmployees, getCustomers, getProcedures, getRoles, getPosit
 // multiple: defining whether multiple values can be selected (as boolean)
 // exclude: the element which is removed from the selection
 
-function ObjectPicker({ DbObject, setState, initial, multiple, ident, exclude = {id: -1} }) {
+function ObjectPicker({ DbObject, setState, initial, multiple, ident, selectedItem = {id: -1} }) {
     const [options, setOptions] = useState([])
     const [labelKey, setLabelKey] = useState("")
     const [selected, setSelected] = useState([])
@@ -33,6 +33,7 @@ function ObjectPicker({ DbObject, setState, initial, multiple, ident, exclude = 
             case 'customer': getUserData(); break;
             case 'procedure': getProcedureData(); break;
             case 'resource': getResourceData(); break;
+            case 'childResource': getResourceData("childResource"); break;
             case 'resourceType': getResourceTypeData(); break;
             case 'position': getPositionData(); break;
             case 'customerRole': getRoleData("customer"); break;
@@ -75,7 +76,7 @@ function ObjectPicker({ DbObject, setState, initial, multiple, ident, exclude = 
         })
         //reduce the selection
         result.map((item) => {
-            if(item.id != exclude.id && item.systemStatus != "deleted"){
+            if(item.id != selectedItem.id && item.systemStatus != "deleted"){
                 finalResult.push(item)
             }
         })
@@ -84,13 +85,85 @@ function ObjectPicker({ DbObject, setState, initial, multiple, ident, exclude = 
         setInit(true)
     }
 
-    async function getResourceData() {  
+    function isChildInParent(x, parent, childs=[]) {
+        var result = []
+        var feedback
+        /* console.log("Eltern")
+        console.log(parent.name) */
+        if(parent.childResources.length > 0) { // geh Elternbaum nach unten und speichere alle Kinder
+            parent.childResources.map((singleChild, index)=> {
+                childs.push(singleChild)
+                result.push(isChildInParent(x, singleChild, childs))
+            })
+            feedback = false
+            result.map(singleResult => { //Wenn ein false vorhanden ist, dann Kind im Elternbaum vorhanden!!!
+                if(singleResult) {
+                    feedback = true;
+                }
+            })
+        } else { // alle Kinder des Elternbaums gespeichert (ganz unten im Baumpfad)
+            /* console.log("Kinder")
+            console.log()
+            console.log(childs) */
+            if(childs.length > 0) {
+                childs.map(child => { // überprüfe ob x in Elternbaum als Kind vorkommt
+                    if(x == child) {
+                        return true;
+                    }else {
+                        return false;
+                    }
+
+                })
+            } else { //ElternBaum hatte keine Kinder
+                return false
+            }
+        }
+        return feedback
+    }
+
+
+    //REKURSIVE function to prevent setting a parent-resource "A" as a child-resource of his child-resource "B" (-> ChildOf(A) = B, ChildOf(B) = A) 
+    function checkChildResources(resource, reference) {
+        var feedback
+        var results = []
+
+        if(resource.childResources.length > 0) { 
+            resource.childResources.map(singleChild => {
+                if(singleChild.id == reference.id) {
+                    results.push(false) //save result 
+                }else {
+                    results.push(checkChildResources(singleChild, reference)) //save result and start recursion
+                }
+            })
+            feedback = true
+            if(results.map(singleResult => {
+
+                if(!singleResult){
+                    feedback = false //overwrite feedback if resource has reference as a child resource
+                }
+            }))
+            return feedback
+
+        } else {
+            return true // resource cannot contain the reference as a child resource
+        }
+    }
+
+
+
+    async function getResourceData(call = "normal") {  
         let finalResult = []
         const res = await getResources()
         res.data.map((item) => {
             //reduce the selection
-            if(item.id != exclude.id && item.status != "deleted"){
-                finalResult.push(item)
+            if(item.id != selectedItem.id && item.status != "deleted"){
+                if(call == "childResource" && selectedItem.id != -1) { //reduce selection of all parent resources
+                    if(checkChildResources(item, selectedItem)){
+                        finalResult.push(item)
+                    }
+                } else { //normal selection
+                    finalResult.push(item)
+                }
             }
         }) 
         setOptions(finalResult)
