@@ -17,6 +17,9 @@ public class CustomerServiceImp implements CustomerService {
 
     @Autowired
     CustomerRepository repo;
+    
+    @Autowired
+    private UserService userService;
 
     @Override
     public List<Customer> getAll() {
@@ -49,6 +52,7 @@ public class CustomerServiceImp implements CustomerService {
     @Override
     public Customer create(Customer newInstance) {
         if (newInstance.getId() == null) {
+        	userService.encodePassword(newInstance);
             return repo.save(newInstance);
         }
         if (repo.findById(newInstance.getId()).isPresent()) {
@@ -60,6 +64,9 @@ public class CustomerServiceImp implements CustomerService {
     @Override
     public Customer update(Customer updatedInstance) {
         if (updatedInstance.getId() != null && repo.findById(updatedInstance.getId()).isPresent()) {
+        	if (userService.hasPasswordChanged(updatedInstance))
+        		userService.encodePassword(updatedInstance);
+        	
             return repo.save(updatedInstance);
         }
         return null;

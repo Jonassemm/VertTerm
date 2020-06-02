@@ -10,15 +10,15 @@ import java.util.TimeZone;
 import javax.validation.constraints.NotNull;
 
 import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.PersistenceConstructor;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 @Document("user")
-public class User implements Serializable
-{
-    private static final long serialVersionUID = -5252169753921361843L;
-    	
+public class User implements Serializable {
+	private static final long serialVersionUID = -5252169753921361843L;
+
 	@Id
 	private String id;
 	@Indexed(unique = true)
@@ -29,13 +29,27 @@ public class User implements Serializable
 	private Date creationDate;
 	@NotNull
 	private Status systemStatus;
-	
+
 	@DBRef
 	private List<Role> roles;
 	@DBRef
 	private Map<OptionalAttribute, String> optionalAttributes;
 	@DBRef
-    private List<Restriction> restrictions;
+	private List<Restriction> restrictions;
+
+	@PersistenceConstructor
+	public User(String id, String username, String password, String firstName, String lastName, Status systemStatus, List<Role> roles,
+			Map<OptionalAttribute, String> optionalAttributes, List<Restriction> restrictions) {
+		this.id = id;
+		this.username = username;
+		this.password = password;
+		this.firstName = firstName;
+		this.lastName = lastName;
+		this.roles = roles;
+		this.systemStatus = systemStatus;
+		this.optionalAttributes = optionalAttributes;
+		this.restrictions = restrictions;
+	}
 
 	public User(String id, String username, String password, String firstName, String lastName, List<Role> roles) {
 		this();
@@ -54,8 +68,7 @@ public class User implements Serializable
 
 	@Override
 	public String toString() {
-		return "User [id=" + id + ", firstName=" + firstName
-				+ ", lastName=" + lastName + "]";
+		return "User [id=" + id + ", firstName=" + firstName + ", lastName=" + lastName + "]";
 	}
 
 	public String getId() {
@@ -83,31 +96,31 @@ public class User implements Serializable
 	}
 
 	public String getUsername() {
-	    return username;
+		return username;
 	}
 
 	public void setUsername(String username) {
-	    this.username = username;
+		this.username = username;
 	}
 
 	public String getPassword() {
-	    return password;
+		return password;
 	}
 
 	public void setPassword(String password) {
-	    this.password = password;
+		this.password = password;
 	}
 
 	public List<Role> getRoles() {
-	    return roles;
+		return roles;
 	}
 
 	public void setRoles(List<Role> roles) {
-	    this.roles = roles;
+		this.roles = roles;
 	}
 
 	public Date getCreationDate() {
-	    return creationDate;
+		return creationDate;
 	}
 
 	private void setCreationDate() {
@@ -117,11 +130,11 @@ public class User implements Serializable
 	}
 
 	public Status getSystemStatus() {
-	    return systemStatus;
+		return systemStatus;
 	}
 
 	public void setSystemStatus(Status systemStatus) {
-	    this.systemStatus = systemStatus;
+		this.systemStatus = systemStatus;
 	}
 
 }

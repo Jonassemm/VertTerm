@@ -2,6 +2,7 @@ package com.dvproject.vertTerm.Service;
 
 import com.dvproject.vertTerm.Model.*;
 import com.dvproject.vertTerm.repository.ProcedureRepository;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.rest.webmvc.ResourceNotFoundException;
 import org.springframework.stereotype.Service;
@@ -73,7 +74,7 @@ public class ProcedureServiceImp implements ProcedureService {
 	}
 
 	@Override
-	public boolean hasCorrectProcedureRelation(List<Appointment> appointmentsToTest) {
+	public boolean hasCorrectProcedureRelations(List<Appointment> appointmentsToTest) {
 		// procedure.id -> appointment
 		Map<String, Appointment> appointments = new HashMap<>();
 		// procedure.id -> procedure
@@ -123,73 +124,59 @@ public class ProcedureServiceImp implements ProcedureService {
 
 		return true;
 	}
-
+	
 	@Override
-	public boolean isConformingToPositionConditions(Procedure procedure, List<Employee> employees) {
-		List<Employee> employeesToTest = new ArrayList<>(employees);
-
-		if (procedure.getNeededEmployeePositions() == null)
-			return false;
-
-		// test for all positions
-		for (Position position : procedure.getNeededEmployeePositions()) {
-			boolean employeeFound = false;
-
-			// test, whether any remaining employee has the specified position
-			for (Employee employee : employeesToTest) {
-				if (employee.getPosition() == null)
-					return false;
-
-				if (employee.getPosition().getId().equals(position.getId())) {
-					// remove the found employee from the list
-					employeesToTest.remove(employee);
-					employeeFound = true;
+	public boolean hasCorrectEmployees(Procedure procedure, List<Employee> employees) {
+		boolean testVal = false;
+		List<Position> procedurePositions = procedure.getNeededEmployeePositions();
+		
+		for (int i = 0; i < employees.size(); i++) {
+			Employee employee = employees.get(i);
+			Position procedurePosition = procedurePositions.get(i);
+			
+			List<Position> positions = employee.getPositions();
+			
+			for (Position position : positions) {
+				if (position.getId().equals(procedurePosition.getId())) {
+					testVal = true;
 					break;
 				}
 			}
-
-			// continue with the next position if an employee was found
-			if (employeeFound)
-				continue;
-
-			return false;
+			
+			if (!testVal)
+				return false;
+			
+			testVal = false;
 		}
-
-		return employeesToTest.isEmpty();
+		
+		return true;
 	}
 
 	@Override
-	public boolean isConformingToResourceTypeConditions(Procedure procedure, List<Resource> resources) {
-		List<Resource> resourcesToTest = new ArrayList<>(resources);
-
-		if (procedure.getNeededResourceTypes() != null)
-			return false;
-
-		// test for all resources
-		for (ResourceType resourceType : procedure.getNeededResourceTypes()) {
-			boolean resourceFound = false;
-
-			// test, whether any remaining resource has the specified resourcetype
-			for (Resource resource : resourcesToTest) {
-				if (resource.getResourceType() == null)
-					return false;
-
-				if (resource.getResourceType().getId().equals(resourceType.getId())) {
-					// remove the found resource from the list
-					resourcesToTest.remove(resource);
-					resourceFound = true;
+	public boolean hasCorrectResources(Procedure procedure, List<Resource> resources) {
+		boolean testVal = false;
+		List<ResourceType> procedureResourceTypes = procedure.getNeededResourceTypes();
+		
+		for (int i = 0; i < resources.size(); i++) {
+			Resource resource = resources.get(i);
+			ResourceType procedureResourceType = procedureResourceTypes.get(i);
+			
+			List<ResourceType> resourceTypes = resource.getResourceTypes();
+			
+			for (ResourceType presourceType : resourceTypes) {
+				if (presourceType.getId().equals(procedureResourceType.getId())) {
+					testVal = true;
 					break;
 				}
 			}
-
-			// continue with the next resourcetype if an resource was found
-			if (resourceFound)
-				break;
-
-			return false;
+			
+			if (!testVal)
+				return false;
+			
+			testVal = false;
 		}
-
-		return resourcesToTest.isEmpty();
+		
+		return true;
 	}
 
 	@Override

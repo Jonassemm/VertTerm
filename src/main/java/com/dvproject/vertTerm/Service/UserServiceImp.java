@@ -5,6 +5,7 @@ import com.dvproject.vertTerm.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.rest.webmvc.ResourceNotFoundException;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.security.Principal;
@@ -16,6 +17,9 @@ import java.util.Optional;
 public class UserServiceImp implements UserService {
     @Autowired
     private UserRepository repo;
+    
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
     //@PreAuthorize("hasAuthority('USERS_DATA_READ')")
     public List<User> getAll() {
@@ -50,6 +54,7 @@ public class UserServiceImp implements UserService {
 	@Override
 	public User create(User newInstance) {
 		if (newInstance.getId() == null) {
+			this.encodePassword(newInstance);
 			return repo.save(newInstance);
 		}
 		if (repo.findById(newInstance.getId()).isPresent()) {
@@ -61,6 +66,9 @@ public class UserServiceImp implements UserService {
 	@Override
 	public User update(User updatedInstance) {
 		if (updatedInstance.getId() != null && repo.findById(updatedInstance.getId()).isPresent()) {
+			if (this.hasPasswordChanged(updatedInstance))
+				this.encodePassword(updatedInstance);
+			
 			return repo.save(updatedInstance);
 		}
 		return null;
@@ -146,6 +154,16 @@ public class UserServiceImp implements UserService {
 	}
 
 	return user;
+    }
+    
+    public void encodePassword (User user) {
+    	String encodedPassword = passwordEncoder.encode(user.getPassword());
+    	user.setPassword(encodedPassword);
+    }
+    
+    public boolean hasPasswordChanged (User user) {
+    	User oldUser = this.getById(user.getId());
+    	return !oldUser.getPassword().equals(user.getPassword());
     }
 
 }

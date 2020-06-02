@@ -1,4 +1,3 @@
-  
 package com.dvproject.vertTerm.Model;
 
 import java.io.Serializable;
@@ -29,7 +28,7 @@ public class Resource implements Serializable{
 	@DBRef
 	private List<Restriction> restrictions;
 	@DBRef
-	private ResourceType resourceType;
+	private List<ResourceType> resourceTypes;
 
 	public String getId() {
 		return id;
@@ -88,12 +87,12 @@ public class Resource implements Serializable{
 		this.restrictions = restrictions;
 	}
 
-	public ResourceType getResourceType() {
-		return resourceType;
+	public List<ResourceType> getResourceTypes() {
+		return resourceTypes;
 	}
 
-	public void setResourceType(ResourceType resourceType) {
-		this.resourceType = resourceType;
+	public void setResourceTypes(List<ResourceType> resourceTypes) {
+		this.resourceTypes = resourceTypes;
 	}
 }
 

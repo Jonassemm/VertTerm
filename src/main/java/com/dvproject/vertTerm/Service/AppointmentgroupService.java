@@ -16,5 +16,5 @@ public interface AppointmentgroupService extends BasicService<Appointmentgroup> 
 			Optimizationstrategy optimizationstrategy);
 	
 	//PUT
-	Appointmentgroup bookAppointmentgroup (String id);
+	boolean bookAppointmentgroup (String userid, Appointmentgroup appointmentgroup);
 }
