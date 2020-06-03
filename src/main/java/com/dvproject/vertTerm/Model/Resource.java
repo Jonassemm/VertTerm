@@ -1,6 +1,9 @@
 package com.dvproject.vertTerm.Model;
 
 import java.io.Serializable;
+import java.time.Duration;
+import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import javax.validation.constraints.NotNull;
@@ -11,94 +14,125 @@ import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 @Document("resource")
-public class Resource implements Serializable{
-	private static final long serialVersionUID = 7443614129275947603L;
-	
-	@Id
-	private String id;
-	@Indexed(unique = true)
-	private String name;
-	private String description;
-	
-	private List<Availability> availabilities;
-	@NotNull
-	private Status status;
-	@DBRef
-	private List<Resource> childResources;
-	@DBRef
-	private List<Restriction> restrictions;
-	@DBRef
-	private ResourceType resourceType;
+public class Resource implements Serializable {
+    private static final long serialVersionUID = 7443614129275947603L;
 
-	public String getId() {
-		return id;
-	}
+    @Id
+    private String id;
+    @Indexed(unique = true)
+    private String name;
+    private String description;
 
-	public void setId(String id) {
-		this.id = id;
-	}
+    private List<Availability> availabilities;
+    @NotNull
+    private Status status;
+    @DBRef
+    private List<Resource> childResources;
+    @DBRef
+    private List<Restriction> restrictions;
+    @DBRef
+    private ResourceType resourceType;
 
-	public String getName() {
-		return name;
-	}
+    public String getId() {
+        return id;
+    }
 
-	public void setName(String name) {
-		this.name = name;
-	}
+    public void setId(String id) {
+        this.id = id;
+    }
 
-	public String getDescription() {
-		return description;
-	}
+    public String getName() {
+        return name;
+    }
 
-	public void setDescription(String description) {
-		this.description = description;
-	}
+    public void setName(String name) {
+        this.name = name;
+    }
 
-	public List<Availability> getAvailability() {
-		return availabilities;
-	}
+    public String getDescription() {
+        return description;
+    }
 
-	public void setAvailability(List<Availability> availabilities) {
-		this.availabilities = availabilities;
-	}
+    public void setDescription(String description) {
+        this.description = description;
+    }
 
-	public List<Availability> getAvailabilities() {
-		return availabilities;
-	}
+    public List<Availability> getAvailability() {
+        return availabilities;
+    }
 
-	public void setAvailabilities(List<Availability> availabilities) {
-		this.availabilities = availabilities;
-	}
+    public void setAvailability(List<Availability> availabilities) {
+        this.availabilities = availabilities;
+    }
 
-	public Status getStatus() {
-		return status;
-	}
+    public List<Availability> getAvailabilities() {
+        return availabilities;
+    }
 
-	public void setStatus(Status status) {
-		this.status = status;
-	}
+    public void setAvailabilities(List<Availability> availabilities) {
+        this.availabilities = availabilities;
+    }
 
-	public List<Resource> getChildResources() {
-		return childResources;
-	}
+    public Status getStatus() {
+        return status;
+    }
 
-	public void setChildResources(List<Resource> childResources) {
-		this.childResources = childResources;
-	}
+    public void setStatus(Status status) {
+        this.status = status;
+    }
 
-	public List<Restriction> getRestrictions() {
-		return restrictions;
-	}
+    public List<Resource> getChildResources() {
+        return childResources;
+    }
 
-	public void setRestrictions(List<Restriction> restrictions) {
-		this.restrictions = restrictions;
-	}
+    public void setChildResources(List<Resource> childResources) {
+        this.childResources = childResources;
+    }
 
-	public ResourceType getResourceType() {
-		return resourceType;
-	}
+    public List<Restriction> getRestrictions() {
+        return restrictions;
+    }
 
-	public void setResourceType(ResourceType resourceType) {
-		this.resourceType = resourceType;
-	}
+    public void setRestrictions(List<Restriction> restrictions) {
+        this.restrictions = restrictions;
+    }
+
+    public ResourceType getResourceType() {
+        return resourceType;
+    }
+
+    public void setResourceType(ResourceType resourceType) {
+        this.resourceType = resourceType;
+    }
+
+    private Date getAvailableDateByAvailablility(Date date, Duration duration){
+        Date earliestDate = null;
+        for(Availability availability : this.getAvailabilities()){
+            Date currentBestAvailability = availability.getEarliestAvailability(date, duration);
+            if(currentBestAvailability != null){
+                if(earliestDate == null){
+                    earliestDate = currentBestAvailability;
+                }
+                else if(earliestDate.before(earliestDate)){
+                    earliestDate = currentBestAvailability;
+                }
+            }
+        }
+        return earliestDate;
+    }
+
+    public boolean isAvailable(Date date, Duration duration){
+        return date.equals(this.getAvailableDate(date, duration));
+    }
+
+    public Date getAvailableDate(Date date, Duration duration) {
+        Date dateByAvailability = this.getAvailableDateByAvailablility(date, duration);
+        if (dateByAvailability == null) {
+            return null;
+        }
+        if (dateByAvailability.after(date)) {
+            return this.getAvailableDate(dateByAvailability, duration);
+        }
+        return date;
+    }
 }

@@ -28,7 +28,7 @@ import com.dvproject.vertTerm.repository.UserRepository;
 @Component
 public class SetupDataLoader implements ApplicationListener<ContextRefreshedEvent> {
 	private boolean alreadySetup = false;
-	private Map <String, Right> rights = new HashMap<String, Right>();
+	private Map <String, Right> rights = new HashMap<>();
 
 	@Autowired
 	private UserRepository userRepository;
@@ -84,7 +84,7 @@ public class SetupDataLoader implements ApplicationListener<ContextRefreshedEven
 	}
 
 	public List<Right> setUpAdminRights() {		
-		List<Right> adminRights = new ArrayList<Right>();
+		List<Right> adminRights = new ArrayList<>();
 		
 		rights.forEach((name, right) -> adminRights.add(right));
 
@@ -92,7 +92,7 @@ public class SetupDataLoader implements ApplicationListener<ContextRefreshedEven
 	}
 
 	public List<Right> setUpAnonymusUserRights() {
-		List<Right> anonymousRights = new ArrayList<Right>();
+		List<Right> anonymousRights = new ArrayList<>();
 		
 		anonymousRights.add(rights.get("OWN_USER_READ"));
 		
@@ -118,7 +118,7 @@ public class SetupDataLoader implements ApplicationListener<ContextRefreshedEven
 		User user = userRepository.findByUsername(username);
 
 		if (user == null) {
-			user = new User();
+			user = new Customer();
 			user.setUsername(username);
 			user.setPassword(passwordEncoder.encode(password));
 			user.setRoles(roles);
@@ -164,56 +164,56 @@ public class SetupDataLoader implements ApplicationListener<ContextRefreshedEven
 	public void setupRights () {
 		// user
 		setupRight("OWN_USER_READ", "Lesen des eigenen Benutzers erlaubt");
-		setupRight("OWN_USER_WRITE", "Ändern des eigenen Benutzers erlaubt");
+		setupRight("OWN_USER_WRITE", "ï¿½ndern des eigenen Benutzers erlaubt");
 		setupRight("USER_READ", "Lesen aller Benutzers erlaubt");
-		setupRight("USER_WRITE", "Ändern aller Benutzers erlaubt");
+		setupRight("USER_WRITE", "ï¿½ndern aller Benutzers erlaubt");
 		
 		// employee
 		setupRight("OWN_EMPLOYEE_READ", "Lesen des eigenen Angestellten erlaubt");
-		setupRight("OWN_EMPLOYEE_WRITE", "Ändern des eigenen Angestellten erlaubt");
+		setupRight("OWN_EMPLOYEE_WRITE", "ï¿½ndern des eigenen Angestellten erlaubt");
 		setupRight("EMPLOYEE_READ", "Lesen aller Angestellter erlaubt");
-		setupRight("EMPLOYEE_WRITE", "Ändern aller Angestellter erlaubt");
+		setupRight("EMPLOYEE_WRITE", "ï¿½ndern aller Angestellter erlaubt");
 		
 		// position
 		setupRight("POSITION_READ", "Lesen aller Positionen erlaubt");
-		setupRight("POSITION_WRITE", "Ändern aller Positionen erlaubt");
+		setupRight("POSITION_WRITE", "ï¿½ndern aller Positionen erlaubt");
 		
 		// customer
 		setupRight("OWN_CUSTOMER_READ", "Lesen des eigenen Kunden erlaubt");
-		setupRight("OWN_CUSTOMER_WRITE", "Ändern des eigenen Kunden erlaubt");
+		setupRight("OWN_CUSTOMER_WRITE", "ï¿½ndern des eigenen Kunden erlaubt");
 		setupRight("CUSTOMER_READ", "Lesen aller Kunden erlaubt");
-		setupRight("CUSTOMER_WRITE", "Ändern aller Kunden erlaubt");
+		setupRight("CUSTOMER_WRITE", "ï¿½ndern aller Kunden erlaubt");
 		
 		// role
 		setupRight("ROLE_READ", "Lesen aller Kunden erlaubt");
-		setupRight("ROLE_WRITE", "Ändern aller Kunden erlaubt");
+		setupRight("ROLE_WRITE", "ï¿½ndern aller Kunden erlaubt");
 		
 		// right
 		setupRight("RIGHT_READ", "Lesen aller Rechte erlaubt");
 		
 		// resource
 		setupRight("RESOURCE_READ", "Lesen aller Ressourcen erlaubt");
-		setupRight("RESOURCE_WRITE", "Ändern aller Ressourcen erlaubt");
+		setupRight("RESOURCE_WRITE", "ï¿½ndern aller Ressourcen erlaubt");
 		
 		// resourceType
 		setupRight("RESOURCE_TYPE_READ", "Lesen aller Ressourcentypen erlaubt");
-		setupRight("RESOURCE_TYPE_WRITE", "Ändern aller Ressourcentypen erlaubt");
+		setupRight("RESOURCE_TYPE_WRITE", "ï¿½ndern aller Ressourcentypen erlaubt");
 		
 		// procedure
 		setupRight("PROCEDURE_READ", "Lesen aller Prozeduren erlaubt");
-		setupRight("PROCEDURE_WRITE", "Ändern aller Prozeduren erlaubt");
-		setupRight("PROCEDURE_RELATION_WRITE", "Ändern aller Prozeduren erlaubt");
+		setupRight("PROCEDURE_WRITE", "ï¿½ndern aller Prozeduren erlaubt");
+		setupRight("PROCEDURE_RELATION_WRITE", "ï¿½ndern aller Prozeduren erlaubt");
 		
 		// availability
-		setupRight("OWN_AVAILABILITY_WRITE", "Ändern der eigenen Verfügbarkeiten erlaubt");
-		setupRight("AVAILABILITY_WRITE", "Ändern aller Verfügbarkeiten erlaubt");
+		setupRight("OWN_AVAILABILITY_WRITE", "ï¿½ndern der eigenen Verfï¿½gbarkeiten erlaubt");
+		setupRight("AVAILABILITY_WRITE", "ï¿½ndern aller Verfï¿½gbarkeiten erlaubt");
 		
 		// appointment
 		setupRight("OWN_APPOINTMENT_READ", "Lesen der eigenen Termine erlaubt");
-		setupRight("OWN_APPOINTMENT_WRITE", "Ändern der eigenen Termine erlaubt");
+		setupRight("OWN_APPOINTMENT_WRITE", "ï¿½ndern der eigenen Termine erlaubt");
 		setupRight("OWN_APPOINTMENT_BOOK", "Buchen der eigenen Termine erlaubt");
 		setupRight("APPOINTMENT_READ", "Lesen aller Termine erlaubt");
-		setupRight("APPOINTMENT_WRITE", "Ändern aller Termine erlaubt");
+		setupRight("APPOINTMENT_WRITE", "ï¿½ndern aller Termine erlaubt");
 		setupRight("APPOINTMENT_BOOK", "Buchen aller Termine erlaubt");
 	}
 }

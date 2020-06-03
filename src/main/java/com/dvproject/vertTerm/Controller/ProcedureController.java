@@ -25,6 +25,14 @@ public class ProcedureController {
 	public List<Procedure> getAllProceduresWithStatus (@RequestBody Status status) {
 		return procedureService.getAll(status);
 	}
+
+	@GetMapping("/{id}/Recommendation/EarlyEnd")
+	public List<Appointment> getAllProcedures (@PathVariable String id,
+											   @RequestParam(value = "status", required = false) Date date,
+											   @RequestParam(value = "status", required = false) Customer customer) {
+		Procedure procedure = procedureService.getById(id);
+		return procedure == null ? null : procedure.getAppointmentRecommendationByEarliestEnd(date, customer);
+	}
 	
 	@GetMapping("/{id}")
 	public List<Procedure> getProcedure (@PathVariable String id){
