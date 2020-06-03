@@ -16,4 +16,8 @@ public interface UserService extends BasicService<User> {
     List<User> getUsersWithUsernames (String [] usernames);
     List<Role> getUserRolesWithId (String id);
     List<Right> getUserRightsWithId (String id);
+    
+    void encodePassword (User user);
+    boolean hasPasswordChanged (User user);
+    User getAnonymousUser ();
 }

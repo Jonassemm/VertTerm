@@ -55,19 +55,15 @@ public class AppointmentgroupController {
 	}
 	
 	@PostMapping("")
-	public Appointmentgroup insertAppointmentgroup (@RequestBody Appointmentgroup appointmentgroup) {
-		return appointmentgroupService.create(appointmentgroup);
+	public boolean bookAppointments (
+			@RequestParam(defaultValue = "", required = false) String userid, 
+			@RequestBody Appointmentgroup appointmentgroup) {
+		return appointmentgroupService.bookAppointmentgroup(userid, appointmentgroup);
 	}
 	
 	@PutMapping("")
 	public Appointmentgroup updateAppointmentgroup (@RequestBody Appointmentgroup appointmentgroup) {
 		return appointmentgroupService.update(appointmentgroup);
-	}
-	
-	@GetMapping("/Book")
-	public Appointmentgroup bookAppointments (@RequestBody Appointmentgroup appointmentgroup) {
-		//TODO
-		return null;
 	}
 	
 	@DeleteMapping("/{id}")

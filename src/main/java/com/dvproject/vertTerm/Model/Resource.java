@@ -14,48 +14,48 @@ import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 @Document("resource")
-public class Resource implements Serializable {
-    private static final long serialVersionUID = 7443614129275947603L;
+public class Resource implements Serializable{
+	private static final long serialVersionUID = 7443614129275947603L;
+	
+	@Id
+	private String id;
+	@Indexed(unique = true)
+	private String name;
+	private String description;
+	
+	private List<Availability> availabilities;
+	@NotNull
+	private Status status;
+	@DBRef
+	private List<Resource> childResources;
+	@DBRef
+	private List<Restriction> restrictions;
+	@DBRef
+	private List<ResourceType> resourceTypes;
 
-    @Id
-    private String id;
-    @Indexed(unique = true)
-    private String name;
-    private String description;
+	public String getId() {
+		return id;
+	}
 
-    private List<Availability> availabilities;
-    @NotNull
-    private Status status;
-    @DBRef
-    private List<Resource> childResources;
-    @DBRef
-    private List<Restriction> restrictions;
-    @DBRef
-    private ResourceType resourceType;
+	public void setId(String id) {
+		this.id = id;
+	}
 
-    public String getId() {
-        return id;
-    }
+	public String getName() {
+		return name;
+	}
 
-    public void setId(String id) {
-        this.id = id;
-    }
+	public void setName(String name) {
+		this.name = name;
+	}
 
-    public String getName() {
-        return name;
-    }
+	public String getDescription() {
+		return description;
+	}
 
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
-    }
+	public void setDescription(String description) {
+		this.description = description;
+	}
 
     public List<Availability> getAvailability() {
         return availabilities;
@@ -65,41 +65,41 @@ public class Resource implements Serializable {
         this.availabilities = availabilities;
     }
 
-    public List<Availability> getAvailabilities() {
-        return availabilities;
-    }
+	public List<Availability> getAvailabilities() {
+		return availabilities;
+	}
 
-    public void setAvailabilities(List<Availability> availabilities) {
-        this.availabilities = availabilities;
-    }
+	public void setAvailabilities(List<Availability> availabilities) {
+		this.availabilities = availabilities;
+	}
 
-    public Status getStatus() {
-        return status;
-    }
+	public Status getStatus() {
+		return status;
+	}
 
-    public void setStatus(Status status) {
-        this.status = status;
-    }
+	public void setStatus(Status status) {
+		this.status = status;
+	}
 
-    public List<Resource> getChildResources() {
-        return childResources;
-    }
+	public List<Resource> getChildResources() {
+		return childResources;
+	}
 
-    public void setChildResources(List<Resource> childResources) {
-        this.childResources = childResources;
-    }
+	public void setChildResources(List<Resource> childResources) {
+		this.childResources = childResources;
+	}
 
-    public List<Restriction> getRestrictions() {
-        return restrictions;
-    }
+	public List<Restriction> getRestrictions() {
+		return restrictions;
+	}
 
-    public void setRestrictions(List<Restriction> restrictions) {
-        this.restrictions = restrictions;
-    }
+	public void setRestrictions(List<Restriction> restrictions) {
+		this.restrictions = restrictions;
+	}
 
-    public ResourceType getResourceType() {
-        return resourceType;
-    }
+	public List<ResourceType> getResourceTypes() {
+		return resourceTypes;
+	}
 
     public void setResourceType(ResourceType resourceType) {
         this.resourceType = resourceType;
@@ -135,4 +135,7 @@ public class Resource implements Serializable {
         }
         return date;
     }
+	public void setResourceTypes(List<ResourceType> resourceTypes) {
+		this.resourceTypes = resourceTypes;
+	}
 }

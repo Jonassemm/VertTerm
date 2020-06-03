@@ -8,4 +8,7 @@ import com.dvproject.vertTerm.Model.Restriction;
 
 public interface RestrictionRepository extends MongoRepository<Restriction, String>{
 	Optional<Restriction> findById (String id);
+	Restriction findByName(String name);
+	    
+	  
 }

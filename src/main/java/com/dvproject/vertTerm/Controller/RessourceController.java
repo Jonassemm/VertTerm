@@ -1,5 +1,6 @@
 package com.dvproject.vertTerm.Controller;
 
+import java.util.Date;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,9 +16,12 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.dvproject.vertTerm.Model.Availability;
 import com.dvproject.vertTerm.Model.Resource;
+import com.dvproject.vertTerm.Model.ResourceType;
 import com.dvproject.vertTerm.Model.Restriction;
 import com.dvproject.vertTerm.Model.Role;
+import com.dvproject.vertTerm.Model.Status;
 import com.dvproject.vertTerm.Model.Resource;
 import com.dvproject.vertTerm.Service.ResourceService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -46,7 +50,19 @@ public class RessourceController {
 	 public  @ResponseBody  List<Resource> getResources(@RequestParam String[] ids) {
 	     return resservice.getResources(ids);
 	 }
+	 @GetMapping("/status")
+	 public  @ResponseBody  List<Resource> getResources(@RequestBody Status status) {
+	     return resservice.getResources(status);
+	 }
+	 @GetMapping("/restyps/{id}")
+	 public  @ResponseBody  List<ResourceType> getResourceTypes(@PathVariable String id) {
+	     return resservice.getResourceTypes(id);
+	 }
 	 
+	 @GetMapping("/restyp/{id}")
+	 public  @ResponseBody  List<Resource> getResources(@PathVariable String RTid) {
+	     return resservice.getResources(RTid);
+	 }
 	 @PostMapping()
 	 public Resource createResource(@RequestBody Resource res) {
 	     return resservice.create(res);
@@ -57,24 +73,33 @@ public class RessourceController {
 	     res.setId(id);
 		 return resservice.update(res);
 	 }
-	   
-//	 @PutMapping("/ava/{id}")
-//	  public Resource  updateResourceAvailability(@PathVariable String id,@RequestBody Resource res) {
-//		 res.setId(id);
-//		 return resservice.updateResourceAvailability(res);
-//	 }
 	
-	 @GetMapping("/dep/{id}")
-	 public @ResponseBody List<Restriction> getResourceDependencies(@PathVariable String id){
-	    return resservice.getResourceDependencies(id);
+	@GetMapping("/isAvailable/{id}")
+	public boolean isAvailable (@PathVariable String id,
+			@RequestParam Date startdate,
+			@RequestParam Date enddate) {
+		return resservice.isResourceAvailableBetween(id, startdate, enddate);
+	}
+	@GetMapping("/Availability/{id}")
+	public List<Availability> getProcedureAvailability (@PathVariable String id) {
+		return resservice.getResourcevailabilities(id);
+	}
+	
+	 @GetMapping("/Restriction/{id}")
+	 public @ResponseBody List<Restriction> getResourceRestrictions(@PathVariable String id){
+	    return resservice.getResourceRestrictions(id);
 	 }
-	 @PutMapping("/dep/{id}")
-	 public  List<Restriction> updateResourceDependencies(@PathVariable String id,@RequestParam String[] Rids) {
 	 
-	     return resservice.updateResourceDependencies(id,Rids);
+	 @PutMapping("/Restriction/{id}")
+	 public  List<Restriction> updateResourceRestrictions(@PathVariable String id,@RequestParam String[] Rids) {
+	 
+	     return resservice.updateResourceRestrictions(id,Rids);
+	 }
+	 @PutMapping("/Availability/{id}")
+	 public  List<Availability> updateResourceRestrictions(@PathVariable String id,@RequestBody List<Availability> availabilities) {
+	     return resservice.updateResourceAvailabilities(id, availabilities);
 	 }
 	 	 
-
 	 @DeleteMapping("/{id}")
 	 public boolean deleteResource(@PathVariable String id) {
 		return resservice.delete(id);

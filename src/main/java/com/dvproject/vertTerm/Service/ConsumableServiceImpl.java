@@ -8,6 +8,7 @@ import org.springframework.data.rest.webmvc.ResourceNotFoundException;
 import org.springframework.stereotype.Service;
 
 import com.dvproject.vertTerm.Model.Consumable;
+import com.dvproject.vertTerm.Model.OptionalAttributes;
 import com.dvproject.vertTerm.Model.Status;
 import com.dvproject.vertTerm.repository.ConsumableRepository;
 
@@ -38,7 +39,12 @@ public class ConsumableServiceImpl implements ConsumableService {
 
 	@Override
 	public Consumable update(Consumable updatedInstance) {
-		return consumableRepository.save(updatedInstance);
+		Optional<Consumable> Consumable = consumableRepository.findById(updatedInstance.getId());
+		if (Consumable.isPresent()) {
+			return consumableRepository.save(updatedInstance);
+		}
+		else	
+			throw new ResourceNotFoundException("Consumable with the given id :" + updatedInstance.getId() + " not found");	
 	}
 
 	@Override

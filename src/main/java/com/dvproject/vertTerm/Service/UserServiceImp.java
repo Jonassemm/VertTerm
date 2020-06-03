@@ -5,19 +5,24 @@ import com.dvproject.vertTerm.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.rest.webmvc.ResourceNotFoundException;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.security.Principal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 @Service
 public class UserServiceImp implements UserService {
     @Autowired
     private UserRepository repo;
+    
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
-    @PreAuthorize("hasAuthority('USERS_DATA_READ')")
+    //@PreAuthorize("hasAuthority('USERS_DATA_READ')")
     public List<User> getAll() {
 	List<User> users = repo.findAll();
 	return obfuscatePassword(users);
@@ -40,7 +45,7 @@ public class UserServiceImp implements UserService {
 		return (users);
 	}
 
-	@PreAuthorize("hasAuthority('USERS_DATA_READ')")
+	//@PreAuthorize("hasAuthority('USERS_DATA_READ')")
 	@Override
 	public User getById(String id) {
 		Optional<User> user = repo.findById(id);
@@ -50,6 +55,7 @@ public class UserServiceImp implements UserService {
 	@Override
 	public User create(User newInstance) {
 		if (newInstance.getId() == null) {
+			this.encodePassword(newInstance);
 			return repo.save(newInstance);
 		}
 		if (repo.findById(newInstance.getId()).isPresent()) {
@@ -61,6 +67,9 @@ public class UserServiceImp implements UserService {
 	@Override
 	public User update(User updatedInstance) {
 		if (updatedInstance.getId() != null && repo.findById(updatedInstance.getId()).isPresent()) {
+			if (this.hasPasswordChanged(updatedInstance))
+				this.encodePassword(updatedInstance);
+			
 			return repo.save(updatedInstance);
 		}
 		return null;
@@ -147,5 +156,36 @@ public class UserServiceImp implements UserService {
 
 	return user;
     }
+    
+    public void encodePassword (User user) {
+    	String password = user.getPassword();
+    	
+    	if (password == null || password.equals("")) {
+    		user.setPassword(this.getById(user.getId()).getPassword());
+    	} else {
+    		String encodedPassword = passwordEncoder.encode(password);
+    		user.setPassword(encodedPassword);
+    	}
+    }
+    
+    public boolean hasPasswordChanged (User user) {
+    	User oldUser = this.getById(user.getId());
+    	return !oldUser.getPassword().equals(user.getPassword());
+    }
+
+	@Override
+	public User getAnonymousUser() {
+		String username = "anonymousUser";
+		User user = this.getUsersWithUsernames(new String [] {username}).get(0);
+		
+		//delete the id, so mongodb creates a new one 
+		user.setId(null);
+		//create unique username
+		user.setUsername(username + repo.count());
+		user.setPassword("{noop}" + UUID.randomUUID().toString());
+		user.setSystemStatus(Status.ACTIVE);
+		
+		return user;
+	}
 
 }

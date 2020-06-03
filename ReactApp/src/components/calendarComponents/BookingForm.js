@@ -6,6 +6,7 @@ import { observer } from "mobx-react"
 import "react-big-calendar/lib/css/react-big-calendar.css"
 import ObjectPicker from "../ObjectPicker"
 import "./BookingForm.css"
+import DatePicker from "react-datepicker"
 
 const localizer = momentLocalizer(moment)
 
@@ -13,14 +14,49 @@ function BookingForm() {
     const [calendarEvents, setCalendarEvents] = useState([])
     const [selectedProcedures, setSelectedProcedures] = useState([])
     const [selectedCustomer, setSelectedCustomer] = useState({})
-    const [selectedResource, setSelectedResource] = useState([]) //?
-    const [selectedEmployee, setSelectedEmployee] = useState([])
+    const [startDate, setStartDate] = useState(null)
+    const [endDate, setEndDate] = useState(null)
     const [custom, setCustom] = useState(false)
     const [apts, setApts] = useState([])
+    const [timeDif, setTimeDif] = useState(0)
 
     function handleSubmit(event) {
         event.preventDefault()
-        console.log(apts)
+        const finalData = apts.map(item => {
+            return {
+                ...item,
+                bookedCustomer: selectedCustomer,
+                plannedStartTime: startDate,
+                plannendEndTime: endDate
+            }
+        })
+        console.log()
+        console.log(finalData)
+    }
+
+    function validateTime(date) {         
+        let currentDate = new Date()
+        let mod = currentDate.getMinutes() % 10
+        currentDate.setMinutes(currentDate.getMinutes() - mod)
+        if(mod >=5 ) currentDate.setMinutes(currentDate.getMinutes() + 10)
+
+        if(date.ident == "start"){
+            if(date.date.getTime() - currentDate.getTime() < 0){
+                setStartDate(currentDate)
+            }else {
+                setStartDate(date.date)
+            }
+        }else {
+            const dif = Math.round((date.date.getTime() - startDate.getTime()) / 1000 / 60)
+            console.log(dif)
+            if(dif < 0 ){
+                setEndDate(currentDate)
+            }else {
+                setEndDate(date.date)
+            }
+        }
+      
+        
     }
 
     function handleChange(data) {
@@ -28,25 +64,24 @@ function BookingForm() {
         const temp = apts.map(item => {
             if (item.procedure.name == data.ident.ident) {
                 if (data.DbObject == "employee") {
-                    const temp = item.bookedEmployees.map((innerItem,index) => {
-                        if(index == data.ident.ix){
+                    const temp = item.bookedEmployees.map((innerItem, index) => {
+                        if (index == data.ident.ix) {
                             return data.data[0]
                         } else {
                             return {
                                 ...innerItem
                             }
                         }
-                       
                     })
                     return {
                         ...item,
                         bookedEmployees: temp
                     }
                 } else {
-                    const temp = item.bookedResources.map((innerItem,index) => {
-                        if(index == data.ident.ix){
+                    const temp = item.bookedResources.map((innerItem, index) => {
+                        if (index == data.ident.ix) {
                             return data.data[0]
-                        }else {
+                        } else {
                             return {
                                 ...innerItem
                             }
@@ -86,7 +121,7 @@ function BookingForm() {
             }
         } else {
             // add one
-            const tempEmployees = data[data.length -1].neededEmployeePositions.map(item => {
+            const tempEmployees = data[data.length - 1].neededEmployeePositions.map(item => {
                 return {}
             })
             temp.push({
@@ -148,40 +183,83 @@ function BookingForm() {
                             <React.Fragment>
                                 <hr />
                                 <div className="parent">
-                                    <div className="nameCol">
+                                    <div className="namebox">
                                         <h4>{item.name}</h4>
                                     </div>
-                                    <div className="nameCol wrap">
+                                    <div className="box wrap">
                                         {item.neededEmployeePositions && item.neededEmployeePositions.map((innerItem, index) => {
                                             return (
-                                                <div className="box">
-                                                    <div className="innerboxleft">
-                                                        <p>{innerItem.name}</p>
+                                                <div className="middleBox">
+                                                    <div className="middleBoxLeft">
+                                                        <span>{innerItem.name}</span>
                                                     </div>
-                                                    <div className="innerbox">
+                                                    <div className="middleBoxRight">
                                                         <ObjectPicker
-                                                            ident={{"ident":item.name, "ix": index}}
+                                                            className="input"
+                                                            ident={{ "ident": item.name, "ix": index }}
                                                             DbObject="employee"
                                                             setState={handleChange} />
                                                     </div>
                                                 </div>
                                             )
                                         })}
-                                        {item.neededResourcTypes && item.neededResourcTypes.map(innerItem => {
+                                        {item.neededResourceTypes && item.neededResourceTypes.map((innerItem, index) => {
                                             return (
-                                                <div className="box">
-                                                    <div className="innerboxleft">
-                                                        <p>{innerItem.name}</p>
+                                                <div className="middleBox">
+                                                    <div className="middleBoxLeft">
+                                                        <span>{innerItem.name}</span>
                                                     </div>
-                                                    <div className="innerbox">
+                                                    <div className="middleBoxRight">
                                                         <ObjectPicker
-                                                            ident={{"ident":item.name, "ix": index}}
+                                                            className="input"
+                                                            ident={{ "ident": item.name, "ix": index }}
                                                             DbObject="resource"
                                                             setState={handleChange} />
                                                     </div>
                                                 </div>
                                             )
                                         })}
+                                    </div>
+                                    <div className="box rightBox">
+                                        <div className="rightBoxTop">
+                                            <div className="rightBoxLeft">
+                                                <span>Start</span>
+                                            </div>
+                                            <div className="rightBoxRight">
+                                                <DatePicker
+                                                    required
+                                                    popperPlacement="left"
+                                                    className="input"
+                                                    selected={startDate || ""}
+                                                    onChange={date => validateTime({date: date, ident: "start"})}
+                                                    showTimeSelect
+                                                    timeFormat="HH:mm"
+                                                    timeIntervals={5}
+                                                    timeCaption="Uhrzeit"
+                                                    dateFormat="dd.M.yyyy / HH:mm"
+                                                />
+                                            </div>
+                                        </div>
+                                        <div className="rightBoxBottom">
+                                            <div className="rightBoxLeft">
+                                                <span>Ende</span>
+                                            </div>
+                                            <div className="rightBoxRight">
+                                                <DatePicker
+                                                    required
+                                                    className="input"
+                                                    popperPlacement="left"
+                                                    selected={endDate || ""}
+                                                    onChange={date => { 
+                                                        validateTime({date: date, ident: "end"})}}
+                                                    showTimeSelect
+                                                    timeFormat="HH:mm"
+                                                    timeIntervals={5}
+                                                    timeCaption="Uhrzeit"
+                                                    dateFormat="dd.M.yyyy / HH:mm"
+                                                />
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             </React.Fragment>

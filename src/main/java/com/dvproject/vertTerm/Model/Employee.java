@@ -15,7 +15,7 @@ public class Employee extends User implements Serializable
 
 	private List<Availability> availabilities;
 	@DBRef
-	private Position position;
+	private List<Position> positions;
 
 	public List<Availability> getAvailabilities() {
 		return availabilities;
@@ -25,12 +25,12 @@ public class Employee extends User implements Serializable
 		this.availabilities = availabilities;
 	}
 
-	public Position getPosition() {
-		return position;
+	public List<Position> getPositions() {
+		return positions;
 	}
 
-	public void setPosition(Position position) {
-		this.position = position;
+	public void setPositions(List<Position> positions) {
+		this.positions = positions;
 	}
 
 	private Date getAvailableDateByAvailablility(Date date, Duration duration){

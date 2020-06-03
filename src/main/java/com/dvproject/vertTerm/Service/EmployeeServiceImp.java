@@ -20,6 +20,9 @@ public class EmployeeServiceImp implements EmployeeService {
 
     @Autowired
     EmployeeRepository repo;
+    
+    @Autowired
+    private UserService userService;
 
     @Override
     public List<Employee> getAll() {
@@ -62,6 +65,7 @@ public class EmployeeServiceImp implements EmployeeService {
     @Override
     public Employee create(Employee newInstance) {
         if (newInstance.getId() == null) {
+        	userService.encodePassword(newInstance);
             return repo.save(newInstance);
         }
         if (repo.findById(newInstance.getId()).isPresent()) {
@@ -73,6 +77,9 @@ public class EmployeeServiceImp implements EmployeeService {
     @Override
     public Employee update(Employee updatedInstance) {
         if (updatedInstance.getId() != null && repo.findById(updatedInstance.getId()).isPresent()) {
+        	if (userService.hasPasswordChanged(updatedInstance))
+        		userService.encodePassword(updatedInstance);
+        	
             return repo.save(updatedInstance);
         }
         return null;
