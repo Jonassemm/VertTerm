@@ -7,9 +7,12 @@ import {
   addEmployee,
   updateEmployee,
   addCustomer,
-  updateCustomer,
-  getAllRoles
+  updateCustomer
 } from "./UserRequests";
+
+import {
+  getAllOptionalAttributes
+} from "../optionalAttributesComponents/optionalAttributesRequests"
 
 
 function UserForm({onCancel, edit, selected, type}) {
@@ -35,7 +38,7 @@ function UserForm({onCancel, edit, selected, type}) {
   //Availability
   const [availabilities, setAvailabilities] = useState([])
   //Position
-  const [position, setPosition] = useState([])
+  const [positions, setPositions] = useState([])
   //Role
   const [roles, setRoles] = useState([])
   //Restrictions
@@ -51,7 +54,7 @@ function UserForm({onCancel, edit, selected, type}) {
   const handleUsernameChange = event => {setUsername(event.target.value); setEdited(true)}
   const handlePasswordChange = event => {setPassword(event.target.value); setEdited(true)}
   const handleSystemStatusChange = event => {setSystemStatus(event.target.value); setEdited(true)}
-  const handlePositionChange = data => {setPosition(data); setEdited(true)}
+  const handlePositionsChange = data => {setPositions(data); setEdited(true)}
   const handleRoleChange = data => {setRoles(data); setEdited(true)}
   const handleRestrictionChange = data => {setRestrictions(data); setEdited(true)}
   const handleExtUserInfoDataChange = (e, name) => {
@@ -70,13 +73,16 @@ function UserForm({onCancel, edit, selected, type}) {
         setUsername(selected.username)
         setPassword(selected.password)
         setSystemStatus(selected.systemStatus)
-        if(selected.roles != null) {
+        if(selected.roles != null && selected.roles.length > 0) {
           setRoles(selected.roles)
         }
-        if(selected.position != null) {
-          setPosition([selected.position]) //CHANGE until position is an array
+        if(selected.restrictions != null && selected.restrictions.length > 0) {
+          setRestrictions(selected.restrictions)
         }
-        if(selected.availabilities != null || selected.availabilities != undefined) {
+        if(isEmployee && selected.positions != null && selected.positions.length > 0) {
+          setPositions(selected.positions)
+        }
+        if(selected.availabilities != null && selected.availabilities.length > 0 ) {
           setAvailabilities(selected.availabilities);
         }
     } 
@@ -88,7 +94,7 @@ function UserForm({onCancel, edit, selected, type}) {
   const loadExtUserInformation = async () => {
     var data = [];
     try{ 
-      const response = await getAllExtUserInformation();
+      const response = await getAllOptionalAttributes();
       data = response.data;
     }catch (error) {
       data = [{id:"1", name:"E-Mail", isRequired: true},{id:"2", name:"Telefon-Nr.", isRequired: false}]
@@ -113,7 +119,7 @@ function UserForm({onCancel, edit, selected, type}) {
     var errorMsg 
     //check position
     if(isEmployee){
-      if(position.length == 0) { 
+      if(positions.length == 0) { 
         result = false
         errorMsg = "noPosition"
       }
@@ -142,27 +148,17 @@ function UserForm({onCancel, edit, selected, type}) {
   const handleSubmit = async event => {
     event.preventDefault();//reload the page after clicking "Enter"
     if(validation()) {
-      //ONLY FOR TESTING - will be removed at the time we add position as an array
-      //get the first position of our position-array
-      var firstPosition
-      position.map((pos, index)=> {
-        if(index == 0) {
-          firstPosition = pos
-        }
-      })
-      //ONLY FOR TESTING - END
-
       if(edit) {
         var id = selected.id
         var updateData = {}
         try {
           if(isEmployee){
               console.log("AXIOS: updateEmployee()")
-              updateData = {id, firstName, lastName, username, password, systemStatus, roles, position: firstPosition, availabilities}
+              updateData = {id, firstName, lastName, username, password, systemStatus, roles, positions, availabilities, restrictions}
               await updateEmployee(id, updateData);
           }else {
               console.log("AXIOS: updateCustomer()")
-              updateData = {id, firstName, lastName, username, password, systemStatus, roles}
+              updateData = {id, firstName, lastName, username, password, systemStatus, roles, restrictions}
               await updateCustomer(id, updateData);
           }
         } catch (error) {
@@ -174,11 +170,11 @@ function UserForm({onCancel, edit, selected, type}) {
           try {
           if(isEmployee){
               console.log("AXIOS: addEmployee()")
-              newData = {firstName, lastName, username, password, systemStatus, roles, position: firstPosition, availabilities}
+              newData = {firstName, lastName, username, password, systemStatus, roles, positions, availabilities, restrictions}
               await addEmployee(newData);
           }else {
               console.log("AXIOS: addCustomer()")
-              newData = {firstName, lastName, username, password, systemStatus, roles}
+              newData = {firstName, lastName, username, password, systemStatus, roles, restrictions}
               await addCustomer(newData);
           }
           } catch (error) {
@@ -187,22 +183,11 @@ function UserForm({onCancel, edit, selected, type}) {
           } 
       } 
       onCancel()
-    } else {
-
-    }
+    } 
   };
 
   //DELETE USER
   const handleDeleteUser = async () => {
-    //ONLY FOR TESTING - will be removed at the time we add position as an array
-    //get the first position of our position-array
-    var firstPosition
-    position.map((pos, index)=> {
-      if(index == 0) {
-        firstPosition = pos
-      }
-    })
-    //ONLY FOR TESTING - END
     const deleteStatus = "deleted" // fix delteStatus
     const id = selected.id
     var data = {}
@@ -210,10 +195,10 @@ function UserForm({onCancel, edit, selected, type}) {
       if (answer) {
         try {
           if(isEmployee) { //delete employee
-              data = {id, firstName, lastName, username, password, systemStatus: deleteStatus, roles, position: firstPosition, availabilities}
+              data = {id, firstName: "", lastName: "", username: "", password: "", systemStatus: deleteStatus, roles: [], positions: [], availabilities: [], restrictions: []}
               await updateEmployee(id, data)
           } else { //delete customer
-              data = {id, firstName, lastName, username, password, systemStatus: deleteStatus , roles}
+              data = {id, firstName: "", lastName: "", username: "", password: "", systemStatus: deleteStatus, roles: [], restrictions: []}
               await updateCustomer(id, data);
           }
         } catch (error) {
@@ -348,14 +333,14 @@ function UserForm({onCancel, edit, selected, type}) {
                     <Form.Label>Benutzername:</Form.Label>
                     <InputGroup>
                         <Form.Control
-                        required
-                        //pattern="[A-Za-z0-9]{1,}"
-                        //title="Benutzername darf Klein- und Groß-Buchstaben sowie Zahlen enthalten"
-                        name="username"
-                        type="text"
-                        placeholder="Benutzername"
-                        value={username || ""}
-                        onChange={handleUsernameChange}
+                          required
+                          //pattern="[A-Za-z0-9]{1,}"
+                          //title="Benutzername darf Klein- und Groß-Buchstaben sowie Zahlen enthalten"
+                          name="username"
+                          type="text"
+                          placeholder="Benutzername"
+                          value={username || ""}
+                          onChange={handleUsernameChange}
                         />
                         <Form.Control.Feedback type="invalid">
                         Bitte geben Sie ein Benutzernamen ein.
@@ -366,14 +351,14 @@ function UserForm({onCancel, edit, selected, type}) {
                     <Form.Label>Passwort:</Form.Label>
                     <InputGroup>
                         <Form.Control
-                        required
-                        //pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}" //min 8 characters with one upper and one lower case letter
-                        //title="Das Passwort muss mindestens 8 Zeichen lang sein und einen Groß- sowie Klein-Buchstaben enthalten"
-                        name="password"
-                        type="password"
-                        placeholder="Passwort"
-                        value={password || ""}
-                        onChange={handlePasswordChange}
+                          required
+                          //pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}" //min 8 characters with one upper and one lower case letter
+                          //title="Das Passwort muss mindestens 8 Zeichen lang sein und einen Groß- sowie Klein-Buchstaben enthalten"
+                          name="password"
+                          type="password"
+                          placeholder="Passwort"
+                          value={password || ""}
+                          onChange={handlePasswordChange}
                         />
                         <Form.Control.Feedback type="invalid">
                         Bitte gebben Sie ein Passwort ein.
@@ -386,7 +371,7 @@ function UserForm({onCancel, edit, selected, type}) {
                       <Table style={{border: "2px solid #AAAAAA", marginTop: "10px", width: "100%", borderCollapse: "collapse", tableLayout: "fixed"}} striped variant="ligth">
                           <thead>
                               <tr>
-                                  <th colSpan="2">Erweiterte Benutzerinformationen</th>
+                                  <th colSpan="2">Optionale Attribute</th>
                               </tr>
                           </thead>
                           <tbody>
@@ -434,9 +419,9 @@ function UserForm({onCancel, edit, selected, type}) {
                     <Form.Label>Position:</Form.Label>
                     <Container style={{display: "flex", flexWrap: "nowrap"}}>       
                       <ObjectPicker 
-                        setState={handlePositionChange}
+                        setState={handlePositionsChange}
                         DbObject="position"
-                        initial ={position} 
+                        initial ={positions} 
                         multiple ={true}
                       />
                     </Container>

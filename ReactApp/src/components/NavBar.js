@@ -48,7 +48,7 @@ function NavBar({ userStore }) {
                                 <NavDropdown.Item as={Link} to="/employee">Mitarbeiter</NavDropdown.Item>
                                 <NavDropdown.Item as={Link} to="/customer">Kunden</NavDropdown.Item>
                                 <NavDropdown.Divider />
-                                <NavDropdown.Item as={Link} to="/extUserInfo">Erweiterte Benutzerinformationen</NavDropdown.Item>
+                                <NavDropdown.Item as={Link} to="/optionalAttributes">Optionale Attribute</NavDropdown.Item>
                                 <NavDropdown.Item as={Link} to="/position">Positionen</NavDropdown.Item>
                                 <NavDropdown.Item as={Link} to="/role">Rollen</NavDropdown.Item>
                             </NavDropdown>}
@@ -57,9 +57,10 @@ function NavBar({ userStore }) {
                                 <NavDropdown.Divider />
                                 <NavDropdown.Item as={Link} to="/resourceType">Ressourcen-Typen</NavDropdown.Item>
                             </NavDropdown>
+                        <Nav.Item><Nav.Link as={Link} to="/appointment">Terminansicht</Nav.Link></Nav.Item>
                         <Nav.Item><Nav.Link as={Link} to="/procedure">Prozeduren</Nav.Link></Nav.Item>
                         <Nav.Item><Nav.Link as={Link} to="/restriction">Einschränkungen</Nav.Link></Nav.Item>
-                        <Nav.Item><Nav.Link as={Link} to="/calendar">Kalender</Nav.Link></Nav.Item>    
+                        <Nav.Item><Nav.Link as={Link} to="/calendar">Kalender</Nav.Link></Nav.Item>       
                         <Nav.Item><Nav.Link as={Link} to="/booking">Buchen</Nav.Link></Nav.Item>
 
                     </Nav>

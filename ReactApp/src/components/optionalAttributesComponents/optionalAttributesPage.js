@@ -1,30 +1,30 @@
 import React, { useState, useEffect } from "react"
-//import { getAllExtUserInfo } from "./extUserInfoRequests"
-import ExtUserInfoForm from "./ExtUserInfoForm"
+import { getAllOptionalAttributes } from "./optionalAttributesRequests"
+import OptionalAttributesForm from "./optionalAttributesForm"
 import OverviewPage from "../OverviewPage"
 
-function ExtUserInfoPage() {
-    const [extUserInfo, setExtUserInfo] = useState([])
+function optionalAttributesPage() {
+    const [optionalAttributes, setOptionalAttributes] = useState([])
 
     useEffect(() => {
-        loadExtUserInfo()
+        loadOptionalAttributes()
     }, [])
 
-    const loadExtUserInfo = async () => {
+    const loadOptionalAttributes = async () => {
         var data = [];
         try{ 
-          //const response = await getAllExtUserInfo();
+          const response = await getAllOptionalAttributes();
           data = response.data;
         }catch (error) {
           console.log(Object.keys(error), error.message)
-          //alert("An error occoured while loading all extUserInfo")
+          alert("An error occoured while loading all extUserInfo")
           data = [{id:"1", name:"E-Mail", isRequired: true},{id:"2", name:"Telefon-Nr.", isRequired: false}]
         }
-        setExtUserInfo(data);
+        setOptionalAttributes(data);
     };
 
     const tableBody =
-        extUserInfo.map((item, index) => {
+        optionalAttributes.map((item, index) => {
             var isRequired //translated boolean
             switch(item.isRequired) {
                 case true:
@@ -44,7 +44,7 @@ function ExtUserInfoPage() {
 
     const modal = (onCancel,edit,selectedItem) => {
         return (
-            <ExtUserInfoForm
+            <OptionalAttributesForm
                 onCancel={onCancel}
                 edit={edit}
                 selected={selectedItem}
@@ -55,16 +55,17 @@ function ExtUserInfoPage() {
     return (
         <React.Fragment>
             <OverviewPage
-                pageTitle="Erweiterte Benutzerinformationen"
+                pageTitle="Optionale Attribute"
                 newItemText="Neues Attribut"
                 tableHeader={["#", "Bezeichnung", "Pflichtfeld"]}
                 tableBody={tableBody}
                 modal={modal}
-                data={extUserInfo}
-                refreshData={loadExtUserInfo}
+                modalSize="lg"
+                data={optionalAttributes}
+                refreshData={loadOptionalAttributes}
             />
         </React.Fragment>
     )
 }
 
-export default ExtUserInfoPage
+export default optionalAttributesPage

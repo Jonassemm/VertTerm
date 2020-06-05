@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react"
 import { Typeahead } from "react-bootstrap-typeahead"
-import { getUsers, getEmployees, getCustomers, getProcedures, getRoles, getPositions, getResourcetypes, getResources} from "./requests"
+import { getUsers, getEmployees, getCustomers, getProcedures, getRoles, getPositions, getResourcetypes, getResources, getRestrictions} from "./requests"
 
 // when using this Object you have to give 4 props:
 // DbObject: defining what Object you want to pick (select out of predefined list below)
@@ -38,7 +38,7 @@ function ObjectPicker({ DbObject, setState, initial, multiple, ident, selectedIt
             case 'position': getPositionData(); break;
             case 'customerRole': getRoleData("customer"); break;
             case 'employeeRole': getRoleData("employee"); break;
-            case 'restriction': getRestrictionData();
+            case 'restriction': getRestrictionData(); 
         }
     }, [])
 
@@ -85,43 +85,6 @@ function ObjectPicker({ DbObject, setState, initial, multiple, ident, selectedIt
         setInit(true)
     }
 
-    function isChildInParent(x, parent, childs=[]) {
-        var result = []
-        var feedback
-        /* console.log("Eltern")
-        console.log(parent.name) */
-        if(parent.childResources.length > 0) { // geh Elternbaum nach unten und speichere alle Kinder
-            parent.childResources.map((singleChild, index)=> {
-                childs.push(singleChild)
-                result.push(isChildInParent(x, singleChild, childs))
-            })
-            feedback = false
-            result.map(singleResult => { //Wenn ein false vorhanden ist, dann Kind im Elternbaum vorhanden!!!
-                if(singleResult) {
-                    feedback = true;
-                }
-            })
-        } else { // alle Kinder des Elternbaums gespeichert (ganz unten im Baumpfad)
-            /* console.log("Kinder")
-            console.log()
-            console.log(childs) */
-            if(childs.length > 0) {
-                childs.map(child => { // überprüfe ob x in Elternbaum als Kind vorkommt
-                    if(x == child) {
-                        return true;
-                    }else {
-                        return false;
-                    }
-
-                })
-            } else { //ElternBaum hatte keine Kinder
-                return false
-            }
-        }
-        return feedback
-    }
-
-
     //REKURSIVE function to prevent setting a parent-resource "A" as a child-resource of his child-resource "B" (-> ChildOf(A) = B, ChildOf(B) = A) 
     function checkChildResources(resource, reference) {
         var feedback
@@ -148,8 +111,6 @@ function ObjectPicker({ DbObject, setState, initial, multiple, ident, selectedIt
             return true // resource cannot contain the reference as a child resource
         }
     }
-
-
 
     async function getResourceData(call = "normal") {  
         let finalResult = []
@@ -226,17 +187,15 @@ function ObjectPicker({ DbObject, setState, initial, multiple, ident, selectedIt
         setInit(true)
     }
 
-
-    async function getRestrictionData() { //API missing
-       /*  const res = await getRescriction()
+    async function getRestrictionData() { 
+        const res = await getRestrictions()
         const result = res.data.map(item => {
             return {
                 ...item
             }   
         })
         setOptions(result)
-        setLabelKey("name") */
-        setLabelKey("")
+        setLabelKey("name")
         setInit(true)
     }
 

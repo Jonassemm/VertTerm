@@ -23,12 +23,12 @@ const RestrictionForm = ({ onCancel, edit, selected }) => {
         event.preventDefault()
         let res = {}
         if (!edit) {
-            const data = {name, description}
+            const data = {name}
             res = await addRestriction(data)
         } else {
             var id = selected.id
-            const data = {id, name, description}
-            res = await editRestriction(id, data)
+            const data = {id, name}
+            res = await editRestriction(data)
         }
         console.log(res)
         onCancel()

@@ -5,7 +5,6 @@ import OverviewPage from "../OverviewPage"
 import UserForm from "./UserForm"
 
 
-import {observer} from "mobx-react"
 import {
     getEmployeeList,
     getCustomerList

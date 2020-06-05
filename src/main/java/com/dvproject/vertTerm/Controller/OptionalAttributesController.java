@@ -40,10 +40,10 @@ public class OptionalAttributesController {
 	 }
 	 
 	 
-//	 @PostMapping
-//	 public OptionalAttributes createOptionalAttributes(@RequestBody OptionalAttributes opatts) {
-//	     return OpAttsService.create(opatts);
-//     }
+	 @PostMapping
+	 public OptionalAttributes createOptionalAttributes(@RequestBody OptionalAttributes opatts) {
+     return OpAttsService.create(opatts);
+     }
     
 	@PutMapping("/{id}")
     public OptionalAttributes  updateOptionalAttributes(@PathVariable String id,@RequestBody OptionalAttributes opatts) {	 

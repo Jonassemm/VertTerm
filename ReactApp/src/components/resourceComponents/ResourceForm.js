@@ -45,6 +45,7 @@ const RessourceForm = ({ onCancel, edit, selected }) => {
           setResourceTypes(selected.resourceTypes)
           setChildResources(selected.childResources)
           setAvailabilities(selected.availabilities)
+          setRestrictions(selected.restrictions)
       }
     }, [])
  
