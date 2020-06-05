@@ -35,7 +35,7 @@ public class Appointment implements Serializable {
 	private List<Employee> bookedEmployees;
 	@DBRef
 	private List<Resource> bookedResources;
-	
+
 	public Appointment() {
 		this.bookedResources = new ArrayList<>();
 		this.bookedEmployees = new ArrayList<>();

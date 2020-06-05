@@ -156,6 +156,7 @@ public abstract class User implements Serializable
 		cal.setTimeInMillis(System.currentTimeMillis());
 		creationDate = cal.getTime();
 	}
+
 	public Map<OptionalAttribute, String> getOptionalAttributes() {
 		return optionalAttributes;
 	}
