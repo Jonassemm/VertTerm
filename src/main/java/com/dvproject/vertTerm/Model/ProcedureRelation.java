@@ -1,6 +1,8 @@
 package com.dvproject.vertTerm.Model;
 
 import java.time.Duration;
+import java.util.Date;
+import java.util.List;
 
 import javax.validation.constraints.NotNull;
 
@@ -39,6 +41,10 @@ public class ProcedureRelation {
 	
 	public void setProcedure(Procedure procedure) {
 		this.procedure = procedure;
+	}
+
+	public List<Appointment> getAppointmentRecommendationByEarliestEnd(Date date, Customer customer){
+		return this.getProcedure().getAppointmentRecommendationByEarliestEnd(new Date(date.getTime() + this.getMinDifference().toMillis()), customer);
 	}
 
 }

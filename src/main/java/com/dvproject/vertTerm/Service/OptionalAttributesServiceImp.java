@@ -1,5 +1,6 @@
 package com.dvproject.vertTerm.Service;
 
+import com.dvproject.vertTerm.Model.OptionalAttribute;
 import com.dvproject.vertTerm.Model.OptionalAttributes;
 import com.dvproject.vertTerm.repository.OptionalAttributesRepository;
 
@@ -69,7 +70,14 @@ Optional<OptionalAttributes> OptionalAttributes = OptionalAttributesRepo.findByI
 	
 }
 
-	
+	public OptionalAttributes getByClassname(String classname) {
+		return OptionalAttributesRepo.findByClass(classname);
+	}
+
+	@Override
+	public void testMandatoryFields(String classname, List<OptionalAttribute> optionalAttributes) {
+		getByClassname(classname).testMandatoryFields(optionalAttributes);
+	}
 
 }
 

@@ -56,7 +56,7 @@ public class AppointmentgroupController {
 	
 	@PostMapping("")
 	public boolean bookAppointments (
-			@RequestParam(defaultValue = "", required = false) String userid, 
+			@RequestParam(defaultValue = "") String userid, 
 			@RequestBody Appointmentgroup appointmentgroup) {
 		return appointmentgroupService.bookAppointmentgroup(userid, appointmentgroup);
 	}

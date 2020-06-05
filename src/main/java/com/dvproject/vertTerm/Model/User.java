@@ -1,6 +1,7 @@
 package com.dvproject.vertTerm.Model;
 
 import java.io.Serializable;
+import java.time.Duration;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
@@ -16,8 +17,9 @@ import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 @Document("user")
-public class User implements Serializable {
-	private static final long serialVersionUID = -5252169753921361843L;
+public abstract class User implements Serializable
+{
+    private static final long serialVersionUID = -5252169753921361843L;
 
 	@Id
 	private String id;
@@ -29,6 +31,16 @@ public class User implements Serializable {
 	private Date creationDate;
 	@NotNull
 	private Status systemStatus;
+
+	public List<Appointment> getAppointments() {
+		return appointments;
+	}
+
+	public void setAppointments(List<Appointment> appointments) {
+		this.appointments = appointments;
+	}
+
+	private List<Appointment> appointments;
 
 	@DBRef
 	private List<Role> roles;
@@ -122,19 +134,60 @@ public class User implements Serializable {
 	public Date getCreationDate() {
 		return creationDate;
 	}
-
-	private void setCreationDate() {
-		Calendar cal = Calendar.getInstance(TimeZone.getTimeZone("GMT"));
-		cal.setTimeInMillis(System.currentTimeMillis());
-		creationDate = cal.getTime();
-	}
-
+	
 	public Status getSystemStatus() {
 		return systemStatus;
 	}
 
 	public void setSystemStatus(Status systemStatus) {
 		this.systemStatus = systemStatus;
+	}
+
+	public List<Restriction> getRestrictions() {
+		return restrictions;
+	}
+
+	public void setRestrictions(List<Restriction> restrictions) {
+		this.restrictions = restrictions;
+	}
+
+	private void setCreationDate() {
+		Calendar cal = Calendar.getInstance(TimeZone.getTimeZone("GMT"));
+		cal.setTimeInMillis(System.currentTimeMillis());
+		creationDate = cal.getTime();
+	}
+	public Map<OptionalAttribute, String> getOptionalAttributes() {
+		return optionalAttributes;
+	}
+
+	public void setOptionalAttributes(Map<OptionalAttribute, String> optionalAttributes) {
+		this.optionalAttributes = optionalAttributes;
+	}
+
+	public void setCreationDate(Date creationDate) {
+		this.creationDate = creationDate;
+	}
+
+	public abstract Date getAvailableDate(Date date, Duration duration);
+
+	public boolean isAvailable(Date date, Duration duration){
+		return date.equals(this.getAvailableDate(date, duration));
+	}
+
+	protected Date getAvailableDateByAppointments(Date date, Duration duration) {
+		Date plannedEnd = new Date(date.getTime() + duration.toMillis());
+		for (Appointment appointment : appointments) {
+			if (appointment.getPlannedStarttime().before(date)) {
+				if (appointment.getPlannedEndtime().after(date)) {
+					return getAvailableDate(appointment.getPlannedEndtime(), duration);
+				}
+			}
+			else{
+				if(appointment.getPlannedStarttime().before(plannedEnd))
+				return getAvailableDate(appointment.getPlannedEndtime(), duration);
+			}
+		}
+		return date;
 	}
 
 }

@@ -2,13 +2,16 @@ package com.dvproject.vertTerm.Service;
 
 import com.dvproject.vertTerm.Model.Customer;
 import com.dvproject.vertTerm.Model.Employee;
+import com.dvproject.vertTerm.Model.OptionalAttribute;
 import com.dvproject.vertTerm.Model.Status;
+import com.dvproject.vertTerm.Model.User;
 import com.dvproject.vertTerm.repository.CustomerRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.rest.webmvc.ResourceNotFoundException;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -20,6 +23,9 @@ public class CustomerServiceImp implements CustomerService {
     
     @Autowired
     private UserService userService;
+    
+    @Autowired
+    private OptionalAttributesService optionalAttributesService;
 
     @Override
     public List<Customer> getAll() {
@@ -52,6 +58,7 @@ public class CustomerServiceImp implements CustomerService {
     @Override
     public Customer create(Customer newInstance) {
         if (newInstance.getId() == null) {
+        	userService.testMandatoryFields(newInstance);
         	userService.encodePassword(newInstance);
             return repo.save(newInstance);
         }
@@ -64,9 +71,8 @@ public class CustomerServiceImp implements CustomerService {
     @Override
     public Customer update(Customer updatedInstance) {
         if (updatedInstance.getId() != null && repo.findById(updatedInstance.getId()).isPresent()) {
-        	if (userService.hasPasswordChanged(updatedInstance))
-        		userService.encodePassword(updatedInstance);
-        	
+        	userService.testMandatoryFields(updatedInstance);
+        	userService.encodePassword(updatedInstance);
             return repo.save(updatedInstance);
         }
         return null;

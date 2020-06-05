@@ -1,6 +1,7 @@
 package com.dvproject.vertTerm.Model;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -35,6 +36,11 @@ public class Appointment implements Serializable {
 	@DBRef
 	private List<Resource> bookedResources;
 	
+	public Appointment() {
+		this.bookedResources = new ArrayList<>();
+		this.bookedEmployees = new ArrayList<>();
+	}
+
 	public String getId() {
 		return id;
 	}

@@ -210,7 +210,7 @@ public class ProcedureServiceImp implements ProcedureService {
 		oldProcedure.setDescription(procedure.getDescription());
 		oldProcedure.setPricePerHour(procedure.getPricePerHour());
 		oldProcedure.setPricePerInvocation(procedure.getPricePerInvocation());
-		oldProcedure.setDurationInMinutes(procedure.getDurationInMinutes());
+		oldProcedure.setDuration(procedure.getDuration());
 
 		return procedureRepository.save(oldProcedure);
 	}
