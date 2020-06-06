@@ -1,5 +1,5 @@
 import axios from "axios"
-import {APIURL} from "../../APIConfig"
+import {APIURL} from "../../../APIConfig"
 
 export const getAllOptionalAttributes = () => axios.get(`${APIURL}/api/OptionalAttribute`)
 export const editOptionalAttributes = (data) => axios.put(`${APIURL}/api/OptionalAttribute`,data)

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react"
 import {Form, Table, Container, Col, Button } from "react-bootstrap"
 import {editOptionalAttributes} from "./optionalAttributesRequests"
-import ObjectPicker from "../ObjectPicker"
+import ObjectPicker from "../../ObjectPicker"
 
 const optionalAttributesForm = ({ onCancel, edit, selected }) => {
     const [name, setName] = useState("")

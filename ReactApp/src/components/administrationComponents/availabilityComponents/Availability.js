@@ -4,7 +4,7 @@ import DatePicker from "react-datepicker"
 import "react-datepicker/dist/react-datepicker.css"
 
 import {setValidEndDate, validateDates, renderAvailabilityTable} from "./AvailabilityHelpFunctions"
-import {setDate} from "../TimeComponents/TimeFunctions"
+import {setDate} from "../../TimeComponents/TimeFunctions"
 
 var moment = require('moment'); 
 
@@ -268,20 +268,25 @@ const Availability = (props) => {
                     </Form.Row>
                         <hr style={{ border: "0,5px solid #999999" }}/>
                     <Form.Row>
-                        <Button onClick={handleAdd} style={{marginBottom: "20px"}}>Verfügbarkeit hinzufügen</Button>
+                        <Form.Group as={Col} md="12">
+                            <div style={{textAlign: "center"}}>
+                                <Button onClick={handleAdd}>Verfügbarkeit hinzufügen</Button>
+                            </div>
+                        </Form.Group>
                     </Form.Row>
                     <Form.Row>
-                    <Table striped hover variant="light">
+                    <Table style={{border: "2px solid #AAAAAA", marginTop: "10px", width: "100%", borderCollapse: "collapse"}} striped variant="ligth">
                             <thead>
                                 <tr>
-                                    <th>Verfügbarkeiten</th>
+                                    <th colSpan="6" style={{textAlign: "center"}}>Verfügbarkeiten</th>
                                 </tr>
                                 <tr>
-                                    <th>Start</th>
-                                    <th>Ende</th>
+                                    <th style={{width: "200px"}}>Start</th>
+                                    <th style={{width: "200px"}}>Ende</th>
                                     <th>Intervall</th>
                                     <th>Wdh-Intervall</th>
-                                    <th>Serienende</th>
+                                    <th style={{width: "200px"}}>Serienende</th>
+                                    <th style={{width: "25px"}}></th>
                                 </tr>
                             </thead>
                             <tbody>

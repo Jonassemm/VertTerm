@@ -73,15 +73,15 @@ export function renderAvailabilityTable(allAvailabilities, availabilityRhythm, h
             } else {
                 return (
                     <tr key={index}>
-                      <td><Form.Control readOnly type="text" name={"availability"+ index} style={{width: "180px"}}
+                      <td ><Form.Control readOnly type="text" name={"availability"+ index} 
                           value={SingleAvailability.startDate}/></td>
-                      <td><Form.Control readOnly type="text" name={"availability"+ index} style={{width: "180px"}}
+                      <td><Form.Control readOnly type="text" name={"availability"+ index} 
                           value={SingleAvailability.endDate}/></td>
                       <td><Form.Control readOnly type="text" name={"availability"+ index} 
                           value={availabilityRhythmGE(SingleAvailability.rhythm)}/></td>
-                      <td><Form.Control readOnly type="text" name={"availability"+ index} style={{width: "120px"}}
+                      <td><Form.Control readOnly type="text" name={"availability"+ index}
                           value={SingleAvailability.rhythm == availabilityRhythm.oneTime ? "-" : SingleAvailability.frequency}/></td>
-                      <td><Form.Control readOnly type="text" name={"availability"+ index} style={{width: "18s0px"}}
+                      <td><Form.Control readOnly type="text" name={"availability"+ index} 
                           value={ SingleAvailability.endOfSeries != null ? SingleAvailability.endOfSeries : 
                                   SingleAvailability.rhythm == availabilityRhythm.oneTime ? "-" :
                                   "Ohne Ende"}/></td>

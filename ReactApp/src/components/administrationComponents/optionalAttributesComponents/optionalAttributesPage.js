@@ -1,10 +1,7 @@
 import React, { useState, useEffect } from "react"
 import {getAllOptionalAttributes} from "./optionalAttributesRequests"
 import OptionalAttributesForm from "./optionalAttributesForm"
-import {Form, Modal, Container, Col, Button } from "react-bootstrap"
-import {Link} from 'react-router-dom';
-import OverviewPage from "../OverviewPage"
-import ObjectPicker from "../ObjectPicker"
+import OverviewPage from "../../OverviewPage"
 
 function optionalAttributesPage() {
  

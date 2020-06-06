@@ -14,7 +14,8 @@ import Home from "./components/Home"
 import HomePage from './components/calendarComponents/HomePage'
 import BookingForm from "./components/calendarComponents/BookingForm"
 import AdminPage from "./components/navigationComponents/AdminPage"
-import testComponent from "./components/testComponent"
+import AppointmentPage from "./components/appointmentComponents/AppointmentPage"
+//import testComponent from "./components/testComponent"
 
 export default observer(function App({ userStore, calendarStore }) {
   console.log(document.cookie)
@@ -27,6 +28,7 @@ export default observer(function App({ userStore, calendarStore }) {
             <Route path="/" exact component={() => <Home />} />
             <Route path="/admin" component={() => <AdminPage userStore={userStore}/>} />
             <Route exact path="/calendar" component={() => (<HomePage calendarStore={calendarStore} />)} />
+            <Route path="/appointment" component={() => <AppointmentPage calendarStore={calendarStore} />} />
             <Route exact path="/booking" component={() => (<BookingForm/>)}/>
           </Switch>
         </div>
