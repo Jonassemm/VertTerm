@@ -3,7 +3,8 @@ import {Form, Table, Col, Container, Button} from 'react-bootstrap';
 import DatePicker from "react-datepicker"
 import "react-datepicker/dist/react-datepicker.css"
 
-import {setDate, setValidEndDate, validateDates, renderAvailabilityTable} from "./AvailabilityHelpFunctions"
+import {setValidEndDate, validateDates, renderAvailabilityTable} from "./AvailabilityHelpFunctions"
+import {setDate} from "../TimeComponents/TimeFunctions"
 
 var moment = require('moment'); 
 

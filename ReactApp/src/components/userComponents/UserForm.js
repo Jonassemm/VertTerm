@@ -43,11 +43,16 @@ function UserForm({onCancel, edit, selected, type}) {
   const [roles, setRoles] = useState([])
   //Restrictions
   const [restrictions, setRestrictions] = useState([])
-  //extended userInformation
-  const [extUserInfoAttList, setExtUserInfoAttList] = useState([])
-  const [extUserInfoData, setExtUserInfoData] = useState([])
-  const [extUserInfoInput, setUserInfoInput] = useState() //needed to render page when editing any extUserInfo
+  //Optional Attributes (Employee)
+  const [optionalAttributesEmployeeList, setOptionalAttributesEmployeeList] = useState([])
+  const [optionalAttributesEmployeeData, setOptionalAttributesEmployeeData] = useState([])
+  //Optional Attributes (Customer)
+  const [optionalAttributesCustomerList, setOptionalAttributesCustomerList] = useState([])
+  const [optionalAttributesCustomerData, setOptionalAttributesCustomerData] = useState([])
+  //Attribute Input
+  const [optionalAttributInput, setOptionalAttributeInput] = useState() //needed to render page when editing any extUserInfo
   
+
   //HANDEL CHANGE
   const handleFirstnameChange = event => {setFirstname(event.target.value); setEdited(true)}
   const handleLastnameChange = event => {setLastname(event.target.value); setEdited(true)}
@@ -57,16 +62,16 @@ function UserForm({onCancel, edit, selected, type}) {
   const handlePositionsChange = data => {setPositions(data); setEdited(true)}
   const handleRoleChange = data => {setRoles(data); setEdited(true)}
   const handleRestrictionChange = data => {setRestrictions(data); setEdited(true)}
-  const handleExtUserInfoDataChange = (e, name) => {
-    setExtUserInfoDataValue(name, e.target.value); 
-    setUserInfoInput([e.target.value, name]); 
-    console.log(extUserInfoData)
+  const handleOptionalAttributeDataChange = (e, name) => {
+    setOptionalAttributeValue(name, e.target.value); 
+    setOptionalAttributeInput([e.target.value, name]); 
+    console.log(optionalAttributesEmployeeData)
     setEdited(true) 
   };
 
   useEffect(() => { 
     console.log("useEffect-Call: loadExtandUserInformation")
-    loadExtUserInformation();
+    loadOptionalAttributes()
     if(edit) {
         setFirstname(selected.firstName)
         setLastname(selected.lastName)
@@ -86,32 +91,49 @@ function UserForm({onCancel, edit, selected, type}) {
           setAvailabilities(selected.availabilities);
         }
     } 
+    console.log("useEffect-Call: initialOptionalAttributes")
+    initialOptionalAttributes()
   }, [])
 
   //---------------------------------LOAD---------------------------------
-
-  //EXTUSERINFO
-  const loadExtUserInformation = async () => {
+  const loadOptionalAttributes = async () => {
     var data = [];
     try{ 
       const response = await getAllOptionalAttributes();
       data = response.data;
     }catch (error) {
-      data = [{id:"1", name:"E-Mail", isRequired: true},{id:"2", name:"Telefon-Nr.", isRequired: false}]
       console.log(Object.keys(error), error.message)
-      //alert("An error occoured while loading extendUserInformation")
     }
-    data.map((info) => {
-        setExtUserInfoAttList(extUserInfoAttList => [...extUserInfoAttList, info]);
+
+    //Add attributes for users
+    data.map((attributeList) => {
+        if(attributeList.classOfOptionalAttribut == "User") {
+          attributeList.map(attribute => {
+            setOptionalAttributesEmployeeList(optionalAttributesEmployeeList => [...optionalAttributesEmployeeList, attribute]);
+            setOptionalAttributesCustomerList(optionalAttributesCustomerList => [...optionalAttributesCustomerList, attribute]);
+          })
+        }
     })
-    //initial the ExtUserInfoData-Array for submit
-    const initialData = data.map(name => {
-      return {
-        ...name,
-        value: ""
-      }
-    })
-    setExtUserInfoData(initialData)
+    if(isEmployee) { // EMPLOYEE SELECTE
+      //Add attributes for employees
+      data.map((attributeList) => {
+        if(attributeList.classOfOptionalAttribut == "Employee") {
+          attributeList.map(attribute => {
+            initial = 
+            setOptionalAttributesEmployeeList(optionalAttributesEmployeeList => [...optionalAttributesEmployeeList, attribute]);
+          })
+        }
+      })
+    }else {
+      //Add attributes for customers
+      data.map((isEmployee) => {
+        if(attributeList.classOfOptionalAttribut == "Customer") {
+          attributeList.map(attribute => {
+            setOptionalAttributesCustomerList(optionalAttributesCustomerList => [...optionalAttributesCustomerList, attribute]);
+          })
+        }
+      })
+    }
   };
 
   function validation() {
@@ -138,13 +160,12 @@ function UserForm({onCancel, edit, selected, type}) {
         alert("Fehler: Bitte wählen Sie mindestens eine Position aus!")
         break;
     }
-
     return result
   }
 
 
-  //---------------------------------SUBMIT---------------------------------
-  //ADD USER
+  //---------------------------------USER-SUBMIT---------------------------------
+  //ADD
   const handleSubmit = async event => {
     event.preventDefault();//reload the page after clicking "Enter"
     if(validation()) {
@@ -163,7 +184,6 @@ function UserForm({onCancel, edit, selected, type}) {
           }
         } catch (error) {
           console.log(Object.keys(error), error.message)
-          alert("An error occoured while updating a user")
         } 
       } else {
           var newData = {}
@@ -179,14 +199,13 @@ function UserForm({onCancel, edit, selected, type}) {
           }
           } catch (error) {
             console.log(Object.keys(error), error.message)
-            alert("An error occoured while adding a user")
           } 
       } 
       onCancel()
     } 
   };
 
-  //DELETE USER
+  //DELETE
   const handleDeleteUser = async () => {
     const deleteStatus = "deleted" // fix delteStatus
     const id = selected.id
@@ -203,20 +222,50 @@ function UserForm({onCancel, edit, selected, type}) {
           }
         } catch (error) {
             console.log(Object.keys(error), error.message)
-            alert("An error occoured while deleting a user")
         }
       }
         onCancel()
   }
 
-  //---------------------------------ExtUserInfoData---------------------------------
-  const setExtUserInfoDataValue = (name, value) => {
-    extUserInfoData.map((info)=> {
-      if(info.name == name) {
-        info.value = value
-      }
-    })
+  //---------------------------------Optional Attributes---------------------------------
+  //initial the optionalAttribute array for submit
+  const initialOptionalAttributes = async () => {
+    var initialValue
+    if(isEmployee) {
+      initialValue = optionalAttributesEmployeeList.map(attribute => {
+        return {
+          ...attribute,
+          value: ""
+        }
+      })
+      setOptionalAttributesEmployeeData(initialValue)
+    } else {
+      initialValue = optionalAttributesCustomerList.map(attribute => {
+        return {
+          ...attribute,
+          value: ""
+        }
+      })
+      setOptionalAttributesCustomerData(initialValue)
+    }
   }
+  
+  const setOptionalAttributeValue = (name, value) => {
+    if(isEmployee){ //EMPLOYEE
+      optionalAttributesEmployeeData.map(attribute=> {
+        if(attribute.name == name) {
+          attribute.value = value
+        }
+      })
+    }else {// CUSTOMER
+      optionalAttributesCustomerData.map(attribute=> {
+        if(attribute.name == name) {
+          attribute.value = value
+        }
+      })
+    }
+  }
+
 
   //---------------------------------Availability---------------------------------
   const addAvailability = (newAvailability) => {
@@ -233,13 +282,13 @@ function UserForm({onCancel, edit, selected, type}) {
   //---------------------------------RENDER---------------------------------
   // DYNAMIC extendetUserInforamtion table
   function renderExpandUserInformationTable() {
-    if(extUserInfoAttList.length > 0)
+    if(optionalAttributesEmployeeList.length > 0)
     {
       return ( 
-        extUserInfoAttList.map((info, index) =>(
+        optionalAttributesEmployeeList.map((info, index) =>(
           <tr key={index}>
             <td>{info.name}:</td>
-            <td><Form.Control required={info.isRequired} onChange={e => handleExtUserInfoDataChange(e, info.name)} value={extUserInfoData.find(item => item.name == info.name).value || ""} name={"userInfo-value"+ index} type="text"/></td>
+            <td><Form.Control required={info.isRequired} onChange={e => handleOptionalAttributeDataChange(e, info.name)} value={optionalAttributesEmployeeData.find(item => item.name == info.name).value || ""} name={"userInfo-value"+ index} type="text"/></td>
           </tr>
         ))
       );

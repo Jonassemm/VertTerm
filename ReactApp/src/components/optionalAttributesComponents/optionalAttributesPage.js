@@ -1,15 +1,21 @@
 import React, { useState, useEffect } from "react"
-import { getAllOptionalAttributes } from "./optionalAttributesRequests"
+import {getAllOptionalAttributes} from "./optionalAttributesRequests"
 import OptionalAttributesForm from "./optionalAttributesForm"
+import {Form, Modal, Container, Col, Button } from "react-bootstrap"
+import {Link} from 'react-router-dom';
 import OverviewPage from "../OverviewPage"
+import ObjectPicker from "../ObjectPicker"
 
 function optionalAttributesPage() {
-    const [optionalAttributes, setOptionalAttributes] = useState([])
+ 
+    const [optionalAttributeLists, setOptionalAttributeLists] = useState([])
 
     useEffect(() => {
         loadOptionalAttributes()
     }, [])
 
+
+    //---------------------------------LOAD---------------------------------
     const loadOptionalAttributes = async () => {
         var data = [];
         try{ 
@@ -17,28 +23,29 @@ function optionalAttributesPage() {
           data = response.data;
         }catch (error) {
           console.log(Object.keys(error), error.message)
-          alert("An error occoured while loading all extUserInfo")
-          data = [{id:"1", name:"E-Mail", isRequired: true},{id:"2", name:"Telefon-Nr.", isRequired: false}]
         }
-        setOptionalAttributes(data);
+        setOptionalAttributeLists(data)
+        console.log(data)
     };
 
     const tableBody =
-        optionalAttributes.map((item, index) => {
-            var isRequired //translated boolean
-            switch(item.isRequired) {
-                case true:
-                    isRequired = "Ja"
+        optionalAttributeLists.map(item => {
+            var attributeClass //translated boolean
+            switch(item.classOfOptionalAttribut) {
+                case "User":
+                    attributeClass = "Benutzer"
                 break;
-                case false:
-                    isRequired = "Nein"
+                case "Customer":
+                    attributeClass = "Kunde"
                 break;
-                default: isRequired = "UNDIFINED"
+                case "Employee":
+                    attributeClass = "Mitarbeiter"
+                break;
+                default: attributeClass = "UNDIFINED"
             }
             return ([
                 index + 1,
-                item.name,
-                isRequired]
+                item.classOfOptionalAttribut]
             )
         })
 
@@ -55,14 +62,15 @@ function optionalAttributesPage() {
     return (
         <React.Fragment>
             <OverviewPage
-                pageTitle="Optionale Attribute"
+                pageTitle="Optionale Attributlisten"
                 newItemText="Neues Attribut"
-                tableHeader={["#", "Bezeichnung", "Pflichtfeld"]}
+                tableHeader={["#", "Attributklasse"]}
                 tableBody={tableBody}
                 modal={modal}
                 modalSize="lg"
-                data={optionalAttributes}
+                data={optionalAttributeLists}
                 refreshData={loadOptionalAttributes}
+                //withoutCreate={true}
             />
         </React.Fragment>
     )

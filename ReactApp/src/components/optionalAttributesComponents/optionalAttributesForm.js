@@ -1,16 +1,17 @@
 import React, { useState, useEffect } from "react"
-import {Form} from "react-bootstrap"
-import {Table, Container, Col, Button } from "react-bootstrap"
-import {addOptionalAttributes, editOptionalAttributes, deleteOptionalAttributes} from "./optionalAttributesRequests"
+import {Form, Table, Container, Col, Button } from "react-bootstrap"
+import {editOptionalAttributes} from "./optionalAttributesRequests"
 import ObjectPicker from "../ObjectPicker"
 
 const optionalAttributesForm = ({ onCancel, edit, selected }) => {
     const [name, setName] = useState("")
     const [mandatoryField, setMandatoryField] = useState(false)
     const [edited, setEdited] = useState(false)
-
     const [optionalAttributes, setOptionalAttributes] = useState([])
-    const [classOfOptionalAttribut, setClassOfOptionalAttribut] = useState([])
+    
+    
+    const handleNameChange = (event) => {setName(event.target.value); setEdited(true)}
+    const handleMandatoryFieldChange = () =>{setMandatoryField(!mandatoryField); setEdited(true)}
 
     useEffect(() => {
         if (edit) {
@@ -19,130 +20,69 @@ const optionalAttributesForm = ({ onCancel, edit, selected }) => {
         }
     }, [])
 
-    const handleNameChange = (event) => {setName(event.target.value); setEdited(true)}
-    const handleMandatoryFieldChange = () =>{setMandatoryField(!mandatoryField); setEdited(true)}
-    const handleClassOfOptionalAttributChange = data => {setClassOfOptionalAttribut(data); setEdited(true)}
-
-    function validation() {
-        var result = true;
-        var errorMsg 
-        //check classOfOptionalAttribut
-        if(classOfOptionalAttribut.length == 0) { 
-        result = false
-        errorMsg = "noClass"
-        }
-
-        //check roles
-        if(roles.length == 0) { 
-          result = false
-          errorMsg = "noRules"
-        }
-        //print error
-        switch(errorMsg) {
-          case "noRules": 
-            alert("Fehler: Bitte wählen Sie mindestens eine Rolle aus!")
-            break;
-          case "noPosition":
-            alert("Fehler: Bitte wählen Sie mindestens eine Position aus!")
-            break;
-        }
-    
-        return result
-      }
-
-
     const handleSubmit = async event => {
         event.preventDefault()
-        if(validation()) {
-            let res = {}
-            if (!edit) {
-                const data = {optionalAttributes, classOfOptionalAttribut: classOfOptionalAttribut[0].name}
-                res = await addOptionalAttributes(data)
+        let res = {}
+        const data = {id: selected.id, optionalAttributes, classOfOptionalAttribut: selected.classOfOptionalAttribut}
+        try{
+            res = await editOptionalAttributes(data)
+        }catch (error) {
+            console.log(Object.keys(error), error.message)
+        }
+        console.log(res)
+        onCancel() 
+    }
+
+    const addAttribute = () => {
+        var newAttribute = {name, mandatoryField}
+        if(name != "") {
+            if(optionalAttributes.some(optionalAttributes => optionalAttributes.name === newAttribute.name)) {
+                alert("Attribut bereits vorhanden!");
             } else {
-                var id = selected.id
-                const data = {id, optionalAttributes, classOfOptionalAttribut: classOfOptionalAttribut[0].name}
-                res = await editOptionalAttributes(id, data)
+                setOptionalAttributes(optionalAttributes => [...optionalAttributes, newAttribute])
+                setEdited(true)
             }
-            console.log(res)
-            onCancel()
-        }
-    }
-
-    const handleDeleteOptionalAttributes = async () => {
-        /* const answer = confirm("Möchten Sie dieses optionales Attribut wirklich löschen? ")
-        if (answer) {
-            const res = await deleteOptionalAttributes(selected.id)
-            console.log(res)
-        }
-        onCancel() */
-        console.log("OptAttribute:")
-        console.log(optionalAttributes)
-        console.log("klasse:")
-        console.log(classOfOptionalAttribut)
-    }
-
-  const addAttribute = () => {
-    var newAttribute = {name, mandatoryField}
-    if(name != "") {
-        if(optionalAttributes.some(optionalAttributes => optionalAttributes.name === newAttribute.name)) {
-            alert("Attribut bereits vorhanden!");
         } else {
-            setOptionalAttributes(optionalAttributes => [...optionalAttributes, newAttribute])
-            setEdited(true)
-        }
-    } else {
-      alert("Bitte Attribut eingeben!")
-    }
-  };
-
-  //REMOVE Attribute from Table
-  const removeAttribute = (index) => {
-    optionalAttributes.splice((index),1) // remove attribute at "index" and just remove "1" attribute
-    setOptionalAttributes([...optionalAttributes])
-    setEdited(true)
-  };
-
-
-
-
-
-    //---------------------------------RENDER---------------------------------
-    // DYNAMIC extendetUserInforamtion table
-    function renderOptionalAttributesTable() {
-        if(optionalAttributes.length > 0)
-        {
-        return ( 
-            optionalAttributes.map((attribute, index) =>(
-            <tr key={index}>
-                <td>{attribute.name}</td>
-                <td>{attribute.mandatoryField ? "Ja" : "Nein"}</td>
-                <td><Button onClick={()=>removeAttribute(index)} id={attribute.name}>Entfernen</Button></td>
-            </tr>
-            ))
-        );
-        } else {
-            <td colSpan="3">Leer</td>
+        alert("Bitte Attribut eingeben!")
         }
     };
+
+    //REMOVE Attribute from Table
+    const removeAttribute = (index) => {
+        optionalAttributes.splice((index),1) // remove attribute at "index" and just remove "1" attribute
+        setOptionalAttributes([...optionalAttributes])
+        setEdited(true)
+    };
+
+    //---------------------------------RENDER---------------------------------
+    // DYNAMIC Table
+    function renderOptionalAttributesTable() {
+        if(optionalAttributes.length > 0) {
+            return ( 
+                optionalAttributes.map((attribute, index) =>(
+                <tr key={index}>
+                    <td>{attribute.name}</td>
+                    <td>{attribute.mandatoryField ? "Ja" : "Nein"}</td>
+                    <td><Button onClick={()=>removeAttribute(index)} id={attribute.name}>Entfernen</Button></td>
+                </tr>
+                ))
+            );
+        } else {
+            return (
+                <tr>
+                    <td colSpan="3" style={{textAlign: "center"}}>Keine Attribute definiert</td>  
+                </tr>
+            )
+        }
+    };
+
 
     return (
         <React.Fragment>
             <Container>
                 <Form onSubmit={handleSubmit}>
                     <Form.Row>
-                    <Form.Group as={Col} md="4">
-                            <Form.Label>Klasse: </Form.Label>
-                            <ObjectPicker 
-                                setState={handleClassOfOptionalAttributChange}
-                                DbObject="objectClass"
-                                initial={classOfOptionalAttribut} 
-                                multiple={false}
-                            />
-                        </Form.Group>
-                    </Form.Row>
-                    <hr/>
-                    <Form.Row>
-                        <Form.Group as={Col} md="4">
+                        <Form.Group as={Col} md="8">
                             <Form.Label>Bezeichnung: </Form.Label>
                             <Form.Control
                                 required
@@ -162,7 +102,6 @@ const optionalAttributesForm = ({ onCancel, edit, selected }) => {
                                 label="Pflichtfeld"
                                 type='checkbox' 
                                 checked={mandatoryField || false}
-                                //value={mandatoryField}
                                 onChange={handleMandatoryFieldChange} 
                             />
                         </Form.Group>
@@ -170,12 +109,12 @@ const optionalAttributesForm = ({ onCancel, edit, selected }) => {
                     </Form.Row>
                     <Form.Row>
                         <Form.Group as={Col} md="12">
-                            <Table style={{border: "2px solid #AAAAAA", marginTop: "10px", width: "100%", borderCollapse: "collapse", tableLayout: "fixed"}} striped variant="ligth">
+                            <Table style={{border: "2px solid #AAAAAA", marginTop: "10px", width: "100%", borderCollapse: "collapse", tableLayout: "fixed"}} bordered striped variant="ligth">
                                 <thead>
                                     <tr>
                                         <th>Bezeichnung</th>
-                                        <th>Pflichtfeld</th>
-                                        <th></th>
+                                        <th style={{width: "240px"}}>Pflichtfeld</th>
+                                        <th style={{width: "120px"}}></th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -186,7 +125,8 @@ const optionalAttributesForm = ({ onCancel, edit, selected }) => {
                     </Form.Row>
                     <hr style={{ border: "0,5px solid #999999" }}/>
                     <Container style={{textAlign: "right"}}>
-                        {edit ? <Button style={{ marginRight: "10px" }} variant="danger" onClick={handleDeleteOptionalAttributes}>Löschen</Button> : null}
+                        {//edit ? <Button style={{ marginRight: "10px" }} variant="danger" onClick={handleDeleteOptionalAttributes}>Löschen</Button> : null
+                        }
                         <Button style={{ marginRight: "10px" }} onClick={onCancel} variant="secondary">Abbrechen</Button>
                         {(edit ? edited ? 
                             <Button variant="success"  type="submit">Übernehmen</Button>:

@@ -13,7 +13,6 @@ function ResourcePage() {
             data = response.data;
         }catch (error) {
             console.log(Object.keys(error), error.message)
-            alert("An error occoured while loading all resources")
         }
         
         //don't save object with status="deleted"

@@ -134,7 +134,6 @@ const RessourceForm = ({ onCancel, edit, selected }) => {
           }
         } catch (error) {
           console.log(Object.keys(error), error.message)
-          alert("An error occoured while deleting a resource")
         } 
       }
       onCancel()

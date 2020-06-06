@@ -51,8 +51,8 @@ export default observer(function App({ userStore, calendarStore }) {
         <div style={{ margin: "55px 0px 50px 0px" }}>
           <Switch>
             <Route path="/" exact component={() => <Home />} />
-            {/*hasRole(userStore, ["ADMIN_ROLE"]) && */<Route exact path="/customer" component={() => <UserPage userType={"customer"} heading={"Kunden"} />} />}
-            {/*hasRole(userStore, ["ADMIN_ROLE"]) && */<Route exact path="/employee" component={() => <UserPage userType={"employee"} heading={"Mitarbeiter"} />} />}
+            {hasRole(userStore, ["ADMIN_ROLE"]) && <Route exact path="/customer" component={() => <UserPage userType={"customer"} heading={"Kunden"} />} />}
+            {hasRole(userStore, ["ADMIN_ROLE"]) && <Route exact path="/employee" component={() => <UserPage userType={"employee"} heading={"Mitarbeiter"} />} />}
             <Route exact path="/optionalAttributes" component={() => <OptionalAttributesPage/>} />
             <Route exact path="/restriction" component={() => <RestrictionPage/>} />
             <Route exact path="/resource" component={() => <ResourcePage/>} />
