@@ -23,12 +23,16 @@ public interface ResourceService extends BasicService<Resource> {
    
 	List<Restriction> updateResourceDependencies(String id,String[] rids);
 
-    //TODO
-    // 
-    // List<Employee> getAllResourceEmps();
-    // Resource updateEmployeePermission(String resID,String empID,String roleID);
-    // Ressourcenangestelltenrollen bearbeiten 
-    // createResourceFailure 
-    // updateResourceFailure 
-	// Ressourcenzeiten anzeigen
+    List<Resource> getResources(Status status);
+
+    List<Restriction> getResourceRestrictions (String ResID);
+    List<Availability> getResourcevailabilities (String ResID);
+
+    List<Availability> updateResourceAvailabilities(String id, List<Availability> availabilities);
+    List<Restriction> updateResourceRestrictions(String id,String[] rids);
+    boolean isResourceAvailableBetween(String id, Date startdate, Date enddate);
+
+    List<ResourceType> getResourceTypes(String id);
+    List<Resource> getResources(String ResTid);
+
 }

@@ -19,8 +19,9 @@ public class OptionalAttributes implements Serializable {
 	private String classOfOptionalAttribut;
     private String  id;
     
+
     public OptionalAttributes () {}
-    
+ 
     public String getId() {
 		return id;
 	}

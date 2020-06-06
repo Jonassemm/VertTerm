@@ -46,10 +46,11 @@ public class EmployeeServiceImp implements EmployeeService {
         return (users);
     }
 
-    public List<Employee> getAll(Position position){
+    public List<Employee> getAll(Position pos){
         List<Employee> result= new ArrayList<>();
         for(Employee employee : repo.findAll()){
-            if(employee.getPosition().equals(position)) {
+            for (Position position : employee.getPositions())
+            if(position.equals(pos)) {
                 result.add(employee);
             }
         }

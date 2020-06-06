@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.dvproject.vertTerm.Model.OptionalAttribute;
 import com.dvproject.vertTerm.Model.OptionalAttributes;
 import com.dvproject.vertTerm.Service.OptionalAttributesService;
 
@@ -39,23 +40,27 @@ public class OptionalAttributesController {
 	     return OpAttsService.getById(id);
 	 }
 	 
-	 
 	 @PostMapping
 	 public OptionalAttributes createOptionalAttributes(@RequestBody OptionalAttributes opatts) {
-     return OpAttsService.create(opatts);
+			return OpAttsService.create(opatts);
+     }
+    
+	 @PutMapping("/AddOA/{id}")
+	 public List<OptionalAttribute> createOptionalAttributes(@PathVariable String id,@RequestBody OptionalAttribute opatt) {
+			return OpAttsService.AddOptionalAtt(id, opatt);
      }
     
 	@PutMapping("/{id}")
-    public OptionalAttributes  updateOptionalAttributes(@PathVariable String id,@RequestBody OptionalAttributes opatts) {	 
+    public OptionalAttributes updateOptionalAttributes(@PathVariable String id,@RequestBody OptionalAttributes opatts) {	 
 		opatts.setId(id);
 		return OpAttsService.update(opatts);
 	 }
 	   	 	 
 
-//	 @DeleteMapping("/{id}")
-//	 public boolean deleteOptionalAttributes(@PathVariable String id) {
-//		return OpAttsService.delete(id);
+	 @DeleteMapping("/{id}")
+	 public boolean deleteOptionalAttributes(@PathVariable String id) {
+		return OpAttsService.delete(id);
 
-//  }
+}
 
 }
