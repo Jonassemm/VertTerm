@@ -5,6 +5,7 @@ import com.dvproject.vertTerm.Model.Restriction;
 import com.dvproject.vertTerm.Model.Role;
 import com.dvproject.vertTerm.Model.Status;
 import com.dvproject.vertTerm.Model.ResourceType;
+import com.dvproject.vertTerm.Model.*;
 
 import java.util.Date;
 import java.util.List;
@@ -13,19 +14,21 @@ import java.util.List;
 public interface ResourceService extends BasicService<Resource> {
 
     List<Resource> getResources(String[] ids);
-	    
-    List<Resource> getResources(Status status);
-    
-    List<Resource> getResources(String ResTypid);  
-    
-    
-    List<Restriction> getResourceRestrictions (String ResID);
-    List<Availability> getResourcevailabilities (String ResID);
 
-    List<Availability> updateResourceAvailabilities(String id, List<Availability> availabilities);
-	List<Restriction> updateResourceRestrictions(String id,String[] rids);
-	boolean isResourceAvailableBetween(String id, Date startdate, Date enddate);
+    List<Resource> getAll(ResourceType type);
 
-	List<ResourceType> getResourceTypes(String id);
- 
+    Resource updateResourceAvailability(Resource res);
+    
+    List<Restriction> getResourceDependencies (String ResID);
+   
+	List<Restriction> updateResourceDependencies(String id,String[] rids);
+
+    //TODO
+    // 
+    // List<Employee> getAllResourceEmps();
+    // Resource updateEmployeePermission(String resID,String empID,String roleID);
+    // Ressourcenangestelltenrollen bearbeiten 
+    // createResourceFailure 
+    // updateResourceFailure 
+	// Ressourcenzeiten anzeigen
 }

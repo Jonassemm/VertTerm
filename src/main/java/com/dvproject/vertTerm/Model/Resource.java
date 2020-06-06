@@ -1,6 +1,9 @@
 package com.dvproject.vertTerm.Model;
 
 import java.io.Serializable;
+import java.time.Duration;
+import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import javax.validation.constraints.NotNull;
@@ -54,6 +57,13 @@ public class Resource implements Serializable{
 		this.description = description;
 	}
 
+    public List<Availability> getAvailability() {
+        return availabilities;
+    }
+
+    public void setAvailability(List<Availability> availabilities) {
+        this.availabilities = availabilities;
+    }
 
 	public List<Availability> getAvailabilities() {
 		return availabilities;
@@ -91,8 +101,38 @@ public class Resource implements Serializable{
 		return resourceTypes;
 	}
 
-	public void setResourceTypes(List<ResourceType> resourceTypes) {
-		this.resourceTypes = resourceTypes;
-	}
-}
+    public void setResourceTypes(List<ResourceType> resourceTypes) {
+        this.resourceTypes = resourceTypes;
+    }
 
+    private Date getAvailableDateByAvailablility(Date date, Duration duration){
+        Date earliestDate = null;
+        for(Availability availability : this.getAvailabilities()){
+            Date currentBestAvailability = availability.getEarliestAvailability(date, duration);
+            if(currentBestAvailability != null){
+                if(earliestDate == null){
+                    earliestDate = currentBestAvailability;
+                }
+                else if(earliestDate.before(earliestDate)){
+                    earliestDate = currentBestAvailability;
+                }
+            }
+        }
+        return earliestDate;
+    }
+
+    public boolean isAvailable(Date date, Duration duration){
+        return date.equals(this.getAvailableDate(date, duration));
+    }
+
+    public Date getAvailableDate(Date date, Duration duration) {
+        Date dateByAvailability = this.getAvailableDateByAvailablility(date, duration);
+        if (dateByAvailability == null) {
+            return null;
+        }
+        if (dateByAvailability.after(date)) {
+            return this.getAvailableDate(dateByAvailability, duration);
+        }
+        return date;
+    }
+}

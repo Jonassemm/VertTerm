@@ -1,5 +1,5 @@
 import { observable, action, decorate } from "mobx"
-import { getUserData } from "./ActiveUserRequests"
+import { getAllUserData } from "./components/administrationComponents/userComponents/UserRequests"
 
 class UserStore {
     username = null

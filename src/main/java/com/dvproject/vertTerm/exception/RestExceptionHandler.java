@@ -19,8 +19,7 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
 	}
 
 	@ExceptionHandler(NullPointerException.class)
-	public ResponseEntity<Object> handleRessourceNotFoundException(NullPointerException exception,
-			WebRequest request) {
+	public ResponseEntity<Object> handleRessourceNotFoundException(NullPointerException exception, WebRequest request) {
 		return handleExceptionInternal(exception, exception.getMessage(), new HttpHeaders(),
 				HttpStatus.UNPROCESSABLE_ENTITY, request);
 	}
@@ -33,16 +32,22 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
 	}
 
 	@Override
-	protected ResponseEntity<Object> handleNoHandlerFoundException(
-			NoHandlerFoundException ex, HttpHeaders headers, HttpStatus status, WebRequest request) {
-	     headers.add("Location", "http://localhost:3001/");
-	     return new ResponseEntity<Object>(headers, HttpStatus.OK);
-	 }
-	
+	protected ResponseEntity<Object> handleNoHandlerFoundException(NoHandlerFoundException ex, HttpHeaders headers,
+			HttpStatus status, WebRequest request) {
+		headers.add("Location", "http://localhost:3001/");
+		return new ResponseEntity<Object>(headers, HttpStatus.OK);
+	}
+
 	@ExceptionHandler(javax.validation.ConstraintViolationException.class)
-	public ResponseEntity<Object> handleConstraintViolationException(javax.validation.ConstraintViolationException exception,
-			WebRequest request) {
+	public ResponseEntity<Object> handleConstraintViolationException(
+			javax.validation.ConstraintViolationException exception, WebRequest request) {
 		return handleExceptionInternal(exception, exception.getMessage(), new HttpHeaders(), HttpStatus.BAD_REQUEST,
 				request);
+	}
+
+	@ExceptionHandler(RuntimeException.class)
+	public ResponseEntity<Object> handleRuntimeException(RuntimeException exception, WebRequest request) {
+		return handleExceptionInternal(exception, exception.getMessage(), new HttpHeaders(),
+				HttpStatus.UNPROCESSABLE_ENTITY, request);
 	}
 }

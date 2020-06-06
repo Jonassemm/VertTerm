@@ -1,10 +1,10 @@
-import {getAllUsers, getCustomerList, getEmployeeList} from "./userComponents/UserRequests"
-import {getProcedures} from "./procedureComponents/ProcedureRequests"
-import {getRoles} from "./roleComponents/RoleRequests"
-import {getAllPositions} from "./positionComponents/PositionRequests"
-import {getAllResourceTypes} from "./resourceTypeComponents/ResourceTypeRequests"
-import {getAllResources} from "./resourceComponents/ResourceRequests"
-import {getAllRestrictions} from "./restrictionComponents/RestrictionRequests"
+import {getAllUsers, getCustomerList, getEmployeeList} from "./administrationComponents/userComponents/UserRequests"
+import {getProcedures} from "./administrationComponents/procedureComponents/ProcedureRequests"
+import {getRoles} from "./administrationComponents/roleComponents/RoleRequests"
+import {getAllPositions} from "./administrationComponents/positionComponents/PositionRequests"
+import {getAllResourceTypes} from "./administrationComponents/resourceTypeComponents/ResourceTypeRequests"
+import {getAllResources} from "./administrationComponents/resourceComponents/ResourceRequests"
+import {getAllRestrictions} from "./administrationComponents/restrictionComponents/RestrictionRequests"
 
 
 export const getUsers = getAllUsers

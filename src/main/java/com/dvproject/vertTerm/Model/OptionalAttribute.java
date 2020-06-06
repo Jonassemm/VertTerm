@@ -4,6 +4,8 @@ public class OptionalAttribute {
 	private String name;
 	private boolean mandatoryField;
 	
+	public OptionalAttribute() {}
+	
 	public String getName() {
 		return name;
 	}

@@ -20,6 +20,9 @@ public class UserServiceImp implements UserService {
     private UserRepository repo;
     
     @Autowired
+    private OptionalAttributesService optionalAttributesService;
+    
+    @Autowired
     private PasswordEncoder passwordEncoder;
 
     //@PreAuthorize("hasAuthority('USERS_DATA_READ')")
@@ -56,6 +59,7 @@ public class UserServiceImp implements UserService {
 	public User create(User newInstance) {
 		if (newInstance.getId() == null) {
 			this.encodePassword(newInstance);
+			this.testMandatoryFields(newInstance);
 			return repo.save(newInstance);
 		}
 		if (repo.findById(newInstance.getId()).isPresent()) {
@@ -67,9 +71,8 @@ public class UserServiceImp implements UserService {
 	@Override
 	public User update(User updatedInstance) {
 		if (updatedInstance.getId() != null && repo.findById(updatedInstance.getId()).isPresent()) {
-			if (this.hasPasswordChanged(updatedInstance))
-				this.encodePassword(updatedInstance);
-			
+			this.testMandatoryFields(updatedInstance);
+			this.encodePassword(updatedInstance);
 			return repo.save(updatedInstance);
 		}
 		return null;
@@ -167,11 +170,6 @@ public class UserServiceImp implements UserService {
     		user.setPassword(encodedPassword);
     	}
     }
-    
-    public boolean hasPasswordChanged (User user) {
-    	User oldUser = this.getById(user.getId());
-    	return !oldUser.getPassword().equals(user.getPassword());
-    }
 
 	@Override
 	public User getAnonymousUser() {
@@ -186,6 +184,11 @@ public class UserServiceImp implements UserService {
 		user.setSystemStatus(Status.ACTIVE);
 		
 		return user;
+	}
+	
+	public void testMandatoryFields(User user) {
+		List<OptionalAttribute> optionalAttributes = new ArrayList<OptionalAttribute>(user.getOptionalAttributes().keySet());
+		optionalAttributesService.testMandatoryFields(User.class.getSimpleName(), optionalAttributes);
 	}
 
 }
