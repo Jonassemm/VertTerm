@@ -10,6 +10,7 @@ import javax.validation.constraints.NotNull;
 
 import com.dvproject.vertTerm.Service.EmployeeService;
 import com.dvproject.vertTerm.Service.ResourceService;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
@@ -230,5 +231,15 @@ public class Procedure implements Serializable {
 			}
 		}
 		return appointments;
+	}
+	
+	public void isAvailable (Date startdate, Date enddate) {
+		for (Availability availability : availabilities) {
+			if (availability.isAvailableBetween(startdate, enddate)) {
+				return;
+			}
+		}
+		
+		throw new RuntimeException("No availability in procedure " + id);
 	}
 }

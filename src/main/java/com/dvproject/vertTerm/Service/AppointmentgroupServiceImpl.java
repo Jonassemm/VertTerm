@@ -1,10 +1,10 @@
 package com.dvproject.vertTerm.Service;
 
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.rest.webmvc.ResourceNotFoundException;
@@ -16,7 +16,6 @@ import com.dvproject.vertTerm.Model.Employee;
 import com.dvproject.vertTerm.Model.Optimizationstrategy;
 import com.dvproject.vertTerm.Model.Procedure;
 import com.dvproject.vertTerm.Model.Resource;
-import com.dvproject.vertTerm.Model.Restriction;
 import com.dvproject.vertTerm.Model.Status;
 import com.dvproject.vertTerm.Model.User;
 import com.dvproject.vertTerm.repository.AppointmentgroupRepository;
@@ -114,69 +113,61 @@ public class AppointmentgroupServiceImpl implements AppointmentgroupService {
 	@Override
 	public boolean bookAppointmentgroup(String userid, Appointmentgroup appointmentgroup) {
 		List<Appointment> appointments = appointmentgroup.getAppointments();
-		List<Restriction> userRestrictions;
-		User user;
 		boolean noUserAttached = userid.equals("");
-
-		if (noUserAttached) {
-			user = userService.getAnonymousUser();
-		} else {
-			user = userService.getById(userid);
-			userRestrictions = user.getRestrictions();
-		}
-
-		checkProcedureRelation(appointments);
+		User user = noUserAttached ? userService.getAnonymousUser() : userService.getById(userid);
 
 		for (Appointment appointment : appointments) {
-			Date startdate = appointment.getPlannedStarttime();
-			Date enddate = appointment.getPlannedEndtime();
-			Procedure procedure = procedureService.getById(appointment.getBookedProcedure().getId());
-			List<Employee> employees = new ArrayList<>();
-			List<Resource> resources = new ArrayList<>();
-
-			// populate list of employees
-			appointment.getBookedEmployees()
-					.forEach(employee -> employees.add(employeeService.getById(employee.getId())));
-			// populate list of resources
-			appointment.getBookedResources()
-					.forEach(resource -> resources.add(resourceService.getById(resource.getId())));
-
-			checkEmployees(procedure, employees);
-
-			checkResources(procedure, resources);
-
-			checkAvailabilityOfProcedure(procedure, startdate, enddate);
-
-			for (Resource resource : resources) {
-				checkAvailabilityOfRessources(resource, startdate, enddate);
-			}
-
-			// TODO:
-			// - employeeService.isAvailable
-			// - warning-tests in:
-			// ressources/procedure
-			// - test, whether the employees/resources are blocked in the planned time
-			// interval
-
-			if (noUserAttached) {
+			if (noUserAttached || appointment.getBookedCustomer() == null) {
 				appointment.setBookedCustomer(user);
 			} else {
-				User userOfAppointment = appointment.getBookedCustomer();
-				if (userOfAppointment != null && !userOfAppointment.getId().equals(userid)) {
+				if (!appointment.getBookedCustomer().getId().equals(userid)) {
 					throw new IllegalArgumentException(
 							"User in the appointment for the procedure " + appointment.getBookedProcedure().getId()
 									+ " does not conform to the given user for all appointments");
 				}
 			}
+
+			loadAppointmentdataFromDatabase(appointment);
 		}
 
+		appointmentgroup.isBookable();
+
+		for (Appointment appointment : appointments) {
+			Date startdate = appointment.getPlannedStarttime();
+			Date enddate = appointment.getPlannedEndtime();
+			Duration duration = Duration.between(startdate.toInstant(), enddate.toInstant());
+
+			// test, whether the resources have a different appointment in the given time
+			// interval
+			for (Resource resource : appointment.getBookedResources()) {
+				if (!resource.isAvailable(startdate, duration)) {
+					throw new RuntimeException("The resource " + resource.getName()
+							+ " already has an appointment for the given time interval");
+				}
+			}
+
+			// test, whether the employees have a different appointment in the given time
+			// interval
+			for (Employee employee : appointment.getBookedEmployees()) {
+				if (!employee.isAvailable(startdate, duration)) {
+					throw new RuntimeException("The employee " + employee.getFirstName() + " " + employee.getLastName()
+							+ " already has an appointment for the given time interval");
+				}
+			}
+		}
+
+		//create new annonymoususer
 		if (noUserAttached) {
 			userService.create(user);
 		}
 
+		//create all appointments of the appointmentgroup
 		for (Appointment appointment : appointments) {
 			appointmentService.create(appointment);
 		}
+
+		//
+		appointmentgroupRepository.save(appointmentgroup);
 
 		return true;
 	}
@@ -188,86 +179,6 @@ public class AppointmentgroupServiceImpl implements AppointmentgroupService {
 		Appointmentgroup appointmentgroup = this.getAppointmentInternal(id);
 
 		return appointmentgroup.getStatus() == Status.DELETED;
-	}
-
-	/**
-	 * tests, whether the given appointment-list conforms to the relations of the
-	 * procedure
-	 * 
-	 * @param appointments the list of appointments to test
-	 * 
-	 * @exception RuntimeException if the relations do not conform
-	 */
-	private void checkProcedureRelation(List<Appointment> appointments) {
-		if (!procedureService.hasCorrectProcedureRelations(appointments))
-			throw new RuntimeException(
-					"Appointments can not be booked, because they do not conform to the procedure relations");
-	}
-
-	/**
-	 * tests, whether the {@link Appointment#bookedEmployees employees} of the
-	 * appointment conform to the {@link Procedure#neededEmployeePositions
-	 * positions} in the procedure
-	 * 
-	 * @param procedure procedure of an appointment
-	 * @param employees employees of an appointment
-	 * 
-	 * @exception RuntimeException if the employees do not match the positions
-	 */
-	private void checkEmployees(Procedure procedure, List<Employee> employees) {
-		if (!procedureService.hasCorrectEmployees(procedure, employees))
-			throw new RuntimeException(
-					"Appointments can not be booked, because they do not conform to the position in the procedure "
-							+ procedure.getName());
-	}
-
-	/**
-	 * tests, whether the {@link Appointment#bookedResources resources} of the
-	 * appointment conform to the {@link Procedure#neededResourceTypes
-	 * resourceTypes} in the procedure
-	 * 
-	 * @param procedure procedure of an appointment
-	 * @param resources resources of an appointment
-	 * 
-	 * @exception RuntimeException if the resources do not match the resourceTypes
-	 */
-	private void checkResources(Procedure procedure, List<Resource> resources) {
-		if (!procedureService.hasCorrectResources(procedure, resources))
-			throw new RuntimeException(
-					"Appointments can not be booked, because they do not conform to the resourceType in the procedure "
-							+ procedure.getName());
-	}
-
-	/**
-	 * tests, whether the procedure has an availability in the time interval of the
-	 * planned time interval of the appointment
-	 * 
-	 * @param procedure booked procedure of an appointment
-	 * @param startdate planned startdate of the appointment
-	 * @param enddate   planned enddate of the appointment
-	 * 
-	 * @exception RuntimeException if there is not availability
-	 */
-	private void checkAvailabilityOfProcedure(Procedure procedure, Date starttime, Date endtime) {
-		if (!procedureService.isAvailableBetween(procedure.getId(), starttime, endtime))
-			throw new RuntimeException(
-					"Appointments can not be booked, because the procedure is not available in the given time interval");
-	}
-
-	/**
-	 * tests, whether the resource has an availability in the time interval of the
-	 * planned time interval of the appointment
-	 * 
-	 * @param resource  booked resource of an appointment
-	 * @param startdate planned startdate of the appointment
-	 * @param enddate   planned enddate of the appointment
-	 * 
-	 * @exception RuntimeException if there is not availability
-	 */
-	private void checkAvailabilityOfRessources(Resource resource, Date starttime, Date endtime) {
-		if (!resourceService.isResourceAvailableBetween(resource.getId(), starttime, endtime))
-			throw new RuntimeException(
-					"Appointments can not be booked, because the procedure is not available in the given time interval");
 	}
 
 	private Appointmentgroup deleteAppointmentgroup(String id) {
@@ -287,6 +198,29 @@ public class AppointmentgroupServiceImpl implements AppointmentgroupService {
 			return appointmentgroup.get();
 		} else {
 			throw new ResourceNotFoundException("No appointmentgroup with the given id (" + id + ") can be found.");
+		}
+	}
+
+	private void loadAppointmentdataFromDatabase(Appointment appointment) {
+		Procedure procedure = procedureService.getById(appointment.getBookedProcedure().getId());
+		List<Employee> employees = new ArrayList<>();
+		List<Resource> resources = new ArrayList<>();
+
+		// populate list of employees
+		appointment.getBookedEmployees().forEach(employee -> employees.add(employeeService.getById(employee.getId())));
+		// set employees of appointment
+		appointment.setBookedEmployees(employees);
+
+		// populate list of resources
+		appointment.getBookedResources().forEach(resource -> resources.add(resourceService.getById(resource.getId())));
+		// set resources of appointment
+		appointment.setBookedResources(resources);
+
+		appointment.setBookedProcedure(procedure);
+
+		if (appointment.getActualStarttime() != null || appointment.getActualEndtime() != null) {
+			throw new RuntimeException(
+					"Appointment with the procedure " + procedure.getName() + " contains actual times");
 		}
 	}
 
