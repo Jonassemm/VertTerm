@@ -7,6 +7,7 @@ import "react-big-calendar/lib/css/react-big-calendar.css"
 import ObjectPicker from "../ObjectPicker"
 import "./BookingForm.css"
 import DatePicker from "react-datepicker"
+import {addAppointmentGroup} from "./requests"
 
 const localizer = momentLocalizer(moment)
 
@@ -14,53 +15,79 @@ function BookingForm() {
     const [calendarEvents, setCalendarEvents] = useState([])
     const [selectedProcedures, setSelectedProcedures] = useState([])
     const [selectedCustomer, setSelectedCustomer] = useState({})
-    const [startDate, setStartDate] = useState(null)
-    const [endDate, setEndDate] = useState(null)
     const [custom, setCustom] = useState(false)
     const [apts, setApts] = useState([])
     const [timeDif, setTimeDif] = useState(0)
 
-    function handleSubmit(event) {
+    async function handleSubmit(event) {
         event.preventDefault()
         const finalData = apts.map(item => {
             return {
                 ...item,
-                bookedCustomer: selectedCustomer,
-                plannedStartTime: startDate,
-                plannendEndTime: endDate
+                bookedCustomer: selectedCustomer
             }
         })
-        console.log()
         console.log(finalData)
+        res = await addAppointmentGroup(finalData)
+        console.log(res)
+
     }
 
-    function validateTime(date) {         
-        let currentDate = new Date()
-        let mod = currentDate.getMinutes() % 10
-        currentDate.setMinutes(currentDate.getMinutes() - mod)
-        if(mod >=5 ) currentDate.setMinutes(currentDate.getMinutes() + 10)
-
-        if(date.ident == "start"){
-            if(date.date.getTime() - currentDate.getTime() < 0){
-                setStartDate(currentDate)
-            }else {
-                setStartDate(date.date)
-            }
-        }else {
-            const dif = Math.round((date.date.getTime() - startDate.getTime()) / 1000 / 60)
-            console.log(dif)
-            if(dif < 0 ){
-                setEndDate(currentDate)
-            }else {
-                setEndDate(date.date)
-            }
-        }
-      
+    function setupPresetTime(item) {
         
     }
 
+    function validateTime(data) {
+        //calculating the current date rounded to 5 minutes
+        let currentDate = new Date()
+        let mod = currentDate.getMinutes() % 10
+        currentDate.setMinutes(currentDate.getMinutes() - mod)
+        if (mod >= 5) currentDate.setMinutes(currentDate.getMinutes() + 10)
+
+        //copie of apts
+        let tempApts = apts.map(item => {
+            return { ...item }
+        })
+
+        // defining function
+        const calculateDifference = (ref1, ref2, end) => {
+            if (ref1) {
+                //checking if selected date is in the future
+                if (data.date.getTime() - currentDate.getTime() > 0) {
+                    //checking if selected date is in the right place
+                    if ((data.date.getTime() - ref1.getTime()) < 0) {
+                        if (end) ref2 = ref1
+                        else ref2 = data.date
+                    } else {
+                        if (end) ref2 = data.date
+                        else ref2 = ref1
+                    }
+                } else {
+                    if (end) ref2 = ref1
+                    else ref2 = currentDate
+                }
+            } else {
+                if (data.date.getTime() - currentDate.getTime() > 0) ref2 = date.date
+                else ref2 = currentDate
+            }
+            return ([ref1, ref2])
+        }
+        // checking wheter a selected time is in the past and if the differece between start and end is positive
+        const refIndex = tempApts.findIndex(item => item.procedure.id == data.ref.procedure.id)
+        if (data.ident == "start") {
+            const [ref1, ref2] = calculateDifference(tempApts[refIndex].plannedEndTime, tempApts[refIndex].plannedStartTime)
+            tempApts[refIndex].plannedEndTime = ref1
+            tempApts[refIndex].plannedStartTime = ref2
+        } else {
+            const [ref1, ref2] = calculateDifference(tempApts[refIndex].plannedStartTime, tempApts[refIndex].plannedEndTime, true)
+            tempApts[refIndex].plannedEndTime = ref2
+            tempApts[refIndex].plannedStartTime = ref1
+        }
+        console.log(tempApts)
+        setApts(tempApts)
+    }
+
     function handleChange(data) {
-        console.log(data)
         const temp = apts.map(item => {
             if (item.procedure.name == data.ident.ident) {
                 if (data.DbObject == "employee") {
@@ -103,7 +130,7 @@ function BookingForm() {
 
     function setProcedures(data) {
         setSelectedProcedures(data)
-        const temp = apts.map(item => {
+        const tempApts = apts.map(item => {
             return {
                 ...item
             }
@@ -111,12 +138,12 @@ function BookingForm() {
         const dif = apts.length - data.length
         if (dif > 1) {
             // delete all
-            temp.splice(0, temp.length)
+            tempApts.splice(0, tempApts.length)
         } else if (dif > 0) {
             // delete one
             for (let i = 0; i < apts.length; i++) {
                 if (!data.find(item => item.name == apts[i].procedure.name)) {
-                    temp.splice(i, 1)
+                    tempApts.splice(i, 1)
                 }
             }
         } else {
@@ -124,16 +151,16 @@ function BookingForm() {
             const tempEmployees = data[data.length - 1].neededEmployeePositions.map(item => {
                 return {}
             })
-            temp.push({
+            tempApts.push({
                 procedure: data[data.length - 1],
                 bookedEmployees: tempEmployees,
                 bookedCustomer: {},
                 bookedResources: [],
-                plannedStartTime: "",
-                plannendEndTime: ""
+                plannedStartTime: null,
+                plannedEndTime: null
             })
         }
-        setApts(temp)
+        setApts(tempApts)
     }
 
     return (
@@ -178,16 +205,16 @@ function BookingForm() {
                                 multiple={true} />
                         </Form.Group>
                     </Form.Row>
-                    {!custom && selectedProcedures.map(item => {
+                    {!custom && apts.map(item => {
                         return (
                             <React.Fragment>
                                 <hr />
                                 <div className="parent">
                                     <div className="namebox">
-                                        <h4>{item.name}</h4>
+                                        <h4>{item.procedure.name}</h4>
                                     </div>
                                     <div className="box wrap">
-                                        {item.neededEmployeePositions && item.neededEmployeePositions.map((innerItem, index) => {
+                                        {item.procedure.neededEmployeePositions && item.procedure.neededEmployeePositions.map((innerItem, index) => {
                                             return (
                                                 <div className="middleBox">
                                                     <div className="middleBoxLeft">
@@ -196,14 +223,14 @@ function BookingForm() {
                                                     <div className="middleBoxRight">
                                                         <ObjectPicker
                                                             className="input"
-                                                            ident={{ "ident": item.name, "ix": index }}
+                                                            ident={{ "ident": item.procedure.name, "ix": index }}
                                                             DbObject="employee"
                                                             setState={handleChange} />
                                                     </div>
                                                 </div>
                                             )
                                         })}
-                                        {item.neededResourceTypes && item.neededResourceTypes.map((innerItem, index) => {
+                                        {item.procedure.neededResourceTypes && item.procedure.neededResourceTypes.map((innerItem, index) => {
                                             return (
                                                 <div className="middleBox">
                                                     <div className="middleBoxLeft">
@@ -212,7 +239,7 @@ function BookingForm() {
                                                     <div className="middleBoxRight">
                                                         <ObjectPicker
                                                             className="input"
-                                                            ident={{ "ident": item.name, "ix": index }}
+                                                            ident={{ "ident": item.procedure.name, "ix": index }}
                                                             DbObject="resource"
                                                             setState={handleChange} />
                                                     </div>
@@ -230,8 +257,8 @@ function BookingForm() {
                                                     required
                                                     popperPlacement="left"
                                                     className="input"
-                                                    selected={startDate || ""}
-                                                    onChange={date => validateTime({date: date, ident: "start"})}
+                                                    selected={item.plannedStartTime}
+                                                    onChange={date => validateTime({ date: date, ident: "start", ref: item })}
                                                     showTimeSelect
                                                     timeFormat="HH:mm"
                                                     timeIntervals={5}
@@ -249,9 +276,10 @@ function BookingForm() {
                                                     required
                                                     className="input"
                                                     popperPlacement="left"
-                                                    selected={endDate || ""}
-                                                    onChange={date => { 
-                                                        validateTime({date: date, ident: "end"})}}
+                                                    selected={item.plannedEndTime}
+                                                    onChange={date => {
+                                                        validateTime({ date: date, ident: "end", ref: item })
+                                                    }}
                                                     showTimeSelect
                                                     timeFormat="HH:mm"
                                                     timeIntervals={5}
