@@ -18,5 +18,6 @@ public interface UserService extends BasicService<User> {
     List<Right> getUserRightsWithId (String id);
     
     void encodePassword (User user);
-    boolean hasPasswordChanged (User user);
+    void testMandatoryFields(User user);
+    User getAnonymousUser ();
 }

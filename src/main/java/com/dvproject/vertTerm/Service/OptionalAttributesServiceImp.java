@@ -102,7 +102,14 @@ Optional<OptionalAttributes> OptionalAttributes = OptionalAttributesRepo.findByI
 	
 }
 
-	
+	public OptionalAttributes getByClassname(String classname) {
+		return OptionalAttributesRepo.findByClass(classname);
+	}
+
+	@Override
+	public void testMandatoryFields(String classname, List<OptionalAttribute> optionalAttributes) {
+		getByClassname(classname).testMandatoryFields(optionalAttributes);
+	}
 
 }
 

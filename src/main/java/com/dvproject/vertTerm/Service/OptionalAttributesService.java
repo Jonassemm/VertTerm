@@ -14,5 +14,10 @@ public interface OptionalAttributesService extends BasicService<OptionalAttribut
 
 	List<OptionalAttribute> AddOptionalAtt(String id, OptionalAttribute opatt);
   
+	OptionalAttributes getByClassname(String classname);
+	
+	void testMandatoryFields(String classname, List<OptionalAttribute> optionalAttributes);
+ 
+
 }
 

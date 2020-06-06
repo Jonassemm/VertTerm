@@ -74,112 +74,6 @@ public class ProcedureServiceImp implements ProcedureService {
 	}
 
 	@Override
-	public boolean hasCorrectProcedureRelations(List<Appointment> appointmentsToTest) {
-		// procedure.id -> appointment
-		Map<String, Appointment> appointments = new HashMap<>();
-		// procedure.id -> procedure
-		Map<String, Procedure> procedures = new HashMap<>();
-
-		// populate Maps
-		for (Appointment appointment : appointmentsToTest) {
-			String id = appointment.getBookedProcedure().getId();
-			procedures.put(id, this.getProcedureFromDB(id));
-
-			appointments.put(id, appointment);
-		}
-
-		for (Appointment appointment : appointmentsToTest) {
-			Procedure procedure = procedures.get(appointment.getBookedProcedure().getId());
-			List<ProcedureRelation> precedingprocedures = procedure.getPrecedingRelations();
-			List<ProcedureRelation> subsequentprocedures = procedure.getSubsequentRelations();
-
-			// test all precedingRelations
-			if (precedingprocedures != null) {
-				for (ProcedureRelation procedureRelation : precedingprocedures) {
-					if (procedures.containsKey(procedureRelation.getProcedure().getId())) {
-						Appointment appointmentToTest = appointments.get(procedureRelation.getProcedure().getId());
-
-						if (doAppointmentsConformToProcedureRelation(appointmentToTest, appointment, procedureRelation))
-							continue;
-					}
-
-					return false;
-				}
-			}
-
-			// test all subsequentRelations
-			if (subsequentprocedures != null) {
-				for (ProcedureRelation procedureRelation : subsequentprocedures) {
-					if (procedures.containsKey(procedureRelation.getProcedure().getId())) {
-						Appointment appointmentToTest = appointments.get(procedureRelation.getProcedure().getId());
-
-						if (doAppointmentsConformToProcedureRelation(appointment, appointmentToTest, procedureRelation))
-							continue;
-					}
-
-					return false;
-				}
-			}
-		}
-
-		return true;
-	}
-	
-	@Override
-	public boolean hasCorrectEmployees(Procedure procedure, List<Employee> employees) {
-		boolean testVal = false;
-		List<Position> procedurePositions = procedure.getNeededEmployeePositions();
-		
-		for (int i = 0; i < employees.size(); i++) {
-			Employee employee = employees.get(i);
-			Position procedurePosition = procedurePositions.get(i);
-			
-			List<Position> positions = employee.getPositions();
-			
-			for (Position position : positions) {
-				if (position.getId().equals(procedurePosition.getId())) {
-					testVal = true;
-					break;
-				}
-			}
-			
-			if (!testVal)
-				return false;
-			
-			testVal = false;
-		}
-		
-		return true;
-	}
-
-	@Override
-	public boolean hasCorrectResources(Procedure procedure, List<Resource> resources) {
-		boolean testVal = false;
-		List<ResourceType> procedureResourceTypes = procedure.getNeededResourceTypes();
-		
-		for (int i = 0; i < resources.size(); i++) {
-			Resource resource = resources.get(i);
-			ResourceType procedureResourceType = procedureResourceTypes.get(i);
-			
-			List<ResourceType> resourceTypes = resource.getResourceTypes();
-			
-			for (ResourceType presourceType : resourceTypes) {
-				if (presourceType.getId().equals(procedureResourceType.getId())) {
-					testVal = true;
-					break;
-				}
-			}
-			
-			if (!testVal)
-				return false;
-			
-			testVal = false;
-		}
-		
-		return true;
-	}
-
-	@Override
 	public Procedure create(Procedure procedure) {
 		if (procedure.getId() == null) {
 			return procedureRepository.save(procedure);
@@ -210,7 +104,7 @@ public class ProcedureServiceImp implements ProcedureService {
 		oldProcedure.setDescription(procedure.getDescription());
 		oldProcedure.setPricePerHour(procedure.getPricePerHour());
 		oldProcedure.setPricePerInvocation(procedure.getPricePerInvocation());
-		oldProcedure.setDurationInMinutes(procedure.getDurationInMinutes());
+		oldProcedure.setDuration(procedure.getDuration());
 
 		return procedureRepository.save(oldProcedure);
 	}
@@ -320,24 +214,6 @@ public class ProcedureServiceImp implements ProcedureService {
 		if (!StatusService.isUpdateable(status)) {
 			throw new IllegalArgumentException("The given procedure is not updateable");
 		}
-	}
-
-	private Calendar getCalendar(Date date) {
-		Calendar calendar = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
-		calendar.setTime(date);
-		return calendar;
-	}
-
-	private boolean doAppointmentsConformToProcedureRelation(Appointment startAppointment, Appointment endAppointment,
-			ProcedureRelation procedureRelation) {
-		// the duration between startAppointment.plannedEndtime and
-		// endAppointment.plannedStarttime
-		Duration timeBetween = Duration.between(getCalendar(startAppointment.getPlannedEndtime()).toInstant(),
-				getCalendar(endAppointment.getPlannedStarttime()).toInstant());
-
-		// minDifference <= timeBetween && timeBetween <= maxDifference
-		return procedureRelation.getMinDifference().compareTo(timeBetween) <= 0
-				&& timeBetween.compareTo(procedureRelation.getMaxDifference()) <= 0;
 	}
 
 }

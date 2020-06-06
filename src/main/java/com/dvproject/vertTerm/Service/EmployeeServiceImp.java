@@ -1,14 +1,17 @@
 package com.dvproject.vertTerm.Service;
 
 import com.dvproject.vertTerm.Model.Employee;
+import com.dvproject.vertTerm.Model.Position;
 import com.dvproject.vertTerm.Model.Status;
 import com.dvproject.vertTerm.Model.User;
 import com.dvproject.vertTerm.repository.EmployeeRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Example;
 import org.springframework.data.rest.webmvc.ResourceNotFoundException;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -43,6 +46,17 @@ public class EmployeeServiceImp implements EmployeeService {
         return (users);
     }
 
+    public List<Employee> getAll(Position pos){
+        List<Employee> result= new ArrayList<>();
+        for(Employee employee : repo.findAll()){
+            for (Position position : employee.getPositions())
+            if(position.equals(pos)) {
+                result.add(employee);
+            }
+        }
+        return result;
+    }
+
     @Override
     public Employee getById(String id) {
         Optional<Employee> appointment = repo.findById(id);
@@ -52,6 +66,7 @@ public class EmployeeServiceImp implements EmployeeService {
     @Override
     public Employee create(Employee newInstance) {
         if (newInstance.getId() == null) {
+        	userService.testMandatoryFields(newInstance);
         	userService.encodePassword(newInstance);
             return repo.save(newInstance);
         }
@@ -64,9 +79,8 @@ public class EmployeeServiceImp implements EmployeeService {
     @Override
     public Employee update(Employee updatedInstance) {
         if (updatedInstance.getId() != null && repo.findById(updatedInstance.getId()).isPresent()) {
-        	if (userService.hasPasswordChanged(updatedInstance))
-        		userService.encodePassword(updatedInstance);
-        	
+        	userService.testMandatoryFields(updatedInstance);
+        	userService.encodePassword(updatedInstance);
             return repo.save(updatedInstance);
         }
         return null;
