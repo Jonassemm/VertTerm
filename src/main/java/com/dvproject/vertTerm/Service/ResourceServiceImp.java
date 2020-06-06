@@ -1,6 +1,7 @@
 package com.dvproject.vertTerm.Service;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
@@ -35,16 +36,6 @@ public class ResourceServiceImp implements ResourceService {
 		return this.ResRepo.findAll();
 	}
 
-	public List<Resource> getAll(ResourceType type) {
-		List<Resource> result = new ArrayList<>();
-		for (Resource resource : ResRepo.findAll()) {
-			if (resource.getResourceType().equals(type)) {
-				result.add(resource);
-			}
-		}
-		return result;
-	}
-
 	// @PreAuthorize("hasAuthority('RESOURCE_DATA_READ')")
 	public Resource getById(String id) {
 		Optional<Resource> ResDb = this.ResRepo.findById(id);
@@ -63,17 +54,6 @@ public class ResourceServiceImp implements ResourceService {
 
 	}
 
-	// @PreAuthorize("hasAuthority('RESOURCE_DATA_WRITE')")
-	public Resource update(Resource res) {
-		if (res.getId() != null && ResRepo.findById(res.getId()).isPresent()) {
-
-			return ResRepo.save(res);
-		}
-
-		else {
-			throw new ResourceNotFoundException("Resource with the given id :" + res.getId() + "not found");
-		}
-	}
 
 	// @PreAuthorize("hasAuthority('RESOURCE_STATUS_WRITE')")
 	public boolean delete(String id) {
@@ -92,33 +72,6 @@ public class ResourceServiceImp implements ResourceService {
 		}
 	}
 
-	// @PreAuthorize("hasAuthority('RESOURCE_STATUS_WRITE')")
-	public boolean delete(String id) {
-		Resource Res = getById(id);
-		return Res.getStatus() == Status.DELETED;
-	}
-
-	// @PreAuthorize("hasAuthority('RESOURCE_DATA_READ')")
-	public List<Resource> getResources(String[] ids) {
-		List<Resource> Resources = new ArrayList<Resource>();
-		for (String id : ids) {
-			Resources.add(this.getById(id));
-		}
-		return Resources;
-	}
-
-	// @PreAuthorize("hasAuthority('RESOURCE_DATA_READ')")
-	public List<Restriction> getResourceRestrictions(String id) {
-		List<Restriction> dep = new ArrayList<Restriction>();
-		Resource res = getById(id);
-		for (Restriction rest : res.getRestrictions()) {
-			if (!dep.contains(rest))
-				dep.add(rest);
-		}
-		return dep;
-
-	}
-
 	// @PreAuthorize("hasAuthority('RESOURCE_DATA_READ')")
 	public List<Resource> getResources(String[] ids) {
 		List<Resource> Resources = new ArrayList<>();
@@ -126,6 +79,23 @@ public class ResourceServiceImp implements ResourceService {
 			Resources.add(this.getById(id));
 		}
 		return Resources;
+	}
+
+	@Override
+	public List<Resource> getAll(ResourceType type) {
+		return this.getResources(type.getId());
+	}
+
+	// @PreAuthorize("hasAuthority('RESOURCE_DATA_READ')")
+	public List<Restriction> getResourceRestrictions(String id) {
+		List<Restriction> dep = new ArrayList<>();
+		Resource res = getById(id);
+		for (Restriction rest : res.getRestrictions()) {
+			if (!dep.contains(rest))
+				dep.add(rest);
+		}
+		return dep;
+
 	}
 
 	// @PreAuthorize("hasAuthority('RESOURCE_DATA_READ')")
@@ -157,7 +127,7 @@ public class ResourceServiceImp implements ResourceService {
 
 	// @PreAuthorize("hasAuthority('RESOURCE_DATA_WRITE')")
 	public List<Restriction> updateResourceRestrictions(String id, String[] Rids) {
-		List<Restriction> dep = new ArrayList<Restriction>();
+		List<Restriction> dep = new ArrayList<>();
 		List<Restriction> AllRestrictions = RestsRepo.findAll();
 		List<String> RestIds = List.of(Rids);
 		for (Restriction rest : AllRestrictions) {
