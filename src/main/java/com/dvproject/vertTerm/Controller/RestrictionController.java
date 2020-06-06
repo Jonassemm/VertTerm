@@ -45,6 +45,13 @@ public class RestrictionController {
 	 public  @ResponseBody  List<Restriction> getRestrictions(@RequestParam String[] ids) {
 	     return RestService.getRestrictions(ids);
 	 }
+	
+	 @GetMapping("/testRes")
+	 public  @ResponseBody  boolean testRestrictions(@RequestParam  List<Restriction> L1, @RequestParam List<Restriction> L2) {
+	     return RestService.testRestrictions(L1, L2);
+	 }
+
+	 
 	 @PostMapping
 	 public Restriction createRestriction(@RequestBody Restriction rest) {
 	     return RestService.create(rest);
