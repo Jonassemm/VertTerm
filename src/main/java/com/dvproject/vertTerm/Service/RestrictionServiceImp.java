@@ -1,7 +1,17 @@
 package com.dvproject.vertTerm.Service;
 
 import com.dvproject.vertTerm.Model.Restriction;
+import com.dvproject.vertTerm.Model.User;
+import com.dvproject.vertTerm.Model.OptionalAttribute;
+import com.dvproject.vertTerm.Model.Procedure;
+import com.dvproject.vertTerm.Model.Resource;
+import com.dvproject.vertTerm.repository.ProcedureRepository;
+import com.dvproject.vertTerm.repository.RessourceRepository;
 import com.dvproject.vertTerm.repository.RestrictionRepository;
+import com.dvproject.vertTerm.repository.UserRepository;
+import com.fasterxml.jackson.annotation.JsonTypeInfo.Id;
+import com.fasterxml.jackson.core.sym.Name;
+
 import net.springboot.javaguides.exception.ResourceExsistException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.rest.webmvc.ResourceNotFoundException;
@@ -19,7 +29,12 @@ public class RestrictionServiceImp implements RestrictionService {
 
    @Autowired
    private RestrictionRepository RestrictionRepo;
-
+   @Autowired
+   private UserRepository UserRepo;
+   @Autowired
+   private RessourceRepository ResRepo;
+   @Autowired
+   private ProcedureRepository ProRepo;
 
    //@PreAuthorize("hasAuthority('RestrictionS_WRITE')") 
    public Restriction create(Restriction Restriction) {
@@ -81,15 +96,26 @@ public class RestrictionServiceImp implements RestrictionService {
        }
        return RestrictionRepo.existsById(id);
     }
- 
    
+   	public boolean testRestrictions(List<Restriction> L1,List<Restriction> L2) {
+   		     boolean Result=true;
+		     for (Restriction elmL1 : L1 )
+			  {   
+		   		 String name1=elmL1.getName();
+				 	 for (Restriction elmL2 : L2 )
+					  {    	
+   		             String name2=elmL2.getName();
+					     if (!(name1.equals(name2)) )
+					    	 Result &= true;					     
+					     else
+					    	 Result &= false;
+			 		     }
+		      }
+   		return Result;
+     }
 
-	
 
 
 	
 }
-
-
-
 
