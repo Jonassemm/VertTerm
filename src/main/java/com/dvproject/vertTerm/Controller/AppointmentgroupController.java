@@ -68,7 +68,12 @@ public class AppointmentgroupController {
 	public boolean bookAppointments (
 			@PathVariable String userid, 
 			@RequestBody Appointmentgroup appointmentgroup) {
-		return appointmentgroupService.bookAppointmentgroup(userid, appointmentgroup);
+		try {
+			return appointmentgroupService.bookAppointmentgroup(userid, appointmentgroup);
+		} catch (RuntimeException ex) {
+			ex.printStackTrace();
+			return false;
+		}
 	}
 	
 	@PutMapping("")
