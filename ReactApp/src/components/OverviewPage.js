@@ -95,7 +95,7 @@ function OverviewPage({
 
     return (
         <Style>
-            <Modal size={modalSize} scrollable centered show={showEditModal} onHide={hideModals}>
+            <Modal size={modalSize} scrollable={scrollable} centered show={showEditModal} onHide={hideModals}>
                 <Modal.Header>
                     <Modal.Title>{editModalText || selectedItem.name || selectedItem.username || selectedItem.title}</Modal.Title>
                 </Modal.Header>
@@ -104,7 +104,7 @@ function OverviewPage({
                 </Modal.Body>
             </Modal>
 
-            <Modal size={modalSize} scrollable centered show={showNewModal} onHide={hideModals}>
+            <Modal size={modalSize} scrollable={scrollable} centered show={showNewModal} onHide={hideModals}>
                 <Modal.Header>
                     <Modal.Title>{newItemText}</Modal.Title>
                 </Modal.Header>

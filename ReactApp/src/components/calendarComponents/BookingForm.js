@@ -150,10 +150,11 @@ function BookingForm() {
 
     async function handleSubmit(event) {
         event.preventDefault()
+        console.log(selectedCustomer)
         const finalData = apts.map(item => {
             return {
                 ...item,
-                bookedCustomer: { id: selectedCustomer.id, ref: "user" },
+                bookedCustomer: { id: selectedCustomer[0].id, ref: "user" },
                 bookedProcedure: { id: item.bookedProcedure.id, ref: "procedure" },
                 plannedEndtime: moment(item.plannedEndtime).format("DD.MM.YYYY HH:mm").toString(),
                 plannedStarttime: moment(item.plannedStarttime).format("DD.MM.YYYY HH:mm").toString()
