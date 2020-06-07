@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from "react"
 import { Container, Form, Table, Col, Tabs, Tab, Button} from "react-bootstrap"
-import {addResource, editResource, addConsumable, editConsumable } from "./ResourceRequests"
+import {addResource, editResource, deleteResource, addConsumable, editConsumable, deleteConsumable } from "./ResourceRequests"
 import ObjectPicker from "../../ObjectPicker"
 import Availability from "../availabilityComponents/Availability"
+import { deleteResourceType } from "../resourceTypeComponents/ResourceTypeRequests"
 
 const RessourceForm = ({ onCancel, edit, selected }) => {
     const [tabKey, setTabKey] = useState('general')  
@@ -113,7 +114,7 @@ const RessourceForm = ({ onCancel, edit, selected }) => {
 
 
     //DELETE RESOURCE
-    const handleDeleteRessource = async () => {
+    /* const handleDeleteRessource = async () => {
       const answer = confirm("Möchten Sie diese Ressource wirklich löschen? ")
       if (answer) {
         const deleteStatus = "deleted" // fix delteStatus
@@ -123,13 +124,13 @@ const RessourceForm = ({ onCancel, edit, selected }) => {
         var data
         try {
           if(isConsumable) {
-            data = {name, description, status,  childResources, availabilities, restrictions, resourceTypes,
+            data = {id: selected.id, name, description, status,  childResources, availabilities, restrictions, resourceTypes,
               amountInStock: amountInStockAsInt,
               numberOfUses: numberOfUsesAsInt,
               pricePerUnit: pricePerUnitAsInt}
             await editConsumable(selected.id, data)
           } else {
-            data = {name, description, status, childResources, availabilities, restrictions, resourceTypes}
+            data = {id: selected.id, name, description, status, childResources, availabilities, restrictions, resourceTypes}
             await editResource(selected.id, data)
           }
         } catch (error) {
@@ -137,7 +138,30 @@ const RessourceForm = ({ onCancel, edit, selected }) => {
         } 
       }
       onCancel()
+    } */
+
+    const handleDeleteRessource = async () => {
+      const answer = confirm("Möchten Sie diese Ressource wirklich löschen? ")
+      if (answer) { 
+        if(isConsumable){
+          try{
+            await deleteConsumable(selected.id)
+          } catch (error){
+            console.log(Object.keys(error), error.message)
+          }
+        } else {
+          try{
+            await deleteResource(selected.id)
+          } catch (error){
+            console.log(Object.keys(error), error.message)
+          }
+        }
+      }
+      onCancel()
     }
+
+
+
 
 
     //---------------------------------Availability---------------------------------
