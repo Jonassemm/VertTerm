@@ -1,6 +1,6 @@
-import React, { useState, useEffect, forwardRef, useImperativeHandle} from "react"
+import React, { useState, useEffect, forwardRef, useImperativeHandle } from "react"
 import { Typeahead } from "react-bootstrap-typeahead"
-import { getUsers, getEmployees, getCustomers, getProcedures, getRoles, getPositions, getResourcetypes, getResources, getRestrictions, getActiveUsers} from "./requests"
+import { getUsers, getEmployees, getCustomers, getProcedures, getRoles, getPositions, getResourcetypes, getResources, getRestrictions, getActiveUsers } from "./requests"
 
 // when using this Object you have to give 4 props:
 // DbObject: defining what Object you want to pick (select out of predefined list below)
@@ -10,8 +10,8 @@ import { getUsers, getEmployees, getCustomers, getProcedures, getRoles, getPosit
 // exclude: the element which is removed from the selection
 
 const ObjectPicker = forwardRef((props, ref) => {
-    let { DbObject, setState, initial, multiple, ident, selectedItem} = props
-   if(!selectedItem) selectedItem = {id: -1} 
+    let { DbObject, setState, initial, multiple, ident, selectedItem } = props
+    if (!selectedItem) selectedItem = { id: -1 }
     const [options, setOptions] = useState([])
     const [labelKey, setLabelKey] = useState("")
     const [selected, setSelected] = useState([])
@@ -34,7 +34,7 @@ const ObjectPicker = forwardRef((props, ref) => {
     useEffect(() => {
         switch (DbObject) {
             case 'user':
-            case 'employee': 
+            case 'employee':
             case 'activeUser':
             case 'customer': getUserData(); break;
             case 'procedure': getProcedureData(); break;
@@ -44,7 +44,7 @@ const ObjectPicker = forwardRef((props, ref) => {
             case 'position': getPositionData(); break;
             case 'customerRole': getRoleData("customer"); break;
             case 'employeeRole': getRoleData("employee"); break;
-            case 'restriction': getRestrictionData(); 
+            case 'restriction': getRestrictionData();
         }
     }, [])
 
@@ -59,11 +59,11 @@ const ObjectPicker = forwardRef((props, ref) => {
     }))
 
     function buildInitialValues() {
-        if(initial){
+        if (initial) {
             let init = []
             initial.some(item => {
-                for(let i = 0; i < options.length; i++){
-                    if(item.id == options[i].id){
+                for (let i = 0; i < options.length; i++) {
+                    if (item.id == options[i].id) {
                         init.push(options[i])
                     }
                 }
@@ -81,18 +81,23 @@ const ObjectPicker = forwardRef((props, ref) => {
             case 'employee': res = await getEmployees(); break;
             case 'activeUser': res = await getActiveUsers()
         }
-        console.log(res)
         const result = res.data.map(item => {
             return {
                 ...item,
                 labelKey: item.firstName + " " + item.lastName
             }
         })
-
-      
+        //filter for Anonymous and Admin user
+        for (let i = 0; i < result.length; i++) {
+                console.log(result[i].username)
+                if ((result[i].username == "admin") || (result[i].username == "anonymousUser")) {
+                    result.splice(i, 1)
+                    i -= 1
+                }
+            }
         //reduce the selection
         result.map((item) => {
-            if(item.id != selectedItem.id && item.systemStatus != "deleted"){
+            if (item.id != selectedItem.id && item.systemStatus != "deleted") {
                 finalResult.push(item)
             }
         })
@@ -106,49 +111,49 @@ const ObjectPicker = forwardRef((props, ref) => {
         var feedback
         var results = []
 
-        if(resource.childResources.length > 0) { 
+        if (resource.childResources.length > 0) {
             resource.childResources.map(singleChild => {
-                if(singleChild.id == reference.id) {
+                if (singleChild.id == reference.id) {
                     results.push(false) //save result 
-                }else {
+                } else {
                     results.push(checkChildResources(singleChild, reference)) //save result and start recursion
                 }
             })
             feedback = true
-            if(results.map(singleResult => {
+            if (results.map(singleResult => {
 
-                if(!singleResult){
+                if (!singleResult) {
                     feedback = false //overwrite feedback if resource has reference as a child resource
                 }
             }))
-            return feedback
+                return feedback
 
         } else {
             return true // resource cannot contain the reference as a child resource
         }
     }
 
-    async function getResourceData(call = "normal") {  
+    async function getResourceData(call = "normal") {
         let finalResult = []
         const res = await getResources()
         res.data.map((item) => {
             //reduce the selection
-            if(item.id != selectedItem.id && item.status != "deleted"){
-                if(call == "childResource" && selectedItem.id != -1) { //reduce selection of all parent resources
-                    if(checkChildResources(item, selectedItem)){
+            if (item.id != selectedItem.id && item.status != "deleted") {
+                if (call == "childResource" && selectedItem.id != -1) { //reduce selection of all parent resources
+                    if (checkChildResources(item, selectedItem)) {
                         finalResult.push(item)
                     }
                 } else { //normal selection
                     finalResult.push(item)
                 }
             }
-        }) 
+        })
         setOptions(finalResult)
         setLabelKey("name")
         setInit(true)
     }
 
-    async function getResourceTypeData() { 
+    async function getResourceTypeData() {
         const res = await getResourcetypes()
         const result = res.data.map((item) => {
             return {
@@ -160,7 +165,7 @@ const ObjectPicker = forwardRef((props, ref) => {
         setInit(true)
     }
 
-    async function getPositionData() { 
+    async function getPositionData() {
         const res = await getPositions()
         const result = res.data.map((item) => {
             return {
@@ -190,25 +195,25 @@ const ObjectPicker = forwardRef((props, ref) => {
         const res = await getRoles()
         res.data.map((item) => {
             //reduce the selection
-            if(userType == "employee") {
+            if (userType == "employee") {
                 finalResult.push(item)
-            }else { // customer
-                if(item.name != "ADMIN_ROLE"){
+            } else { // customer
+                if (item.name != "ADMIN_ROLE") {
                     finalResult.push(item)
                 }
             }
-        }) 
+        })
         setOptions(finalResult)
         setLabelKey("name")
         setInit(true)
     }
 
-    async function getRestrictionData() { 
+    async function getRestrictionData() {
         const res = await getRestrictions()
         const result = res.data.map(item => {
             return {
                 ...item
-            }   
+            }
         })
         setOptions(result)
         setLabelKey("name")
@@ -217,20 +222,20 @@ const ObjectPicker = forwardRef((props, ref) => {
 
     const handleChange = event => {
         setSelected(event)
-        if(!ident){
+        if (!ident) {
             setState(event)
-        }else{
-            setState({data: event, ident: ident, DbObject: DbObject})
+        } else {
+            setState({ data: event, ident: ident, DbObject: DbObject })
         }
     }
 
     return (
         <React.Fragment>
             <Typeahead
-                style={{width:"100%"}}
+                style={{ width: "100%" }}
                 clearButton
-                placeholder= {labels[DbObject] + " wählen"}
-                multiple = {multiple || false}
+                placeholder={labels[DbObject] + " wählen"}
+                multiple={multiple || false}
                 options={options}
                 id="basic-typeahead"
                 onChange={handleChange}
@@ -239,7 +244,7 @@ const ObjectPicker = forwardRef((props, ref) => {
                 selectHintOnEnter
             />
         </React.Fragment>
-        
+
     )
 })
 

@@ -8,6 +8,7 @@ import ObjectPicker from "../ObjectPicker"
 import "./BookingForm.css"
 import DatePicker from "react-datepicker"
 import { addAppointmentGroup } from "../requests"
+import { Redirect } from "react-router"
 
 const localizer = momentLocalizer(moment)
 
@@ -15,6 +16,7 @@ function BookingForm() {
     const [calendarEvents, setCalendarEvents] = useState([])
     const [selectedProcedures, setSelectedProcedures] = useState([])
     const [selectedCustomer, setSelectedCustomer] = useState({})
+    const [description, setDescription] = useState("")
     const [custom, setCustom] = useState(false)
     const [apts, setApts] = useState([])
 
@@ -52,7 +54,7 @@ function BookingForm() {
                     else ref2 = currentDate
                 }
             } else {
-                if (data.date.getTime() - currentDate.getTime() > 0) ref2 = date.date
+                if (data.date.getTime() - currentDate.getTime() > 0) ref2 = data.date
                 else ref2 = currentDate
             }
             return ([ref1, ref2])
@@ -68,7 +70,6 @@ function BookingForm() {
             tempApts[refIndex].plannedEndtime = ref2
             tempApts[refIndex].plannedStarttime = ref1
         }
-        console.log(tempApts)
         setApts(tempApts)
     }
 
@@ -150,19 +151,28 @@ function BookingForm() {
 
     async function handleSubmit(event) {
         event.preventDefault()
-        console.log(selectedCustomer)
         const finalData = apts.map(item => {
             return {
                 ...item,
                 bookedCustomer: { id: selectedCustomer[0].id, ref: "user" },
                 bookedProcedure: { id: item.bookedProcedure.id, ref: "procedure" },
+                bookedEmployees: item.bookedEmployees.map(item => {
+                    return {id: item.id, ref:"user"}
+                }),
+                bookedResources: item.bookedResources.map(item => {
+                    return {id: item.id, ref:"resource"}
+                }),
                 plannedEndtime: moment(item.plannedEndtime).format("DD.MM.YYYY HH:mm").toString(),
-                plannedStarttime: moment(item.plannedStarttime).format("DD.MM.YYYY HH:mm").toString()
+                plannedStarttime: moment(item.plannedStarttime).format("DD.MM.YYYY HH:mm").toString(),
+                description: description
             }
         })
         console.log(finalData)
         const aptGroup = { appointments: finalData, status: "active" }
-        res = await addAppointmentGroup(aptGroup, finalData[0].bookedCustomer.id)
+        const res = await addAppointmentGroup(aptGroup, finalData[0].bookedCustomer.id)
+        if(res.status == 200){
+            <Redirect push to="/appointment"/>
+        }
     }
 
     return (
@@ -194,6 +204,19 @@ function BookingForm() {
                             <ObjectPicker
                                 DbObject="activeUser"
                                 setState={setSelectedCustomer} />
+                        </Form.Group>
+                    </Form.Row>
+                    <Form.Row>
+                        <Form.Group as={Col} style={{ textAlign: "bottom" }}>
+                            <Form.Label>Beschreibung:</Form.Label>
+                        </Form.Group>
+                        <Form.Group as={Col}>
+                            <Form.Control
+                                type="text"
+                                value={description || ""}
+                                placeholder="Beschreibung"
+                                onChange={e => {setDescription(e.target.value)}}
+                                />
                         </Form.Group>
                     </Form.Row>
                     <Form.Row>

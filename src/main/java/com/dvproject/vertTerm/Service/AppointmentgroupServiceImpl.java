@@ -148,7 +148,7 @@ public class AppointmentgroupServiceImpl implements AppointmentgroupService {
 			Procedure procedure = appointment.getBookedProcedure();
 			List<Resource> resources = appointment.getBookedResources();
 
-			testBookabilityOfEmployeesAndResources(appointment, startdate, duration);
+			//testBookabilityOfEmployeesAndResources(appointment, startdate, duration);
 
 			restrictionsToTest = procedure.getRestrictions();
 			if (restrictionsToTest != null
