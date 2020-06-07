@@ -5,7 +5,6 @@ import java.time.Duration;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
-import java.util.Map;
 import java.util.TimeZone;
 
 import javax.validation.constraints.NotNull;
@@ -34,17 +33,17 @@ public abstract class User extends Bookable implements Serializable
 	private Date creationDate;
 	@NotNull
 	private Status systemStatus;
+	
+	private List<OptionalAttributeWithValue> optionalAttributes;
 
 	@DBRef
 	private List<Role> roles;
-	@DBRef
-	private Map<OptionalAttribute, String> optionalAttributes;
 	@DBRef
 	private List<Restriction> restrictions;
 
 	@PersistenceConstructor
 	public User(String id, String username, String password, String firstName, String lastName, Status systemStatus, List<Role> roles,
-			Map<OptionalAttribute, String> optionalAttributes, List<Restriction> restrictions) {
+			List<OptionalAttributeWithValue> optionalAttributes, List<Restriction> restrictions) {
 		this.id = id;
 		this.username = username;
 		this.password = password;
@@ -150,11 +149,11 @@ public abstract class User extends Bookable implements Serializable
 		creationDate = cal.getTime();
 	}
 
-	public Map<OptionalAttribute, String> getOptionalAttributes() {
+	public List<OptionalAttributeWithValue> getOptionalAttributes() {
 		return optionalAttributes;
 	}
 
-	public void setOptionalAttributes(Map<OptionalAttribute, String> optionalAttributes) {
+	public void setOptionalAttributes(List<OptionalAttributeWithValue> optionalAttributes) {
 		this.optionalAttributes = optionalAttributes;
 	}
 

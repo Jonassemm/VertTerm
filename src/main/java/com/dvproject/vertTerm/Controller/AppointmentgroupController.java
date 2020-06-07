@@ -1,5 +1,6 @@
 package com.dvproject.vertTerm.Controller;
 
+import java.util.Date;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.dvproject.vertTerm.Model.Appointment;
 import com.dvproject.vertTerm.Model.Appointmentgroup;
 import com.dvproject.vertTerm.Model.Optimizationstrategy;
 import com.dvproject.vertTerm.Model.Status;
@@ -43,7 +45,7 @@ public class AppointmentgroupController {
 	
 	@GetMapping("/Appointment/{id}")
 	public Appointmentgroup getAppointmentGroupByAppointmentId (@PathVariable String id) {
-		return appointmentgroupService.getAppointmentgroupWithAppointmentID(id);
+		return appointmentgroupService.getAppointmentgroupContainingAppointmentID(id);
 	}
 	
 	@GetMapping("/Optimize")
@@ -54,9 +56,17 @@ public class AppointmentgroupController {
 		return appointmentgroupService.getOptimizedSuggestion(appointmentgroup, optimizationstrategy);
 	}
 	
-	@PostMapping("")
+	@GetMapping("/Shift/{appointmentId}")
+	public Appointment shiftAppointment (
+			@PathVariable String appointmentId,
+			@RequestParam Date startdate,
+			@RequestParam Date enddate) {
+		return appointmentgroupService.shiftAppointment(appointmentId, startdate, enddate);
+	}
+	
+	@PostMapping("/{userid}")
 	public boolean bookAppointments (
-			@RequestParam(defaultValue = "") String userid, 
+			@PathVariable String userid, 
 			@RequestBody Appointmentgroup appointmentgroup) {
 		return appointmentgroupService.bookAppointmentgroup(userid, appointmentgroup);
 	}

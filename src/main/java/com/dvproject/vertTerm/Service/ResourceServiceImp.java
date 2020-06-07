@@ -66,6 +66,7 @@ public class ResourceServiceImp implements ResourceService {
 	// @PreAuthorize("hasAuthority('RESOURCE_DATA_WRITE')")
 	public Resource update(Resource res) {
 		if (res.getId() != null && ResRepo.findById(res.getId()).isPresent()) {
+			testCorrectDependencies(res);
 			return ResRepo.save(res);
 		} else {
 			throw new ResourceNotFoundException("Resource with the given id :" + res.getId() + "not found");
@@ -98,17 +99,7 @@ public class ResourceServiceImp implements ResourceService {
 
 	}
 
-	// @PreAuthorize("hasAuthority('RESOURCE_DATA_READ')")
-	public List<Restriction> getResourceDependencies(String id) {
-		List<Restriction> dep = new ArrayList<>();
-		Resource res = getById(id);
-		for (Restriction rest : res.getRestrictions()) {
-			if (!dep.contains(rest))
-				dep.add(rest);
-		}
-		return dep;
 
-	}
 
 	// @PreAuthorize("hasAuthority('RESOURCE_AVAILABILITIES_WRITE')")
 	public List<Availability> updateResourceAvailabilities(String id, List<Availability> availabilities) {
@@ -216,7 +207,7 @@ public class ResourceServiceImp implements ResourceService {
 	 * 
 	 * @throws RuntimeException if a cyclical dependency has been found
 	 */
-	private void hasCorrectDependencies(Resource newInstance) {
+	private void testCorrectDependencies(Resource newInstance) {
 		List<Resource> oldInstanceChildResources;
 		List<Resource> resourcesToTest = new ArrayList<>();
 
@@ -247,6 +238,8 @@ public class ResourceServiceImp implements ResourceService {
 			if (childResources != null) {
 				resourcesToTest.addAll(0, childResources);
 			}
+
+			resourcesToTest.remove(0);
 		}
 	}
 }

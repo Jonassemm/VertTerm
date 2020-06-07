@@ -6,7 +6,7 @@ import ObjectPicker from "../ObjectPicker"
 import "../calendarComponents/BookingForm.css"
 import DatePicker from "react-datepicker"
 
-import {setDate} from "../administrationComponents/TimeComponents/TimeFunctions"
+import {setDate} from "../TimeComponents/TimeFunctions"
 
 var moment = require('moment'); 
 

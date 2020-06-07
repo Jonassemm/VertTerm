@@ -53,8 +53,15 @@ public class ProcedureRelation {
 		// calculate the time between endDate and startDate
 		Duration timeBetween = Duration.between(endDate.toInstant(), startDate.toInstant());
 
-		// minDifference <= timeBetween && timeBetween <= maxDifference
-		return minDifference.compareTo(timeBetween) <= 0 && timeBetween.compareTo(maxDifference) <= 0;
+		return testMinDifference(timeBetween) && testMaxDifference(timeBetween);
+	}
+
+	private boolean testMinDifference(Duration duration) {
+		return minDifference == null || minDifference.compareTo(duration) <= 0;
+	}
+
+	private boolean testMaxDifference(Duration duration) {
+		return maxDifference == null || duration.compareTo(maxDifference) <= 0;
 	}
 
 }

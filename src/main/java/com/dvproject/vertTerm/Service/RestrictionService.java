@@ -8,6 +8,6 @@ import java.util.List;
 public interface RestrictionService extends BasicService<Restriction> {
 
 	List<Restriction> getRestrictions(String[] ids);
-	public boolean testRestrictions(List<Restriction> L1,List<Restriction> L2);
+	public boolean testRestrictions(List<Restriction> L1,List<Restriction> L2) ;
 }
 

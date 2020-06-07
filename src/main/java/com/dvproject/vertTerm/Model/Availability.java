@@ -148,8 +148,8 @@ public class Availability {
 	}
 	
 	public boolean isAvailableBetween (Date startdate, Date enddate) {
-		if (!(startDate.after(startdate)
-				|| (endOfSeries != null && enddate.after(endOfSeries)))) {
+		if (startDate.after(startdate)
+				|| (endOfSeries != null && enddate.after(endOfSeries))) {
 			return false;
 		}
 		

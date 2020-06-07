@@ -10,6 +10,7 @@ import javax.validation.constraints.NotNull;
 
 import com.dvproject.vertTerm.Service.EmployeeService;
 import com.dvproject.vertTerm.Service.ResourceService;
+import com.fasterxml.jackson.annotation.JsonFormat;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.annotation.Id;
@@ -29,6 +30,7 @@ public class Procedure implements Serializable {
 	@Indexed(unique = true)
 	private String name;
 	private String description;
+	@JsonFormat(shape = JsonFormat.Shape.NUMBER)
 	private Duration duration;
 	private int pricePerInvocation;
 	private int pricePerHour;
@@ -103,6 +105,10 @@ public class Procedure implements Serializable {
 	}
 
 	public void setPrecedingRelations(List<ProcedureRelation> precedingRelations) {
+		for (ProcedureRelation procedureRelation : precedingRelations) {
+			testProcedureRelation(procedureRelation);
+		}
+		
 		this.precedingRelations = precedingRelations;
 	}
 
@@ -111,6 +117,10 @@ public class Procedure implements Serializable {
 	}
 
 	public void setSubsequentRelations(List<ProcedureRelation> subsequentRelations) {
+		for (ProcedureRelation procedureRelation : subsequentRelations) {
+			testProcedureRelation(procedureRelation);
+		}
+		
 		this.subsequentRelations = subsequentRelations;
 	}
 
@@ -241,5 +251,11 @@ public class Procedure implements Serializable {
 		}
 		
 		throw new RuntimeException("No availability in procedure " + id);
+	}
+	
+	private void testProcedureRelation (ProcedureRelation procedureRelation) {
+		if (procedureRelation.getProcedure().getId().equals(this.getId())) {
+			throw new IllegalArgumentException("Procedure can have no relation to itself");
+		}
 	}
 }
