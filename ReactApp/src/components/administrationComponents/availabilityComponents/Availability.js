@@ -83,7 +83,7 @@ const Availability = (props) => {
         const newDateString = moment(date).format("DD.MM.YYYY HH:mm").toString()
         const endOfSeriesAsDate = moment(endOfSeriesDateString, "DD.MM.yyyy HH:mm").toDate()
 
-        if(!datePickerFocus && validateDates(startDateString, newDateString, newDateString)){
+        if(validateDates(startDateString, newDateString, newDateString)){
             setEndDateString(newDateString)
             if(withSeriesEnd &&  endOfSeriesAsDate.getTime() < date.getTime()) {
                 setEndOfSeriesDateString(newDateString)
@@ -94,7 +94,7 @@ const Availability = (props) => {
 
     const handleEndOfSeriesDateStringChange = date => {
         const newDateString = moment(date).format("DD.MM.YYYY HH:mm").toString()
-        if(!datePickerFocus && validateDates(startDateString, endDateString, newDateString)){
+        if(validateDates(startDateString, endDateString, newDateString)){
             setEndOfSeriesDateString(newDateString)
             props.editedAvailabilities(true)
         }
