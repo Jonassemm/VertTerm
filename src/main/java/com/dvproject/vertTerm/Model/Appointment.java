@@ -147,16 +147,13 @@ public class Appointment implements Serializable {
 		//test avilability of procedure
 		bookedProcedure.isAvailable(plannedStarttime, plannedEndtime);
 		
-		//TODO: test for restrictions for procedure
-		
 		for (Resource resource : bookedResources) {
 			//test availability of resource
 			for (Availability availability : resource.getAvailabilities()) {
 				//test availabilities of resource
 				availability.isAvailableBetween(plannedStarttime, plannedEndtime);
 			}
-			
-			//TODO: test for restrictions for resources
+
 		}
 		
 		for (Employee employee : bookedEmployees) {

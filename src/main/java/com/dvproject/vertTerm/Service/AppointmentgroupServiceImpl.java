@@ -22,6 +22,7 @@ import com.dvproject.vertTerm.Model.Resource;
 import com.dvproject.vertTerm.Model.Restriction;
 import com.dvproject.vertTerm.Model.Status;
 import com.dvproject.vertTerm.Model.User;
+import com.dvproject.vertTerm.Model.Warning;
 import com.dvproject.vertTerm.repository.AppointmentgroupRepository;
 
 @Service
@@ -148,7 +149,7 @@ public class AppointmentgroupServiceImpl implements AppointmentgroupService {
 			Procedure procedure = appointment.getBookedProcedure();
 			List<Resource> resources = appointment.getBookedResources();
 
-			testBookabilityOfEmployeesAndResources(appointment, startdate, duration);
+//			testBookabilityOfEmployeesAndResources(appointment, startdate, duration);
 
 			if (!restrictionService.testRestrictions(procedure.getRestrictions(), userRestrictions)) {
 				throw new RuntimeException("The appointment for the procedure " + procedure.getName()
@@ -157,8 +158,8 @@ public class AppointmentgroupServiceImpl implements AppointmentgroupService {
 
 			for (Resource resource : resources) {
 				if (!restrictionService.testRestrictions(resource.getRestrictions(), userRestrictions)) {
-					throw new RuntimeException("The appointment for the procedure " + procedure.getName()
-							+ " contains a restriction that the given user also has");
+					throw new RuntimeException(
+							"The resource " + resource.getName() + " contains a restriction that the user also has");
 				}
 			}
 		}
@@ -170,6 +171,8 @@ public class AppointmentgroupServiceImpl implements AppointmentgroupService {
 
 		// create all appointments of the appointmentgroup
 		for (Appointment appointment : appointments) {
+			appointment.setStatus(AppointmentStatus.CREATED);
+			appointment.setWarning(Warning.NO_WARNING);
 			appointmentService.create(appointment);
 		}
 

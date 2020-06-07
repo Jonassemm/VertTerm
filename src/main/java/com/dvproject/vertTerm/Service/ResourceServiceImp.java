@@ -66,6 +66,7 @@ public class ResourceServiceImp implements ResourceService {
 	// @PreAuthorize("hasAuthority('RESOURCE_DATA_WRITE')")
 	public Resource update(Resource res) {
 		if (res.getId() != null && ResRepo.findById(res.getId()).isPresent()) {
+			testCorrectDependencies(res);
 			return ResRepo.save(res);
 		} else {
 			throw new ResourceNotFoundException("Resource with the given id :" + res.getId() + "not found");
@@ -235,7 +236,7 @@ public class ResourceServiceImp implements ResourceService {
 	 * 
 	 * @throws RuntimeException if a cyclical dependency has been found
 	 */
-	private void hasCorrectDependencies(Resource newInstance) {
+	private void testCorrectDependencies(Resource newInstance) {
 		List<Resource> oldInstanceChildResources;
 		List<Resource> resourcesToTest = new ArrayList<>();
 
@@ -266,6 +267,8 @@ public class ResourceServiceImp implements ResourceService {
 			if (childResources != null) {
 				resourcesToTest.addAll(0, childResources);
 			}
+			
+			resourcesToTest.remove(0);
 		}
 	}
 }
