@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.rest.webmvc.ResourceNotFoundException;
 import org.springframework.stereotype.Service;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
@@ -35,6 +36,10 @@ public class AppointmentServiceImpl implements BasicService<Appointment> {
             throw new ResourceNotFoundException("Instance with the given id (" + newInstance.getId() + ") exists on the database. Use the update method.");
         }
         return null;
+    }
+    
+    public List<Appointment> getAppointmentsWithUseridAndTimeInterval(String userid, Date starttime, Date endtime){
+    	return repo.findAppointmentByBookedUserAndTime(userid, starttime, endtime);
     }
 
     @Override
