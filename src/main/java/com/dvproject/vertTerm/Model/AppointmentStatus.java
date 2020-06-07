@@ -4,13 +4,13 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 public enum AppointmentStatus {
 	/**
-	 * appointment has been completed, actual times has been set
+	 * appointment has been completed, actual times have been set
 	 */
 	@JsonProperty("done")
 	DONE,
 	
 	/**
-	 * appointment target times have been set
+	 * appointment planned times have been set
 	 */
 	@JsonProperty("planned")
 	PLANNED,
