@@ -47,7 +47,7 @@ public class RestrictionController {
 	 }
 	
 	 @GetMapping("/testRes")
-	 public  @ResponseBody  boolean testRestrictions(@RequestParam  List<Restriction> L1, @RequestParam List<Restriction> L2) {
+	 public  @ResponseBody  boolean testRestrictions(@RequestParam  List<Restriction> L1, @RequestParam  List<Restriction> L2) {
 	     return RestService.testRestrictions(L1, L2);
 	 }
 

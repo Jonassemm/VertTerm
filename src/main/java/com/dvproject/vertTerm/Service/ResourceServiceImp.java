@@ -99,17 +99,7 @@ public class ResourceServiceImp implements ResourceService {
 
 	}
 
-	// @PreAuthorize("hasAuthority('RESOURCE_DATA_READ')")
-	public List<Restriction> getResourceDependencies(String id) {
-		List<Restriction> dep = new ArrayList<>();
-		Resource res = getById(id);
-		for (Restriction rest : res.getRestrictions()) {
-			if (!dep.contains(rest))
-				dep.add(rest);
-		}
-		return dep;
 
-	}
 
 	// @PreAuthorize("hasAuthority('RESOURCE_AVAILABILITIES_WRITE')")
 	public List<Availability> updateResourceAvailabilities(String id, List<Availability> availabilities) {
@@ -205,30 +195,7 @@ public class ResourceServiceImp implements ResourceService {
 		}
 	}
 
-	// @PreAuthorize("hasAuthority('RESOURCE_DATA_WRITE')")
-	public List<Restriction> updateResourceDependencies(String id, String[] Rids) {
-		List<Restriction> dep = new ArrayList<>();
-		List<Restriction> AllRestrictions = RestsRepo.findAll();
-		List<String> RestIds = List.of(Rids);
-		for (Restriction rest : AllRestrictions) {
-			String rid = rest.getId();
-			if (RestIds.contains(rid)) {
-				if (!dep.contains(rest))
-					dep.add(rest);
-			}
 
-		}
-		Optional<Resource> ResDb = this.ResRepo.findById(id);
-		if (ResDb.isPresent()) {
-			Resource ResUpdate = ResDb.get();
-			ResUpdate.setRestrictions(dep);
-			ResRepo.save(ResUpdate);
-			return dep;
-		} else {
-			throw new ResourceNotFoundException("Resource with the given id :" + id + " already exists");
-
-		}
-	}
 
 	/**
 	 * 
