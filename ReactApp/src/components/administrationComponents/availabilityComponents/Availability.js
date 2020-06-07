@@ -58,8 +58,6 @@ const Availability = (props) => {
     const [frequency, setFrequency] = useState(1)
     const [endOfSeriesDateString, setEndOfSeriesDateString] = useState(null)
     const [withSeriesEnd, setWithSeriesEnd] = useState(false)
-
-    const [datePickerFocus, setDatePickerFocus] = useState(false)
     
 
     //---------------------------------HandleChange---------------------------------
@@ -83,21 +81,20 @@ const Availability = (props) => {
         const newDateString = moment(date).format("DD.MM.YYYY HH:mm").toString()
         const endOfSeriesAsDate = moment(endOfSeriesDateString, "DD.MM.yyyy HH:mm").toDate()
 
-        if(!datePickerFocus && validateDates(startDateString, newDateString, newDateString)){
-            setEndDateString(newDateString)
-            if(withSeriesEnd &&  endOfSeriesAsDate.getTime() < date.getTime()) {
-                setEndOfSeriesDateString(newDateString)
-            }
-            props.editedAvailabilities(true)
+        setEndDateString(newDateString)
+        if(withSeriesEnd &&  endOfSeriesAsDate.getTime() < date.getTime()) {
+            setEndOfSeriesDateString(newDateString)
         }
+        props.editedAvailabilities(true)
+
     }
 
     const handleEndOfSeriesDateStringChange = date => {
         const newDateString = moment(date).format("DD.MM.YYYY HH:mm").toString()
-        if(!datePickerFocus && validateDates(startDateString, endDateString, newDateString)){
-            setEndOfSeriesDateString(newDateString)
-            props.editedAvailabilities(true)
-        }
+        
+        setEndOfSeriesDateString(newDateString)
+        props.editedAvailabilities(true)
+
     }
     const handleRhythmChange = data => {
         if(data.target.value != availabilityRhythm.oneTime) {
@@ -127,8 +124,18 @@ const Availability = (props) => {
         props.editedAvailabilities(true)
     }
 
-    const handleDatePickerFocusChange = (focus) => {
-        setDatePickerFocus(focus)
+    const handleEndDateFocusChange = () => {
+        if(!validateDates(startDateString, endDateString, endOfSeriesDateString))
+        {
+            setEndDateString(setValidEndDateString(startDateString))
+        }
+    }
+
+    const handleEndOfSeriesDateFocusChange = () => {
+        if(!validateDates(startDateString, endDateString, endOfSeriesDateString))
+        {
+            setEndOfSeriesDateString(endDateString)
+        }
     }
 
 
@@ -170,8 +177,6 @@ const Availability = (props) => {
                                 timeIntervals={5}
                                 timeCaption="Uhrzeit"
                                 dateFormat="dd.M.yyyy / HH:mm"
-                                onCalendarClose={e => handleDatePickerFocusChange(false)}
-                                onCalendarOpen={e => handleDatePickerFocusChange(true)}
                             />
                         </Form.Group>
                         <Form.Group style={{display: "flex", flexWrap: "nowrap"}} as={Col} md="6">
@@ -185,8 +190,7 @@ const Availability = (props) => {
                                 timeIntervals={5}
                                 timeCaption="Uhrzeit"
                                 dateFormat="dd.M.yyyy / HH:mm"
-                                onCalendarClose={e => handleDatePickerFocusChange(false)}
-                                onCalendarOpen={e => handleDatePickerFocusChange(true)}
+                                onCalendarClose={e => handleEndDateFocusChange()}
                             />
                         </Form.Group>
                     </Form.Row>
@@ -270,8 +274,7 @@ const Availability = (props) => {
                                 timeIntervals={5}
                                 timeCaption="Uhrzeit"   
                                 dateFormat="dd.M.yyyy / HH:mm"
-                                onCalendarClose={e => handleDatePickerFocusChange(false)}
-                                onCalendarOpen={e => handleDatePickerFocusChange(true)}
+                                onCalendarClose={e => handleEndOfSeriesDateFocusChange()}
                             />
                         </Form.Group>
                         <Form.Group as={Col} md="3">

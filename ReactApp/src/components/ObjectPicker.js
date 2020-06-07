@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from "react"
+import React, { useState, useEffect, forwardRef, useImperativeHandle} from "react"
 import { Typeahead } from "react-bootstrap-typeahead"
-import { getUsers, getEmployees, getCustomers, getProcedures, getRoles, getPositions, getResourcetypes, getResources, getRestrictions} from "./requests"
+import { getUsers, getEmployees, getCustomers, getProcedures, getRoles, getPositions, getResourcetypes, getResources, getRestrictions, getActiveUsers} from "./requests"
 
 // when using this Object you have to give 4 props:
 // DbObject: defining what Object you want to pick (select out of predefined list below)
@@ -9,7 +9,9 @@ import { getUsers, getEmployees, getCustomers, getProcedures, getRoles, getPosit
 // multiple: defining whether multiple values can be selected (as boolean)
 // exclude: the element which is removed from the selection
 
-function ObjectPicker({ DbObject, setState, initial, multiple, ident, selectedItem = {id: -1} }) {
+const ObjectPicker = forwardRef((props, ref) => {
+    let { DbObject, setState, initial, multiple, ident, selectedItem} = props
+   if(!selectedItem) selectedItem = {id: -1} 
     const [options, setOptions] = useState([])
     const [labelKey, setLabelKey] = useState("")
     const [selected, setSelected] = useState([])
@@ -23,13 +25,17 @@ function ObjectPicker({ DbObject, setState, initial, multiple, ident, selectedIt
         resourceType: "Ressourcentyp",
         position: "Position",
         role: "Rolle",
-        restriction: "Einschränkung"
+        restriction: "Einschränkung",
+        customerRole: "Rolle",
+        employeeRole: "Rolle",
+        activeUser: "Kunde"
     }
 
     useEffect(() => {
         switch (DbObject) {
             case 'user':
             case 'employee': 
+            case 'activeUser':
             case 'customer': getUserData(); break;
             case 'procedure': getProcedureData(); break;
             case 'resource': getResourceData(); break;
@@ -45,6 +51,12 @@ function ObjectPicker({ DbObject, setState, initial, multiple, ident, selectedIt
     useEffect(() => {
         buildInitialValues()
     }, [init])
+
+    useImperativeHandle(ref, () => ({
+        resetSelected() {
+            setSelected([])
+        }
+    }))
 
     function buildInitialValues() {
         if(initial){
@@ -66,14 +78,18 @@ function ObjectPicker({ DbObject, setState, initial, multiple, ident, selectedIt
         switch (DbObject) {
             case 'user': res = await getUsers(); break;
             case 'customer': res = await getCustomers(); break;
-            case 'employee': res = await getEmployees()
+            case 'employee': res = await getEmployees(); break;
+            case 'activeUser': res = await getActiveUsers()
         }
+        console.log(res)
         const result = res.data.map(item => {
             return {
                 ...item,
                 labelKey: item.firstName + " " + item.lastName
             }
         })
+
+      
         //reduce the selection
         result.map((item) => {
             if(item.id != selectedItem.id && item.systemStatus != "deleted"){
@@ -211,6 +227,7 @@ function ObjectPicker({ DbObject, setState, initial, multiple, ident, selectedIt
     return (
         <React.Fragment>
             <Typeahead
+                style={{width:"100%"}}
                 clearButton
                 placeholder= {labels[DbObject] + " wählen"}
                 multiple = {multiple || false}
@@ -224,6 +241,6 @@ function ObjectPicker({ DbObject, setState, initial, multiple, ident, selectedIt
         </React.Fragment>
         
     )
-}
+})
 
 export default ObjectPicker

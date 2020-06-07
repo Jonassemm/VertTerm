@@ -7,7 +7,7 @@ import "react-big-calendar/lib/css/react-big-calendar.css"
 import ObjectPicker from "../ObjectPicker"
 import "./BookingForm.css"
 import DatePicker from "react-datepicker"
-import {addAppointmentGroup} from "./requests"
+import { addAppointmentGroup } from "../requests"
 
 const localizer = momentLocalizer(moment)
 
@@ -17,24 +17,9 @@ function BookingForm() {
     const [selectedCustomer, setSelectedCustomer] = useState({})
     const [custom, setCustom] = useState(false)
     const [apts, setApts] = useState([])
-    const [timeDif, setTimeDif] = useState(0)
-
-    async function handleSubmit(event) {
-        event.preventDefault()
-        const finalData = apts.map(item => {
-            return {
-                ...item,
-                bookedCustomer: selectedCustomer
-            }
-        })
-        console.log(finalData)
-        res = await addAppointmentGroup(finalData)
-        console.log(res)
-
-    }
 
     function setupPresetTime(item) {
-        
+
     }
 
     function validateTime(data) {
@@ -73,15 +58,15 @@ function BookingForm() {
             return ([ref1, ref2])
         }
         // checking wheter a selected time is in the past and if the differece between start and end is positive
-        const refIndex = tempApts.findIndex(item => item.procedure.id == data.ref.procedure.id)
+        const refIndex = tempApts.findIndex(item => item.bookedProcedure.id == data.ref.bookedProcedure.id)
         if (data.ident == "start") {
-            const [ref1, ref2] = calculateDifference(tempApts[refIndex].plannedEndTime, tempApts[refIndex].plannedStartTime)
-            tempApts[refIndex].plannedEndTime = ref1
-            tempApts[refIndex].plannedStartTime = ref2
+            const [ref1, ref2] = calculateDifference(tempApts[refIndex].plannedEndtime, tempApts[refIndex].plannedStarttime)
+            tempApts[refIndex].plannedEndtime = ref1
+            tempApts[refIndex].plannedStarttime = ref2
         } else {
-            const [ref1, ref2] = calculateDifference(tempApts[refIndex].plannedStartTime, tempApts[refIndex].plannedEndTime, true)
-            tempApts[refIndex].plannedEndTime = ref2
-            tempApts[refIndex].plannedStartTime = ref1
+            const [ref1, ref2] = calculateDifference(tempApts[refIndex].plannedStarttime, tempApts[refIndex].plannedEndtime, true)
+            tempApts[refIndex].plannedEndtime = ref2
+            tempApts[refIndex].plannedStarttime = ref1
         }
         console.log(tempApts)
         setApts(tempApts)
@@ -89,7 +74,7 @@ function BookingForm() {
 
     function handleChange(data) {
         const temp = apts.map(item => {
-            if (item.procedure.name == data.ident.ident) {
+            if (item.bookedProcedure.name == data.ident.ident) {
                 if (data.DbObject == "employee") {
                     const temp = item.bookedEmployees.map((innerItem, index) => {
                         if (index == data.ident.ix) {
@@ -142,7 +127,7 @@ function BookingForm() {
         } else if (dif > 0) {
             // delete one
             for (let i = 0; i < apts.length; i++) {
-                if (!data.find(item => item.name == apts[i].procedure.name)) {
+                if (!data.find(item => item.name == apts[i].bookedProcedure.name)) {
                     tempApts.splice(i, 1)
                 }
             }
@@ -152,15 +137,32 @@ function BookingForm() {
                 return {}
             })
             tempApts.push({
-                procedure: data[data.length - 1],
+                bookedProcedure: data[data.length - 1],
                 bookedEmployees: tempEmployees,
                 bookedCustomer: {},
                 bookedResources: [],
-                plannedStartTime: null,
-                plannedEndTime: null
+                plannedStarttime: null,
+                plannedEndtime: null
             })
         }
         setApts(tempApts)
+    }
+
+    async function handleSubmit(event) {
+        event.preventDefault()
+        console.log(selectedCustomer)
+        const finalData = apts.map(item => {
+            return {
+                ...item,
+                bookedCustomer: { id: selectedCustomer[0].id, ref: "user" },
+                bookedProcedure: { id: item.bookedProcedure.id, ref: "procedure" },
+                plannedEndtime: moment(item.plannedEndtime).format("DD.MM.YYYY HH:mm").toString(),
+                plannedStarttime: moment(item.plannedStarttime).format("DD.MM.YYYY HH:mm").toString()
+            }
+        })
+        console.log(finalData)
+        const aptGroup = { appointments: finalData, status: "active" }
+        res = await addAppointmentGroup(aptGroup, finalData[0].bookedCustomer.id)
     }
 
     return (
@@ -190,7 +192,7 @@ function BookingForm() {
                         </Form.Group>
                         <Form.Group as={Col}>
                             <ObjectPicker
-                                DbObject="user"
+                                DbObject="activeUser"
                                 setState={setSelectedCustomer} />
                         </Form.Group>
                     </Form.Row>
@@ -211,10 +213,10 @@ function BookingForm() {
                                 <hr />
                                 <div className="parent">
                                     <div className="namebox">
-                                        <h4>{item.procedure.name}</h4>
+                                        <h4>{item.bookedProcedure.name}</h4>
                                     </div>
                                     <div className="box wrap">
-                                        {item.procedure.neededEmployeePositions && item.procedure.neededEmployeePositions.map((innerItem, index) => {
+                                        {item.bookedProcedure.neededEmployeePositions && item.bookedProcedure.neededEmployeePositions.map((innerItem, index) => {
                                             return (
                                                 <div className="middleBox">
                                                     <div className="middleBoxLeft">
@@ -223,14 +225,14 @@ function BookingForm() {
                                                     <div className="middleBoxRight">
                                                         <ObjectPicker
                                                             className="input"
-                                                            ident={{ "ident": item.procedure.name, "ix": index }}
+                                                            ident={{ "ident": item.bookedProcedure.name, "ix": index }}
                                                             DbObject="employee"
                                                             setState={handleChange} />
                                                     </div>
                                                 </div>
                                             )
                                         })}
-                                        {item.procedure.neededResourceTypes && item.procedure.neededResourceTypes.map((innerItem, index) => {
+                                        {item.bookedProcedure.neededResourceTypes && item.bookedProcedure.neededResourceTypes.map((innerItem, index) => {
                                             return (
                                                 <div className="middleBox">
                                                     <div className="middleBoxLeft">
@@ -239,7 +241,7 @@ function BookingForm() {
                                                     <div className="middleBoxRight">
                                                         <ObjectPicker
                                                             className="input"
-                                                            ident={{ "ident": item.procedure.name, "ix": index }}
+                                                            ident={{ "ident": item.bookedProcedure.name, "ix": index }}
                                                             DbObject="resource"
                                                             setState={handleChange} />
                                                     </div>
@@ -257,7 +259,7 @@ function BookingForm() {
                                                     required
                                                     popperPlacement="left"
                                                     className="input"
-                                                    selected={item.plannedStartTime}
+                                                    selected={item.plannedStarttime}
                                                     onChange={date => validateTime({ date: date, ident: "start", ref: item })}
                                                     showTimeSelect
                                                     timeFormat="HH:mm"
@@ -276,7 +278,7 @@ function BookingForm() {
                                                     required
                                                     className="input"
                                                     popperPlacement="left"
-                                                    selected={item.plannedEndTime}
+                                                    selected={item.plannedEndtime}
                                                     onChange={date => {
                                                         validateTime({ date: date, ident: "end", ref: item })
                                                     }}

@@ -57,6 +57,8 @@ function RolePage(userStore) {
                 modal={modal}
                 data={roles}
                 refreshData={prepareRoles}
+                modalSize="lg"
+                scrollable={true}
             />
         </React.Fragment>
     )

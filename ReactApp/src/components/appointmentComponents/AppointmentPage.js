@@ -56,13 +56,12 @@ export default function AppointmentPage({calendarStore, userSelect}) {
             })
         }catch (error) {
             console.log(Object.keys(error), error.message)
-        }
-        const bookedProcedure = {name: "Prozess1"}
-        const plannedStarttime= "04.06.2020 19:30"
-        const bookedCustomer= {firstName: "Angelina", lastName: "Jolie", username: "LaraCroft"}
-        const title = bookedProcedure.name + "-[" + plannedStarttime + "]: " + bookedCustomer.username
+            const bookedProcedure = {name: "Prozess1"}
+            const plannedStarttime= "04.06.2020 19:30"
+            const bookedCustomer= {firstName: "Angelina", lastName: "Jolie", username: "LaraCroft"}
+            const title = bookedProcedure.name + "-[" + plannedStarttime + "]: " + bookedCustomer.username
 
-        data = [{id: "1", description: "Dies ist eine längerer Text um zu verdeutlichen wie lang eine Beschreibung einer Prozedur sein kann. Damit wir auch in die zweite Zeile gelangenen steht hier noch etwas mehr ;)",
+            data = [{id: "1", description: "Dies ist eine längerer Text um zu verdeutlichen wie lang eine Beschreibung einer Prozedur sein kann. Damit wir auch in die zweite Zeile gelangenen steht hier noch etwas mehr ;)",
                     status: "created", warning: "", 
                     plannedStarttime: plannedStarttime, plannedEndtime: "04.06.2020 20:30", actualStarttime: null, actualEndtime: null, 
                     bookedProcedure: bookedProcedure, 
@@ -71,6 +70,7 @@ export default function AppointmentPage({calendarStore, userSelect}) {
                     bookedResources: [{name: "Stift"}, {name: "Papier"}, {name: "Laptop"}],
                     title: title
                 }]
+        }
         setAppointments(data)
     }
 

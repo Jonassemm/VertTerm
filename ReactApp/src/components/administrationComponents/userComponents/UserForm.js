@@ -6,8 +6,10 @@ import ObjectPicker from "../../ObjectPicker"
 import {
   addEmployee,
   updateEmployee,
+  deleteEmployee,
   addCustomer,
-  updateCustomer
+  updateCustomer,
+  deleteCustomer
 } from "./UserRequests";
 
 import {
@@ -109,15 +111,17 @@ function UserForm({onCancel, edit, selected, type}) {
         if(attributeList.classOfOptionalAttribut == "User" && attributeList.optionalAttributes.length > 0) {
           attributeList.optionalAttributes.map(attribute => {
             var initialValue = ""
-              if(selected.optionalAttributes.length > 0) {
-                selected.optionalAttributes.map(loadedAttribute =>{
-                  if(loadedAttribute.name == attribute.name) {
-                    initialValue = loadedAttribute.value
-                  }
-                })
-              }
-              const {name, mandatoryField} = attribute
-              const initializedAttribute = {name, mandatoryField, value: initialValue}
+            //set values of user attributes into the predefined list
+            if(edit && selected.optionalAttributes.length > 0) {
+              selected.optionalAttributes.map(loadedAttribute =>{
+                if(loadedAttribute.name == attribute.name) {
+                  initialValue = loadedAttribute.value
+                }
+              })
+            }
+            const {name, mandatoryField} = attribute
+            const initializedAttribute = {name, mandatoryField, value: initialValue}
+            //save the list with the new initialValue
             setOptionalAttributesOfUser(optionalAttributesUserList => [...optionalAttributesUserList, initializedAttribute]);
           })
         }
@@ -157,6 +161,11 @@ function UserForm({onCancel, edit, selected, type}) {
   //ADD
   const handleSubmit = async event => {
     event.preventDefault();//reload the page after clicking "Enter"
+    var newPassword = password
+    if(password == "EncryptedPassword") {
+      newPassword = ""
+    }
+    console.log(newPassword)
     if(validation()) {
       if(edit) { //editing-mode
         var id = selected.id
@@ -164,23 +173,13 @@ function UserForm({onCancel, edit, selected, type}) {
         try {
           if(isEmployee){ //employee
               console.log("AXIOS: updateEmployee()")
-              if(password == "EncryptedPassword") { //password was not changed
-                updateData = {id, firstName, lastName, username, systemStatus, roles, positions, availabilities, restrictions, 
-                  optionalAttributes: optionalAttributesOfUser}
-              }else {
-                updateData = {id, firstName, lastName, username, password, systemStatus, roles, positions, availabilities, restrictions, 
+              updateData = {id, firstName, lastName, username, password: newPassword, systemStatus, roles, positions, availabilities, restrictions, 
                             optionalAttributes: optionalAttributesOfUser}
-              }
               await updateEmployee(id, updateData);
           }else { //customer
               console.log("AXIOS: updateCustomer()")
-              if(password == "EncryptedPassword") { //password was not changed
-                updateData = {id, firstName, lastName, username, systemStatus, roles, restrictions,
-                  optionalAttributes: optionalAttributesOfUser}
-              } else {
-                updateData = {id, firstName, lastName, username, password, systemStatus, roles, restrictions,
+              updateData = {id, firstName, lastName, username, password, systemStatus, roles, restrictions,
                             optionalAttributes: optionalAttributesOfUser}
-              }
               await updateCustomer(id, updateData);
           }
         } catch (error) {
@@ -210,7 +209,7 @@ function UserForm({onCancel, edit, selected, type}) {
   };
 
   //DELETE
-  const handleDeleteUser = async () => {
+  /* const handleDeleteUser = async () => {
     const deleteStatus = "deleted" // fix delteStatus
     const id = selected.id
     var data = {}
@@ -229,6 +228,28 @@ function UserForm({onCancel, edit, selected, type}) {
         }
       }
         onCancel()
+  } */
+  const handleDeleteUser = async () => {
+    if(isEmployee){
+      const answer = confirm("Möchten Sie diesen Mitarbeiter wirklich löschen? ")
+      if (answer) {
+        try{
+          await deleteEmployee(selected.id)
+        } catch (error){
+          console.log(Object.keys(error), error.message)
+        }
+      }
+    }else {
+      const answer = confirm("Möchten Sie diesen Kunden wirklich löschen? ")
+      if (answer) {
+        try{
+          await deleteCustomer(selected.id)
+        } catch (error){
+          console.log(Object.keys(error), error.message)
+        }
+      }
+    }
+    onCancel()
   }
 
   //---------------------------------Optional Attributes---------------------------------
