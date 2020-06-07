@@ -11,16 +11,20 @@ function ProcedureForm({ onCancel, edit, selected }) {
     const [enterPrice, setEnterPrice] = useState(false)
     const initialized = useRef(0)
 
+
+
     const [name, setName] = useState("")
     const [description, setDescription] = useState("")
     const [duration, setDuration] = useState(0)
     const [status, setStatus] = useState("active")
     const [precedingRelations, setPrecedingRelations] = useState([])
     const [selectedPrecedingRelation, setSelectedPrecedingRelation] = useState()
-    const [precedingRelationTime, setPrecedingRelationTime] = useState(["",""])
+    const [precedingRelationTime, setPrecedingRelationTime] = useState(["", ""])
+    const precedingRef = useRef()
     const [subsequentRelations, setSubsequentRelations] = useState([])
     const [selectedSubsequentRelation, setSelectedSubsequentRelation] = useState()
-    const [subsequentRelationTime, setSubsequentRelationTime] = useState(["",""])
+    const [subsequentRelationTime, setSubsequentRelationTime] = useState(["", ""])
+    const subsequentRef = useRef()
     const [positions, setPositions] = useState([])
     const [resourceTypes, setResourceTypes] = useState([])
     const [availabilities, setAvailability] = useState([])
@@ -44,7 +48,7 @@ function ProcedureForm({ onCancel, edit, selected }) {
         if (edit) {
             setName(selected.name)
             setDescription(selected.description)
-            setDuration(selected.durationInMinutes)
+            setDuration(selected.duration)
             setStatus(selected.status)
             setPrecedingRelations(selected.precedingRelations)
             setSubsequentRelations(selected.subsequentRelations)
@@ -108,50 +112,6 @@ function ProcedureForm({ onCancel, edit, selected }) {
         onCancel()
     }
 
-    const handleSubmit = async event => {
-        event.preventDefault()
-
-        //combines the selected positions with the count
-        let extendedPositions = []
-        for (let i = 0; i < positions.length; i++) {
-            for (let p = 0; p < positionsCount[i]; p++) {
-                extendedPositions.push({ id: positions[i].id, ref: "position" })
-            }
-        }
-
-        let extendedResourceTypes = []
-        for (let i = 0; i < resourceTypes.length; i++) {
-            for (let p = 0; p < resourceTypesCount[i]; p++) {
-                extendedResourceTypes.push({ id: resourceTypes[i].id, ref: "resourceType" })
-            }
-        }
-
-        const data = {
-            name: name,
-            description: description,
-            durationInMinutes: duration,
-            pricePerInvocation: pricePerInvocation,
-            pricePerHour: pricePerHour,
-            status: status,
-            precedingRelations: precedingRelations,
-            subsequentRelations: subsequentRelations,
-            neededResourceTypes: extendedResourceTypes,
-            neededEmployeePositions: extendedPositions,
-            restrictions: restrictions,
-            availabilities: availabilities
-        }
-
-        console.log(data)
-
-        if (!edit) {
-            const res = await addProcedure(data)
-        } else {
-            data.id = selected.id
-            const res = await editProcedure(selected.id, data)
-        }
-        onCancel()
-    }
-
     function setResourceTypesExt(data) {
         const temp = data.map((item, index) => {
             const ix = resourceTypes.findIndex(elem => elem.name == item.name)
@@ -178,37 +138,113 @@ function ProcedureForm({ onCancel, edit, selected }) {
         setPositions(data)
     }
 
-    function handleProcedureRelationChange(ident) {
-        if(ident == "p"){
-            const relation = {
-                procedure: {selectedPrecedingRelation},
-                minDifference: precedingRelationTime[0],
-                maxDifference: precedingRelationTime[1]
-            }
-            precedingRelations.push(relation)
-        }else {
-            const relation = {
-                procedure: {selectedSubsequentRelation},
-                minDifference: subsequentRelationTime[0],
-                maxDifference: subsequentRelationTime[1]
-            }
-            subsequentRelations.push(relation)
+    function resetRelationInput(ident) {
+        if (ident == "p") {
+            setPrecedingRelationTime(["", ""])
+            setSelectedPrecedingRelation({})
+            precedingRef.current.resetSelected()
+        } else {
+            setSubsequentRelationTime(["", ""])
+            setSelectedSubsequentRelation({})
+            subsequentRef.current.resetSelected()
         }
     }
 
-    function handleRelationDeletion(event,ident) {
+    function handleProcedureRelationChange(ident) {
+        if (ident == "p") {
+            const relation = {
+                procedure: selectedPrecedingRelation[0],
+                minDifference: precedingRelationTime[0],
+                maxDifference: precedingRelationTime[1]
+            }
+            const temp = precedingRelations.map(item => { return { ...item } })
+            temp.push(relation)
+            setPrecedingRelations(temp)
+        } else {
+            const relation = {
+                procedure: selectedSubsequentRelation[0],
+                minDifference: subsequentRelationTime[0],
+                maxDifference: subsequentRelationTime[1]
+            }
+            const temp = subsequentRelations.map(item => { return { ...item } })
+            temp.push(relation)
+            setSubsequentRelations(temp)
+        }
+        resetRelationInput(ident)
+    }
+
+    function handleRelationDeletion(event, ident) {
         const procedureText = event.target.parentElement.parentElement.firstChild.textContent
-        if(ident == "p"){
-           const idx =  precedingRelations.findIndex(item => item.procedure.name == procedureText)
-           const tempRelations = precedingRelations.map(item => {return {...item}})
-           tempRelations.splice(idx,1)
-           setPrecedingRelations(tempRelations)
-        }else {
-            const idx =  subsequentRelations.findIndex(item => item.procedure.name == procedureText)
-            const tempRelations = subsequentRelations.map(item => {return {...item}})
-            tempRelations.splice(idx,1)
+        if (ident == "p") {
+            const idx = precedingRelations.findIndex(item => item.procedure.name == procedureText)
+            const tempRelations = precedingRelations.map(item => { return { ...item } })
+            tempRelations.splice(idx, 1)
+            setPrecedingRelations(tempRelations)
+        } else {
+            const idx = subsequentRelations.findIndex(item => item.procedure.name == procedureText)
+            const tempRelations = subsequentRelations.map(item => { return { ...item } })
+            tempRelations.splice(idx, 1)
             setSubsequentRelations(tempRelations)
         }
+    }
+
+    const handleSubmit = async event => {
+        event.preventDefault()
+
+        //combines the selected positions with the count
+        let extendedPositions = []
+        for (let i = 0; i < positions.length; i++) {
+            for (let p = 0; p < positionsCount[i]; p++) {
+                extendedPositions.push({ id: positions[i].id, ref: "position" })
+            }
+        }
+
+        let extendedResourceTypes = []
+        for (let i = 0; i < resourceTypes.length; i++) {
+            for (let p = 0; p < resourceTypesCount[i]; p++) {
+                extendedResourceTypes.push({ id: resourceTypes[i].id, ref: "resourceType" })
+            }
+        }
+
+        let reducedPrecedingRelations = precedingRelations.map(item => {
+            return {
+                procedure: { id: item.procedure.id, ref: "procedure" },
+                maxDifference: Number(item.maxDifference),
+                minDifference: Number(item.minDifference)
+            }
+        })
+
+        let reducedSubsequentRelations = subsequentRelations.map(item => {
+            return {
+                procedure: { id: item.procedure.id, ref: "procedure" },
+                maxDifference: Number(item.maxDifference),
+                minDifference: Number(item.minDifference)
+            }
+        })
+
+        const data = {
+            name: name,
+            description: description,
+            duration: Number(duration),
+            pricePerInvocation: pricePerInvocation,
+            pricePerHour: pricePerHour,
+            status: status,
+            precedingRelations: reducedPrecedingRelations,
+            subsequentRelations: subsequentRelations,
+            neededResourceTypes: extendedResourceTypes,
+            neededEmployeePositions: extendedPositions,
+            restrictions: restrictions,
+            availabilities: availabilities
+        }
+        console.log(data)
+
+        if (!edit) {
+            const res = await addProcedure(data)
+        } else {
+            data.id = selected.id
+            const res = await editProcedure(selected.id, data)
+        }
+        onCancel()
     }
 
     const TabStyle = { paddingTop: "10px" }
@@ -310,7 +346,7 @@ function ProcedureForm({ onCancel, edit, selected }) {
                         <Form.Label>Zwingende Vorläufer</Form.Label>
                         <Form.Row>
                             <Form.Group xs={6} as={Col}>
-                                <ObjectPicker DbObject="procedure" setState={setSelectedPrecedingRelation} />
+                                <ObjectPicker ref={precedingRef} DbObject="procedure" setState={setSelectedPrecedingRelation} />
                             </Form.Group>
                             <Form.Group as={Col}>
                                 <Form.Control
@@ -341,36 +377,36 @@ function ProcedureForm({ onCancel, edit, selected }) {
                                 <Button onClick={e => handleProcedureRelationChange("p")}>+</Button>
                             </Form.Group>
                         </Form.Row>
-                        {precedingRelations.length >= 1 && 
-                        <Table bordered className="RelationTable">
-                            <tbody>
-                                {precedingRelations.map(item => {
-                                    return (
-                                        <tr>
-                                            <td style={{width:"50%"}}>
-                                                {item.procedure.name}
-                                            </td>
-                                            <td style={{width:"23%"}}>
-                                                {item.minDifference}
-                                            </td>
-                                            <td style={{width:"23%"}}>
-                                                {item.maxDifference}
-                                            </td>
-                                            <td className="buttonCol">
-                                            <Button style={{width:"35px"}} variant="danger" onClick={e => handleRelationDeletion(e,"p")}>-</Button>
-                                            </td>
+                        {precedingRelations.length >= 1 &&
+                            <Table bordered className="RelationTable">
+                                <tbody>
+                                    {precedingRelations.map(item => {
+                                        return (
+                                            <tr>
+                                                <td style={{ width: "50%" }}>
+                                                    {item.procedure.name}
+                                                </td>
+                                                <td style={{ width: "23%" }}>
+                                                    {item.minDifference}
+                                                </td>
+                                                <td style={{ width: "23%" }}>
+                                                    {item.maxDifference}
+                                                </td>
+                                                <td className="buttonCol">
+                                                    <Button style={{ width: "35px" }} variant="danger" onClick={e => handleRelationDeletion(e, "p")}>-</Button>
+                                                </td>
 
-                                        </tr>
-                                    )
-                                })}
-                            </tbody>
-                        </Table>
+                                            </tr>
+                                        )
+                                    })}
+                                </tbody>
+                            </Table>
                         }
 
                         <Form.Label>Zwingende Nachfolger</Form.Label>
                         <Form.Row>
                             <Form.Group xs={6} as={Col}>
-                                <ObjectPicker DbObject="procedure" setState={setSelectedSubsequentRelation} />
+                                <ObjectPicker ref={subsequentRef} DbObject="procedure" setState={setSelectedSubsequentRelation} />
                             </Form.Group>
                             <Form.Group as={Col}>
                                 <Form.Control
@@ -401,30 +437,30 @@ function ProcedureForm({ onCancel, edit, selected }) {
                                 <Button onClick={e => handleProcedureRelationChange("s")}>+</Button>
                             </Form.Group>
                         </Form.Row>
-                        {subsequentRelations.length >= 1 && 
-                        <Table bordered className="RelationTable">
-                            <tbody>
-                                {subsequentRelations.map(item => {
-                                    return (
-                                        <tr>
-                                            <td style={{width:"50%"}}>
-                                                {item.procedure.name}
-                                            </td>
-                                            <td style={{width:"23%"}}>
-                                                {item.minDifference}
-                                            </td>
-                                            <td style={{width:"23%"}}>
-                                                {item.maxDifference}
-                                            </td>
-                                            <td className="buttonCol">
-                                            <Button style={{width:"35px"}} variant="danger" onClick={e => handleRelationDeletion(e,"s")}>-</Button>
-                                            </td>
+                        {subsequentRelations.length >= 1 &&
+                            <Table bordered className="RelationTable">
+                                <tbody>
+                                    {subsequentRelations.map(item => {
+                                        return (
+                                            <tr>
+                                                <td style={{ width: "50%" }}>
+                                                    {item.procedure.name}
+                                                </td>
+                                                <td style={{ width: "23%" }}>
+                                                    {item.minDifference}
+                                                </td>
+                                                <td style={{ width: "23%" }}>
+                                                    {item.maxDifference}
+                                                </td>
+                                                <td className="buttonCol">
+                                                    <Button style={{ width: "35px" }} variant="danger" onClick={e => handleRelationDeletion(e, "s")}>-</Button>
+                                                </td>
 
-                                        </tr>
-                                    )
-                                })}
-                            </tbody>
-                        </Table>
+                                            </tr>
+                                        )
+                                    })}
+                                </tbody>
+                            </Table>
                         }
 
                     </Tab>

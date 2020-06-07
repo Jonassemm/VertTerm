@@ -8,6 +8,7 @@ function ProcedurePage() {
 
     async function prepareProcedures() {
         const res = await getProcedures()
+        console.log(res)
         const result = res.data.map(item => {
             return { ...item }
         })

@@ -67,7 +67,9 @@ function OverviewPage({
     editModalText,      //optional prop for overwriting the title of the edit modal
     modalSize,          //optional prop for customize modal size -> ["sm", "lg", "xl"]
     withoutCreate = false,      //optional to remove the add button (boolean)          
-    refreshData}) {
+    refreshData,
+    scrollable
+    }) {
     const [showNewModal, setShowNewModal] = useState(false)
     const [showEditModal, setShowEditModal] = useState(false)
     const [selectedItem, setSelectedItem] = useState({})
@@ -93,7 +95,7 @@ function OverviewPage({
 
     return (
         <Style>
-            <Modal size={modalSize} centered show={showEditModal} onHide={hideModals}>
+            <Modal size={modalSize} scrollable centered show={showEditModal} onHide={hideModals}>
                 <Modal.Header>
                     <Modal.Title>{editModalText || selectedItem.name || selectedItem.username || selectedItem.title}</Modal.Title>
                 </Modal.Header>
@@ -102,7 +104,7 @@ function OverviewPage({
                 </Modal.Body>
             </Modal>
 
-            <Modal size={modalSize} centered show={showNewModal} onHide={hideModals}>
+            <Modal size={modalSize} scrollable centered show={showNewModal} onHide={hideModals}>
                 <Modal.Header>
                     <Modal.Title>{newItemText}</Modal.Title>
                 </Modal.Header>

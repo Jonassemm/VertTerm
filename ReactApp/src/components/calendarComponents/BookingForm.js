@@ -7,7 +7,7 @@ import "react-big-calendar/lib/css/react-big-calendar.css"
 import ObjectPicker from "../ObjectPicker"
 import "./BookingForm.css"
 import DatePicker from "react-datepicker"
-import {addAppointmentGroup} from "./requests"
+import {addAppointmentGroup} from "../requests"
 
 const localizer = momentLocalizer(moment)
 
@@ -18,20 +18,6 @@ function BookingForm() {
     const [custom, setCustom] = useState(false)
     const [apts, setApts] = useState([])
     const [timeDif, setTimeDif] = useState(0)
-
-    async function handleSubmit(event) {
-        event.preventDefault()
-        const finalData = apts.map(item => {
-            return {
-                ...item,
-                bookedCustomer: selectedCustomer
-            }
-        })
-        console.log(finalData)
-        res = await addAppointmentGroup(finalData)
-        console.log(res)
-
-    }
 
     function setupPresetTime(item) {
         
@@ -163,6 +149,20 @@ function BookingForm() {
         setApts(tempApts)
     }
 
+    async function handleSubmit(event) {
+        event.preventDefault()
+        const finalData = apts.map(item => {
+            return {
+                ...item,
+                bookedCustomer: {id: selectedCustomer[0].id, ref:"user"},
+                procedure: {id: item.procedure.id, ref:"procedure"}
+            }
+        })
+
+        const aptGroup = {appointments: finalData, status: "active"}
+        res = await addAppointmentGroup(aptGroup, finalData[0].bookedCustomer.id)
+    }
+
     return (
         <div className="page">
             <Container>
@@ -190,7 +190,7 @@ function BookingForm() {
                         </Form.Group>
                         <Form.Group as={Col}>
                             <ObjectPicker
-                                DbObject="user"
+                                DbObject="activeUser"
                                 setState={setSelectedCustomer} />
                         </Form.Group>
                     </Form.Row>

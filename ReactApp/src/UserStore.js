@@ -1,5 +1,5 @@
 import { observable, action, decorate } from "mobx"
-import { getAllUserData } from "./components/administrationComponents/userComponents/UserRequests"
+import { getUserData } from "./components/navigationComponents/ActiveUserRequests"
 
 class UserStore {
     username = null
@@ -34,10 +34,18 @@ class UserStore {
 
     async getData() {
             const res = await getUserData(this.userID)
+            console.log(res)
             this.setRoles(res.data.roles.map(item => {
                         return (item.name)
 
                     }))
+            const tempRights = []
+            res.data.roles.forEach((item,index,array) => {
+                item.rights.forEach((item, index) => {
+                    tempRights.push(item)
+                })
+            })
+            this.setRights(tempRights) //muss noch gefiltert werden (Rechte können bei mehreren Rollen doppelt vorkommen)
     }
 
     deleteCurrentUser() {
