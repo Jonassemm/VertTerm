@@ -1,6 +1,7 @@
 package com.dvproject.vertTerm.Controller;
 
 import com.dvproject.vertTerm.Model.*;
+import com.dvproject.vertTerm.Service.AppointmentServiceImpl;
 import com.dvproject.vertTerm.Service.ProcedureService;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,6 +16,8 @@ import java.util.List;
 public class ProcedureController {
 	@Autowired
 	private ProcedureService procedureService;
+	@Autowired
+	private AppointmentServiceImpl appointmentService;
 	
 	@GetMapping("")
 	public List<Procedure> getAllProcedures () {
@@ -27,11 +30,12 @@ public class ProcedureController {
 	}
 
 	@GetMapping("/{id}/Recommendation/EarlyEnd")
-	public List<Appointment> getAllProcedures (@PathVariable String id,
+	public List<Appointment> getAppointmentRecommendationByEarliestEnd (@PathVariable String id,
 											   @RequestParam(value = "status", required = false) Date date,
 											   @RequestParam(value = "status", required = false) Customer customer) {
 		Procedure procedure = procedureService.getById(id);
-		return procedure == null ? null : procedure.getAppointmentRecommendationByEarliestEnd(date, customer);
+
+		return procedure == null ? null : procedure.getAppointmentRecommendationByEarliestEnd(date, customer, appointmentService);
 	}
 	
 	@GetMapping("/{id}")

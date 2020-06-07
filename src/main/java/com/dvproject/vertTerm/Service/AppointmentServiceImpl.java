@@ -1,11 +1,12 @@
 package com.dvproject.vertTerm.Service;
 
-import com.dvproject.vertTerm.Model.Appointment;
+import com.dvproject.vertTerm.Model.*;
 import com.dvproject.vertTerm.repository.AppointmentRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.rest.webmvc.ResourceNotFoundException;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
@@ -19,6 +20,26 @@ public class AppointmentServiceImpl implements BasicService<Appointment> {
     @Override
     public List<Appointment> getAll() {
         return repo.findAll();
+    }
+
+    public List<Appointment> getAll(Bookable bookable){
+        List<Appointment> result = new ArrayList<>();
+        for(Appointment appointment : this.getAll()){
+            if(appointment.getBookedCustomer().getId().equals(bookable.getId())){
+                result.add(appointment);
+            }
+            for(Employee employee : appointment.getBookedEmployees()){
+                if(employee.getId().equals(bookable.getId())){
+                    result.add(appointment);
+                }
+            }
+            for(Resource resource : appointment.getBookedResources()){
+                if(resource.getId().equals(bookable.getId())){
+                    result.add(appointment);
+                }
+            }
+        }
+        return result;
     }
 
     @Override
