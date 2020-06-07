@@ -3,6 +3,7 @@ package com.dvproject.vertTerm.exception;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.context.request.WebRequest;
@@ -48,6 +49,13 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
 	@ExceptionHandler(RuntimeException.class)
 	public ResponseEntity<Object> handleRuntimeException(RuntimeException exception, WebRequest request) {
 		return handleExceptionInternal(exception, exception.getMessage(), new HttpHeaders(),
+				HttpStatus.UNPROCESSABLE_ENTITY, request);
+	}
+
+	@Override
+	public ResponseEntity<Object> handleHttpMessageNotReadable(HttpMessageNotReadableException ex, HttpHeaders headers,
+			HttpStatus status, WebRequest request) {
+		return handleExceptionInternal(ex, ex.getMessage(), headers,
 				HttpStatus.UNPROCESSABLE_ENTITY, request);
 	}
 }

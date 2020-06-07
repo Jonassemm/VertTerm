@@ -143,19 +143,24 @@ public class AppointmentgroupServiceImpl implements AppointmentgroupService {
 			Date startdate = appointment.getPlannedStarttime();
 			Date enddate = appointment.getPlannedEndtime();
 			Duration duration = Duration.between(startdate.toInstant(), enddate.toInstant());
+			List<Restriction> restrictionsToTest;
 
 			Procedure procedure = appointment.getBookedProcedure();
 			List<Resource> resources = appointment.getBookedResources();
 
-//			testBookabilityOfEmployeesAndResources(appointment, startdate, duration);
+			testBookabilityOfEmployeesAndResources(appointment, startdate, duration);
 
-			if (!restrictionService.testRestrictions(procedure.getRestrictions(), userRestrictions)) {
+			restrictionsToTest = procedure.getRestrictions();
+			if (restrictionsToTest != null
+					&& !restrictionService.testRestrictions(restrictionsToTest, userRestrictions)) {
 				throw new RuntimeException("The appointment for the procedure " + procedure.getName()
 						+ " contains a restriction that the given user also has");
 			}
 
 			for (Resource resource : resources) {
-				if (!restrictionService.testRestrictions(resource.getRestrictions(), userRestrictions)) {
+				restrictionsToTest = resource.getRestrictions();
+				if (restrictionsToTest != null
+						&& !restrictionService.testRestrictions(restrictionsToTest, userRestrictions)) {
 					throw new RuntimeException(
 							"The resource " + resource.getName() + " contains a restriction that the user also has");
 				}
