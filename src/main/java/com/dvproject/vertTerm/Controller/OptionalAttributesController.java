@@ -44,19 +44,28 @@ public class OptionalAttributesController {
 	 public OptionalAttributes createOptionalAttributes(@RequestBody OptionalAttributes opatts) {
 			return OpAttsService.create(opatts);
      }
-    
-	 @PutMapping("/AddOA/{id}")
-	 public List<OptionalAttribute> createOptionalAttributes(@PathVariable String id,@RequestBody OptionalAttribute opatt) {
-			return OpAttsService.AddOptionalAtt(id, opatt);
-     }
+
     
 	@PutMapping("/{id}")
     public OptionalAttributes updateOptionalAttributes(@PathVariable String id,@RequestBody OptionalAttributes opatts) {	 
 		opatts.setId(id);
 		return OpAttsService.update(opatts);
 	 }
-	   	 	 
-
+	
+	 @PutMapping("/AddOA/{id}")
+	 public List<OptionalAttribute> AddOptionalAttribute(@PathVariable String id,@RequestBody OptionalAttribute opatt) {
+			return OpAttsService.addOptionalAttribute(id, opatt);
+     }	 
+	    
+	 @PutMapping("/EditOA/{id}")
+	 public List<OptionalAttribute> EditOptionalAttribute(@PathVariable String id,@RequestBody List<OptionalAttribute> opattList) {
+		return OpAttsService.updateOptionalAttribute(id, opattList);
+	 }
+	 
+	 @PutMapping("/DeleteOA/{id}")
+	 public List<OptionalAttribute> DeleteOptionalAttribute(@PathVariable String id,@RequestBody OptionalAttribute opatt) {
+		return OpAttsService.deleteOptionalAttribute(id,opatt);
+	 }
 	 @DeleteMapping("/{id}")
 	 public boolean deleteOptionalAttributes(@PathVariable String id) {
 		return OpAttsService.delete(id);

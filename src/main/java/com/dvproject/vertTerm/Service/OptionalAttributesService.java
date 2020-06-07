@@ -12,12 +12,12 @@ import org.springframework.data.mongodb.repository.Query;
 
 public interface OptionalAttributesService extends BasicService<OptionalAttributes> {
 
-	List<OptionalAttribute> AddOptionalAtt(String id, OptionalAttribute opatt);
-  
-	OptionalAttributes getByClassname(String classname);
+	List<OptionalAttribute> addOptionalAttribute(String id, OptionalAttribute opatt);
+	List<OptionalAttribute> updateOptionalAttribute(String id, List<OptionalAttribute> opatt);
+	List<OptionalAttribute> deleteOptionalAttribute(String id, OptionalAttribute opatt);  
 	
+	OptionalAttributes getByClassname(String classname);
 	void testMandatoryFields(String classname, List<OptionalAttribute> optionalAttributes);
- 
 
 }
 
