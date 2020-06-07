@@ -45,14 +45,11 @@ function UserForm({onCancel, edit, selected, type}) {
   const [restrictions, setRestrictions] = useState([])
   
   //Optional Attributes (Employee)
-  const [optionalAttributesUserList, setOptionalAttributesUserList] = useState([])
-  const [optionalAttributesUserData, setOptionalAttributesUserData] = useState([])
+  const [optionalAttributesOfUser, setOptionalAttributesOfUser] = useState([])
   //Optional Attributes (Employee)
-  const [optionalAttributesEmployeeList, setOptionalAttributesEmployeeList] = useState([])
-  const [optionalAttributesEmployeeData, setOptionalAttributesEmployeeData] = useState([])
+  const [optionalAttributesOfEmployees, setOptionalAttributesOfEmployees] = useState([])
   //Optional Attributes (Customer)
-  const [optionalAttributesCustomerList, setOptionalAttributesCustomerList] = useState([])
-  const [optionalAttributesCustomerData, setOptionalAttributesCustomerData] = useState([])
+  const [optionalAttributesOfCustomer, setOptionalAttributesOfCustomer] = useState([])
   //Attribute Input
   const [optionalAttributInput, setOptionalAttributeInput] = useState() //needed to render page when editing any extUserInfo
   
@@ -66,10 +63,9 @@ function UserForm({onCancel, edit, selected, type}) {
   const handlePositionsChange = data => {setPositions(data); setEdited(true)}
   const handleRoleChange = data => {setRoles(data); setEdited(true)}
   const handleRestrictionChange = data => {setRestrictions(data); setEdited(true)}
-  const handleOptionalAttributeDataChange = (e, name) => {
+  const handleOptionalAttributesChange = (e, name) => {
     setOptionalAttributeValue(name, e.target.value); 
-    setOptionalAttributeInput([e.target.value, name]); 
-    console.log(optionalAttributesEmployeeData)
+    setOptionalAttributeInput([e.target.value, name]); //only for rendering
     setEdited(true) 
   };
 
@@ -80,7 +76,7 @@ function UserForm({onCancel, edit, selected, type}) {
         setFirstname(selected.firstName)
         setLastname(selected.lastName)
         setUsername(selected.username)
-        setPassword(selected.password)
+        setPassword("EncryptedPassword")
         setSystemStatus(selected.systemStatus)
         if(selected.roles != null && selected.roles.length > 0) {
           setRoles(selected.roles)
@@ -95,8 +91,7 @@ function UserForm({onCancel, edit, selected, type}) {
           setAvailabilities(selected.availabilities);
         }
     } 
-    console.log("useEffect-Call: initialOptionalAttributes")
-    //initialOptionalAttributes()
+    loadOptionalAttributes()
   }, [])
 
   //---------------------------------LOAD---------------------------------
@@ -108,40 +103,26 @@ function UserForm({onCancel, edit, selected, type}) {
     }catch (error) {
       console.log(Object.keys(error), error.message)
     }
-
-    //Add attributes for users
+    //combine the loaded attributes list from user with the predefined attribute list for every user
     if(data.length > 0) {
       data.map((attributeList) => {
-        if(attributeList.classOfOptionalAttribut == "User") {
-          attributeList.map(attribute => {
-            setOptionalAttributesUserList(optionalAttributesUserList => [...optionalAttributesUserList, attribute]);
-            setOptionalAttributesEmployeeList(optionalAttributesEmployeeList => [...optionalAttributesEmployeeList, attribute]);
-            setOptionalAttributesCustomerList(optionalAttributesCustomerList => [...optionalAttributesCustomerList, attribute]);
+        if(attributeList.classOfOptionalAttribut == "User" && attributeList.optionalAttributes.length > 0) {
+          attributeList.optionalAttributes.map(attribute => {
+            var initialValue = ""
+              if(selected.optionalAttributes.length > 0) {
+                selected.optionalAttributes.map(loadedAttribute =>{
+                  if(loadedAttribute.name == attribute.name) {
+                    initialValue = loadedAttribute.value
+                  }
+                })
+              }
+              const {name, mandatoryField} = attribute
+              const initializedAttribute = {name, mandatoryField, value: initialValue}
+            setOptionalAttributesOfUser(optionalAttributesUserList => [...optionalAttributesUserList, initializedAttribute]);
           })
         }
       })
-      if(isEmployee) { // EMPLOYEE SELECTE
-        //Add attributes for employees
-        data.map((attributeList) => {
-          if(attributeList.classOfOptionalAttribut == "Employee") {
-            attributeList.map(attribute => {
-              initial = 
-              setOptionalAttributesEmployeeList(optionalAttributesEmployeeList => [...optionalAttributesEmployeeList, attribute]);
-            })
-          }
-        })
-      }else {
-        //Add attributes for customers
-        data.map((isEmployee) => {
-          if(attributeList.classOfOptionalAttribut == "Customer") {
-            attributeList.map(attribute => {
-              setOptionalAttributesCustomerList(optionalAttributesCustomerList => [...optionalAttributesCustomerList, attribute]);
-            })
-          }
-        })
-      }
     }
-    
   };
 
   function validation() {
@@ -177,35 +158,47 @@ function UserForm({onCancel, edit, selected, type}) {
   const handleSubmit = async event => {
     event.preventDefault();//reload the page after clicking "Enter"
     if(validation()) {
-      if(edit) {
+      if(edit) { //editing-mode
         var id = selected.id
         var updateData = {}
         try {
-          if(isEmployee){
+          if(isEmployee){ //employee
               console.log("AXIOS: updateEmployee()")
-              updateData = {id, firstName, lastName, username, password, systemStatus, roles, positions, availabilities, restrictions, 
-                            optionalAttributes: optionalAttributesEmployeeData}
+              if(password == "EncryptedPassword") { //password was not changed
+                updateData = {id, firstName, lastName, username, systemStatus, roles, positions, availabilities, restrictions, 
+                  optionalAttributes: optionalAttributesOfUser}
+              }else {
+                updateData = {id, firstName, lastName, username, password, systemStatus, roles, positions, availabilities, restrictions, 
+                            optionalAttributes: optionalAttributesOfUser}
+              }
               await updateEmployee(id, updateData);
-          }else {
+          }else { //customer
               console.log("AXIOS: updateCustomer()")
-              updateData = {id, firstName, lastName, username, password, systemStatus, roles, restrictions,
-                            optionalAttributes: optionalAttributesEmployeeData}
+              if(password == "EncryptedPassword") { //password was not changed
+                updateData = {id, firstName, lastName, username, systemStatus, roles, restrictions,
+                  optionalAttributes: optionalAttributesOfUser}
+              } else {
+                updateData = {id, firstName, lastName, username, password, systemStatus, roles, restrictions,
+                            optionalAttributes: optionalAttributesOfUser}
+              }
               await updateCustomer(id, updateData);
           }
         } catch (error) {
           console.log(Object.keys(error), error.message)
         } 
-      } else {
+
+      } else { //creation-mode
           var newData = {}
           try {
-          if(isEmployee){
+          if(isEmployee){ //employee
               console.log("AXIOS: addEmployee()")
               newData = {firstName, lastName, username, password, systemStatus, roles, positions, availabilities, restrictions,
-                          optionalAttributes: optionalAttributesEmployeeData}
+                          optionalAttributes: optionalAttributesOfUser}
               await addEmployee(newData);
-          }else {
+          }else { //customer
               console.log("AXIOS: addCustomer()")
-              newData = {firstName, lastName, username, password, systemStatus, roles, restrictions}
+              newData = {firstName, lastName, username, password, systemStatus, roles, restrictions, 
+                          optionalAttributes: optionalAttributesOfUser}
               await addCustomer(newData);
           }
           } catch (error) {
@@ -239,46 +232,9 @@ function UserForm({onCancel, edit, selected, type}) {
   }
 
   //---------------------------------Optional Attributes---------------------------------
-  //initial the optionalAttribute array for submit
-  const initialOptionalAttributes = async () => {
-    var initialValue
-    if(optionalAttributesUserList.length > 0) {
-
-    }
-
-    if(isEmployee) {
-      if(optionalAttributesEmployeeList.length > 0) {
-        initialValue = optionalAttributesEmployeeList.map(attribute => {
-          return {
-            ...attribute,
-            value: ""
-          }
-        })
-        setOptionalAttributesEmployeeData(initialValue)
-      }
-      
-    } else {
-      if(optionalAttributesCustomerList.length > 0) {
-        initialValue = optionalAttributesCustomerList.map(attribute => {
-          return {
-            ...attribute,
-            value: ""
-          }
-        })
-        setOptionalAttributesCustomerData(initialValue)
-      }
-    }
-  }
-  
-  const setOptionalAttributeValue = (name, value) => {
-    if(isEmployee){ //EMPLOYEE
-      optionalAttributesEmployeeData.map(attribute=> {
-        if(attribute.name == name) {
-          attribute.value = value
-        }
-      })
-    }else {// CUSTOMER
-      optionalAttributesCustomerData.map(attribute=> {
+  const setOptionalAttributeValue = (name, value) => {   
+    if(optionalAttributesOfUser.length > 0) {
+      optionalAttributesOfUser.map(attribute=> {
         if(attribute.name == name) {
           attribute.value = value
         }
@@ -300,15 +256,18 @@ function UserForm({onCancel, edit, selected, type}) {
   }
 
   //---------------------------------RENDER---------------------------------
-  // DYNAMIC extendetUserInforamtion table
   function renderOptionalAttributesTable() {
-    if(optionalAttributesEmployeeList.length > 0)
-    {
+    if(optionalAttributesOfUser.length > 0) {
       return ( 
-        optionalAttributesEmployeeList.map((info, index) =>(
+        optionalAttributesOfUser.map((info, index) =>(
           <tr key={index}>
             <td>{info.name}:</td>
-            <td><Form.Control required={info.isRequired} onChange={e => handleOptionalAttributeDataChange(e, info.name)} value={optionalAttributesEmployeeData.find(item => item.name == info.name).value || ""} name={"userInfo-value"+ index} type="text"/></td>
+            <td><Form.Control 
+              required={info.mandatoryField} 
+              onChange={e => handleOptionalAttributesChange(e, info.name)} 
+              value={optionalAttributesOfUser.find(item => item.name == info.name).value || ""} 
+              name={"userInfo-value"+ index} type="text"/>
+            </td>
           </tr>
         ))
       );
