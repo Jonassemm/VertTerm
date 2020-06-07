@@ -187,7 +187,7 @@ public class UserServiceImp implements UserService {
 	}
 	
 	public void testMandatoryFields(User user) {
-		List<OptionalAttribute> optionalAttributes = new ArrayList<OptionalAttribute>(user.getOptionalAttributes().keySet());
+		List<OptionalAttribute> optionalAttributes = new ArrayList<>(user.getOptionalAttributes());
 		optionalAttributesService.testMandatoryFields(User.class.getSimpleName(), optionalAttributes);
 	}
 

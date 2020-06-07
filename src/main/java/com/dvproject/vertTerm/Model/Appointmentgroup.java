@@ -58,7 +58,7 @@ public class Appointmentgroup {
 		}
 	}
 
-	private void hasCorrectProcedureRelations() {
+	public void hasCorrectProcedureRelations() {
 		// procedure.id -> appointment
 		Map<String, Appointment> appointmentsMap = new HashMap<>();
 		// procedure.id -> procedure
