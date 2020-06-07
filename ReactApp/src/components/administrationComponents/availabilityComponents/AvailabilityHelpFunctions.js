@@ -3,7 +3,7 @@ import {Form, Button} from 'react-bootstrap';
 var moment = require('moment');
 
 
-export function setValidEndDate(startDateString) {
+export function setValidEndDateString(startDateString) {
     var validEndDate = moment(startDateString, "DD.MM.yyyy HH:mm").toDate()
     var startEndDifference = 5
     validEndDate.setMinutes(validEndDate.getMinutes() + startEndDifference)
@@ -15,9 +15,9 @@ export function validateDates(startDateString, endDateString, endOfSeriesString)
     var startDate = moment(startDateString, "DD.MM.yyyy HH:mm").toDate();
     var endDate = moment(endDateString, "DD.MM.yyyy HH:mm").toDate();
 
-    console.log(startDate + " vs " + endDate)
+    /* console.log(startDate + " vs " + endDate)
     console.log(startDate > endDate)
-    console.log(startDate.getTime() == endDate.getTime())
+    console.log(startDate.getTime() == endDate.getTime()) */
 
     if(startDate > endDate) {
         alert("Ungültiges Ende! Das Ende darf nicht vor dem Start sein!")
@@ -32,9 +32,6 @@ export function validateDates(startDateString, endDateString, endOfSeriesString)
     if(endOfSeriesString != null) {
         var endOfSeries = moment(endOfSeriesString, "DD.MM.yyyy HH:mm").toDate();
         if(endOfSeries.getTime() <= startDate.getTime() || endOfSeries.getTime() < endDate.getTime()) {
-            console.log(startDate)
-            console.log(endDate)
-
             alert("Ungültiges Serienende! Das Serienende darf nicht vor dem Star und vor dem Ende einer Verfügbarkeit sein!")
             return false
         }

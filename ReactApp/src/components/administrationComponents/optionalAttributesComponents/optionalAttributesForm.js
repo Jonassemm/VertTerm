@@ -16,7 +16,8 @@ const optionalAttributesForm = ({ onCancel, edit, selected }) => {
     useEffect(() => {
         if (edit) {
             setOptionalAttributes(selected.optionalAttributes)
-            setClassOfOptionalAttribut(selected.classOfOptionalAttribut)
+            console.log("set:")
+            console.log(selected.optionalAttributes)
         }
     }, [])
 
@@ -24,8 +25,10 @@ const optionalAttributesForm = ({ onCancel, edit, selected }) => {
         event.preventDefault()
         let res = {}
         const data = {id: selected.id, optionalAttributes, classOfOptionalAttribut: selected.classOfOptionalAttribut}
+        console.log("send attribute data:")
+        console.log(data)
         try{
-            res = await editOptionalAttributes(data)
+            res = await editOptionalAttributes(data, selected.id)
         }catch (error) {
             console.log(Object.keys(error), error.message)
         }

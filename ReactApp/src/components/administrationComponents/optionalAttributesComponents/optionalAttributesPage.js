@@ -26,7 +26,7 @@ function optionalAttributesPage() {
     };
 
     const tableBody =
-        optionalAttributeLists.map(item => {
+        optionalAttributeLists.map((item,index) => {
             var attributeClass //translated boolean
             switch(item.classOfOptionalAttribut) {
                 case "User":
@@ -67,7 +67,7 @@ function optionalAttributesPage() {
                 modalSize="lg"
                 data={optionalAttributeLists}
                 refreshData={loadOptionalAttributes}
-                //withoutCreate={true}
+                withoutCreate={true}
             />
         </React.Fragment>
     )

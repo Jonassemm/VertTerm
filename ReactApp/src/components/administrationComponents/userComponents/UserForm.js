@@ -43,6 +43,10 @@ function UserForm({onCancel, edit, selected, type}) {
   const [roles, setRoles] = useState([])
   //Restrictions
   const [restrictions, setRestrictions] = useState([])
+  
+  //Optional Attributes (Employee)
+  const [optionalAttributesUserList, setOptionalAttributesUserList] = useState([])
+  const [optionalAttributesUserData, setOptionalAttributesUserData] = useState([])
   //Optional Attributes (Employee)
   const [optionalAttributesEmployeeList, setOptionalAttributesEmployeeList] = useState([])
   const [optionalAttributesEmployeeData, setOptionalAttributesEmployeeData] = useState([])
@@ -71,7 +75,7 @@ function UserForm({onCancel, edit, selected, type}) {
 
   useEffect(() => { 
     console.log("useEffect-Call: loadExtandUserInformation")
-    loadOptionalAttributes()
+    //loadOptionalAttributes()
     if(edit) {
         setFirstname(selected.firstName)
         setLastname(selected.lastName)
@@ -92,7 +96,7 @@ function UserForm({onCancel, edit, selected, type}) {
         }
     } 
     console.log("useEffect-Call: initialOptionalAttributes")
-    initialOptionalAttributes()
+    //initialOptionalAttributes()
   }, [])
 
   //---------------------------------LOAD---------------------------------
@@ -106,34 +110,38 @@ function UserForm({onCancel, edit, selected, type}) {
     }
 
     //Add attributes for users
-    data.map((attributeList) => {
+    if(data.length > 0) {
+      data.map((attributeList) => {
         if(attributeList.classOfOptionalAttribut == "User") {
           attributeList.map(attribute => {
+            setOptionalAttributesUserList(optionalAttributesUserList => [...optionalAttributesUserList, attribute]);
             setOptionalAttributesEmployeeList(optionalAttributesEmployeeList => [...optionalAttributesEmployeeList, attribute]);
             setOptionalAttributesCustomerList(optionalAttributesCustomerList => [...optionalAttributesCustomerList, attribute]);
           })
         }
-    })
-    if(isEmployee) { // EMPLOYEE SELECTE
-      //Add attributes for employees
-      data.map((attributeList) => {
-        if(attributeList.classOfOptionalAttribut == "Employee") {
-          attributeList.map(attribute => {
-            initial = 
-            setOptionalAttributesEmployeeList(optionalAttributesEmployeeList => [...optionalAttributesEmployeeList, attribute]);
-          })
-        }
       })
-    }else {
-      //Add attributes for customers
-      data.map((isEmployee) => {
-        if(attributeList.classOfOptionalAttribut == "Customer") {
-          attributeList.map(attribute => {
-            setOptionalAttributesCustomerList(optionalAttributesCustomerList => [...optionalAttributesCustomerList, attribute]);
-          })
-        }
-      })
+      if(isEmployee) { // EMPLOYEE SELECTE
+        //Add attributes for employees
+        data.map((attributeList) => {
+          if(attributeList.classOfOptionalAttribut == "Employee") {
+            attributeList.map(attribute => {
+              initial = 
+              setOptionalAttributesEmployeeList(optionalAttributesEmployeeList => [...optionalAttributesEmployeeList, attribute]);
+            })
+          }
+        })
+      }else {
+        //Add attributes for customers
+        data.map((isEmployee) => {
+          if(attributeList.classOfOptionalAttribut == "Customer") {
+            attributeList.map(attribute => {
+              setOptionalAttributesCustomerList(optionalAttributesCustomerList => [...optionalAttributesCustomerList, attribute]);
+            })
+          }
+        })
+      }
     }
+    
   };
 
   function validation() {
@@ -175,11 +183,13 @@ function UserForm({onCancel, edit, selected, type}) {
         try {
           if(isEmployee){
               console.log("AXIOS: updateEmployee()")
-              updateData = {id, firstName, lastName, username, password, systemStatus, roles, positions, availabilities, restrictions}
+              updateData = {id, firstName, lastName, username, password, systemStatus, roles, positions, availabilities, restrictions, 
+                            optionalAttributes: optionalAttributesEmployeeData}
               await updateEmployee(id, updateData);
           }else {
               console.log("AXIOS: updateCustomer()")
-              updateData = {id, firstName, lastName, username, password, systemStatus, roles, restrictions}
+              updateData = {id, firstName, lastName, username, password, systemStatus, roles, restrictions,
+                            optionalAttributes: optionalAttributesEmployeeData}
               await updateCustomer(id, updateData);
           }
         } catch (error) {
@@ -190,7 +200,8 @@ function UserForm({onCancel, edit, selected, type}) {
           try {
           if(isEmployee){
               console.log("AXIOS: addEmployee()")
-              newData = {firstName, lastName, username, password, systemStatus, roles, positions, availabilities, restrictions}
+              newData = {firstName, lastName, username, password, systemStatus, roles, positions, availabilities, restrictions,
+                          optionalAttributes: optionalAttributesEmployeeData}
               await addEmployee(newData);
           }else {
               console.log("AXIOS: addCustomer()")
@@ -214,10 +225,10 @@ function UserForm({onCancel, edit, selected, type}) {
       if (answer) {
         try {
           if(isEmployee) { //delete employee
-              data = {id, firstName: "", lastName: "", username: "", password: "", systemStatus: deleteStatus, roles: [], positions: [], availabilities: [], restrictions: []}
+              data = {id, firstName, lastName, username, password, systemStatus: deleteStatus, roles, positions, availabilities, restrictions}
               await updateEmployee(id, data)
           } else { //delete customer
-              data = {id, firstName: "", lastName: "", username: "", password: "", systemStatus: deleteStatus, roles: [], restrictions: []}
+              data = {id, firstName, lastName, username, password, systemStatus: deleteStatus, role, restrictions}
               await updateCustomer(id, data);
           }
         } catch (error) {
@@ -231,22 +242,31 @@ function UserForm({onCancel, edit, selected, type}) {
   //initial the optionalAttribute array for submit
   const initialOptionalAttributes = async () => {
     var initialValue
+    if(optionalAttributesUserList.length > 0) {
+
+    }
+
     if(isEmployee) {
-      initialValue = optionalAttributesEmployeeList.map(attribute => {
-        return {
-          ...attribute,
-          value: ""
-        }
-      })
-      setOptionalAttributesEmployeeData(initialValue)
+      if(optionalAttributesEmployeeList.length > 0) {
+        initialValue = optionalAttributesEmployeeList.map(attribute => {
+          return {
+            ...attribute,
+            value: ""
+          }
+        })
+        setOptionalAttributesEmployeeData(initialValue)
+      }
+      
     } else {
-      initialValue = optionalAttributesCustomerList.map(attribute => {
-        return {
-          ...attribute,
-          value: ""
-        }
-      })
-      setOptionalAttributesCustomerData(initialValue)
+      if(optionalAttributesCustomerList.length > 0) {
+        initialValue = optionalAttributesCustomerList.map(attribute => {
+          return {
+            ...attribute,
+            value: ""
+          }
+        })
+        setOptionalAttributesCustomerData(initialValue)
+      }
     }
   }
   
@@ -281,7 +301,7 @@ function UserForm({onCancel, edit, selected, type}) {
 
   //---------------------------------RENDER---------------------------------
   // DYNAMIC extendetUserInforamtion table
-  function renderExpandUserInformationTable() {
+  function renderOptionalAttributesTable() {
     if(optionalAttributesEmployeeList.length > 0)
     {
       return ( 
@@ -424,7 +444,7 @@ function UserForm({onCancel, edit, selected, type}) {
                               </tr>
                           </thead>
                           <tbody>
-                          {renderExpandUserInformationTable()}
+                          {renderOptionalAttributesTable()}
                           </tbody>
                       </Table> 
                   </Form.Group>
