@@ -116,7 +116,7 @@ export default function UserList(props) {
             {props.userType == "employee" ? 
                 <OverviewPage
                     pageTitle="Mitarbeiter"
-                    newItemText="Neuer Benutzer"
+                    newItemText="Neuer Mitarbeiter"
                     tableHeader={["#", "Benutzername", "Nachname", "Vorname", "Status"]}
                     tableBody={tableBody}
                     modal={modalEmployee}
@@ -126,7 +126,7 @@ export default function UserList(props) {
                 /> :
                 <OverviewPage
                     pageTitle="Kunden"
-                    newItemText="Neuer Benutzer"
+                    newItemText="Neuer Kunde"
                     tableHeader={["#", "Benutzername", "Nachname", "Vorname", "Status"]}
                     tableBody={tableBody}
                     modal={modalCustomer}
