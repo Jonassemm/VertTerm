@@ -16,9 +16,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 @Document("resource")
 public class Resource extends Bookable implements Serializable{
 	private static final long serialVersionUID = 7443614129275947603L;
-	
-	@Id
-	private String id;
+
 	@Indexed(unique = true)
 	private String name;
 	private String description;
@@ -30,14 +28,6 @@ public class Resource extends Bookable implements Serializable{
 	private List<Restriction> restrictions;
 	@DBRef
 	private List<ResourceType> resourceTypes;
-
-	public String getId() {
-		return id;
-	}
-
-	public void setId(String id) {
-		this.id = id;
-	}
 
 	public String getName() {
 		return name;

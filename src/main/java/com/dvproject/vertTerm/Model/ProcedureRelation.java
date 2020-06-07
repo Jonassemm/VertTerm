@@ -7,6 +7,7 @@ import java.util.List;
 
 import javax.validation.constraints.NotNull;
 
+import com.dvproject.vertTerm.Service.AppointmentServiceImpl;
 import org.springframework.data.mongodb.core.mapping.DBRef;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
@@ -44,9 +45,9 @@ public class ProcedureRelation {
 		this.procedure = procedure;
 	}
 
-	public List<Appointment> getAppointmentRecommendationByEarliestEnd(Date date, Customer customer) {
+	public List<Appointment> getAppointmentRecommendationByEarliestEnd(Date date, Customer customer, AppointmentServiceImpl appointmentService) {
 		return this.getProcedure().getAppointmentRecommendationByEarliestEnd(
-				new Date(date.getTime() + this.getMinDifference().toMillis()), customer);
+				new Date(date.getTime() + this.getMinDifference().toMillis()), customer, appointmentService);
 	}
 
 	public boolean testConformatyOfDates(Calendar endDate, Calendar startDate) {
