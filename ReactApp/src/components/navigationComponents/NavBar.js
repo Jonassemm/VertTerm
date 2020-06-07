@@ -23,7 +23,8 @@ function NavBar({ userStore }) {
                 <Navbar.Collapse id="basic-navbar-nav" className="mr-auto">
                     <Nav className="mr-auto">
                         <Nav.Item><Nav.Link as={Link} to="/admin">Verwaltung</Nav.Link></Nav.Item>    
-                        <Nav.Item><Nav.Link as={Link} to="/calendar">Kalender</Nav.Link></Nav.Item>    
+                        <Nav.Item><Nav.Link as={Link} to="/calendar">Kalender</Nav.Link></Nav.Item>
+                        <Nav.Item><Nav.Link as={Link} to="/appointment">Terminansicht</Nav.Link></Nav.Item>      
                         <Nav.Item><Nav.Link as={Link} to="/booking">Buchen</Nav.Link></Nav.Item>
                     </Nav>
                 </Navbar.Collapse >

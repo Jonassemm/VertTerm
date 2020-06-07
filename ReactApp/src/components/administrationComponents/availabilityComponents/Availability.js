@@ -3,7 +3,8 @@ import {Form, Table, Col, Container, Button} from 'react-bootstrap';
 import DatePicker from "react-datepicker"
 import "react-datepicker/dist/react-datepicker.css"
 
-import {setDate, setValidEndDate, validateDates, renderAvailabilityTable} from "./AvailabilityHelpFunctions"
+import {setValidEndDateString, validateDates, renderAvailabilityTable} from "./AvailabilityHelpFunctions"
+import {setDate} from "../../TimeComponents/TimeFunctions"
 
 var moment = require('moment'); 
 
@@ -51,40 +52,50 @@ const Availability = (props) => {
         monthly: "monthly",
         yearly: "yearly",
     }
-    const [startDate, setStartDate] = useState(setDate())
-    const [endDate, setEndDate] = useState(setValidEndDate(setDate()))
+    const [startDateString, setStartDateString] = useState(setDate())
+    const [endDateString, setEndDateString] = useState(setValidEndDateString(setDate()))
     const [rhythm, setRhythm] = useState(availabilityRhythm.oneTime)
     const [frequency, setFrequency] = useState(1)
-    const [endOfSeries, setEndOfSeries] = useState(null)
+    const [endOfSeriesDateString, setEndOfSeriesDateString] = useState(null)
     const [withSeriesEnd, setWithSeriesEnd] = useState(false)
+
+    const [datePickerFocus, setDatePickerFocus] = useState(false)
     
 
     //---------------------------------HandleChange---------------------------------
-    const handleStartDateChange = date => {
+    const handleStartDateStringChange = date => {
         const newDateString = moment(date).format("DD.MM.YYYY HH:mm").toString()
-        setStartDate(newDateString)
-        if(endDate <= newDateString) {
-           setEndDate(setValidEndDate(newDateString)) 
+        const endDate = moment(endDateString, "DD.MM.yyyy HH:mm").toDate()
+        const endOfSeriesDate = moment(endOfSeriesDateString, "DD.MM.yyyy HH:mm").toDate()
+
+        setStartDateString(newDateString)
+
+        if(endDate.getTime() <= date.getTime()) {
+           setEndDateString(setValidEndDateString(newDateString)) 
         }
-        if(withSeriesEnd && endOfSeries <= newDateString) {
-            setEndOfSeries(setValidEndDate(newDateString))
+        if(withSeriesEnd && endOfSeriesDate.getTime() <= date.getTime()) {
+            setEndOfSeriesDateString(setValidEndDateString(newDateString))
         }
         props.editedAvailabilities(true)
     }
-    const handleEndDateChange = date => {
+
+    const handleEndDateStringChange = date => {
         const newDateString = moment(date).format("DD.MM.YYYY HH:mm").toString()
-        if(validateDates(startDate, newDateString, newDateString)){
-            setEndDate(newDateString)
-            if(withSeriesEnd && endOfSeries < newDateString) {
-                setEndOfSeries(newDateString)
+        const endOfSeriesAsDate = moment(endOfSeriesDateString, "DD.MM.yyyy HH:mm").toDate()
+
+        if(!datePickerFocus && validateDates(startDateString, newDateString, newDateString)){
+            setEndDateString(newDateString)
+            if(withSeriesEnd &&  endOfSeriesAsDate.getTime() < date.getTime()) {
+                setEndOfSeriesDateString(newDateString)
             }
             props.editedAvailabilities(true)
         }
     }
-    const handleEndOfSeriesChange = date => {
+
+    const handleEndOfSeriesDateStringChange = date => {
         const newDateString = moment(date).format("DD.MM.YYYY HH:mm").toString()
-        if(validateDates(startDate, endDate, newDateString)){
-            setEndOfSeries(newDateString)
+        if(!datePickerFocus && validateDates(startDateString, endDateString, newDateString)){
+            setEndOfSeriesDateString(newDateString)
             props.editedAvailabilities(true)
         }
     }
@@ -108,18 +119,22 @@ const Availability = (props) => {
     const handleWithSeriesEndChange = data =>  {    
         if(data.target.value == "false"){
             setWithSeriesEnd(false);
-            setEndOfSeries(null)
+            setEndOfSeriesDateString(null)
         } else{
             setWithSeriesEnd(true);
-            setEndOfSeries(endDate)
+            setEndOfSeriesDateString(endDateString)
         }
         props.editedAvailabilities(true)
+    }
+
+    const handleDatePickerFocusChange = (focus) => {
+        setDatePickerFocus(focus)
     }
 
 
     //---------------------------------Availability---------------------------------
     const handleAdd = () => {
-        const newAvailability = {startDate, endDate, rhythm, frequency, endOfSeries}
+        const newAvailability = {startDate: startDateString, endDate: endDateString, rhythm, frequency, endOfSeries: endOfSeriesDateString}
         props.addAvailability(newAvailability)
         props.editedAvailabilities(true)
     }
@@ -148,26 +163,30 @@ const Availability = (props) => {
                             <Form.Label style={{marginRight: "20px"}}>Start</Form.Label>
                             <DatePicker
                                 required
-                                selected={moment(startDate, "DD.MM.yyyy HH:mm").toDate()}
-                                onChange={handleStartDateChange}
+                                selected={moment(startDateString, "DD.MM.yyyy HH:mm").toDate()}
+                                onChange={handleStartDateStringChange}
                                 showTimeSelect
                                 timeFormat="HH:mm"
                                 timeIntervals={5}
                                 timeCaption="Uhrzeit"
                                 dateFormat="dd.M.yyyy / HH:mm"
+                                onCalendarClose={e => handleDatePickerFocusChange(false)}
+                                onCalendarOpen={e => handleDatePickerFocusChange(true)}
                             />
                         </Form.Group>
                         <Form.Group style={{display: "flex", flexWrap: "nowrap"}} as={Col} md="6">
                             <Form.Label style={{marginRight: "20px"}}>Ende</Form.Label>
                             <DatePicker 
                                 required
-                                selected={moment(endDate, "DD.MM.yyyy HH:mm").toDate()}
-                                onChange={handleEndDateChange}
+                                selected={moment(endDateString, "DD.MM.yyyy HH:mm").toDate()}
+                                onChange={handleEndDateStringChange}
                                 showTimeSelect
                                 timeFormat="HH:mm"
                                 timeIntervals={5}
                                 timeCaption="Uhrzeit"
                                 dateFormat="dd.M.yyyy / HH:mm"
+                                onCalendarClose={e => handleDatePickerFocusChange(false)}
+                                onCalendarOpen={e => handleDatePickerFocusChange(true)}
                             />
                         </Form.Group>
                     </Form.Row>
@@ -244,13 +263,15 @@ const Availability = (props) => {
                                 id={`withSeriesEnd`} />
                             <DatePicker
                                 disabled={!withSeriesEnd || rhythm == availabilityRhythm.oneTime}
-                                selected={endOfSeries != null ? moment(endOfSeries, "DD.MM.yyyy HH:mm").toDate() : null}
-                                onChange={handleEndOfSeriesChange}
+                                selected={endOfSeriesDateString != null ? moment(endOfSeriesDateString, "DD.MM.yyyy HH:mm").toDate() : null}
+                                onChange={handleEndOfSeriesDateStringChange}
                                 showTimeSelect
                                 timeFormat="HH:mm"
                                 timeIntervals={5}
                                 timeCaption="Uhrzeit"   
                                 dateFormat="dd.M.yyyy / HH:mm"
+                                onCalendarClose={e => handleDatePickerFocusChange(false)}
+                                onCalendarOpen={e => handleDatePickerFocusChange(true)}
                             />
                         </Form.Group>
                         <Form.Group as={Col} md="3">
@@ -267,20 +288,25 @@ const Availability = (props) => {
                     </Form.Row>
                         <hr style={{ border: "0,5px solid #999999" }}/>
                     <Form.Row>
-                        <Button onClick={handleAdd} style={{marginBottom: "20px"}}>Verfügbarkeit hinzufügen</Button>
+                        <Form.Group as={Col} md="12">
+                            <div style={{textAlign: "center"}}>
+                                <Button onClick={handleAdd}>Verfügbarkeit hinzufügen</Button>
+                            </div>
+                        </Form.Group>
                     </Form.Row>
                     <Form.Row>
-                    <Table striped hover variant="light">
+                    <Table style={{border: "2px solid #AAAAAA", marginTop: "10px", width: "100%", borderCollapse: "collapse"}} striped variant="ligth">
                             <thead>
                                 <tr>
-                                    <th>Verfügbarkeiten</th>
+                                    <th colSpan="6" style={{textAlign: "center"}}>Verfügbarkeiten</th>
                                 </tr>
                                 <tr>
-                                    <th>Start</th>
-                                    <th>Ende</th>
+                                    <th style={{width: "200px"}}>Start</th>
+                                    <th style={{width: "200px"}}>Ende</th>
                                     <th>Intervall</th>
                                     <th>Wdh-Intervall</th>
-                                    <th>Serienende</th>
+                                    <th style={{width: "200px"}}>Serienende</th>
+                                    <th style={{width: "25px"}}></th>
                                 </tr>
                             </thead>
                             <tbody>

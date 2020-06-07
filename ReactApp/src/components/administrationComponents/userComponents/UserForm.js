@@ -7,9 +7,12 @@ import {
   addEmployee,
   updateEmployee,
   addCustomer,
-  updateCustomer,
-  getAllRoles
+  updateCustomer
 } from "./UserRequests";
+
+import {
+  getAllOptionalAttributes
+} from "../optionalAttributesComponents/optionalAttributesRequests"
 
 
 function UserForm({onCancel, edit, selected, type}) {
@@ -35,77 +38,110 @@ function UserForm({onCancel, edit, selected, type}) {
   //Availability
   const [availabilities, setAvailabilities] = useState([])
   //Position
-  const [position, setPosition] = useState([])
+  const [positions, setPositions] = useState([])
   //Role
   const [roles, setRoles] = useState([])
   //Restrictions
   const [restrictions, setRestrictions] = useState([])
-  //extended userInformation
-  const [extUserInfoAttList, setExtUserInfoAttList] = useState([])
-  const [extUserInfoData, setExtUserInfoData] = useState([])
-  const [extUserInfoInput, setUserInfoInput] = useState() //needed to render page when editing any extUserInfo
   
+  //Optional Attributes (Employee)
+  const [optionalAttributesUserList, setOptionalAttributesUserList] = useState([])
+  const [optionalAttributesUserData, setOptionalAttributesUserData] = useState([])
+  //Optional Attributes (Employee)
+  const [optionalAttributesEmployeeList, setOptionalAttributesEmployeeList] = useState([])
+  const [optionalAttributesEmployeeData, setOptionalAttributesEmployeeData] = useState([])
+  //Optional Attributes (Customer)
+  const [optionalAttributesCustomerList, setOptionalAttributesCustomerList] = useState([])
+  const [optionalAttributesCustomerData, setOptionalAttributesCustomerData] = useState([])
+  //Attribute Input
+  const [optionalAttributInput, setOptionalAttributeInput] = useState() //needed to render page when editing any extUserInfo
+  
+
   //HANDEL CHANGE
   const handleFirstnameChange = event => {setFirstname(event.target.value); setEdited(true)}
   const handleLastnameChange = event => {setLastname(event.target.value); setEdited(true)}
   const handleUsernameChange = event => {setUsername(event.target.value); setEdited(true)}
   const handlePasswordChange = event => {setPassword(event.target.value); setEdited(true)}
   const handleSystemStatusChange = event => {setSystemStatus(event.target.value); setEdited(true)}
-  const handlePositionChange = data => {setPosition(data); setEdited(true)}
+  const handlePositionsChange = data => {setPositions(data); setEdited(true)}
   const handleRoleChange = data => {setRoles(data); setEdited(true)}
   const handleRestrictionChange = data => {setRestrictions(data); setEdited(true)}
-  const handleExtUserInfoDataChange = (e, name) => {
-    setExtUserInfoDataValue(name, e.target.value); 
-    setUserInfoInput([e.target.value, name]); 
-    console.log(extUserInfoData)
+  const handleOptionalAttributeDataChange = (e, name) => {
+    setOptionalAttributeValue(name, e.target.value); 
+    setOptionalAttributeInput([e.target.value, name]); 
+    console.log(optionalAttributesEmployeeData)
     setEdited(true) 
   };
 
   useEffect(() => { 
     console.log("useEffect-Call: loadExtandUserInformation")
-    loadExtUserInformation();
+    //loadOptionalAttributes()
     if(edit) {
         setFirstname(selected.firstName)
         setLastname(selected.lastName)
         setUsername(selected.username)
         setPassword(selected.password)
         setSystemStatus(selected.systemStatus)
-        if(selected.roles != null) {
+        if(selected.roles != null && selected.roles.length > 0) {
           setRoles(selected.roles)
         }
-        if(selected.position != null) {
-          setPosition([selected.position]) //CHANGE until position is an array
+        if(selected.restrictions != null && selected.restrictions.length > 0) {
+          setRestrictions(selected.restrictions)
         }
-        if(selected.availabilities != null || selected.availabilities != undefined) {
+        if(isEmployee && selected.positions != null && selected.positions.length > 0) {
+          setPositions(selected.positions)
+        }
+        if(selected.availabilities != null && selected.availabilities.length > 0 ) {
           setAvailabilities(selected.availabilities);
         }
     } 
+    console.log("useEffect-Call: initialOptionalAttributes")
+    //initialOptionalAttributes()
   }, [])
 
   //---------------------------------LOAD---------------------------------
-
-  //EXTUSERINFO
-  const loadExtUserInformation = async () => {
+  const loadOptionalAttributes = async () => {
     var data = [];
     try{ 
-      const response = await getAllExtUserInformation();
+      const response = await getAllOptionalAttributes();
       data = response.data;
     }catch (error) {
-      data = [{id:"1", name:"E-Mail", isRequired: true},{id:"2", name:"Telefon-Nr.", isRequired: false}]
       console.log(Object.keys(error), error.message)
-      //alert("An error occoured while loading extendUserInformation")
     }
-    data.map((info) => {
-        setExtUserInfoAttList(extUserInfoAttList => [...extUserInfoAttList, info]);
-    })
-    //initial the ExtUserInfoData-Array for submit
-    const initialData = data.map(name => {
-      return {
-        ...name,
-        value: ""
+
+    //Add attributes for users
+    if(data.length > 0) {
+      data.map((attributeList) => {
+        if(attributeList.classOfOptionalAttribut == "User") {
+          attributeList.map(attribute => {
+            setOptionalAttributesUserList(optionalAttributesUserList => [...optionalAttributesUserList, attribute]);
+            setOptionalAttributesEmployeeList(optionalAttributesEmployeeList => [...optionalAttributesEmployeeList, attribute]);
+            setOptionalAttributesCustomerList(optionalAttributesCustomerList => [...optionalAttributesCustomerList, attribute]);
+          })
+        }
+      })
+      if(isEmployee) { // EMPLOYEE SELECTE
+        //Add attributes for employees
+        data.map((attributeList) => {
+          if(attributeList.classOfOptionalAttribut == "Employee") {
+            attributeList.map(attribute => {
+              initial = 
+              setOptionalAttributesEmployeeList(optionalAttributesEmployeeList => [...optionalAttributesEmployeeList, attribute]);
+            })
+          }
+        })
+      }else {
+        //Add attributes for customers
+        data.map((isEmployee) => {
+          if(attributeList.classOfOptionalAttribut == "Customer") {
+            attributeList.map(attribute => {
+              setOptionalAttributesCustomerList(optionalAttributesCustomerList => [...optionalAttributesCustomerList, attribute]);
+            })
+          }
+        })
       }
-    })
-    setExtUserInfoData(initialData)
+    }
+    
   };
 
   function validation() {
@@ -113,7 +149,7 @@ function UserForm({onCancel, edit, selected, type}) {
     var errorMsg 
     //check position
     if(isEmployee){
-      if(position.length == 0) { 
+      if(positions.length == 0) { 
         result = false
         errorMsg = "noPosition"
       }
@@ -132,77 +168,56 @@ function UserForm({onCancel, edit, selected, type}) {
         alert("Fehler: Bitte wählen Sie mindestens eine Position aus!")
         break;
     }
-
     return result
   }
 
 
-  //---------------------------------SUBMIT---------------------------------
-  //ADD USER
+  //---------------------------------USER-SUBMIT---------------------------------
+  //ADD
   const handleSubmit = async event => {
     event.preventDefault();//reload the page after clicking "Enter"
     if(validation()) {
-      //ONLY FOR TESTING - will be removed at the time we add position as an array
-      //get the first position of our position-array
-      var firstPosition
-      position.map((pos, index)=> {
-        if(index == 0) {
-          firstPosition = pos
-        }
-      })
-      //ONLY FOR TESTING - END
-
       if(edit) {
         var id = selected.id
         var updateData = {}
         try {
           if(isEmployee){
               console.log("AXIOS: updateEmployee()")
-              updateData = {id, firstName, lastName, username, password, systemStatus, roles, position: firstPosition, availabilities}
+              updateData = {id, firstName, lastName, username, password, systemStatus, roles, positions, availabilities, restrictions, 
+                            optionalAttributes: optionalAttributesEmployeeData}
               await updateEmployee(id, updateData);
           }else {
               console.log("AXIOS: updateCustomer()")
-              updateData = {id, firstName, lastName, username, password, systemStatus, roles}
+              updateData = {id, firstName, lastName, username, password, systemStatus, roles, restrictions,
+                            optionalAttributes: optionalAttributesEmployeeData}
               await updateCustomer(id, updateData);
           }
         } catch (error) {
           console.log(Object.keys(error), error.message)
-          alert("An error occoured while updating a user")
         } 
       } else {
           var newData = {}
           try {
           if(isEmployee){
               console.log("AXIOS: addEmployee()")
-              newData = {firstName, lastName, username, password, systemStatus, roles, position: firstPosition, availabilities}
+              newData = {firstName, lastName, username, password, systemStatus, roles, positions, availabilities, restrictions,
+                          optionalAttributes: optionalAttributesEmployeeData}
               await addEmployee(newData);
           }else {
               console.log("AXIOS: addCustomer()")
-              newData = {firstName, lastName, username, password, systemStatus, roles}
+              newData = {firstName, lastName, username, password, systemStatus, roles, restrictions}
               await addCustomer(newData);
           }
           } catch (error) {
             console.log(Object.keys(error), error.message)
-            alert("An error occoured while adding a user")
           } 
       } 
       onCancel()
-    } else {
-
-    }
+    } 
   };
 
-  //DELETE USER
+  //DELETE
   const handleDeleteUser = async () => {
-    //ONLY FOR TESTING - will be removed at the time we add position as an array
-    //get the first position of our position-array
-    var firstPosition
-    position.map((pos, index)=> {
-      if(index == 0) {
-        firstPosition = pos
-      }
-    })
-    //ONLY FOR TESTING - END
     const deleteStatus = "deleted" // fix delteStatus
     const id = selected.id
     var data = {}
@@ -210,28 +225,67 @@ function UserForm({onCancel, edit, selected, type}) {
       if (answer) {
         try {
           if(isEmployee) { //delete employee
-              data = {id, firstName, lastName, username, password, systemStatus: deleteStatus, roles, position: firstPosition, availabilities}
+              data = {id, firstName, lastName, username, password, systemStatus: deleteStatus, roles, positions, availabilities, restrictions}
               await updateEmployee(id, data)
           } else { //delete customer
-              data = {id, firstName, lastName, username, password, systemStatus: deleteStatus , roles}
+              data = {id, firstName, lastName, username, password, systemStatus: deleteStatus, role, restrictions}
               await updateCustomer(id, data);
           }
         } catch (error) {
             console.log(Object.keys(error), error.message)
-            alert("An error occoured while deleting a user")
         }
       }
         onCancel()
   }
 
-  //---------------------------------ExtUserInfoData---------------------------------
-  const setExtUserInfoDataValue = (name, value) => {
-    extUserInfoData.map((info)=> {
-      if(info.name == name) {
-        info.value = value
+  //---------------------------------Optional Attributes---------------------------------
+  //initial the optionalAttribute array for submit
+  const initialOptionalAttributes = async () => {
+    var initialValue
+    if(optionalAttributesUserList.length > 0) {
+
+    }
+
+    if(isEmployee) {
+      if(optionalAttributesEmployeeList.length > 0) {
+        initialValue = optionalAttributesEmployeeList.map(attribute => {
+          return {
+            ...attribute,
+            value: ""
+          }
+        })
+        setOptionalAttributesEmployeeData(initialValue)
       }
-    })
+      
+    } else {
+      if(optionalAttributesCustomerList.length > 0) {
+        initialValue = optionalAttributesCustomerList.map(attribute => {
+          return {
+            ...attribute,
+            value: ""
+          }
+        })
+        setOptionalAttributesCustomerData(initialValue)
+      }
+    }
   }
+  
+  const setOptionalAttributeValue = (name, value) => {
+    if(isEmployee){ //EMPLOYEE
+      optionalAttributesEmployeeData.map(attribute=> {
+        if(attribute.name == name) {
+          attribute.value = value
+        }
+      })
+    }else {// CUSTOMER
+      optionalAttributesCustomerData.map(attribute=> {
+        if(attribute.name == name) {
+          attribute.value = value
+        }
+      })
+    }
+  }
+
 
   //---------------------------------Availability---------------------------------
   const addAvailability = (newAvailability) => {
@@ -247,14 +301,14 @@ function UserForm({onCancel, edit, selected, type}) {
 
   //---------------------------------RENDER---------------------------------
   // DYNAMIC extendetUserInforamtion table
-  function renderExpandUserInformationTable() {
-    if(extUserInfoAttList.length > 0)
+  function renderOptionalAttributesTable() {
+    if(optionalAttributesEmployeeList.length > 0)
     {
       return ( 
-        extUserInfoAttList.map((info, index) =>(
+        optionalAttributesEmployeeList.map((info, index) =>(
           <tr key={index}>
             <td>{info.name}:</td>
-            <td><Form.Control required={info.isRequired} onChange={e => handleExtUserInfoDataChange(e, info.name)} value={extUserInfoData.find(item => item.name == info.name).value || ""} name={"userInfo-value"+ index} type="text"/></td>
+            <td><Form.Control required={info.isRequired} onChange={e => handleOptionalAttributeDataChange(e, info.name)} value={optionalAttributesEmployeeData.find(item => item.name == info.name).value || ""} name={"userInfo-value"+ index} type="text"/></td>
           </tr>
         ))
       );
@@ -348,14 +402,14 @@ function UserForm({onCancel, edit, selected, type}) {
                     <Form.Label>Benutzername:</Form.Label>
                     <InputGroup>
                         <Form.Control
-                        required
-                        //pattern="[A-Za-z0-9]{1,}"
-                        //title="Benutzername darf Klein- und Groß-Buchstaben sowie Zahlen enthalten"
-                        name="username"
-                        type="text"
-                        placeholder="Benutzername"
-                        value={username || ""}
-                        onChange={handleUsernameChange}
+                          required
+                          //pattern="[A-Za-z0-9]{1,}"
+                          //title="Benutzername darf Klein- und Groß-Buchstaben sowie Zahlen enthalten"
+                          name="username"
+                          type="text"
+                          placeholder="Benutzername"
+                          value={username || ""}
+                          onChange={handleUsernameChange}
                         />
                         <Form.Control.Feedback type="invalid">
                         Bitte geben Sie ein Benutzernamen ein.
@@ -366,14 +420,14 @@ function UserForm({onCancel, edit, selected, type}) {
                     <Form.Label>Passwort:</Form.Label>
                     <InputGroup>
                         <Form.Control
-                        required
-                        //pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}" //min 8 characters with one upper and one lower case letter
-                        //title="Das Passwort muss mindestens 8 Zeichen lang sein und einen Groß- sowie Klein-Buchstaben enthalten"
-                        name="password"
-                        type="password"
-                        placeholder="Passwort"
-                        value={password || ""}
-                        onChange={handlePasswordChange}
+                          required
+                          //pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}" //min 8 characters with one upper and one lower case letter
+                          //title="Das Passwort muss mindestens 8 Zeichen lang sein und einen Groß- sowie Klein-Buchstaben enthalten"
+                          name="password"
+                          type="password"
+                          placeholder="Passwort"
+                          value={password || ""}
+                          onChange={handlePasswordChange}
                         />
                         <Form.Control.Feedback type="invalid">
                         Bitte gebben Sie ein Passwort ein.
@@ -386,11 +440,11 @@ function UserForm({onCancel, edit, selected, type}) {
                       <Table style={{border: "2px solid #AAAAAA", marginTop: "10px", width: "100%", borderCollapse: "collapse", tableLayout: "fixed"}} striped variant="ligth">
                           <thead>
                               <tr>
-                                  <th colSpan="2">Erweiterte Benutzerinformationen</th>
+                                  <th colSpan="2">Optionale Attribute</th>
                               </tr>
                           </thead>
                           <tbody>
-                          {renderExpandUserInformationTable()}
+                          {renderOptionalAttributesTable()}
                           </tbody>
                       </Table> 
                   </Form.Group>
@@ -434,9 +488,9 @@ function UserForm({onCancel, edit, selected, type}) {
                     <Form.Label>Position:</Form.Label>
                     <Container style={{display: "flex", flexWrap: "nowrap"}}>       
                       <ObjectPicker 
-                        setState={handlePositionChange}
+                        setState={handlePositionsChange}
                         DbObject="position"
-                        initial ={position} 
+                        initial ={positions} 
                         multiple ={true}
                       />
                     </Container>

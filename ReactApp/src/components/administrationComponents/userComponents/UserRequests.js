@@ -3,6 +3,8 @@ import {APIURL} from "../../../APIConfig"
 
 import {getRoles} from "../roleComponents/RoleRequests"
 import {getAllPositions} from "../positionComponents/PositionRequests"
+import {getAllRestrictions} from "../restrictionComponents/RestrictionRequests"
+import {getAllOptionalAttributes} from "../optionalAttributesComponents/optionalAttributesRequests"
 
 //Employee
 export const addEmployee = data => axios.post(`${APIURL}/api/Employees/`, data) 
@@ -21,15 +23,14 @@ export const getCustomer = userID => axios.get(`${APIURL}/api/Customers/${userID
 export const getAllUsers = () => axios.get(`${APIURL}/api/Users`) 
 
 //ROLES
-//export const getAllRoles = () => axios.get(`${APIURL}/api/Role/`)
 export const getAllRoles = getRoles
 
 //POSITIONS
-//export const getAllPositions = () => axios.get(`${APIURL}/api/Position/`)
 export {getAllPositions}
 
-
 //RESTRICTIONS
-export const getAllRestrictions = () => axios.get(`${APIURL}/api/Restriction/`)
-//export {getAllPositions}
+export {getAllRestrictions}
+
+//OPTIONAL ATTRIBUTES
+export {getAllOptionalAttributes}
 

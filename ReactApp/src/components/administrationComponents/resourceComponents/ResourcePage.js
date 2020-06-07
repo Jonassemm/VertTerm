@@ -13,7 +13,6 @@ function ResourcePage() {
             data = response.data;
         }catch (error) {
             console.log(Object.keys(error), error.message)
-            alert("An error occoured while loading all resources")
         }
         
         //don't save object with status="deleted"
@@ -47,14 +46,26 @@ function ResourcePage() {
                 break;
                 default: status = "UNDIFINED"
             }
+            var price 
+            if(item.pricePerUnit >= 0) {
+                price = (item.pricePerUnit/100) + " €"
+            } 
+            var type = ""
+            item.resourceTypes.map((singleType, index) => {
+                if(index == 0) {
+                    type += singleType.name
+                } else {
+                    type += ", " + singleType.name
+                }
+            })
             return (
                 [index + 1,
                 item.name,
                 item.description,
-                item.resourceType.name,
+                type,
                 item.amountInStock,
                 item.numberOfUses,
-                item.pricePerUnit,
+                price,
                 status]
             )
         })

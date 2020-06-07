@@ -6,7 +6,6 @@ import ObjectPicker from "../../ObjectPicker"
 import {
   addEmployee,
   updateEmployee,
-  deleteEmployee,
   getAllRoles,
   getAllPositions,
   getAllRestrictions
@@ -106,7 +105,7 @@ function EmployeeForm({ onCancel, edit, selected }) {
   const handleDeleteUser = async () => {
     const answer = confirm("Möchten Sie diesen Mitarbeiter wirklich löschen? ")
         if (answer) {
-            await deleteEmployee(selected.id)
+            //await deleteEmployee(selected.id)
         }
         onCancel()
   }

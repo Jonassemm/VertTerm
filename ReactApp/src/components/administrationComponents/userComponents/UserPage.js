@@ -5,7 +5,6 @@ import OverviewPage from "../../OverviewPage"
 import UserForm from "./UserForm"
 
 
-import {observer} from "mobx-react"
 import {
     getEmployeeList,
     getCustomerList
@@ -37,7 +36,6 @@ export default function UserList(props) {
                     })
                 }catch (error) {
                     console.log(Object.keys(error), error.message)
-                    alert("An error occoured while loading userlist")
                 }
             break;
             case "customer":
@@ -51,7 +49,6 @@ export default function UserList(props) {
                     })
                 }catch (error) {
                     console.log(Object.keys(error), error.message)
-                    alert("An error occoured while loading userlist")
                 }
             break;
           }

@@ -23,9 +23,6 @@ public class CustomerServiceImp implements CustomerService {
     
     @Autowired
     private UserService userService;
-    
-    @Autowired
-    private OptionalAttributesService optionalAttributesService;
 
     @Override
     public List<Customer> getAll() {

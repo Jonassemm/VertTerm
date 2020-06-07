@@ -26,7 +26,7 @@ const Style = styled.div`
     justify-content: center;
 }
 `
-
+moment.locale('de'); 
 const localizer = momentLocalizer(moment)
 function HomePage({ calendarStore }){
     const [showAddModal, setShowAddModal] = useState(false)
@@ -131,6 +131,24 @@ function HomePage({ calendarStore }){
                 style={{height:"80vh"}}
                 onSelectSlot={handleSelect}
                 onSelectEvent={handleSelectEvent}
+                culture = 'ge'
+                messages={{
+                    previous: 'Zurück',
+                    next: 'Weiter',
+                    year: 'Jahr',
+                    month: 'Monat',
+                    week: 'Woche',
+                    day: 'Tag',
+                    today: 'Heute',
+                    date: 'Datum',
+                    time: 'Zeit',
+                    event: 'Event',
+                    allDay: 'Ganztägig',
+                    work_week: 'Arbeitswoche',
+                    yesterday: 'Gestern',
+                    tomorrow: 'Morgen',
+                    agenda: 'Agenda'
+                  }}
             />
         </div> 
         </Style>

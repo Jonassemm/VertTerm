@@ -17,7 +17,6 @@ function PositionPage() {
           data = response.data;
         }catch (error) {
           console.log(Object.keys(error), error.message)
-          alert("An error occoured while loading all positions")
         }
         setPositions(data);
     };

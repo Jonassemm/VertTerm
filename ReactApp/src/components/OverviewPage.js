@@ -66,6 +66,7 @@ function OverviewPage({
     data,               //table data of the desired object
     editModalText,      //optional prop for overwriting the title of the edit modal
     modalSize,          //optional prop for customize modal size -> ["sm", "lg", "xl"]
+    withoutCreate = false,      //optional to remove the add button (boolean)          
     refreshData}) {
     const [showNewModal, setShowNewModal] = useState(false)
     const [showEditModal, setShowEditModal] = useState(false)
@@ -94,7 +95,7 @@ function OverviewPage({
         <Style>
             <Modal size={modalSize} centered show={showEditModal} onHide={hideModals}>
                 <Modal.Header>
-                    <Modal.Title>{editModalText || selectedItem.name || selectedItem.username}</Modal.Title>
+                    <Modal.Title>{editModalText || selectedItem.name || selectedItem.username || selectedItem.title}</Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
                     {modal(hideModals,true,selectedItem)}
@@ -114,7 +115,7 @@ function OverviewPage({
                 <div className="topRow"></div>
                 <Row>
                     <Col ><h1>{pageTitle}</h1></Col>
-                    <Col className="colR"><Button onClick={handleNew}>{newItemText}</Button></Col>
+                    {!withoutCreate && <Col className="colR"><Button onClick={handleNew}>{newItemText}</Button></Col>}
                 </Row>
                 <Row >
                     <Table striped bordered hover>
