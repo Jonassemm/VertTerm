@@ -66,7 +66,7 @@ public class EmployeeServiceImp implements EmployeeService {
     @Override
     public Employee create(Employee newInstance) {
         if (newInstance.getId() == null) {
-//        	userService.testMandatoryFields(newInstance);
+        	userService.testMandatoryFields(newInstance);
         	userService.encodePassword(newInstance);
             return repo.save(newInstance);
         }
@@ -79,7 +79,7 @@ public class EmployeeServiceImp implements EmployeeService {
     @Override
     public Employee update(Employee updatedInstance) {
         if (updatedInstance.getId() != null && repo.findById(updatedInstance.getId()).isPresent()) {
-//        	userService.testMandatoryFields(updatedInstance);
+        	userService.testMandatoryFields(updatedInstance);
         	userService.encodePassword(updatedInstance);
             return repo.save(updatedInstance);
         }
