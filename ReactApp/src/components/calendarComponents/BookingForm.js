@@ -59,7 +59,7 @@ function BookingForm() {
             return ([ref1, ref2])
         }
         // checking wheter a selected time is in the past and if the differece between start and end is positive
-        const refIndex = tempApts.findIndex(item => item.procedure.id == data.ref.procedure.id)
+        const refIndex = tempApts.findIndex(item => item.bookedProcedure.id == data.ref.bookedProcedure.id)
         if (data.ident == "start") {
             const [ref1, ref2] = calculateDifference(tempApts[refIndex].plannedEndTime, tempApts[refIndex].plannedStartTime)
             tempApts[refIndex].plannedEndTime = ref1
@@ -75,7 +75,7 @@ function BookingForm() {
 
     function handleChange(data) {
         const temp = apts.map(item => {
-            if (item.procedure.name == data.ident.ident) {
+            if (item.bookedProcedure.name == data.ident.ident) {
                 if (data.DbObject == "employee") {
                     const temp = item.bookedEmployees.map((innerItem, index) => {
                         if (index == data.ident.ix) {
@@ -128,7 +128,7 @@ function BookingForm() {
         } else if (dif > 0) {
             // delete one
             for (let i = 0; i < apts.length; i++) {
-                if (!data.find(item => item.name == apts[i].procedure.name)) {
+                if (!data.find(item => item.name == apts[i].bookedProcedure.name)) {
                     tempApts.splice(i, 1)
                 }
             }
@@ -138,7 +138,7 @@ function BookingForm() {
                 return {}
             })
             tempApts.push({
-                procedure: data[data.length - 1],
+                bookedProcedure: data[data.length - 1],
                 bookedEmployees: tempEmployees,
                 bookedCustomer: {},
                 bookedResources: [],
@@ -155,7 +155,7 @@ function BookingForm() {
             return {
                 ...item,
                 bookedCustomer: {id: selectedCustomer[0].id, ref:"user"},
-                procedure: {id: item.procedure.id, ref:"procedure"}
+                bookedProcedure: {id: item.bookedProcedure.id, ref:"procedure"}
             }
         })
 
@@ -211,10 +211,10 @@ function BookingForm() {
                                 <hr />
                                 <div className="parent">
                                     <div className="namebox">
-                                        <h4>{item.procedure.name}</h4>
+                                        <h4>{item.bookedProcedure.name}</h4>
                                     </div>
                                     <div className="box wrap">
-                                        {item.procedure.neededEmployeePositions && item.procedure.neededEmployeePositions.map((innerItem, index) => {
+                                        {item.bookedProcedure.neededEmployeePositions && item.bookedProcedure.neededEmployeePositions.map((innerItem, index) => {
                                             return (
                                                 <div className="middleBox">
                                                     <div className="middleBoxLeft">
@@ -223,14 +223,14 @@ function BookingForm() {
                                                     <div className="middleBoxRight">
                                                         <ObjectPicker
                                                             className="input"
-                                                            ident={{ "ident": item.procedure.name, "ix": index }}
+                                                            ident={{ "ident": item.bookedProcedure.name, "ix": index }}
                                                             DbObject="employee"
                                                             setState={handleChange} />
                                                     </div>
                                                 </div>
                                             )
                                         })}
-                                        {item.procedure.neededResourceTypes && item.procedure.neededResourceTypes.map((innerItem, index) => {
+                                        {item.bookedProcedure.neededResourceTypes && item.bookedProcedure.neededResourceTypes.map((innerItem, index) => {
                                             return (
                                                 <div className="middleBox">
                                                     <div className="middleBoxLeft">
@@ -239,7 +239,7 @@ function BookingForm() {
                                                     <div className="middleBoxRight">
                                                         <ObjectPicker
                                                             className="input"
-                                                            ident={{ "ident": item.procedure.name, "ix": index }}
+                                                            ident={{ "ident": item.bookedProcedure.name, "ix": index }}
                                                             DbObject="resource"
                                                             setState={handleChange} />
                                                     </div>
