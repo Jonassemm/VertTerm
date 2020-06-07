@@ -164,7 +164,13 @@ public class UserServiceImp implements UserService {
     	String password = user.getPassword();
     	
     	if (password == null || password.equals("")) {
-    		user.setPassword(this.getById(user.getId()).getPassword());
+    		Optional<User> optUser = repo.findById(user.getId());
+    		
+    		if (optUser.isEmpty()) {
+    			throw new IllegalArgumentException("A user can not be created without a password!");
+    		}
+    		
+    		user.setPassword(optUser.get().getPassword());
     	} else {
     		String encodedPassword = passwordEncoder.encode(password);
     		user.setPassword(encodedPassword);
