@@ -116,7 +116,8 @@ public class ResourceServiceImp implements ResourceService {
 		if (ResDb.isPresent()) {
 			Resource ResUpdate = ResDb.get();
 			Resource res = getById(id);
-			ResUpdate.setAvailabilities(res.getAvailabilities());
+			ResUpdate.getAvailabilities().clear();
+			ResUpdate.getAvailabilities().addAll(res.getAvailabilities());
 			ResRepo.save(ResUpdate);
 			return res.getAvailabilities();
 		} else {
@@ -182,26 +183,6 @@ public class ResourceServiceImp implements ResourceService {
 	public boolean isResourceAvailableBetween(String id, Date startdate, Date enddate) {
 		Resource Res = getById(id);
 		return availabilityService.isAvailable(Res.getAvailabilities(), startdate, enddate);
-	}
-
-	@Override
-	public List<Availability> getResourcevailabilities(String ResID) {
-		Resource Res = getById(ResID);
-		return Res.getAvailabilities();
-
-	}
-
-	public Resource updateResourceAvailability(Resource res) {
-		Optional<Resource> ResDb = this.ResRepo.findById(res.getId());
-		if (ResDb.isPresent()) {
-			Resource ResUpdate = ResDb.get();
-			ResUpdate.setAvailabilities(res.getAvailability());
-			ResRepo.save(ResUpdate);
-			return ResUpdate;
-		} else {
-			throw new ResourceNotFoundException("Resource with the given id :" + res.getId() + " already exists");
-
-		}
 	}
 
 	// @PreAuthorize("hasAuthority('RESOURCE_DATA_WRITE')")

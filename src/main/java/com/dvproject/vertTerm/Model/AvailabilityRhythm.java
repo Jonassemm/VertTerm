@@ -4,6 +4,11 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 public enum AvailabilityRhythm {
 	/**
+	 * on every day
+	 */
+	@JsonProperty("always")
+	ALWAYS,
+	/**
 	 * only this one time
 	 */
 	@JsonProperty("oneTime")
@@ -31,6 +36,6 @@ public enum AvailabilityRhythm {
 	 * on one day of a year
 	 */
 	@JsonProperty("yearly")
-	YEARLY;
+	YEARLY
 
 }

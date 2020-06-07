@@ -10,9 +10,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 public class Customer extends User implements Serializable
 {
     private static final long serialVersionUID = 7035726826167256599L;
-
-    @Override
-    public Date getAvailableDate(Date date, Duration duration) {
-        return this.getAvailableDateByAppointments(date, duration);
+    public Customer(){
+        this.getAvailabilities().add(Availability.Always);
     }
 }

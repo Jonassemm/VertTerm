@@ -82,7 +82,7 @@ public class RessourceController {
 	}
 	@GetMapping("/Availability/{id}")
 	public List<Availability> getProcedureAvailability (@PathVariable String id) {
-		return resservice.getResourcevailabilities(id);
+		return resservice.getById(id).getAvailabilities();
 	}
 	
 	 @GetMapping("/Restriction/{id}")

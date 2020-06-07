@@ -3,6 +3,7 @@ package com.dvproject.vertTerm.repository;
 import java.util.List;
 import java.util.Optional;
 
+import com.dvproject.vertTerm.Model.User;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.data.mongodb.repository.Query;
 
