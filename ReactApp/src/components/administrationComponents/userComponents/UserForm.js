@@ -321,20 +321,7 @@ function UserForm({onCancel, edit, selected, type}) {
         <Form id="employeeAdd" onSubmit={(e) => handleSubmit(e)}>
         <Form.Row style={{ alignItems: "baseline" }}>
           <Form.Group as={Col}>
-             <h5 style={{fontWeight: "bold"}}>{initialTypeIsEmployee ? edit ? "Mitarbeiter bearbeiten" : "Benutzer hinzufügen": edit ? "Kunde bearbeiten" : "Benutzer hinzufügen"}</h5>
-          </Form.Group>
-          <Form.Group as={Col} style={{textAlign: "right"}}>
-            {!edit  && 
-              <Form.Check //not needed while editing an user
-                id="switchIsEmployee"
-                type="switch"
-                name="isEmployee"
-                value={isEmployee}
-                onChange={e => setIsEmployee(!isEmployee)}
-                checked={isEmployee}
-                label={isEmployee ? "Als Mitarbeiter anlegen": "Als Kunde anlegen"}
-              />
-            }
+             <h5 style={{fontWeight: "bold"}}>{initialTypeIsEmployee ? edit ? "Mitarbeiter bearbeiten" : "Mitarbeiter hinzufügen": edit ? "Kunde bearbeiten" : "Kunde hinzufügen"}</h5>
           </Form.Group>
         </Form.Row>
           <Tabs
