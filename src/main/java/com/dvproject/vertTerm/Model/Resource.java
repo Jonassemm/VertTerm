@@ -14,7 +14,7 @@ import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 @Document("resource")
-public class Resource implements Serializable{
+public class Resource extends Bookable implements Serializable{
 	private static final long serialVersionUID = 7443614129275947603L;
 	
 	@Id
@@ -22,8 +22,6 @@ public class Resource implements Serializable{
 	@Indexed(unique = true)
 	private String name;
 	private String description;
-	
-	private List<Availability> availabilities;
 	@NotNull
 	private Status status;
 	@DBRef
@@ -57,22 +55,6 @@ public class Resource implements Serializable{
 		this.description = description;
 	}
 
-    public List<Availability> getAvailability() {
-        return availabilities;
-    }
-
-    public void setAvailability(List<Availability> availabilities) {
-        this.availabilities = availabilities;
-    }
-
-	public List<Availability> getAvailabilities() {
-		return availabilities;
-	}
-
-	public void setAvailabilities(List<Availability> availabilities) {
-		this.availabilities = availabilities;
-	}
-
 	public Status getStatus() {
 		return status;
 	}
@@ -103,36 +85,5 @@ public class Resource implements Serializable{
 
     public void setResourceTypes(List<ResourceType> resourceTypes) {
         this.resourceTypes = resourceTypes;
-    }
-
-    private Date getAvailableDateByAvailablility(Date date, Duration duration){
-        Date earliestDate = null;
-        for(Availability availability : this.getAvailabilities()){
-            Date currentBestAvailability = availability.getEarliestAvailability(date, duration);
-            if(currentBestAvailability != null){
-                if(earliestDate == null){
-                    earliestDate = currentBestAvailability;
-                }
-                else if(earliestDate.before(earliestDate)){
-                    earliestDate = currentBestAvailability;
-                }
-            }
-        }
-        return earliestDate;
-    }
-
-    public boolean isAvailable(Date date, Duration duration){
-        return date.equals(this.getAvailableDate(date, duration));
-    }
-
-    public Date getAvailableDate(Date date, Duration duration) {
-        Date dateByAvailability = this.getAvailableDateByAvailablility(date, duration);
-        if (dateByAvailability == null) {
-            return null;
-        }
-        if (dateByAvailability.after(date)) {
-            return this.getAvailableDate(dateByAvailability, duration);
-        }
-        return date;
     }
 }

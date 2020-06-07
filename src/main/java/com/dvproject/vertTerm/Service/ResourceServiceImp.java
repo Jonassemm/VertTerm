@@ -107,7 +107,8 @@ public class ResourceServiceImp implements ResourceService {
 		if (ResDb.isPresent()) {
 			Resource ResUpdate = ResDb.get();
 			Resource res = getById(id);
-			ResUpdate.setAvailabilities(res.getAvailabilities());
+			ResUpdate.getAvailabilities().clear();
+			ResUpdate.getAvailabilities().addAll(res.getAvailabilities());
 			ResRepo.save(ResUpdate);
 			return res.getAvailabilities();
 		} else {
@@ -175,27 +176,30 @@ public class ResourceServiceImp implements ResourceService {
 		return availabilityService.isAvailable(Res.getAvailabilities(), startdate, enddate);
 	}
 
-	@Override
-	public List<Availability> getResourcevailabilities(String ResID) {
-		Resource Res = getById(ResID);
-		return Res.getAvailabilities();
+	// @PreAuthorize("hasAuthority('RESOURCE_DATA_WRITE')")
+	public List<Restriction> updateResourceDependencies(String id, String[] Rids) {
+		List<Restriction> dep = new ArrayList<>();
+		List<Restriction> AllRestrictions = RestsRepo.findAll();
+		List<String> RestIds = List.of(Rids);
+		for (Restriction rest : AllRestrictions) {
+			String rid = rest.getId();
+			if (RestIds.contains(rid)) {
+				if (!dep.contains(rest))
+					dep.add(rest);
+			}
 
-	}
-
-	public Resource updateResourceAvailability(Resource res) {
-		Optional<Resource> ResDb = this.ResRepo.findById(res.getId());
+		}
+		Optional<Resource> ResDb = this.ResRepo.findById(id);
 		if (ResDb.isPresent()) {
 			Resource ResUpdate = ResDb.get();
-			ResUpdate.setAvailabilities(res.getAvailability());
+			ResUpdate.setRestrictions(dep);
 			ResRepo.save(ResUpdate);
-			return ResUpdate;
+			return dep;
 		} else {
-			throw new ResourceNotFoundException("Resource with the given id :" + res.getId() + " already exists");
+			throw new ResourceNotFoundException("Resource with the given id :" + id + " already exists");
 
 		}
 	}
-
-
 
 	/**
 	 * 
@@ -234,7 +238,7 @@ public class ResourceServiceImp implements ResourceService {
 			if (childResources != null) {
 				resourcesToTest.addAll(0, childResources);
 			}
-			
+
 			resourcesToTest.remove(0);
 		}
 	}

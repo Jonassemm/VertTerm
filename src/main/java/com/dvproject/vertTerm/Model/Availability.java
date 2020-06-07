@@ -8,7 +8,8 @@ import java.util.TimeZone;
 
 import org.springframework.data.annotation.PersistenceConstructor;
 
-public class Availability {	
+public class Availability {
+	public static Availability Always = new Availability(null, null, AvailabilityRhythm.ALWAYS);
 	private Date startDate;
 	private Date endDate;
 	
@@ -24,6 +25,9 @@ public class Availability {
 	private Date endOfSeries;
 
 	public Date getEarliestAvailability(Date date, Duration duration){
+		if(this.getRhythm() == AvailabilityRhythm.ALWAYS){
+			return date;
+		}
 		if((endDate.getTime() - startDate.getTime()) < duration.toMillis()){
 			return null;
 		}
@@ -39,7 +43,7 @@ public class Availability {
 		Date tmpStartDate = startDate;
 		Date tmpEndDate = endDate;
 
-		while(!tmpStartDate.after(endOfSeries)){
+		while(endOfSeries == null || !tmpStartDate.after(endOfSeries)){
 			if(tmpEndDate.before(end)){
 				Calendar startCalendar = Calendar.getInstance();
 				Calendar endCalendar = Calendar.getInstance();
@@ -258,7 +262,7 @@ public class Availability {
 	private int getYearDifference(Calendar date1, Calendar date2) {
 		int diff = date1.get(Calendar.YEAR) - date2.get(Calendar.YEAR);
 
-		return diff < 0 ? 0 : diff;
+		return Math.max(diff, 0);
 	}
 
 	private Calendar getCalendar(Date date) {

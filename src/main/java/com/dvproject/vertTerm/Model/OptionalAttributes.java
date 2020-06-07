@@ -12,13 +12,15 @@ import org.springframework.data.mongodb.core.mapping.Document;
 @Document
 public class OptionalAttributes implements Serializable {
 	private static final long serialVersionUID = 7741132277124076940L;
-	@NotNull
-	private List<OptionalAttribute> optionalAttributes;
+	@Id
+	private String id;
 	@NotNull
 	@Indexed(unique = true)
 	private String classOfOptionalAttribut;
-	@Id
-	private String id;
+	@NotNull
+	private List<OptionalAttribute> optionalAttributes;
+
+	
 
 	public OptionalAttributes() {
 	}

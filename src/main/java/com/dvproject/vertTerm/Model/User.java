@@ -9,6 +9,9 @@ import java.util.TimeZone;
 
 import javax.validation.constraints.NotNull;
 
+import com.dvproject.vertTerm.Service.AppointmentServiceImpl;
+import com.dvproject.vertTerm.Service.BasicService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.PersistenceConstructor;
 import org.springframework.data.mongodb.core.index.Indexed;
@@ -16,7 +19,7 @@ import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 @Document("user")
-public abstract class User implements Serializable
+public abstract class User extends Bookable implements Serializable
 {
     private static final long serialVersionUID = -5252169753921361843L;
 
@@ -32,16 +35,6 @@ public abstract class User implements Serializable
 	private Status systemStatus;
 	
 	private List<OptionalAttributeWithValue> optionalAttributes;
-
-	public List<Appointment> getAppointments() {
-		return appointments;
-	}
-
-	public void setAppointments(List<Appointment> appointments) {
-		this.appointments = appointments;
-	}
-
-	private List<Appointment> appointments;
 
 	@DBRef
 	private List<Role> roles;
@@ -167,27 +160,4 @@ public abstract class User implements Serializable
 	public void setCreationDate(Date creationDate) {
 		this.creationDate = creationDate;
 	}
-
-	public abstract Date getAvailableDate(Date date, Duration duration);
-
-	public boolean isAvailable(Date date, Duration duration){
-		return date.equals(this.getAvailableDate(date, duration));
-	}
-
-	protected Date getAvailableDateByAppointments(Date date, Duration duration) {
-		Date plannedEnd = new Date(date.getTime() + duration.toMillis());
-		for (Appointment appointment : appointments) {
-			if (appointment.getPlannedStarttime().before(date)) {
-				if (appointment.getPlannedEndtime().after(date)) {
-					return getAvailableDate(appointment.getPlannedEndtime(), duration);
-				}
-			}
-			else{
-				if(appointment.getPlannedStarttime().before(plannedEnd))
-				return getAvailableDate(appointment.getPlannedEndtime(), duration);
-			}
-		}
-		return date;
-	}
-
 }

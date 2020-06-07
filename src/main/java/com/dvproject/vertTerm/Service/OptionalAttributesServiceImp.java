@@ -47,8 +47,32 @@ public OptionalAttributes create(OptionalAttributes OAttribute) {
 		throw new ResourceNotFoundException("OptionalAttributes  with the given Class :" +OAttribute.getClass() + "already exsist");   
 }
 
+
 @Override
-public List<OptionalAttribute> AddOptionalAtt(String id, OptionalAttribute OAtt) {
+public OptionalAttributes update(OptionalAttributes OAttribute) {
+	Optional<OptionalAttributes> OptionalAttributes = OptionalAttributesRepo.findById(OAttribute.getId());
+	if (OptionalAttributes.isPresent()) {
+		return OptionalAttributesRepo.save(OAttribute);
+	}
+	else	
+		throw new ResourceNotFoundException("OptionalAttributes with the given id :" + OAttribute.getId() + " not found");
+		
+}
+
+
+	@Override
+	public boolean delete(String id) {
+	Optional<OptionalAttributes> OptionalAttributes = OptionalAttributesRepo.findById(id);
+		if (OptionalAttributes.isPresent()) {
+			this.OptionalAttributesRepo.delete(OptionalAttributes.get());
+		} else {
+			throw new ResourceNotFoundException("OptionalAttributes with the given id :" + id + " not found");
+		}
+	    return false;
+		
+	}
+@Override
+	public List<OptionalAttribute> addOptionalAttribute(String id, OptionalAttribute OAtt) {
 	   Optional<OptionalAttributes> OAsDb = this.OptionalAttributesRepo.findById(id);
 	   List<OptionalAttribute> OptionalAttributList = new ArrayList<> ();	
 	   if (OAsDb.isPresent()) {
@@ -67,7 +91,7 @@ public List<OptionalAttribute> AddOptionalAtt(String id, OptionalAttribute OAtt)
 	 	    		        	OptionalAttributList.add(oa);	
 	    			 }	
 				     else 
-				 		throw new ResourceNotFoundException("OptionalAttribute  with the given name : "+OAtt.getName()+"already exsist");   		          
+				 		throw new ResourceNotFoundException("OptionalAttribute  with the given name : "+OAtt.getName()+" already exsist");   		          
 	    			 
 			  }
 	    	oasUpdate.setOptionalAttributes(OptionalAttributList);
@@ -75,32 +99,56 @@ public List<OptionalAttribute> AddOptionalAtt(String id, OptionalAttribute OAtt)
 	        return OptionalAttributList;
 	    } 
         else
-		throw new ResourceNotFoundException("OptionalAttribute  with the given name : "+OAtt.getName()+"already exsist");   
+		throw new ResourceNotFoundException("OptionalAttributes  with the given id : "+id +"not found");   
 }
 
-@Override
-public OptionalAttributes update(OptionalAttributes OAttribute) {
-	Optional<OptionalAttributes> OptionalAttributes = OptionalAttributesRepo.findById(OAttribute.getId());
-	if (OptionalAttributes.isPresent()) {
-		return OptionalAttributesRepo.save(OAttribute);
-	}
-	else	
-		throw new ResourceNotFoundException("OptionalAttributes with the given id :" + OAttribute.getId() + " not found");
+	@Override
+	public List<OptionalAttribute> updateOptionalAttribute(String id, List<OptionalAttribute> opatt) {
+		Optional<OptionalAttributes> OptionalAttributes = OptionalAttributesRepo.findById(id);	
+		if (OptionalAttributes.isPresent()) {
+			OptionalAttributes OAsUpdate = OptionalAttributes.get();
+			OAsUpdate.setOptionalAttributes(opatt);
+		    OptionalAttributesRepo.save(OAsUpdate);
+			return OAsUpdate.getOptionalAttributes();
+		} 
+		else	
+			throw new ResourceNotFoundException("OptionalAttributes with the given id :" + id + " not found");
 		
-}
-
-
-@Override
-public boolean delete(String id) {
-Optional<OptionalAttributes> OptionalAttributes = OptionalAttributesRepo.findById(id);
-	if (OptionalAttributes.isPresent()) {
-		this.OptionalAttributesRepo.delete(OptionalAttributes.get());
-	} else {
-		throw new ResourceNotFoundException("OptionalAttributes with the given id :" + id + " not found");
 	}
-    return false;
-	
-}
+
+	@Override
+	public List<OptionalAttribute> deleteOptionalAttribute(String id, OptionalAttribute OAtt) { 
+	   Optional<OptionalAttributes> OAsDb = this.OptionalAttributesRepo.findById(id);
+	   List<OptionalAttribute> OptionalAttributList = new ArrayList<> ();	
+	   if (OAsDb.isPresent()) {
+	         OptionalAttributes oasUpdate = OAsDb.get();
+	    	 List<OptionalAttribute> OAlist = oasUpdate.getOptionalAttributes();
+	    	 List<String> names = new ArrayList<> ();
+	    	 String RemEml=OAtt.getName();
+	    	 for (OptionalAttribute oa : OAlist )
+			  {    	
+    		     String oaname=oa.getName();
+	    		 if (!(names.contains(oaname)) )
+    			 {  
+    				 	names.add(oa.getName());
+    			 }
+	    		 if (names.contains(RemEml)) 
+    			 {
+			         if(!(RemEml.equals(oaname)))
+			         {    	 if (!OptionalAttributList.contains(oa)) 
+		 	    		        	OptionalAttributList.add(oa);		
+			         }
+			      }
+	    		 else throw new ResourceNotFoundException("OptionalAttributes with the name : "+ RemEml + " not exsist");   
+	    			
+			  }
+	    	oasUpdate.setOptionalAttributes(OptionalAttributList);
+	    	OptionalAttributesRepo.save(oasUpdate);
+	        return OptionalAttributList;
+	    } 
+     else
+		throw new ResourceNotFoundException("OptionalAttributes with the given id : "+id +"not found");   
+	}
 
 	public OptionalAttributes getByClassname(String classname) {
 		return OptionalAttributesRepo.findByClass(classname);
@@ -110,7 +158,6 @@ Optional<OptionalAttributes> OptionalAttributes = OptionalAttributesRepo.findByI
 	public void testMandatoryFields(String classname, List<OptionalAttribute> optionalAttributes) {
 		getByClassname(classname).testMandatoryFields(optionalAttributes);
 	}
-
 }
 
 
