@@ -10,6 +10,8 @@ import javax.validation.constraints.NotNull;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.DBRef;
 
+import com.dvproject.vertTerm.Service.AppointmentServiceImpl;
+import com.dvproject.vertTerm.exception.BookedCustomerException;
 import com.dvproject.vertTerm.exception.EmployeeException;
 import com.dvproject.vertTerm.exception.PositionException;
 import com.dvproject.vertTerm.exception.ResourceException;
@@ -142,36 +144,42 @@ public class Appointment implements Serializable {
 		this.warning = warning;
 	}
 
+	public void isBlocked(AppointmentServiceImpl appointmentService) {
+		testEmployeeAppointments(appointmentService);
+		testResourceAppointments(appointmentService);
+		testCustomerAppointments(appointmentService);
+	}
+
 	public void isBookable() {
 		testBookedEmployeesAgainstPositionsOfProcedure();
 		testBookedResourcesAgainstResourceTypesOfProcedure();
-		
-		//test avilability of procedure
+
+		// test avilability of procedure
 		bookedProcedure.isAvailable(plannedStarttime, plannedEndtime);
-		
+
 		for (Resource resource : bookedResources) {
-			//test availability of resource
+			// test availability of resource
 			for (Availability availability : resource.getAvailabilities()) {
-				//test availabilities of resource
+				// test availabilities of resource
 				availability.isAvailableBetween(plannedStarttime, plannedEndtime);
 			}
 
 		}
-		
+
 		for (Employee employee : bookedEmployees) {
 			for (Availability availability : employee.getAvailabilities()) {
-				//test availabilities of employee
+				// test availabilities of employee
 				availability.isAvailableBetween(plannedStarttime, plannedEndtime);
 			}
 		}
-		
+
 		hasDistinctBookedAttributes();
 	}
 
 	private void testBookedEmployeesAgainstPositionsOfProcedure() {
 		boolean testVal = false;
 		List<Position> procedurePositions = bookedProcedure.getNeededEmployeePositions();
-		
+
 		if (this.bookedEmployees.size() != this.getBookedProcedure().getNeededEmployeePositions().size()) {
 			throw new PositionException("Missing employees", new Position());
 		}
@@ -199,7 +207,7 @@ public class Appointment implements Serializable {
 	private void testBookedResourcesAgainstResourceTypesOfProcedure() {
 		boolean testVal = false;
 		List<ResourceType> procedureResourceTypes = bookedProcedure.getNeededResourceTypes();
-		
+
 		if (this.bookedResources.size() != this.getBookedProcedure().getNeededResourceTypes().size()) {
 			throw new ResourceTypeException("Missing resources", new ResourceType());
 		}
@@ -223,38 +231,71 @@ public class Appointment implements Serializable {
 			testVal = false;
 		}
 	}
-	
+
 	private void hasDistinctBookedAttributes() {
 		hasDistinctEmployees();
 		hasDistinctResources();
 	}
-	
-	private boolean hasDistinctResources() {
+
+	private void hasDistinctResources() {
 		List<String> resourceIds = new ArrayList<>();
-		
+
 		for (Resource resource : this.bookedResources) {
 			String id = resource.getId();
-			if(!resourceIds.contains(id)) {
+			if (!resourceIds.contains(id)) {
 				resourceIds.add(id);
 			} else {
 				throw new ResourceException("The same resource is beeing used twice: ", resource);
 			}
 		}
-		return true;
 	}
-	
-	private boolean hasDistinctEmployees() {
+
+	private void hasDistinctEmployees() {
 		List<String> employeeIds = new ArrayList<>();
-		
+
 		for (Employee employee : this.bookedEmployees) {
 			String id = employee.getId();
-			if(!employeeIds.contains(id)) {
+			if (!employeeIds.contains(id)) {
 				employeeIds.add(id);
 			} else {
 				throw new EmployeeException("The same employee is beeing used twice: ", employee);
 			}
 		}
-		return true;
 	}
-	
+
+	private void testEmployeeAppointments(AppointmentServiceImpl appointmentService) {
+		for (Employee employee : bookedEmployees) {
+			List<Appointment> appointmentsOfEmployeeAtThisAppointmentPlannedTimes = appointmentService
+					.getAppointmentsOfBookedEmployeeInTimeinterval(employee.getId(), plannedStarttime, plannedEndtime);
+
+			if (!appointmentsOfEmployeeAtThisAppointmentPlannedTimes.isEmpty()) {
+				throw new EmployeeException("An employee already has an appointment in the given time interval",
+						employee);
+			}
+		}
+	}
+
+	private void testResourceAppointments(AppointmentServiceImpl appointmentService) {
+		for (Resource resource : bookedResources) {
+			List<Appointment> appointmentsOfResourceAtThisAppointmentPlannedTimes = appointmentService
+					.getAppointmentsOfBookedResourceInTimeinterval(resource.getId(), plannedStarttime, plannedEndtime);
+
+			if (!appointmentsOfResourceAtThisAppointmentPlannedTimes.isEmpty()) {
+				throw new ResourceException("A resource already has an appointment in the given time interval",
+						resource);
+			}
+		}
+	}
+
+	private void testCustomerAppointments(AppointmentServiceImpl appointmentService) {
+		List<Appointment> appointmentsOfCustomerAtThisAppointmentPlannedTimes = appointmentService
+				.getAppointmentsOfBookedCustomerInTimeinterval(bookedCustomer.getId(), plannedStarttime,
+						plannedEndtime);
+
+		if (!appointmentsOfCustomerAtThisAppointmentPlannedTimes.isEmpty()) {
+			throw new BookedCustomerException("The customer already has an appointment in the given time interval",
+					bookedCustomer);
+		}
+	}
+
 }

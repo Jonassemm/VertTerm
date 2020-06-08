@@ -22,5 +22,17 @@ public interface AppointmentRepository extends MongoRepository<Appointment, Stri
 	List<Appointment> findByBookedCustomerId(String id);
 
 	@Query("{'$and':[{'bookedCustomer.$id': ObjectId(?0)}, {'plannedStarttime': {'$gte': ?1}}, {'plannedEndtime': {'$lte': ?2}}]}")
-	List<Appointment> findAppointmentByBookedUserAndTime(String userid, Date starttime, Date endtime);
+	List<Appointment> findAppointmentByBookedUserAndTimeinterval(String userid, Date starttime, Date endtime);
+	
+	@Query("{'$and':[{'plannedStarttime': {'$gte': ?1}}, {'plannedEndtime': {'$lte': ?2}}]}")
+	List<Appointment> findAppointmentByTimeinterval(Date starttime, Date endtime);
+	
+	@Query("'$and':[{'bookedEmployees.$id': ObjectId(?0)}, {'$or':[{'$and':[{'plannedStarttime' : {'$gte': ?1}}, {'plannedEndtime': {'$lt': ?1}}]}, {'$and':[{'plannedStarttime' : {'$lt': ?2}}, {'plannedEndtime': {'$gte': ?2}}]}, {'$and':[{'plannedStarttime' : {'$gte': ?1}}, {'plannedEndtime': {'$lte': ?2}}]}]}]}")
+	List<Appointment> findAppointmentaByBookedEmployeeInTimeinterval(String employeeid, Date starttime, Date endtime);
+	
+	@Query("{'$and':[{'bookedResources.$id': ObjectId(?0)}, {'$or':[{'$and':[{'plannedStarttime' : {'$gte': ?1}}, {'plannedEndtime': {'$lt': ?1}}]}, {'$and':[{'plannedStarttime' : {'$lt': ?2}}, {'plannedEndtime': {'$gte': ?2}}]}, {'$and':[{'plannedStarttime' : {'$gte': ?1}}, {'plannedEndtime': {'$lte': ?2}}]}]}]}")
+	List<Appointment> findAppointmentsByBookedResourceInTimeinterval(String resourceid, Date starttime, Date endtime);
+	
+	@Query("{'$and':[{'bookedCustomer.$id': ObjectId(?0)}, {'$or':[{'$and':[{'plannedStarttime' : {'$gte': ?1}}, {'plannedEndtime': {'$lt': ?1}}]}, {'$and':[{'plannedStarttime' : {'$lt': ?2}}, {'plannedEndtime': {'$gte': ?2}}]}, {'$and':[{'plannedStarttime' : {'$gte': ?1}}, {'plannedEndtime': {'$lte': ?2}}]}]}]}")
+	List<Appointment> findAppointmentsByBookedCustomerInTimeinterval(String userid, Date starttime, Date endtime);
 }

@@ -21,6 +21,8 @@ import com.dvproject.vertTerm.Model.Restriction;
 import com.dvproject.vertTerm.Model.Status;
 import com.dvproject.vertTerm.Model.User;
 import com.dvproject.vertTerm.Model.Warning;
+import com.dvproject.vertTerm.exception.ProcedureException;
+import com.dvproject.vertTerm.exception.ResourceException;
 import com.dvproject.vertTerm.repository.AppointmentgroupRepository;
 
 @Service
@@ -140,28 +142,30 @@ public class AppointmentgroupServiceImpl implements AppointmentgroupService {
 		appointmentgroup.isBookable();
 
 		for (Appointment appointment : appointments) {
-			Date startdate = appointment.getPlannedStarttime();
-			Date enddate = appointment.getPlannedEndtime();
-			List<Restriction> restrictionsToTest;
-
 			Procedure procedure = appointment.getBookedProcedure();
+			List<Restriction> restrictionsToTest;
 			List<Resource> resources = appointment.getBookedResources();
 
+			// test restrictions of procedure
 			restrictionsToTest = procedure.getRestrictions();
 			if (restrictionsToTest != null
 					&& !restrictionService.testRestrictions(restrictionsToTest, userRestrictions)) {
-				throw new RuntimeException("The appointment for the procedure " + procedure.getName()
-						+ " contains a restriction that the given user also has");
+				throw new ProcedureException(
+						"The appointment for the procedure contains a restriction that the given user also has",
+						procedure);
 			}
 
 			for (Resource resource : resources) {
 				restrictionsToTest = resource.getRestrictions();
+
+				// resource and user contain the same restriction
 				if (restrictionsToTest != null
 						&& !restrictionService.testRestrictions(restrictionsToTest, userRestrictions)) {
-					throw new RuntimeException(
-							"The resource " + resource.getName() + " contains a restriction that the user also has");
+					throw new ResourceException("A resource  contains a restriction that the user also has", resource);
 				}
 			}
+
+			appointment.isBlocked(appointmentService);
 		}
 
 		// create new annonymoususer
