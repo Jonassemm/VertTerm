@@ -10,7 +10,9 @@ import javax.validation.constraints.NotNull;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.DBRef;
 
+import com.dvproject.vertTerm.exception.EmployeeException;
 import com.dvproject.vertTerm.exception.PositionException;
+import com.dvproject.vertTerm.exception.ResourceException;
 import com.dvproject.vertTerm.exception.ResourceTypeException;
 
 public class Appointment implements Serializable {
@@ -162,11 +164,17 @@ public class Appointment implements Serializable {
 				availability.isAvailableBetween(plannedStarttime, plannedEndtime);
 			}
 		}
+		
+		hasDistinctBookedAttributes();
 	}
 
 	private void testBookedEmployeesAgainstPositionsOfProcedure() {
 		boolean testVal = false;
 		List<Position> procedurePositions = bookedProcedure.getNeededEmployeePositions();
+		
+		if (this.bookedEmployees.size() != this.getBookedProcedure().getNeededEmployeePositions().size()) {
+			throw new PositionException("Missing employees", new Position());
+		}
 
 		for (int i = 0; i < bookedEmployees.size(); i++) {
 			Employee employee = bookedEmployees.get(i);
@@ -191,6 +199,10 @@ public class Appointment implements Serializable {
 	private void testBookedResourcesAgainstResourceTypesOfProcedure() {
 		boolean testVal = false;
 		List<ResourceType> procedureResourceTypes = bookedProcedure.getNeededResourceTypes();
+		
+		if (this.bookedResources.size() != this.getBookedProcedure().getNeededResourceTypes().size()) {
+			throw new ResourceTypeException("Missing resources", new ResourceType());
+		}
 
 		for (int i = 0; i < bookedResources.size(); i++) {
 			Resource resource = bookedResources.get(i);
@@ -211,4 +223,38 @@ public class Appointment implements Serializable {
 			testVal = false;
 		}
 	}
+	
+	private void hasDistinctBookedAttributes() {
+		hasDistinctEmployees();
+		hasDistinctResources();
+	}
+	
+	private boolean hasDistinctResources() {
+		List<String> resourceIds = new ArrayList<>();
+		
+		for (Resource resource : this.bookedResources) {
+			String id = resource.getId();
+			if(!resourceIds.contains(id)) {
+				resourceIds.add(id);
+			} else {
+				throw new ResourceException("The same resource is beeing used twice: ", resource);
+			}
+		}
+		return true;
+	}
+	
+	private boolean hasDistinctEmployees() {
+		List<String> employeeIds = new ArrayList<>();
+		
+		for (Employee employee : this.bookedEmployees) {
+			String id = employee.getId();
+			if(!employeeIds.contains(id)) {
+				employeeIds.add(id);
+			} else {
+				throw new EmployeeException("The same employee is beeing used twice: ", employee);
+			}
+		}
+		return true;
+	}
+	
 }

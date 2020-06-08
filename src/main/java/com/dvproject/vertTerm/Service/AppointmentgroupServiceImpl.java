@@ -142,13 +142,10 @@ public class AppointmentgroupServiceImpl implements AppointmentgroupService {
 		for (Appointment appointment : appointments) {
 			Date startdate = appointment.getPlannedStarttime();
 			Date enddate = appointment.getPlannedEndtime();
-			Duration duration = Duration.between(startdate.toInstant(), enddate.toInstant());
 			List<Restriction> restrictionsToTest;
 
 			Procedure procedure = appointment.getBookedProcedure();
 			List<Resource> resources = appointment.getBookedResources();
-
-			//testBookabilityOfEmployeesAndResources(appointment, startdate, duration);
 
 			restrictionsToTest = procedure.getRestrictions();
 			if (restrictionsToTest != null
