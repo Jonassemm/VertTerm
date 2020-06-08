@@ -75,6 +75,7 @@ public class ProcedureServiceImp implements ProcedureService {
 	@Override
 	public Procedure create(Procedure procedure) {
 		if (procedure.getId() == null) {
+			procedure.testAllRelations();
 			return procedureRepository.save(procedure);
 		}
 		if (procedureRepository.findById(procedure.getId()).isPresent()) {
@@ -87,6 +88,8 @@ public class ProcedureServiceImp implements ProcedureService {
 	@Override
 	public Procedure update(Procedure procedure) {
 		Procedure oldProcedure = getProcedureFromDB(procedure.getId());
+		
+		procedure.testAllRelations();
 
 		testUpdatebility(oldProcedure.getStatus());
 

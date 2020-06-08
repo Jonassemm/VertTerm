@@ -257,6 +257,15 @@ public class Procedure implements Serializable {
 		throw new RuntimeException("No availability in procedure " + id);
 	}
 	
+	public void testAllRelations() {
+		for (ProcedureRelation procedureRelation : precedingRelations) {
+			testProcedureRelation(procedureRelation);
+		}
+		for (ProcedureRelation procedureRelation : subsequentRelations) {
+			testProcedureRelation(procedureRelation);
+		}
+	}
+	
 	private void testProcedureRelation (ProcedureRelation procedureRelation) {
 		if (procedureRelation.getProcedure().getId().equals(this.getId())) {
 			throw new IllegalArgumentException("Procedure can have no relation to itself");
