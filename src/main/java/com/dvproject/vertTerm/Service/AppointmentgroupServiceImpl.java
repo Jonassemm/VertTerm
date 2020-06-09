@@ -203,7 +203,6 @@ public class AppointmentgroupServiceImpl implements AppointmentgroupService {
 
 		appointmentToShift.setPlannedStarttime(startdate);
 		appointmentToShift.setPlannedEndtime(enddate);
-		appointmentToShift.setStatus(AppointmentStatus.DEACTIVATED);
 
 		appointmentService.update(appointmentToShift);
 

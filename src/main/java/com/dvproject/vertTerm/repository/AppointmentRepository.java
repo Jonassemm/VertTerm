@@ -21,15 +21,18 @@ public interface AppointmentRepository extends MongoRepository<Appointment, Stri
 
 	@Query("{'bookedCustomer.id': ?0}")
 	List<Appointment> findByBookedCustomerId(String id);
+	
+	@Query("{'$and':[{'plannedStarttime': {'$gte': ?0}}, {'plannedEndtime': {'$lte': ?1}}]}")
+	List<Appointment> findAppointmentsByTimeinterval(Date starttime, Date endtime);
+	
+	@Query("{'$and':[{'plannedStarttime': {'$gte': ?0}}, {'plannedEndtime': {'$lte': ?1}}, {'status': ?2}]}")
+	List<Appointment> findAppointmentsByTimeintervalAndStatus(Date starttime, Date endtime, AppointmentStatus status);
 
 	@Query("{'$and':[{'bookedCustomer.$id': ObjectId(?0)}, {'plannedStarttime': {'$gte': ?1}}, {'plannedEndtime': {'$lte': ?2}}]}")
-	List<Appointment> findAppointmentByBookedUserAndTimeinterval(String userid, Date starttime, Date endtime);
-	
-	@Query("{'$and':[{'plannedStarttime': {'$gte': ?1}}, {'plannedEndtime': {'$lte': ?2}}]}")
-	List<Appointment> findAppointmentByTimeinterval(Date starttime, Date endtime);
+	List<Appointment> findAppointmentsByBookedUserAndTimeinterval(String userid, Date starttime, Date endtime);
 	
 	@Query("'$and':[{'bookedEmployees.$id': ObjectId(?0)}, {'$or':[{'$and':[{'plannedStarttime' : {'$gte': ?1}}, {'plannedEndtime': {'$lt': ?1}}]}, {'$and':[{'plannedStarttime' : {'$lt': ?2}}, {'plannedEndtime': {'$gte': ?2}}]}, {'$and':[{'plannedStarttime' : {'$gte': ?1}}, {'plannedEndtime': {'$lte': ?2}}]}]}, {'status': ?3}]}")
-	List<Appointment> findAppointmentaByBookedEmployeeInTimeinterval(String employeeid, Date starttime, Date endtime, AppointmentStatus status);
+	List<Appointment> findAppointmentsByBookedEmployeeInTimeinterval(String employeeid, Date starttime, Date endtime, AppointmentStatus status);
 	
 	@Query("{'$and':[{'bookedResources.$id': ObjectId(?0)}, {'$or':[{'$and':[{'plannedStarttime' : {'$gte': ?1}}, {'plannedEndtime': {'$lt': ?1}}]}, {'$and':[{'plannedStarttime' : {'$lt': ?2}}, {'plannedEndtime': {'$gte': ?2}}]}, {'$and':[{'plannedStarttime' : {'$gte': ?1}}, {'plannedEndtime': {'$lte': ?2}}]}]}, {'status': ?3}]}")
 	List<Appointment> findAppointmentsByBookedResourceInTimeinterval(String resourceid, Date starttime, Date endtime, AppointmentStatus status);
