@@ -13,6 +13,7 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.DBRef;
 
 import com.dvproject.vertTerm.Service.AppointmentServiceImpl;
+import com.dvproject.vertTerm.Service.RestrictionService;
 import com.dvproject.vertTerm.exception.AppointmentTimeException;
 import com.dvproject.vertTerm.exception.BookedCustomerException;
 import com.dvproject.vertTerm.exception.EmployeeException;
@@ -148,7 +149,7 @@ public class Appointment implements Serializable {
 		this.warning = warning;
 	}
 
-	public void isBlocked(AppointmentServiceImpl appointmentService) {
+	public void testBlockage(AppointmentServiceImpl appointmentService) {
 		testEmployeeAppointments(appointmentService);
 		testResourceAppointments(appointmentService);
 		testCustomerAppointments(appointmentService);
@@ -186,6 +187,37 @@ public class Appointment implements Serializable {
 		}
 
 		hasDistinctBookedAttributes();
+	}
+	
+	public void isNotOverlapping (List<TimeInterval> timeIntervallsOfAppointments) {
+		for (TimeInterval timeinterval : timeIntervallsOfAppointments) {
+			if (timeinterval.isInTimeInterval(plannedStarttime, plannedEndtime)) {
+				throw new AppointmentTimeException("An appointment overlaps with annother appointment",
+						this);
+			}
+		}
+	}
+	
+	public void testRestrictions(RestrictionService restrictionService) {
+		List<Restriction> restrictionsToTest;
+		List<Restriction> userRestrictions = bookedCustomer.getRestrictions();
+
+		// test restrictions of procedure
+		restrictionsToTest = bookedProcedure.getRestrictions();
+		if (restrictionsToTest != null && !restrictionService.testRestrictions(restrictionsToTest, userRestrictions)) {
+			throw new ProcedureException(
+					"The appointment for the procedure contains a restriction that the given user also has", bookedProcedure);
+		}
+
+		for (Resource resource : bookedResources) {
+			restrictionsToTest = resource.getRestrictions();
+
+			// resource and user contain the same restriction
+			if (restrictionsToTest != null
+					&& !restrictionService.testRestrictions(restrictionsToTest, userRestrictions)) {
+				throw new ResourceException("A resource contains a restriction that the user also has", resource);
+			}
+		}
 	}
 
 	private void testBookedEmployeesAgainstPositionsOfProcedure() {

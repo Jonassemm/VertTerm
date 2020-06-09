@@ -17,12 +17,9 @@ import com.dvproject.vertTerm.Model.Employee;
 import com.dvproject.vertTerm.Model.Optimizationstrategy;
 import com.dvproject.vertTerm.Model.Procedure;
 import com.dvproject.vertTerm.Model.Resource;
-import com.dvproject.vertTerm.Model.Restriction;
 import com.dvproject.vertTerm.Model.Status;
 import com.dvproject.vertTerm.Model.User;
 import com.dvproject.vertTerm.Model.Warning;
-import com.dvproject.vertTerm.exception.ProcedureException;
-import com.dvproject.vertTerm.exception.ResourceException;
 import com.dvproject.vertTerm.repository.AppointmentgroupRepository;
 
 @Service
@@ -123,50 +120,20 @@ public class AppointmentgroupServiceImpl implements AppointmentgroupService {
 		List<Appointment> appointments = appointmentgroup.getAppointments();
 		boolean noUserAttached = userid.equals("");
 		User user = noUserAttached ? userService.getAnonymousUser() : userService.getById(userid);
-		List<Restriction> userRestrictions = user.getRestrictions();
 
 		for (Appointment appointment : appointments) {
-			if (noUserAttached || appointment.getBookedCustomer() == null) {
-				appointment.setBookedCustomer(user);
-			} else {
-				if (!appointment.getBookedCustomer().getId().equals(userid)) {
-					throw new IllegalArgumentException(
-							"User in the appointment for the procedure " + appointment.getBookedProcedure().getId()
-									+ " does not conform to the given user for all appointments");
-				}
+			if (!noUserAttached && appointment.getBookedCustomer() != null
+					&& !appointment.getBookedCustomer().getId().equals(userid)) {
+				throw new IllegalArgumentException(
+						"User in the appointment for the procedure " + appointment.getBookedProcedure().getId()
+								+ " does not conform to the given user for all appointments");
 			}
+			appointment.setBookedCustomer(user);
 
 			loadAppointmentdataFromDatabase(appointment);
 		}
 
-		appointmentgroup.isBookable();
-
-		for (Appointment appointment : appointments) {
-			Procedure procedure = appointment.getBookedProcedure();
-			List<Restriction> restrictionsToTest;
-			List<Resource> resources = appointment.getBookedResources();
-
-			// test restrictions of procedure
-			restrictionsToTest = procedure.getRestrictions();
-			if (restrictionsToTest != null
-					&& !restrictionService.testRestrictions(restrictionsToTest, userRestrictions)) {
-				throw new ProcedureException(
-						"The appointment for the procedure contains a restriction that the given user also has",
-						procedure);
-			}
-
-			for (Resource resource : resources) {
-				restrictionsToTest = resource.getRestrictions();
-
-				// resource and user contain the same restriction
-				if (restrictionsToTest != null
-						&& !restrictionService.testRestrictions(restrictionsToTest, userRestrictions)) {
-					throw new ResourceException("A resource  contains a restriction that the user also has", resource);
-				}
-			}
-
-			appointment.isBlocked(appointmentService);
-		}
+		appointmentgroup.isBookable(restrictionService, appointmentService);
 
 		// create new annonymoususer
 		if (noUserAttached) {
