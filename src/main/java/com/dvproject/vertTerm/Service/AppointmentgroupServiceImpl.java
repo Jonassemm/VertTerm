@@ -175,7 +175,7 @@ public class AppointmentgroupServiceImpl implements AppointmentgroupService {
 
 		// create all appointments of the appointmentgroup
 		for (Appointment appointment : appointments) {
-			appointment.setStatus(AppointmentStatus.CREATED);
+			appointment.setStatus(AppointmentStatus.PLANNED);
 			appointment.setWarning(Warning.NO_WARNING);
 			appointmentService.create(appointment);
 		}

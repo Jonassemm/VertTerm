@@ -156,7 +156,7 @@ public class Appointment implements Serializable {
 		if (plannedStarttime.after(plannedEndtime)) {
 			throw new RuntimeException("The planned starttime is after the planned endtime");
 		}
-		
+
 		testBookedEmployeesAgainstPositionsOfProcedure();
 		testBookedResourcesAgainstResourceTypesOfProcedure();
 		testProcedureDuration();
@@ -238,13 +238,14 @@ public class Appointment implements Serializable {
 			testVal = false;
 		}
 	}
-	
+
 	private void testProcedureDuration() {
 		Duration appointmentDuration = Duration.between(plannedStarttime.toInstant(), plannedEndtime.toInstant());
 		Duration procedureDuration = bookedProcedure.getDuration();
-		
+
 		if (procedureDuration != null && appointmentDuration.toSeconds() != procedureDuration.toSeconds()) {
-			throw new ProcedureException("Duration of the appointment does not conform to the procedure ", bookedProcedure);
+			throw new ProcedureException("Duration of the appointment does not conform to the procedure ",
+					bookedProcedure);
 		}
 	}
 
@@ -282,7 +283,8 @@ public class Appointment implements Serializable {
 	private void testEmployeeAppointments(AppointmentServiceImpl appointmentService) {
 		for (Employee employee : bookedEmployees) {
 			List<Appointment> appointmentsOfEmployeeAtThisAppointmentPlannedTimes = appointmentService
-					.getAppointmentsOfBookedEmployeeInTimeinterval(employee.getId(), plannedStarttime, plannedEndtime);
+					.getAppointmentsOfBookedEmployeeInTimeinterval(employee.getId(), plannedStarttime, plannedEndtime,
+							AppointmentStatus.PLANNED);
 
 			if (!appointmentsOfEmployeeAtThisAppointmentPlannedTimes.isEmpty()) {
 				throw new EmployeeException("An employee already has an appointment in the given time interval",
@@ -294,7 +296,8 @@ public class Appointment implements Serializable {
 	private void testResourceAppointments(AppointmentServiceImpl appointmentService) {
 		for (Resource resource : bookedResources) {
 			List<Appointment> appointmentsOfResourceAtThisAppointmentPlannedTimes = appointmentService
-					.getAppointmentsOfBookedResourceInTimeinterval(resource.getId(), plannedStarttime, plannedEndtime);
+					.getAppointmentsOfBookedResourceInTimeinterval(resource.getId(), plannedStarttime, plannedEndtime,
+							AppointmentStatus.PLANNED);
 
 			if (!appointmentsOfResourceAtThisAppointmentPlannedTimes.isEmpty()) {
 				throw new ResourceException("A resource already has an appointment in the given time interval",
@@ -305,8 +308,8 @@ public class Appointment implements Serializable {
 
 	private void testCustomerAppointments(AppointmentServiceImpl appointmentService) {
 		List<Appointment> appointmentsOfCustomerAtThisAppointmentPlannedTimes = appointmentService
-				.getAppointmentsOfBookedCustomerInTimeinterval(bookedCustomer.getId(), plannedStarttime,
-						plannedEndtime);
+				.getAppointmentsOfBookedCustomerInTimeinterval(bookedCustomer.getId(), plannedStarttime, plannedEndtime,
+						AppointmentStatus.PLANNED);
 
 		if (!appointmentsOfCustomerAtThisAppointmentPlannedTimes.isEmpty()) {
 			throw new BookedCustomerException("The customer already has an appointment in the given time interval",
