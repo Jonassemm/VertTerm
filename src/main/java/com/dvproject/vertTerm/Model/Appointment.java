@@ -1,6 +1,7 @@
 package com.dvproject.vertTerm.Model;
 
 import java.io.Serializable;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -14,6 +15,7 @@ import com.dvproject.vertTerm.Service.AppointmentServiceImpl;
 import com.dvproject.vertTerm.exception.BookedCustomerException;
 import com.dvproject.vertTerm.exception.EmployeeException;
 import com.dvproject.vertTerm.exception.PositionException;
+import com.dvproject.vertTerm.exception.ProcedureException;
 import com.dvproject.vertTerm.exception.ResourceException;
 import com.dvproject.vertTerm.exception.ResourceTypeException;
 
@@ -151,8 +153,13 @@ public class Appointment implements Serializable {
 	}
 
 	public void isBookable() {
+		if (plannedStarttime.after(plannedEndtime)) {
+			throw new RuntimeException("The planned starttime is after the planned endtime");
+		}
+		
 		testBookedEmployeesAgainstPositionsOfProcedure();
 		testBookedResourcesAgainstResourceTypesOfProcedure();
+		testProcedureDuration();
 
 		// test avilability of procedure
 		bookedProcedure.isAvailable(plannedStarttime, plannedEndtime);
@@ -229,6 +236,15 @@ public class Appointment implements Serializable {
 				throw new ResourceTypeException("Missing resource for position", resourceTypeOfProcedure);
 
 			testVal = false;
+		}
+	}
+	
+	private void testProcedureDuration() {
+		Duration appointmentDuration = Duration.between(plannedStarttime.toInstant(), plannedEndtime.toInstant());
+		Duration procedureDuration = bookedProcedure.getDuration();
+		
+		if (procedureDuration != null && appointmentDuration.toSeconds() != procedureDuration.toSeconds()) {
+			throw new ProcedureException("Duration of the appointment does not conform to the procedure ", bookedProcedure);
 		}
 	}
 
