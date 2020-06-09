@@ -2,6 +2,7 @@ package com.dvproject.vertTerm.Model;
 
 import java.io.Serializable;
 import java.time.Duration;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -12,6 +13,7 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.DBRef;
 
 import com.dvproject.vertTerm.Service.AppointmentServiceImpl;
+import com.dvproject.vertTerm.exception.AppointmentTimeException;
 import com.dvproject.vertTerm.exception.BookedCustomerException;
 import com.dvproject.vertTerm.exception.EmployeeException;
 import com.dvproject.vertTerm.exception.PositionException;
@@ -154,7 +156,10 @@ public class Appointment implements Serializable {
 
 	public void isBookable() {
 		if (plannedStarttime.after(plannedEndtime)) {
-			throw new RuntimeException("The planned starttime is after the planned endtime");
+			throw new AppointmentTimeException("The planned starttime is after the planned endtime", this);
+		}
+		if(plannedStarttime.before(Date.from(Instant.now()))) {
+			throw new AppointmentTimeException("The planned starttime is in the past", this);
 		}
 
 		testBookedEmployeesAgainstPositionsOfProcedure();
