@@ -11,6 +11,7 @@ import javax.validation.constraints.NotNull;
 import com.dvproject.vertTerm.Service.AppointmentServiceImpl;
 import com.dvproject.vertTerm.Service.EmployeeService;
 import com.dvproject.vertTerm.Service.ResourceService;
+import com.dvproject.vertTerm.exception.AvailabilityException;
 import com.fasterxml.jackson.annotation.JsonFormat;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -254,7 +255,7 @@ public class Procedure implements Serializable {
 			}
 		}
 		
-		throw new RuntimeException("No availability in procedure " + id);
+		throw new AvailabilityException("No availability for the procedure " + name);
 	}
 	
 	public void testAllRelations() {

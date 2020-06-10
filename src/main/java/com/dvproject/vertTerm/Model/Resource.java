@@ -13,6 +13,8 @@ import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import com.dvproject.vertTerm.exception.AvailabilityException;
+
 @Document("resource")
 public class Resource extends Bookable implements Serializable{
 	private static final long serialVersionUID = 7443614129275947603L;
@@ -75,5 +77,15 @@ public class Resource extends Bookable implements Serializable{
 
     public void setResourceTypes(List<ResourceType> resourceTypes) {
         this.resourceTypes = resourceTypes;
+    }
+    
+    public void isAvailable(Date startdate, Date enddate) {
+		for (Availability availability : super.getAvailabilities()) {
+			if (availability.isAvailableBetween(startdate, enddate)) {
+				return;
+			}
+		}
+		
+		throw new AvailabilityException("No availability for the resource " + name);
     }
 }

@@ -15,7 +15,7 @@ import com.dvproject.vertTerm.Model.Warning;
 public interface AppointmentRepository extends MongoRepository<Appointment, String> {
 	Optional<Appointment> findById(String id);
 
-	List<Appointment> findByWarning(Warning warning);
+	List<Appointment> findByWarnings(Warning warning);
 
 	List<Appointment> findByStatus(Status status);
 

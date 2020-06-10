@@ -54,23 +54,18 @@ public class Appointmentgroup {
 		this.appointments = appointments;
 	}
 
-	public void isBookable(RestrictionService restrictionService, AppointmentServiceImpl appointmentService) {
+	public void testBookability(RestrictionService restrictionService, AppointmentServiceImpl appointmentService,
+			BookingTester bookingTester) {
 		List<TimeInterval> timeIntervallsOfAppointments = new ArrayList<>();
 
-		hasCorrectProcedureRelations();
-
 		for (Appointment appointment : appointments) {
-			appointment.isNotOverlapping(timeIntervallsOfAppointments);
-			appointment.isBookable();
-			appointment.testRestrictions(restrictionService);
-			appointment.testBlockage(appointmentService);
+			bookingTester.setAppointment(appointment);
 
-			timeIntervallsOfAppointments
-					.add(new TimeInterval(appointment.getPlannedStarttime(), appointment.getPlannedEndtime()));
+			bookingTester.testAll(appointmentService, restrictionService, timeIntervallsOfAppointments);
 		}
 	}
 
-	public void hasCorrectProcedureRelations() {
+	public void testProcedureRelations() {
 		// procedure.id -> appointment
 		Map<String, Appointment> appointmentsMap = new HashMap<>();
 		// procedure.id -> procedure
@@ -80,7 +75,7 @@ public class Appointmentgroup {
 		for (Appointment appointment : appointments) {
 			Procedure procedureOfAppointment = appointment.getBookedProcedure();
 			String id = procedureOfAppointment.getId();
-			
+
 			if (proceduresMap.containsKey(id)) {
 				throw new ProcedureException("Two different appointments of one procedure", procedureOfAppointment);
 			}

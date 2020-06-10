@@ -61,8 +61,10 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
 		StringBuilder builder = new StringBuilder(exception.getMessage());
 		HttpHeaders headers = addExceptionHeader(null, resourcetype.getClass().getSimpleName());
 		
-		builder.append(": resourcetype ");
-		builder.append(resourcetype.getName());
+		if (resourcetype != null) {
+			builder.append(": resourcetype ");
+			builder.append(resourcetype.getName());
+		}
 
 		return handleExceptionInternal(exception, builder.toString(), headers, HttpStatus.UNPROCESSABLE_ENTITY, request);
 	}
@@ -73,8 +75,10 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
 		StringBuilder builder = new StringBuilder(exception.getMessage());
 		HttpHeaders headers = addExceptionHeader(null, resource.getClass().getSimpleName());
 		
-		builder.append(": resource ");
-		builder.append(resource.getName());
+		if (resource != null) {
+			builder.append(": resource ");
+			builder.append(resource.getName());
+		}
 
 		return handleExceptionInternal(exception, builder.toString(), headers, HttpStatus.UNPROCESSABLE_ENTITY, request);
 	}
@@ -85,8 +89,10 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
 		StringBuilder builder = new StringBuilder(exception.getMessage());
 		HttpHeaders headers = addExceptionHeader(null, procedurerelation.getClass().getSimpleName());
 		
-		builder.append(": procedurerelation ");
-		builder.append(procedurerelation.getProcedure().getName());
+		if (procedurerelation != null) {
+			builder.append(": procedurerelation ");
+			builder.append(procedurerelation.getProcedure().getName());
+		}
 
 		return handleExceptionInternal(exception, builder.toString(), headers, HttpStatus.UNPROCESSABLE_ENTITY, request);
 	}
@@ -97,8 +103,10 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
 		StringBuilder builder = new StringBuilder(exception.getMessage());
 		HttpHeaders headers = addExceptionHeader(null, procedure.getClass().getSimpleName());
 		
-		builder.append(": procedure ");
-		builder.append(procedure.getName());
+		if (procedure != null) {
+			builder.append(": procedure ");
+			builder.append(procedure.getName());
+		}
 
 		return handleExceptionInternal(exception, builder.toString(), headers, HttpStatus.UNPROCESSABLE_ENTITY, request);
 	}
@@ -109,10 +117,12 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
 		StringBuilder builder = new StringBuilder(exception.getMessage());
 		HttpHeaders headers = addExceptionHeader(null, employee.getClass().getSimpleName());
 		
-		builder.append(": employee ");
-		builder.append(employee.getFirstName());
-		builder.append(" ");
-		builder.append(employee.getLastName());
+		if (employee != null) {
+			builder.append(": employee ");
+			builder.append(employee.getFirstName());
+			builder.append(" ");
+			builder.append(employee.getLastName());
+		}
 
 		return handleExceptionInternal(exception, builder.toString(), headers, HttpStatus.UNPROCESSABLE_ENTITY, request);
 	}
@@ -123,8 +133,10 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
 		StringBuilder builder = new StringBuilder(exception.getMessage());
 		HttpHeaders headers = addExceptionHeader(null, user.getClass().getSimpleName());
 		
-		builder.append(": user ");
-		builder.append(user.getUsername());
+		if (user != null) {
+			builder.append(": user ");
+			builder.append(user.getUsername());
+		}
 
 		return handleExceptionInternal(exception, builder.toString(), headers, HttpStatus.UNPROCESSABLE_ENTITY, request);
 	}
@@ -135,8 +147,10 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
 		StringBuilder builder = new StringBuilder(exception.getMessage());
 		HttpHeaders headers = addExceptionHeader(null, position.getClass().getSimpleName());
 		
-		builder.append(": position ");
-		builder.append(position.getName());
+		if (position != null) {
+			builder.append(": position ");
+			builder.append(position.getName());
+		}
 
 		return handleExceptionInternal(exception, builder.toString(), headers, HttpStatus.UNPROCESSABLE_ENTITY, request);
 	}
@@ -147,12 +161,14 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
 		StringBuilder builder = new StringBuilder(exception.getMessage());
 		HttpHeaders headers = addExceptionHeader(null, "appointment");
 		
-		builder.append(": procedure ");
-		builder.append(appointment.getBookedProcedure().getName());
-		builder.append(", planned starttime ");
-		builder.append(appointment.getPlannedStarttime());
-		builder.append(", planned endtime ");
-		builder.append(appointment.getPlannedEndtime());
+		if (appointment != null) {
+			builder.append(": procedure ");
+			builder.append(appointment.getBookedProcedure().getName());
+			builder.append(", planned starttime ");
+			builder.append(appointment.getPlannedStarttime());
+			builder.append(", planned endtime ");
+			builder.append(appointment.getPlannedEndtime());
+		}
 
 		return handleExceptionInternal(exception, builder.toString(), headers, HttpStatus.UNPROCESSABLE_ENTITY, request);
 	}
