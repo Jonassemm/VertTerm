@@ -48,6 +48,7 @@ const optionalAttributesForm = ({ onCancel, edit, selected }) => {
         } else {
         alert("Bitte Attribut eingeben!")
         }
+        setName("")//reset inputfield
     };
 
     //REMOVE Attribute from Table

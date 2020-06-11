@@ -183,7 +183,9 @@ const RessourceForm = ({ onCancel, edit, selected }) => {
           <Form id="resourceAdd" onSubmit={(e) => handleSubmit(e)}>
           <Form.Row style={{ alignItems: "baseline" }}>
             <Form.Group as={Col}>
-              <h5 style={{fontWeight: "bold"}}>{edit ? "Ressource bearbeiten" : "Ressource hinzufügen"}</h5>
+              <h5 style={{fontWeight: "bold"}}>{edit ? isConsumable ? "Verbrauchbare Ressource bearbeiten":
+                                                                    "Ressource bearbeiten" : isConsumable ?
+                                                                    "Verbrauchbare Ressource hinzufügen": "Ressource hinzufügen"}</h5>
             </Form.Group>
             <Form.Group as={Col} style={{textAlign: "right"}}>
               {!edit && 
@@ -194,7 +196,7 @@ const RessourceForm = ({ onCancel, edit, selected }) => {
                     value={isConsumable || true}
                     onChange={e => setIsConsumable(!isConsumable)}
                     checked={isConsumable}
-                    label={isConsumable ? "Als verbrauchbare Ressource anlegen": "Als normale Ressource anlegen"}
+                    label={"Als verbrauchbare Ressource anlegen"}
                   />
               }
             </Form.Group>

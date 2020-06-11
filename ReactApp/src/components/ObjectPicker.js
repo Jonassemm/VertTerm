@@ -9,7 +9,7 @@ import { getUsers, getEmployees, getCustomers, getProcedures, getRoles, getPosit
 // multiple: defining whether multiple values can be selected (as boolean)
 // exclude: the element which is removed from the selection
 
-function ObjectPicker({ DbObject, setState, initial, multiple, ident, selectedItem = {id: -1} }) {
+function ObjectPicker({ DbObject, setState, initial, multiple, ident, selectedItem = {id: null} }) {
     const [options, setOptions] = useState([])
     const [labelKey, setLabelKey] = useState("")
     const [selected, setSelected] = useState([])
@@ -87,8 +87,8 @@ function ObjectPicker({ DbObject, setState, initial, multiple, ident, selectedIt
 
     //REKURSIVE function to prevent setting a parent-resource "A" as a child-resource of his child-resource "B" (-> ChildOf(A) = B, ChildOf(B) = A) 
     function checkChildResources(resource, reference) {
-        var feedback
-        var results = []
+        var feedback = true
+        var results = [] // for each child
 
         if(resource.childResources.length > 0) { 
             resource.childResources.map(singleChild => {
@@ -98,7 +98,6 @@ function ObjectPicker({ DbObject, setState, initial, multiple, ident, selectedIt
                     results.push(checkChildResources(singleChild, reference)) //save result and start recursion
                 }
             })
-            feedback = true
             if(results.map(singleResult => {
 
                 if(!singleResult){
@@ -108,7 +107,7 @@ function ObjectPicker({ DbObject, setState, initial, multiple, ident, selectedIt
             return feedback
 
         } else {
-            return true // resource cannot contain the reference as a child resource
+            return feedback // resource cannot contain the reference as a child resource
         }
     }
 
@@ -118,7 +117,7 @@ function ObjectPicker({ DbObject, setState, initial, multiple, ident, selectedIt
         res.data.map((item) => {
             //reduce the selection
             if(item.id != selectedItem.id && item.status != "deleted"){
-                if(call == "childResource" && selectedItem.id != -1) { //reduce selection of all parent resources
+                if(call == "childResource" && selectedItem.id != null) { //reduce selection of all parent resources
                     if(checkChildResources(item, selectedItem)){
                         finalResult.push(item)
                     }
