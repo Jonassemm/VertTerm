@@ -225,12 +225,18 @@ public class Availability {
 		if (availStartDays <= startDays && startDays <= availEndDays && endDays <= availEndDays) {
 			boolean retVal = true;
 			if (availStartDays == startDays) {
-				retVal = retVal && date1IsAfterDate2(availStartdate, startdate, Calendar.HOUR_OF_DAY)
-						&& date1IsAfterDate2(availStartdate, startdate, Calendar.MINUTE);
+				if (date1EqualsDate2UsingAFieldOfDates(availStartdate, startdate, Calendar.HOUR_OF_DAY)) {
+					retVal = retVal && date1IsAfterDate2UsingAFieldOfDates(availStartdate, startdate, Calendar.MINUTE);
+				} else {
+					retVal = retVal && date1IsAfterDate2UsingAFieldOfDates(availStartdate, startdate, Calendar.HOUR_OF_DAY);
+				}
 			}
 			if (availEndDays == endDays) {
-				retVal = retVal && date1IsAfterDate2(enddate, availEnddate, Calendar.HOUR_OF_DAY)
-						&& date1IsAfterDate2(enddate, availEnddate, Calendar.MINUTE);
+				if (date1EqualsDate2UsingAFieldOfDates(enddate, availEnddate, Calendar.HOUR_OF_DAY)) {
+					retVal = retVal && date1IsAfterDate2UsingAFieldOfDates(enddate, availEnddate, Calendar.MINUTE);
+				} else {
+					retVal = retVal && date1IsAfterDate2UsingAFieldOfDates(enddate, availEnddate, Calendar.HOUR_OF_DAY);
+				}
 			}
 			return retVal && (frequenzyDiff % frequenzy == 0);
 		}
@@ -246,9 +252,13 @@ public class Availability {
 		dateToNormalize -= dateNormalizer;
 		return dateToNormalize + (dateToNormalize < 0 ? additionValue : 0);
 	}
-
-	private boolean date1IsAfterDate2(Calendar date1, Calendar date2, int testCode) {
-		return date1.get(testCode) <= date2.get(testCode);
+	
+	private boolean date1IsAfterDate2UsingAFieldOfDates(Calendar date1, Calendar date2, int fieldOfDate) {
+		return date1.get(fieldOfDate) <= date2.get(fieldOfDate);
+	}
+	
+	private boolean date1EqualsDate2UsingAFieldOfDates(Calendar date1, Calendar date2, int fieldOfDate) {
+		return date1.get(fieldOfDate) == date2.get(fieldOfDate);
 	}
 
 	private int getDaysBetweenDates(Calendar date1, Calendar date2) {

@@ -8,6 +8,8 @@ import java.util.List;
 import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import com.dvproject.vertTerm.exception.AvailabilityException;
+
 @Document("user")
 public class Employee extends User implements Serializable {
 	private static final long serialVersionUID = -4432631544443788288L;
@@ -21,5 +23,15 @@ public class Employee extends User implements Serializable {
 
 	public void setPositions(List<Position> positions) {
 		this.positions = positions;
+	}
+	
+	public void isAvailable (Date startdate, Date enddate) {
+		for (Availability availability : super.getAvailabilities()) {
+			if (availability.isAvailableBetween(startdate, enddate)) {
+				return;
+			}
+		}
+		
+		throw new AvailabilityException("No availability for the employee " + super.getFirstName() + " " + super.getLastName());
 	}
 }

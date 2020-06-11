@@ -1,9 +1,13 @@
 package com.dvproject.vertTerm.Controller;
 
+import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -68,7 +72,16 @@ public class AppointmentgroupController {
 	public boolean bookAppointments (
 			@PathVariable String userid, 
 			@RequestBody Appointmentgroup appointmentgroup) {
-		return appointmentgroupService.bookAppointmentgroup(userid, appointmentgroup);
+		return appointmentgroupService.bookAppointmentgroup(userid, appointmentgroup, false);
+	}
+	
+	@PostMapping("/override/{userid}")
+	public boolean bookAppointmentsOverride (
+			@PathVariable String userid, 
+			@RequestBody Appointmentgroup appointmentgroup) {
+		Collection<? extends GrantedAuthority> auth = SecurityContextHolder.getContext().getAuthentication().getAuthorities();
+		
+		return appointmentgroupService.bookAppointmentgroup(userid, appointmentgroup, true);
 	}
 	
 	@PutMapping("")

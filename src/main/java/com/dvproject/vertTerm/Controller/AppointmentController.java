@@ -1,6 +1,7 @@
 package com.dvproject.vertTerm.Controller;
 
 import com.dvproject.vertTerm.Model.Appointment;
+import com.dvproject.vertTerm.Model.AppointmentStatus;
 import com.dvproject.vertTerm.Service.AppointmentServiceImpl;
 import com.dvproject.vertTerm.Service.BasicService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,6 +40,22 @@ public class AppointmentController {
     		@RequestParam Date starttime,
     		@RequestParam Date endtime){
     	return appointmentService.getAppointmentsWithUseridAndTimeInterval(userid, starttime, endtime);
+    }
+    
+    @GetMapping("/status/{status}")
+    public List<Appointment> getAppointmentsInTimeInterval(
+    		@PathVariable AppointmentStatus status,
+    		@RequestParam Date starttime,
+    		@RequestParam Date endtime){
+    	List<Appointment> retVal = null;
+    	
+    	if (status == null) {
+    		retVal = appointmentService.getAppointmentsInTimeInterval(starttime, endtime);
+    	} else {
+    		retVal = appointmentService.getAppointmentsInTimeIntervalWithStatus(starttime, endtime, status);
+    	}
+    	
+    	return retVal;
     }
 
     @PostMapping()

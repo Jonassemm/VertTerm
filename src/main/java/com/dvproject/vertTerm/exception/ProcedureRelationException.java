@@ -12,7 +12,7 @@ public class ProcedureRelationException extends RuntimeException {
 		this.failedProcedureRelation = procedureRelation;
 	}
 
-	public ProcedureRelation getProcedure() {
+	public ProcedureRelation getProcedureRelation() {
 		return failedProcedureRelation;
 	}
 }

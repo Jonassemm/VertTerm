@@ -1,3 +1,5 @@
+import axios from "axios"
+import {APIURL} from "../APIConfig"
 import {getAllUsers, getCustomerList, getEmployeeList} from "./administrationComponents/userComponents/UserRequests"
 import {getProcedures} from "./administrationComponents/procedureComponents/ProcedureRequests"
 import {getRoles} from "./administrationComponents/roleComponents/RoleRequests"
@@ -6,6 +8,8 @@ import {getAllResourceTypes} from "./administrationComponents/resourceTypeCompon
 import {getAllResources} from "./administrationComponents/resourceComponents/ResourceRequests"
 import {getAllRestrictions} from "./administrationComponents/restrictionComponents/RestrictionRequests"
 
+export const getActiveUsers = () => axios.get(`${APIURL}/api/Users?status=ACTIVE`)
+export const addAppointmentGroup = (data, userID) => axios.post(`${APIURL}/api/Appointmentgroups/${userID}`,data)
 
 export const getUsers = getAllUsers
 export const getEmployees = getEmployeeList

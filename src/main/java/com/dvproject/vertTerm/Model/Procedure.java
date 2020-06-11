@@ -8,8 +8,10 @@ import java.util.List;
 
 import javax.validation.constraints.NotNull;
 
+import com.dvproject.vertTerm.Service.AppointmentServiceImpl;
 import com.dvproject.vertTerm.Service.EmployeeService;
 import com.dvproject.vertTerm.Service.ResourceService;
+import com.dvproject.vertTerm.exception.AvailabilityException;
 import com.fasterxml.jackson.annotation.JsonFormat;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -156,7 +158,7 @@ public class Procedure implements Serializable {
 		this.availabilities = availabilities;
 	}
 
-	public List<Appointment> getAppointmentRecommendationByEarliestEnd(Date earliestRequestedDate, Customer customer) {
+	public List<Appointment> getAppointmentRecommendationByEarliestEnd(Date earliestRequestedDate, Customer customer, AppointmentServiceImpl appointmentService) {
 		List<Appointment> appointments = new ArrayList<>();
 		Appointment currentAppointment = new Appointment();
 		currentAppointment.setPlannedStarttime(earliestRequestedDate);
@@ -166,9 +168,10 @@ public class Procedure implements Serializable {
 		appointments.add(currentAppointment);
 
 		// check if customer is available
+		customer.populateAppointments(appointmentService);
 		Date date = customer.getAvailableDate(earliestRequestedDate, this.getDuration());
 		if (date.after(earliestRequestedDate)) {
-			return getAppointmentRecommendationByEarliestEnd(date, customer);
+			return getAppointmentRecommendationByEarliestEnd(date, customer, appointmentService);
 		} else {
 			currentAppointment.setBookedCustomer(customer);
 		}
@@ -178,6 +181,7 @@ public class Procedure implements Serializable {
 		for (ResourceType resourceType : this.getNeededResourceTypes()) {
 			Date newEarliestDateFinal = null;
 			for (Resource ressource : resourceService.getAll(resourceType)) {
+				ressource.populateAppointments(appointmentService);
 				Date temp = ressource.getAvailableDate(earliestRequestedDate, this.getDuration());
 				if (temp != null) {
 					if (newEarliestDateFinal == null) {
@@ -196,7 +200,7 @@ public class Procedure implements Serializable {
 				return null;
 			}
 			if (newEarliestDateFinal.after(earliestRequestedDate)) {
-				return getAppointmentRecommendationByEarliestEnd(newEarliestDateFinal, customer);
+				return getAppointmentRecommendationByEarliestEnd(newEarliestDateFinal, customer, appointmentService);
 			}
 		}
 
@@ -204,6 +208,7 @@ public class Procedure implements Serializable {
 		for (Position position : this.getNeededEmployeePositions()) {
 			Date newEarliestDateFinal = null;
 			for (Employee employee : employeeService.getAll(position)) {
+				employee.populateAppointments(appointmentService);
 				Date temp = employee.getAvailableDate(earliestRequestedDate, this.getDuration());
 				if (temp != null) {
 					if (newEarliestDateFinal == null) {
@@ -222,19 +227,19 @@ public class Procedure implements Serializable {
 				return null;
 			}
 			if (newEarliestDateFinal.after(earliestRequestedDate)) {
-				return getAppointmentRecommendationByEarliestEnd(newEarliestDateFinal, customer);
+				return getAppointmentRecommendationByEarliestEnd(newEarliestDateFinal, customer, appointmentService);
 			}
 		}
 
 		// now lets get the subsequent procedures
 		for (ProcedureRelation subsequentprocedure : this.getSubsequentRelations()){
-			List<Appointment> newAppointments = subsequentprocedure.getAppointmentRecommendationByEarliestEnd(earliestRequestedDate, customer);
+			List<Appointment> newAppointments = subsequentprocedure.getAppointmentRecommendationByEarliestEnd(earliestRequestedDate, customer, appointmentService);
 			if(newAppointments == null){
 				return null;
 			}
 			Date earliestDateAccordingToProcedureRelation = new Date(newAppointments.get(0).getPlannedStarttime().getTime() - subsequentprocedure.getMaxDifference().toMillis() - this.getDuration().toMillis());
 			if(earliestDateAccordingToProcedureRelation.after(earliestRequestedDate)){
-				return (this.getAppointmentRecommendationByEarliestEnd(earliestDateAccordingToProcedureRelation, customer));
+				return (this.getAppointmentRecommendationByEarliestEnd(earliestDateAccordingToProcedureRelation, customer,appointmentService));
 			}
 			else{
 				appointments.addAll(newAppointments);
@@ -250,7 +255,16 @@ public class Procedure implements Serializable {
 			}
 		}
 		
-		throw new RuntimeException("No availability in procedure " + id);
+		throw new AvailabilityException("No availability for the procedure " + name);
+	}
+	
+	public void testAllRelations() {
+		for (ProcedureRelation procedureRelation : precedingRelations) {
+			testProcedureRelation(procedureRelation);
+		}
+		for (ProcedureRelation procedureRelation : subsequentRelations) {
+			testProcedureRelation(procedureRelation);
+		}
 	}
 	
 	private void testProcedureRelation (ProcedureRelation procedureRelation) {

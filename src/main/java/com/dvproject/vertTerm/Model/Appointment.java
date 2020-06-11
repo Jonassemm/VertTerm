@@ -1,6 +1,8 @@
 package com.dvproject.vertTerm.Model;
 
 import java.io.Serializable;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -10,8 +12,16 @@ import javax.validation.constraints.NotNull;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.DBRef;
 
+import com.dvproject.vertTerm.Service.AppointmentServiceImpl;
+import com.dvproject.vertTerm.Service.RestrictionService;
+import com.dvproject.vertTerm.exception.AppointmentException;
+import com.dvproject.vertTerm.exception.AppointmentTimeException;
+import com.dvproject.vertTerm.exception.EmployeeException;
 import com.dvproject.vertTerm.exception.PositionException;
+import com.dvproject.vertTerm.exception.ProcedureException;
+import com.dvproject.vertTerm.exception.ResourceException;
 import com.dvproject.vertTerm.exception.ResourceTypeException;
+import com.dvproject.vertTerm.exception.RestrictionException;
 
 public class Appointment implements Serializable {
 	private static final long serialVersionUID = 2862268218236152790L;
@@ -22,7 +32,7 @@ public class Appointment implements Serializable {
 	@NotNull
 	private AppointmentStatus status;
 	@NotNull
-	private Warning warning;
+	private List<Warning> warnings = new ArrayList<>();
 
 	private Date plannedStarttime;
 	private Date plannedEndtime;
@@ -132,39 +142,96 @@ public class Appointment implements Serializable {
 		this.bookedResources = bookedResources;
 	}
 
-	public Warning getWarning() {
-		return warning;
+	public List<Warning> getWarnings() {
+		return warnings;
 	}
 
-	public void setWarning(Warning warning) {
-		this.warning = warning;
+	public void setWarnings(List<Warning> warnings) {
+		this.warnings = warnings;
 	}
 
-	public void isBookable() {
-		testBookedEmployeesAgainstPositionsOfProcedure();
-		testBookedResourcesAgainstResourceTypesOfProcedure();
+	public void addWarning(Warning warning) {
+		if (!warnings.contains(warning)) {
+			warnings.add(warning);
+		}
+	}
+
+	public void removeWarning(Warning warning) {
+		if (warnings.contains(warning)) {
+			warnings.remove(warning);
+		}
+	}
+
+	public void testBlockage(AppointmentServiceImpl appointmentService) {
+		testEmployeeAppointments(appointmentService);
+		testResourceAppointments(appointmentService);
+		testCustomerAppointments(appointmentService);
+	}
+
+	public void testOverlapping(List<TimeInterval> timeIntervallsOfAppointments) {
+		boolean errorOccured = false;
 		
-		//test avilability of procedure
-		bookedProcedure.isAvailable(plannedStarttime, plannedEndtime);
+		for (TimeInterval timeinterval : timeIntervallsOfAppointments) {
+			if (timeinterval.isInTimeInterval(plannedStarttime, plannedEndtime)) {
+				errorOccured = true;
+				break;
+			}
+		}
+
+		timeIntervallsOfAppointments.add(new TimeInterval(plannedStarttime, plannedEndtime));
 		
+		if (errorOccured)
+			throw new AppointmentTimeException("An appointment overlaps with annother appointment", this);
+	}
+
+	public void testRestrictions(RestrictionService restrictionService) {
+		List<Restriction> restrictionsToTest;
+		List<Restriction> userRestrictions = bookedCustomer.getRestrictions();
+
+		// test restrictions of procedure
+		restrictionsToTest = bookedProcedure.getRestrictions();
+		if (restrictionsToTest != null && !restrictionService.testRestrictions(restrictionsToTest, userRestrictions)) {
+			throw new RestrictionException(
+					"The appointment for the procedure contains a restriction that the given user also has", null);
+		}
+
 		for (Resource resource : bookedResources) {
-			//test availability of resource
-			for (Availability availability : resource.getAvailabilities()) {
-				//test availabilities of resource
-				availability.isAvailableBetween(plannedStarttime, plannedEndtime);
-			}
+			restrictionsToTest = resource.getRestrictions();
 
-		}
-		
-		for (Employee employee : bookedEmployees) {
-			for (Availability availability : employee.getAvailabilities()) {
-				//test availabilities of employee
-				availability.isAvailableBetween(plannedStarttime, plannedEndtime);
+			// resource and user contain the same restriction
+			if (restrictionsToTest != null
+					&& !restrictionService.testRestrictions(restrictionsToTest, userRestrictions)) {
+				throw new RestrictionException("A resource contains a restriction that the user also has", null);
 			}
 		}
 	}
 
-	private void testBookedEmployeesAgainstPositionsOfProcedure() {
+	public void testPlannedTimes() {
+		if (plannedStarttime.after(plannedEndtime)) {
+			throw new AppointmentTimeException("The planned starttime is after the planned endtime", this);
+		}
+		if (plannedStarttime.before(Date.from(Instant.now()))) {
+			throw new AppointmentTimeException("The planned starttime is in the past", this);
+		}
+	}
+
+	public void testAvailabilitiesOfProcedure_Employees_Resources() {
+		// test avilability of procedure
+		bookedProcedure.isAvailable(plannedStarttime, plannedEndtime);
+
+		for (Resource resource : bookedResources) {
+			// test availability of resources
+			resource.isAvailable(plannedStarttime, plannedEndtime);
+
+		}
+
+		for (Employee employee : bookedEmployees) {
+			// test availability of employees
+			employee.isAvailable(plannedStarttime, plannedEndtime);
+		}
+	}
+
+	public void testBookedEmployeesAgainstPositionsOfProcedure() {
 		boolean testVal = false;
 		List<Position> procedurePositions = bookedProcedure.getNeededEmployeePositions();
 
@@ -188,7 +255,13 @@ public class Appointment implements Serializable {
 		}
 	}
 
-	private void testBookedResourcesAgainstResourceTypesOfProcedure() {
+	public void testEmployeesOfAppointment() {
+		if (this.bookedEmployees.size() != this.getBookedProcedure().getNeededEmployeePositions().size()) {
+			throw new EmployeeException("Missing employees", null);
+		}
+	}
+
+	public void testBookedResourcesAgainstResourceTypesOfProcedure() {
 		boolean testVal = false;
 		List<ResourceType> procedureResourceTypes = bookedProcedure.getNeededResourceTypes();
 
@@ -211,4 +284,89 @@ public class Appointment implements Serializable {
 			testVal = false;
 		}
 	}
+
+	public void testResourcesOfAppointment() {
+		if (this.bookedResources.size() != this.getBookedProcedure().getNeededResourceTypes().size()) {
+			throw new ResourceException("Missing resources", null);
+		}
+	}
+
+	public void testProcedureDuration() {
+		Duration appointmentDuration = Duration.between(plannedStarttime.toInstant(), plannedEndtime.toInstant());
+		Duration procedureDuration = bookedProcedure.getDuration();
+
+		if (procedureDuration != null && appointmentDuration.toSeconds() != procedureDuration.toSeconds()) {
+			throw new ProcedureException("Duration of the appointment does not conform to the procedure ",
+					bookedProcedure);
+		}
+	}
+
+	void testDistinctBookedAttributes() {
+		hasDistinctEmployees();
+		hasDistinctResources();
+	}
+
+	public void hasDistinctResources() {
+		List<String> resourceIds = new ArrayList<>();
+
+		for (Resource resource : this.bookedResources) {
+			String id = resource.getId();
+			if (!resourceIds.contains(id)) {
+				resourceIds.add(id);
+			} else {
+				throw new ResourceException("The same resource is beeing used twice: ", resource);
+			}
+		}
+	}
+
+	public void hasDistinctEmployees() {
+		List<String> employeeIds = new ArrayList<>();
+
+		for (Employee employee : this.bookedEmployees) {
+			String id = employee.getId();
+			if (!employeeIds.contains(id)) {
+				employeeIds.add(id);
+			} else {
+				throw new EmployeeException("The same employee is beeing used twice: ", employee);
+			}
+		}
+	}
+
+	private void testEmployeeAppointments(AppointmentServiceImpl appointmentService) {
+		for (Employee employee : bookedEmployees) {
+			List<Appointment> appointmentsOfEmployeeAtThisAppointmentPlannedTimes = appointmentService
+					.getAppointmentsOfBookedEmployeeInTimeinterval(employee.getId(), plannedStarttime, plannedEndtime,
+							AppointmentStatus.PLANNED);
+
+			if (!appointmentsOfEmployeeAtThisAppointmentPlannedTimes.isEmpty()) {
+				throw new AppointmentException("An employee already has an appointment in the given time interval",
+						this);
+			}
+		}
+	}
+
+	private void testResourceAppointments(AppointmentServiceImpl appointmentService) {
+		for (Resource resource : bookedResources) {
+			List<Appointment> appointmentsOfResourceAtThisAppointmentPlannedTimes = appointmentService
+					.getAppointmentsOfBookedResourceInTimeinterval(resource.getId(), plannedStarttime, plannedEndtime,
+							AppointmentStatus.PLANNED);
+
+			if (!appointmentsOfResourceAtThisAppointmentPlannedTimes.isEmpty()) {
+				throw new AppointmentException("A resource already has an appointment in the given time interval",
+						this);
+			}
+		}
+	}
+
+	private void testCustomerAppointments(AppointmentServiceImpl appointmentService) {
+		List<Appointment> appointmentsOfCustomerAtThisAppointmentPlannedTimes = appointmentService
+				.getAppointmentsOfBookedCustomerInTimeinterval(bookedCustomer.getId(), plannedStarttime, plannedEndtime,
+						AppointmentStatus.PLANNED);
+
+		if (!appointmentsOfCustomerAtThisAppointmentPlannedTimes.isEmpty()) {
+			throw new AppointmentException("The customer already has an appointment in the given time interval",
+					this);
+		}
+	}
+
 }

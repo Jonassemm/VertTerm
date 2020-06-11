@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from "react"
+import React, { useState, useEffect, forwardRef, useImperativeHandle } from "react"
 import { Typeahead } from "react-bootstrap-typeahead"
-import { getUsers, getEmployees, getCustomers, getProcedures, getRoles, getPositions, getResourcetypes, getResources, getRestrictions} from "./requests"
+import { getUsers, getEmployees, getCustomers, getProcedures, getRoles, getPositions, getResourcetypes, getResources, getRestrictions, getActiveUsers } from "./requests"
 
 // when using this Object you have to give 4 props:
 // DbObject: defining what Object you want to pick (select out of predefined list below)
@@ -9,7 +9,9 @@ import { getUsers, getEmployees, getCustomers, getProcedures, getRoles, getPosit
 // multiple: defining whether multiple values can be selected (as boolean)
 // exclude: the element which is removed from the selection
 
-function ObjectPicker({ DbObject, setState, initial, multiple, ident, selectedItem = {id: null} }) {
+const ObjectPicker = forwardRef((props, ref) => {
+    let { DbObject, setState, initial, multiple, ident, selectedItem } = props
+    if (!selectedItem) selectedItem = { id: -1 }
     const [options, setOptions] = useState([])
     const [labelKey, setLabelKey] = useState("")
     const [selected, setSelected] = useState([])
@@ -23,13 +25,17 @@ function ObjectPicker({ DbObject, setState, initial, multiple, ident, selectedIt
         resourceType: "Ressourcentyp",
         position: "Position",
         role: "Rolle",
-        restriction: "Einschränkung"
+        restriction: "Einschränkung",
+        customerRole: "Rolle",
+        employeeRole: "Rolle",
+        activeUser: "Kunde"
     }
 
     useEffect(() => {
         switch (DbObject) {
             case 'user':
-            case 'employee': 
+            case 'employee':
+            case 'activeUser':
             case 'customer': getUserData(); break;
             case 'procedure': getProcedureData(); break;
             case 'resource': getResourceData(); break;
@@ -38,7 +44,7 @@ function ObjectPicker({ DbObject, setState, initial, multiple, ident, selectedIt
             case 'position': getPositionData(); break;
             case 'customerRole': getRoleData("customer"); break;
             case 'employeeRole': getRoleData("employee"); break;
-            case 'restriction': getRestrictionData(); 
+            case 'restriction': getRestrictionData();
         }
     }, [])
 
@@ -46,12 +52,18 @@ function ObjectPicker({ DbObject, setState, initial, multiple, ident, selectedIt
         buildInitialValues()
     }, [init])
 
+    useImperativeHandle(ref, () => ({
+        resetSelected() {
+            setSelected([])
+        }
+    }))
+
     function buildInitialValues() {
-        if(initial){
+        if (initial) {
             let init = []
             initial.some(item => {
-                for(let i = 0; i < options.length; i++){
-                    if(item.id == options[i].id){
+                for (let i = 0; i < options.length; i++) {
+                    if (item.id == options[i].id) {
                         init.push(options[i])
                     }
                 }
@@ -66,7 +78,8 @@ function ObjectPicker({ DbObject, setState, initial, multiple, ident, selectedIt
         switch (DbObject) {
             case 'user': res = await getUsers(); break;
             case 'customer': res = await getCustomers(); break;
-            case 'employee': res = await getEmployees()
+            case 'employee': res = await getEmployees(); break;
+            case 'activeUser': res = await getActiveUsers()
         }
         const result = res.data.map(item => {
             return {
@@ -74,9 +87,17 @@ function ObjectPicker({ DbObject, setState, initial, multiple, ident, selectedIt
                 labelKey: item.firstName + " " + item.lastName
             }
         })
+        //filter for Anonymous and Admin user
+        for (let i = 0; i < result.length; i++) {
+                console.log(result[i].username)
+                if ((result[i].username == "admin") || (result[i].username == "anonymousUser")) {
+                    result.splice(i, 1)
+                    i -= 1
+                }
+            }
         //reduce the selection
         result.map((item) => {
-            if(item.id != selectedItem.id && item.systemStatus != "deleted"){
+            if (item.id != selectedItem.id && item.systemStatus != "deleted") {
                 finalResult.push(item)
             }
         })
@@ -90,48 +111,48 @@ function ObjectPicker({ DbObject, setState, initial, multiple, ident, selectedIt
         var feedback = true
         var results = [] // for each child
 
-        if(resource.childResources.length > 0) { 
+        if (resource.childResources.length > 0) {
             resource.childResources.map(singleChild => {
-                if(singleChild.id == reference.id) {
+                if (singleChild.id == reference.id) {
                     results.push(false) //save result 
-                }else {
+                } else {
                     results.push(checkChildResources(singleChild, reference)) //save result and start recursion
                 }
             })
-            if(results.map(singleResult => {
+            if (results.map(singleResult => {
 
-                if(!singleResult){
+                if (!singleResult) {
                     feedback = false //overwrite feedback if resource has reference as a child resource
                 }
             }))
-            return feedback
+                return feedback
 
         } else {
             return feedback // resource cannot contain the reference as a child resource
         }
     }
 
-    async function getResourceData(call = "normal") {  
+    async function getResourceData(call = "normal") {
         let finalResult = []
         const res = await getResources()
         res.data.map((item) => {
             //reduce the selection
-            if(item.id != selectedItem.id && item.status != "deleted"){
-                if(call == "childResource" && selectedItem.id != null) { //reduce selection of all parent resources
-                    if(checkChildResources(item, selectedItem)){
+            if (item.id != selectedItem.id && item.status != "deleted") {
+                if (call == "childResource" && selectedItem.id != -1) { //reduce selection of all parent resources
+                    if (checkChildResources(item, selectedItem)) {
                         finalResult.push(item)
                     }
                 } else { //normal selection
                     finalResult.push(item)
                 }
             }
-        }) 
+        })
         setOptions(finalResult)
         setLabelKey("name")
         setInit(true)
     }
 
-    async function getResourceTypeData() { 
+    async function getResourceTypeData() {
         const res = await getResourcetypes()
         const result = res.data.map((item) => {
             return {
@@ -143,7 +164,7 @@ function ObjectPicker({ DbObject, setState, initial, multiple, ident, selectedIt
         setInit(true)
     }
 
-    async function getPositionData() { 
+    async function getPositionData() {
         const res = await getPositions()
         const result = res.data.map((item) => {
             return {
@@ -173,25 +194,25 @@ function ObjectPicker({ DbObject, setState, initial, multiple, ident, selectedIt
         const res = await getRoles()
         res.data.map((item) => {
             //reduce the selection
-            if(userType == "employee") {
+            if (userType == "employee") {
                 finalResult.push(item)
-            }else { // customer
-                if(item.name != "ADMIN_ROLE"){
+            } else { // customer
+                if (item.name != "ADMIN_ROLE") {
                     finalResult.push(item)
                 }
             }
-        }) 
+        })
         setOptions(finalResult)
         setLabelKey("name")
         setInit(true)
     }
 
-    async function getRestrictionData() { 
+    async function getRestrictionData() {
         const res = await getRestrictions()
         const result = res.data.map(item => {
             return {
                 ...item
-            }   
+            }
         })
         setOptions(result)
         setLabelKey("name")
@@ -200,19 +221,20 @@ function ObjectPicker({ DbObject, setState, initial, multiple, ident, selectedIt
 
     const handleChange = event => {
         setSelected(event)
-        if(!ident){
+        if (!ident) {
             setState(event)
-        }else{
-            setState({data: event, ident: ident, DbObject: DbObject})
+        } else {
+            setState({ data: event, ident: ident, DbObject: DbObject })
         }
     }
 
     return (
         <React.Fragment>
             <Typeahead
+                style={{ width: "100%" }}
                 clearButton
-                placeholder= {labels[DbObject] + " wählen"}
-                multiple = {multiple || false}
+                placeholder={labels[DbObject] + " wählen"}
+                multiple={multiple || false}
                 options={options}
                 id="basic-typeahead"
                 onChange={handleChange}
@@ -221,8 +243,8 @@ function ObjectPicker({ DbObject, setState, initial, multiple, ident, selectedIt
                 selectHintOnEnter
             />
         </React.Fragment>
-        
+
     )
-}
+})
 
 export default ObjectPicker

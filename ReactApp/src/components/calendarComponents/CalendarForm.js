@@ -8,7 +8,7 @@ import {
   editCalendar,
   getCalendar,
   deleteCalendar
-} from "./requests";
+} from "./calendarRequests";
 import { observer } from "mobx-react"
 
 const buttonStyle = {marginRight: 10}

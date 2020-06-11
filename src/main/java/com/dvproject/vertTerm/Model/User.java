@@ -19,12 +19,10 @@ import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 @Document("user")
-public abstract class User extends Bookable implements Serializable
+public class User extends Bookable implements Serializable
 {
     private static final long serialVersionUID = -5252169753921361843L;
 
-	@Id
-	private String id;
 	@Indexed(unique = true)
 	private String username;
 	private String password;
@@ -44,7 +42,7 @@ public abstract class User extends Bookable implements Serializable
 	@PersistenceConstructor
 	public User(String id, String username, String password, String firstName, String lastName, Status systemStatus, List<Role> roles,
 			List<OptionalAttributeWithValue> optionalAttributes, List<Restriction> restrictions) {
-		this.id = id;
+		super(id);
 		this.username = username;
 		this.password = password;
 		this.firstName = firstName;
@@ -56,8 +54,9 @@ public abstract class User extends Bookable implements Serializable
 	}
 
 	public User(String id, String username, String password, String firstName, String lastName, List<Role> roles) {
-		this();
-		this.id = id;
+		super(id);
+		this.setCreationDate();
+		this.systemStatus = Status.ACTIVE;
 		this.username = username;
 		this.password = password;
 		this.firstName = firstName;
@@ -72,15 +71,7 @@ public abstract class User extends Bookable implements Serializable
 
 	@Override
 	public String toString() {
-		return "User [id=" + id + ", firstName=" + firstName + ", lastName=" + lastName + "]";
-	}
-
-	public String getId() {
-		return id;
-	}
-
-	public void setId(String id) {
-		this.id = id;
+		return "User [id=" + this.getId() + ", firstName=" + firstName + ", lastName=" + lastName + "]";
 	}
 
 	public String getFirstName() {

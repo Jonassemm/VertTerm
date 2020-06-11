@@ -1,6 +1,5 @@
 package com.dvproject.vertTerm.Service;
 
-import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -14,13 +13,16 @@ import com.dvproject.vertTerm.Model.Appointment;
 import com.dvproject.vertTerm.Model.AppointmentStatus;
 import com.dvproject.vertTerm.Model.Appointmentgroup;
 import com.dvproject.vertTerm.Model.Employee;
+import com.dvproject.vertTerm.Model.NormalBookingTester;
 import com.dvproject.vertTerm.Model.Optimizationstrategy;
+import com.dvproject.vertTerm.Model.OverrideBookingTester;
 import com.dvproject.vertTerm.Model.Procedure;
 import com.dvproject.vertTerm.Model.Resource;
-import com.dvproject.vertTerm.Model.Restriction;
 import com.dvproject.vertTerm.Model.Status;
 import com.dvproject.vertTerm.Model.User;
 import com.dvproject.vertTerm.Model.Warning;
+import com.dvproject.vertTerm.exception.ProcedureException;
+import com.dvproject.vertTerm.exception.ProcedureRelationException;
 import com.dvproject.vertTerm.repository.AppointmentgroupRepository;
 
 @Service
@@ -117,106 +119,71 @@ public class AppointmentgroupServiceImpl implements AppointmentgroupService {
 	 *                             conform to the conditions
 	 */
 	@Override
-	public boolean bookAppointmentgroup(String userid, Appointmentgroup appointmentgroup) {
+	public boolean bookAppointmentgroup(String userid, Appointmentgroup appointmentgroup, boolean override) {
 		List<Appointment> appointments = appointmentgroup.getAppointments();
 		boolean noUserAttached = userid.equals("");
 		User user = noUserAttached ? userService.getAnonymousUser() : userService.getById(userid);
-		List<Restriction> userRestrictions = user.getRestrictions();
 
 		for (Appointment appointment : appointments) {
-			if (noUserAttached || appointment.getBookedCustomer() == null) {
-				appointment.setBookedCustomer(user);
-			} else {
-				if (!appointment.getBookedCustomer().getId().equals(userid)) {
+			if (!noUserAttached && appointment.getBookedCustomer() != null
+					&& !appointment.getBookedCustomer().getId().equals(userid)) {
+
+				if (override) {
+					appointment.addWarning(Warning.USER_WARNING);
+				} else {
 					throw new IllegalArgumentException(
 							"User in the appointment for the procedure " + appointment.getBookedProcedure().getId()
 									+ " does not conform to the given user for all appointments");
 				}
+			} else {
+				appointment.setBookedCustomer(user);
 			}
 
-			loadAppointmentdataFromDatabase(appointment);
+			try {
+				loadAppointmentdataFromDatabase(appointment);
+			} catch (ProcedureException ex) {
+				if (!override)
+					throw ex;
+
+				appointment.addWarning(Warning.PROCEDURE_WARNING);
+			}
 		}
 
-		appointmentgroup.isBookable();
-
-		for (Appointment appointment : appointments) {
-			Date startdate = appointment.getPlannedStarttime();
-			Date enddate = appointment.getPlannedEndtime();
-			Duration duration = Duration.between(startdate.toInstant(), enddate.toInstant());
-			List<Restriction> restrictionsToTest;
-
-			Procedure procedure = appointment.getBookedProcedure();
-			List<Resource> resources = appointment.getBookedResources();
-
-			testBookabilityOfEmployeesAndResources(appointment, startdate, duration);
-
-			restrictionsToTest = procedure.getRestrictions();
-			if (restrictionsToTest != null
-					&& !restrictionService.testRestrictions(restrictionsToTest, userRestrictions)) {
-				throw new RuntimeException("The appointment for the procedure " + procedure.getName()
-						+ " contains a restriction that the given user also has");
-			}
-
-			for (Resource resource : resources) {
-				restrictionsToTest = resource.getRestrictions();
-				if (restrictionsToTest != null
-						&& !restrictionService.testRestrictions(restrictionsToTest, userRestrictions)) {
-					throw new RuntimeException(
-							"The resource " + resource.getName() + " contains a restriction that the user also has");
+		if (override) {
+			try {
+				appointmentgroup.testProcedureRelations();
+			} catch (ProcedureRelationException ex) {
+				for (Appointment appointment : appointmentgroup.getAppointments()) {
+					appointment.addWarning(Warning.PROCEDURE_RELATION_WARNING);
 				}
 			}
+
+			appointmentgroup.testBookability(restrictionService, appointmentService, new OverrideBookingTester());
+		} else {
+			appointmentgroup.testProcedureRelations();
+			appointmentgroup.testBookability(restrictionService, appointmentService, new NormalBookingTester());
 		}
 
-		// create new annonymoususer
 		if (noUserAttached) {
 			userService.create(user);
 		}
 
 		// create all appointments of the appointmentgroup
 		for (Appointment appointment : appointments) {
-			appointment.setStatus(AppointmentStatus.CREATED);
-			appointment.setWarning(Warning.NO_WARNING);
+			appointment.setStatus(AppointmentStatus.PLANNED);
 			appointmentService.create(appointment);
 		}
 
+		appointmentgroup.setStatus(Status.ACTIVE);
 		appointmentgroupRepository.save(appointmentgroup);
 
 		return true;
 	}
 
 	@Override
+	// TODO
 	public Appointment shiftAppointment(String appointmentId, Date startdate, Date enddate) {
-		Appointment appointmentToShift = appointmentService.getById(appointmentId);
-
-		if (hasActualTimeValue(appointmentToShift)) {
-			throw new IllegalArgumentException(
-					"The given appointment already has an actual date, so the planned dates can no longer be changed");
-		}
-
-		Appointmentgroup appointmentgroup = getAppointmentgroupContainingAppointmentID(appointmentId);
-		Duration duration = Duration.between(startdate.toInstant(), enddate.toInstant());
-
-		Date appointmentStartdate = appointmentToShift.getPlannedStarttime();
-		Date appointmentEnddate = appointmentToShift.getPlannedEndtime();
-		AppointmentStatus appointmentStatus = appointmentToShift.getStatus();
-
-		appointmentToShift.setPlannedStarttime(startdate);
-		appointmentToShift.setPlannedEndtime(enddate);
-		appointmentToShift.setStatus(AppointmentStatus.DEACTIVATED);
-
-		appointmentService.update(appointmentToShift);
-
-		try {
-			appointmentgroup.hasCorrectProcedureRelations();
-			testBookabilityOfEmployeesAndResources(appointmentToShift, startdate, duration);
-		} catch (Exception ex) {
-			// reset the appointment to the previous state
-			appointmentToShift.setPlannedStarttime(appointmentStartdate);
-			appointmentToShift.setPlannedEndtime(appointmentEnddate);
-			appointmentToShift.setStatus(appointmentStatus);
-		}
-
-		return appointmentService.update(appointmentToShift);
+		return null;
 	}
 
 	@Override
@@ -266,28 +233,7 @@ public class AppointmentgroupServiceImpl implements AppointmentgroupService {
 		appointment.setBookedProcedure(procedure);
 
 		if (hasActualTimeValue(appointment)) {
-			throw new RuntimeException(
-					"Appointment with the procedure " + procedure.getName() + " contains actual times");
-		}
-	}
-
-	private void testBookabilityOfEmployeesAndResources(Appointment appointment, Date startdate, Duration duration) {
-		// test, whether the resources have a different appointment in the given time
-		// interval
-		for (Resource resource : appointment.getBookedResources()) {
-			if (!resource.isAvailable(startdate, duration)) {
-				throw new RuntimeException("The resource " + resource.getName()
-						+ " already has an appointment for the given time interval");
-			}
-		}
-
-		// test, whether the employees have a different appointment in the given time
-		// interval
-		for (Employee employee : appointment.getBookedEmployees()) {
-			if (!employee.isAvailable(startdate, duration)) {
-				throw new RuntimeException("The employee " + employee.getFirstName() + " " + employee.getLastName()
-						+ " already has an appointment for the given time interval");
-			}
+			throw new ProcedureException("Appointment of an procedure contains actual times", procedure);
 		}
 	}
 

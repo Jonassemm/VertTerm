@@ -7,4 +7,3 @@ export const getCalendar = cancelToken => axios.get(`${APIURL}/calendar`, cancel
 export const addCalendar = data => axios.post(`${APIURL}/calendar`,data)
 export const editCalendar = data => axios.put(`${APIURL}/calendar/${data.id}`,data)
 export const deleteCalendar = id => axios.delete(`${APIURL}/calendar/${id}`)
-export const addAppointmentGroup = data => axios.post(`${APIURL}/Appointmentgroups`,data)
