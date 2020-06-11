@@ -39,7 +39,15 @@ public class AppointmentController {
     		@PathVariable String userid,
     		@RequestParam Date starttime,
     		@RequestParam Date endtime){
-    	return appointmentService.getAppointmentsWithUseridAndTimeInterval(userid, starttime, endtime);
+    	List<Appointment> appointments = null;
+    	
+    	if (starttime == null && endtime == null) {
+    		appointments = appointmentService.getAppointmentsByUserid(userid);
+    	} else if (starttime != null && endtime != null) {
+    			appointments =  appointmentService.getAppointmentsWithUseridAndTimeInterval(userid, starttime, endtime);
+    	}
+    	
+    	return appointments;
     }
     
     @GetMapping("/status/{status}")

@@ -59,6 +59,10 @@ public class AppointmentServiceImpl implements BasicService<Appointment> {
         return null;
     }
     
+    public List<Appointment> getAppointmentsByUserid(String id) {
+    	return repo.findByBookedCustomerId(id);
+    }
+    
     public List<Appointment> getAppointmentsOfBookedEmployeeInTimeinterval(String employeeid, Date starttime, Date endtime, AppointmentStatus status){
     	return repo.findAppointmentsByBookedEmployeeInTimeinterval(employeeid, starttime, endtime, status);
     }
