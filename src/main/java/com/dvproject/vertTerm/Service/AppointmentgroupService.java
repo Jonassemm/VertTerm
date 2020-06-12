@@ -7,6 +7,7 @@ import com.dvproject.vertTerm.Model.Appointment;
 import com.dvproject.vertTerm.Model.Appointmentgroup;
 import com.dvproject.vertTerm.Model.Optimizationstrategy;
 import com.dvproject.vertTerm.Model.Status;
+import com.dvproject.vertTerm.Model.User;
 
 public interface AppointmentgroupService extends BasicService<Appointmentgroup> {
 	//GET
@@ -18,7 +19,7 @@ public interface AppointmentgroupService extends BasicService<Appointmentgroup> 
 			Optimizationstrategy optimizationstrategy);
 	
 	//PUT
-	boolean bookAppointmentgroup (String userid, Appointmentgroup appointmentgroup, boolean override);
+	User bookAppointmentgroup (String userid, Appointmentgroup appointmentgroup, boolean override);
 	
 	boolean startAppointment(String appointmentid);
 	

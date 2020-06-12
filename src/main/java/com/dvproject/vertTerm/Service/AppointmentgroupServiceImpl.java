@@ -123,7 +123,7 @@ public class AppointmentgroupServiceImpl implements AppointmentgroupService {
 	 *                             conform to the conditions
 	 */
 	@Override
-	public boolean bookAppointmentgroup(String userid, Appointmentgroup appointmentgroup, boolean override) {
+	public User bookAppointmentgroup(String userid, Appointmentgroup appointmentgroup, boolean override) {
 		List<Appointment> appointments = appointmentgroup.getAppointments();
 		boolean noUserAttached = userid.equals("");
 		User user = noUserAttached ? userService.getAnonymousUser() : userService.getById(userid);
@@ -181,7 +181,7 @@ public class AppointmentgroupServiceImpl implements AppointmentgroupService {
 		appointmentgroup.setStatus(Status.ACTIVE);
 		appointmentgroupRepository.save(appointmentgroup);
 
-		return true;
+		return noUserAttached ? user : null;
 	}
 
 	@Override

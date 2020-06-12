@@ -22,6 +22,7 @@ import com.dvproject.vertTerm.Model.Appointment;
 import com.dvproject.vertTerm.Model.Appointmentgroup;
 import com.dvproject.vertTerm.Model.Optimizationstrategy;
 import com.dvproject.vertTerm.Model.Status;
+import com.dvproject.vertTerm.Model.User;
 import com.dvproject.vertTerm.Service.AppointmentgroupService;
 
 @RestController
@@ -68,14 +69,14 @@ public class AppointmentgroupController {
 	}
 	
 	@PostMapping("/{userid}")
-	public boolean bookAppointments (
+	public User bookAppointments (
 			@PathVariable String userid, 
 			@RequestBody Appointmentgroup appointmentgroup) {
 		return appointmentgroupService.bookAppointmentgroup(userid, appointmentgroup, false);
 	}
 	
 	@PostMapping("/override/{userid}")
-	public boolean bookAppointmentsOverride (
+	public User bookAppointmentsOverride (
 			@PathVariable String userid, 
 			@RequestBody Appointmentgroup appointmentgroup) {
 		Collection<? extends GrantedAuthority> auth = SecurityContextHolder.getContext().getAuthentication().getAuthorities();
