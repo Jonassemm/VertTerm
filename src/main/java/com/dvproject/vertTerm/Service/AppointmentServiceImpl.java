@@ -5,7 +5,6 @@ import com.dvproject.vertTerm.repository.AppointmentRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.rest.webmvc.ResourceNotFoundException;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.PathVariable;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -13,7 +12,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
-public class AppointmentServiceImpl implements BasicService<Appointment> {
+public class AppointmentServiceImpl implements AppointmentService {
 
     @Autowired
     AppointmentRepository repo;
@@ -23,6 +22,7 @@ public class AppointmentServiceImpl implements BasicService<Appointment> {
         return repo.findAll();
     }
 
+    @Override
     public List<Appointment> getAll(Bookable bookable){
         List<Appointment> result = new ArrayList<>();
         for(Appointment appointment : this.getAll()){
@@ -60,30 +60,37 @@ public class AppointmentServiceImpl implements BasicService<Appointment> {
         return null;
     }
     
+    @Override
     public List<Appointment> getAppointmentsByUserid(String id) {
     	return repo.findByBookedCustomerId(id);
     }
     
+    @Override
     public List<Appointment> getAppointmentsOfBookedEmployeeInTimeinterval(String employeeid, Date starttime, Date endtime, AppointmentStatus status){
     	return repo.findAppointmentsByBookedEmployeeInTimeinterval(employeeid, starttime, endtime, status);
     }
     
+    @Override
     public List<Appointment> getAppointmentsOfBookedResourceInTimeinterval(String resourceid, Date starttime, Date endtime, AppointmentStatus status){
     	return repo.findAppointmentsByBookedResourceInTimeinterval(resourceid, starttime, endtime, status);
     }
     
+    @Override
     public List<Appointment> getAppointmentsOfBookedCustomerInTimeinterval(String userid, Date starttime, Date endtime, AppointmentStatus status){
     	return repo.findAppointmentsByBookedCustomerInTimeinterval(userid, starttime, endtime, status);
     }
     
+    @Override
     public List<Appointment> getAppointmentsWithUseridAndTimeInterval(String userid, Date starttime, Date endtime){
     	return repo.findAppointmentsByBookedUserAndTimeinterval(userid, starttime, endtime);
     }
     
+    @Override
     public List<Appointment> getAppointmentsInTimeIntervalWithStatus(Date starttime, Date endtime, AppointmentStatus status){
     	return repo.findAppointmentsByTimeintervalAndStatus(starttime, endtime, status);
     }
     
+    @Override
     public List<Appointment> getAppointmentsInTimeInterval(Date starttime, Date endtime){
     	return repo.findAppointmentsByTimeinterval(starttime, endtime);
     }
@@ -96,6 +103,7 @@ public class AppointmentServiceImpl implements BasicService<Appointment> {
         return null;
     }
     
+    @Override
     public boolean setCustomerIsWaiting(String id, boolean customerIsWaiting) {
     	Appointment appointment = this.getById(id);
     	

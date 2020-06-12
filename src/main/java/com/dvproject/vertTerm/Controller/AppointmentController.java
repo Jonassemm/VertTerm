@@ -2,8 +2,7 @@ package com.dvproject.vertTerm.Controller;
 
 import com.dvproject.vertTerm.Model.Appointment;
 import com.dvproject.vertTerm.Model.AppointmentStatus;
-import com.dvproject.vertTerm.Service.AppointmentServiceImpl;
-import com.dvproject.vertTerm.Service.BasicService;
+import com.dvproject.vertTerm.Service.AppointmentService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -14,10 +13,7 @@ import java.util.List;
 @RequestMapping("/Appointments")
 public class AppointmentController {
     @Autowired
-    BasicService<Appointment> service;
-    
-    @Autowired
-    private AppointmentServiceImpl appointmentService;
+    AppointmentService service;
 
 
     @GetMapping()
@@ -42,9 +38,9 @@ public class AppointmentController {
     	List<Appointment> appointments = null;
     	
     	if (starttime == null && endtime == null) {
-    		appointments = appointmentService.getAppointmentsByUserid(userid);
+    		appointments = service.getAppointmentsByUserid(userid);
     	} else if (starttime != null && endtime != null) {
-    			appointments =  appointmentService.getAppointmentsWithUseridAndTimeInterval(userid, starttime, endtime);
+    			appointments =  service.getAppointmentsWithUseridAndTimeInterval(userid, starttime, endtime);
     	}
     	
     	return appointments;
@@ -58,9 +54,9 @@ public class AppointmentController {
     	List<Appointment> retVal = null;
     	
     	if (status == null) {
-    		retVal = appointmentService.getAppointmentsInTimeInterval(starttime, endtime);
+    		retVal = service.getAppointmentsInTimeInterval(starttime, endtime);
     	} else {
-    		retVal = appointmentService.getAppointmentsInTimeIntervalWithStatus(starttime, endtime, status);
+    		retVal = service.getAppointmentsInTimeIntervalWithStatus(starttime, endtime, status);
     	}
     	
     	return retVal;
@@ -83,7 +79,7 @@ public class AppointmentController {
     private boolean setCustomerIsWaiting(
     		@PathVariable String id,
     		@PathVariable boolean customerIsWaiting) {
-    	return appointmentService.setCustomerIsWaiting(id, customerIsWaiting);
+    	return service.setCustomerIsWaiting(id, customerIsWaiting);
     }
 
     @DeleteMapping("/{id}")
