@@ -8,47 +8,85 @@ import ObjectPicker from "../ObjectPicker"
 
 var moment = require('moment'); 
 
-import {
-    getAllAppointments
-  } from "./AppointmentRequests";
+import {getAllAppointments, getAppointmentOfUser, getAppointmentOfUserInTimespace} from "./AppointmentRequests";
 
+import {getUser} from "../administrationComponents/userComponents/UserRequests"
 
-export default function AppointmentPage({calendarStore, userSelect}) {
+export default function AppointmentPage({calendarStore, userStore}) {
+    
     //Tabs
-    const [tabKey, setTabKey] = useState('table')
+    const [tabKey, setTabKey] = useState('calendar')
     //Modal
-    const [userSelectModal, setUserSelectModal] = useState(userSelect)
+    const [userSelectModal, setUserSelectModal] = useState(false)
     const [selectedUser, setSelectedUser] = useState([])
-    const [showContent, setShowContent] = useState(false)
     //Data
-    const [appointments, setAppointments] = useState([])
+    const [tableAppointments, setTableAppointments] = useState([])
+    const [tableInitialized, setTableInitialized] = useState(false)
+    const [calendarAppointments, setCalendarAppointments] = useState([])
+    const [calendarInitialized, setCalendarInitialized] = useState(false)
 
-    useEffect( () => {
+    const [ownAppointments, setOwnAppointments] = useState(true)
+    const [enableUserLoad, setEnableUserLoad] = useState(true)
+
+    const setForeignAppointments = () => {
+        setOwnAppointments(false)
+        setSelectedUser([]) // reset selected user
         loadAppointments()
-    },[])
-
-    const hideModal = () => {
-        setUserSelectModal(false)
     }
 
-    const loadOtherAppointments = async event => {
-        if(selectedUser.length == 1){
-            setShowContent(true)
-        }else
-        {
-            alert("Es konnte kein Benutzer zur Ansicht der Termine ausgemacht werden")
+    useEffect( () => {
+        if(enableUserLoad) {
+           loadLoggedInUser() 
         }
-        hideModal()
-        //load the appointments of the specific user
+        loadAppointments()
+    },[selectedUser, tabKey])
+
+    /* const hideModal = () => {
+        setUserSelectModal(false)
+    } */
+
+    const loadLoggedInUser = async () => {
+        const response = await getUser(userStore.userID);
+        if(response.data != "") { //logged in user found? ("" means no user is logged in)
+            if(response.data.username != "admin" && response.data.username != "anonymousUser") {
+                setOwnAppointments(true)
+                setSelectedUser([response.data])
+            } else {
+                alert("Admin und AnonymousUser haben keine eigenen Termine!")
+            }
+        }else{
+            alert("Bitte erst anmelden, diese Funktion steht normal nur angemeldeten Benutzer zur Verfügung! (Seite danach neu laden!)")
+        }
+        setEnableUserLoad(false)
     }
 
     //---------------------------------LOAD---------------------------------
     const loadAppointments = async () => {
         var data = []
+        var response 
+        console.log("load Appoints:")
+        console.log(selectedUser[0])
         try {
-            const response = await getAllAppointments();
+            if(tabKey == "table") {
+                console.log("TABLE")
+                response = await getAppointmentOfUser(selectedUser[0].id);
+            }else {
+                console.log("CALENDAR")
+                var start = new Date
+                var end = new Date
+                start.setMonth(start.getMonth()-1)
+                end.setMonth(end.getMonth()+1)
+                console.log("DATES:")
+                console.log(moment(start).format("DD.MM.YYYY HH:mm").toString())
+                console.log(moment(end).format("DD.MM.YYYY HH:mm").toString())
+                response = await getAppointmentOfUserInTimespace(
+                    selectedUser[0].id,
+                    moment(start).format("DD.MM.YYYY HH:mm").toString(),
+                    moment(end).format("DD.MM.YYYY HH:mm").toString());
+            }
+            //create and add title to each appointment
             data = response.data.map(item => {
-                var title = item.bookedProcedure.name + "-[" + item.plannedStarttime + "]: " + item.bookedCustomer.username
+                var title = item.bookedProcedure.name + "-" + item.bookedCustomer.username
                 return {
                     ...item,
                     title: title
@@ -56,13 +94,14 @@ export default function AppointmentPage({calendarStore, userSelect}) {
             })
         }catch (error) {
             console.log(Object.keys(error), error.message)
+
             const bookedProcedure = {name: "Prozess1"}
             const plannedStarttime= "04.06.2020 19:30"
             const bookedCustomer= {firstName: "Angelina", lastName: "Jolie", username: "LaraCroft"}
-            const title = bookedProcedure.name + "-[" + plannedStarttime + "]: " + bookedCustomer.username
+            const title = bookedProcedure.name + "-" + bookedCustomer.username
 
             data = [{id: "1", description: "Dies ist eine längerer Text um zu verdeutlichen wie lang eine Beschreibung einer Prozedur sein kann. Damit wir auch in die zweite Zeile gelangenen steht hier noch etwas mehr ;)",
-                    status: "created", warning: "", 
+                    status: "planned", warning: "", 
                     plannedStarttime: plannedStarttime, plannedEndtime: "04.06.2020 20:30", actualStarttime: null, actualEndtime: null, 
                     bookedProcedure: bookedProcedure, 
                     bookedCustomer: bookedCustomer,
@@ -71,11 +110,15 @@ export default function AppointmentPage({calendarStore, userSelect}) {
                     title: title
                 }]
         }
-        setAppointments(data)
+        if(tabKey == "table") {
+            setTableAppointments(data)
+        } else {
+            setCalendarAppointments(data)
+        }
     }
 
     const tableBody = 
-        appointments.map((item, index) => { 
+        tableAppointments.map((item, index) => { 
             var status //translated status
             switch(item.status) {
                 case "active":
@@ -126,20 +169,25 @@ export default function AppointmentPage({calendarStore, userSelect}) {
         )
     }
 
+    const renderfkt = () => {
+        console.log("---------Render-PAGE------")
+    }
+
     return (
         <React.Fragment>
-            <Modal size={"lg"} show={userSelectModal} onHide={hideModal}>
+            {renderfkt()}
+            {/* <Modal size={"lg"} show={userSelectModal} onHide={hideModal}>
                 <Modal.Header closeButton>
-                    <Modal.Title>Kalenderauswahl</Modal.Title>
+                    <Modal.Title>Terminansicht wechseln</Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
                     <Form>
                         <Form.Row>
                             <Form.Group as={Col} md="12" >
-                                <Form.Label>Kalender des Benutzers: </Form.Label>
+                                <Form.Label>Termine des Benutzers: </Form.Label>
                                 <ObjectPicker 
                                     setState={setSelectedUser}
-                                    DbObject="allowedAppointmentsOfUser"
+                                    DbObject="user"
                                     initial={selectedUser} 
                                     multiple={false}
                                 />
@@ -150,34 +198,64 @@ export default function AppointmentPage({calendarStore, userSelect}) {
                         <Link to='/'>
                             <Button style={{ marginRight: "10px" }} variant="secondary">Abbrechen</Button>
                         </Link> 
-                        <Button variant="success" onClick={loadOtherAppointments}>Zur Ansicht</Button>
+                        <Button variant="success" onClick={loadAppointments}>Zur Ansicht</Button>
                         </Container>
                     </Form>
                 </Modal.Body>
-            </Modal>
-            {(showContent || !userSelect) && //view content if Modal returns successfull or own appointments is selected
+            </Modal> */}
+                <div style={{textAlign:"center", display: "flex",  justifyContent: "center"}}>
+                    <div style={{margin: "10px 10px 0px 0px", fontWeight: "bold"}}>Ansicht von: </div>
+                    <div style={{marginTop: "5px", width: "250px"}}>
+                        {ownAppointments ? 
+                            selectedUser.length > 0 &&
+                            <Form.Control
+                            readOnly
+                            type="text"
+                            value={selectedUser[0].firstName + " " + selectedUser[0].lastName || ""}
+                            />:
+                            <ObjectPicker 
+                            setState={setSelectedUser}
+                            DbObject="user"
+                            initial={selectedUser} 
+                            multiple={false}
+                            />
+                        }
+                    </div> 
+                    <div>
+                    {ownAppointments ?
+                        <Button style={{margin:"5px 0px 0px 10px"}} variant="info" onClick={setForeignAppointments}>Fremde Termine</Button>:
+                        <Button style={{margin:"5px 0px 0px 10px"}} variant="info" onClick={loadLoggedInUser}>Eigene Termine</Button>
+                    }
+                           
+                    </div>
+                    {/* <Button style={{marginTop:"5px"}} variant="info" onClick={e => setUserSelectModal(true)}>Terminansicht wechseln</Button> */}
+                </div>
+            {(selectedUser.length == 1) &&
                 <Tabs
                     id="controlled-tab"
                     activekey={tabKey}
                     onSelect={key => setTabKey(key)}
                 >
+                    <Tab eventKey="calendar" title="Kalender">
+                        <HomePage calendarStore={calendarStore} User={selectedUser[0]}/>
+                    </Tab>
                     <Tab eventKey="table" title="Tabelle">
                     <OverviewPage
-                        pageTitle={userSelect ? "Terminansicht - (" + selectedUser[0].labelKey + ")": "Terminansicht"}
+                        //pageTitle={selectedUser.length > 0 ? "Termine - (" + selectedUser[0].labelKey + ")": "Termine"}
+                        pageTitle={"Termine"}
                         newItemText="Termin buchen"
                         tableHeader={["#", "Start", "Ende", "Prozedur", "Beschreibung", "Status"]}
                         tableBody={tableBody}
                         modal={modal}
-                        data={appointments}
+                        data={calendarAppointments}
                         modalSize="lg"
                         refreshData={loadAppointments}
+                        withoutCreate={true}
                     /> 
                     </Tab>
-                    <Tab eventKey="calendar" title="Kalender">
-                        <HomePage calendarStore={calendarStore}/>
-                    </Tab>
                 </Tabs>
-             }
+            }
+               
         </React.Fragment>
    )
 }

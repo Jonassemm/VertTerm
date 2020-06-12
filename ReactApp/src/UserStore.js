@@ -46,6 +46,8 @@ class UserStore {
                 })
             })
             this.setRights(tempRights) //muss noch gefiltert werden (Rechte können bei mehreren Rollen doppelt vorkommen)
+            this.setUsername(res.data.username)
+            this.setUserID(res.data.id)
     }
 
     deleteCurrentUser() {
