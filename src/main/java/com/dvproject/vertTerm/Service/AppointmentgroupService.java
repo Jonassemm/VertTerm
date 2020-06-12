@@ -20,5 +20,9 @@ public interface AppointmentgroupService extends BasicService<Appointmentgroup> 
 	//PUT
 	boolean bookAppointmentgroup (String userid, Appointmentgroup appointmentgroup, boolean override);
 	
+	boolean startAppointment(String appointmentid);
+	
+	boolean stopAppointment(String appointmentid);
+	
 	Appointment shiftAppointment (String appointmentId, Date startdate, Date enddate);
 }

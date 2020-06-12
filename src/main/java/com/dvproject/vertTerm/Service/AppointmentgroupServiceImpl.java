@@ -1,9 +1,13 @@
 package com.dvproject.vertTerm.Service;
 
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
+import java.util.TimeZone;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.rest.webmvc.ResourceNotFoundException;
@@ -187,6 +191,32 @@ public class AppointmentgroupServiceImpl implements AppointmentgroupService {
 	}
 
 	@Override
+	public boolean startAppointment(String appointmentid) {
+		Appointment appointment = appointmentService.getById(appointmentid);
+
+		if (hasActualTimeValue(appointment)) {
+			throw new UnsupportedOperationException("You can not start an appointment that has already been started");
+		}
+		
+		appointment.setActualStarttime(getDateOfNow());
+
+		return appointmentService.update(appointment).getActualStarttime() != null;
+	}
+
+	@Override
+	public boolean stopAppointment(String appointmentid) {
+		Appointment appointment = appointmentService.getById(appointmentid);
+
+		if (!hasBeenStarted(appointment)) {
+			throw new UnsupportedOperationException("You can only stop an appointment that has already been started");
+		}
+
+		appointment.setActualEndtime(getDateOfNow());
+
+		return appointmentService.update(appointment).getActualEndtime() != null;
+	}
+
+	@Override
 	public boolean delete(String id) {
 		this.deleteAppointmentgroup(id);
 
@@ -239,6 +269,18 @@ public class AppointmentgroupServiceImpl implements AppointmentgroupService {
 
 	private boolean hasActualTimeValue(Appointment appointment) {
 		return appointment.getActualStarttime() != null || appointment.getActualEndtime() != null;
+	}
+
+	private boolean hasBeenStarted(Appointment appointment) {
+		return appointment.getActualStarttime() != null && appointment.getActualEndtime() == null;
+	}
+	
+	private Date getDateOfNow() {
+		LocalDateTime nowInOtherTimeZone = LocalDateTime.ofInstant(Instant.now(), ZoneId.of("CET"));
+		System.out.println(TimeZone.getDefault());
+		Date now = Date.from(nowInOtherTimeZone.atZone(ZoneId.systemDefault()).toInstant());
+		
+	    return now;
 	}
 
 }

@@ -88,6 +88,16 @@ public class AppointmentgroupController {
 		return appointmentgroupService.update(appointmentgroup);
 	}
 	
+	@PutMapping("/start/{appointmentId}")
+	public boolean startAppointment(@PathVariable(required = true) String appointmentId) {
+		return appointmentgroupService.startAppointment(appointmentId);
+	}
+	
+	@PutMapping("/stop/{appointmentId}")
+	public boolean stopAppointment(@PathVariable(required = true) String appointmentId) {
+		return appointmentgroupService.stopAppointment(appointmentId);
+	}
+	
 	@DeleteMapping("/{id}")
 	public boolean deleteAppointmentGroup (@PathVariable String id) {
 		return appointmentgroupService.delete(id);
