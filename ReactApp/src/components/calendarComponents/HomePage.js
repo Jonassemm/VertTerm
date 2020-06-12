@@ -66,8 +66,6 @@ function HomePage({ calendarStore, User} ){
         console.log()
         //let source = Axios.CancelToken.source()
         if(!initialized || loadDifferentMonth) {
-            console.log("LOAD EVENTS")
-            console.log(newReferenceDateOfView)
             getCalendarEvents()
         }
     },[referenceDateOfView])
@@ -114,8 +112,6 @@ function HomePage({ calendarStore, User} ){
                 moment(startDate).format("DD.MM.YYYY HH:mm").toString(), 
                 moment(endDate).format("DD.MM.YYYY HH:mm").toString()
             )
-            console.log("Response Calendar")
-            console.log(response)
             const evts = response.data.map(item => {
                 return {
                     ...item

@@ -55,7 +55,7 @@ export default function AppointmentPage({calendarStore, userStore}) {
                 alert("Admin und AnonymousUser haben keine eigenen Termine!")
             }
         }else{
-            alert("Bitte erst anmelden, diese Funktion steht normal nur angemeldeten Benutzer zur Verfügung! (Seite danach neu laden!)")
+            console.log("Bitte erst anmelden, diese Funktion steht normal nur angemeldeten Benutzer zur Verfügung!")
         }
         setEnableUserLoad(false)
     }
@@ -64,21 +64,14 @@ export default function AppointmentPage({calendarStore, userStore}) {
     const loadAppointments = async () => {
         var data = []
         var response 
-        console.log("load Appoints:")
-        console.log(selectedUser[0])
         try {
             if(tabKey == "table") {
-                console.log("TABLE")
                 response = await getAppointmentOfUser(selectedUser[0].id);
             }else {
-                console.log("CALENDAR")
                 var start = new Date
                 var end = new Date
                 start.setMonth(start.getMonth()-1)
                 end.setMonth(end.getMonth()+1)
-                console.log("DATES:")
-                console.log(moment(start).format("DD.MM.YYYY HH:mm").toString())
-                console.log(moment(end).format("DD.MM.YYYY HH:mm").toString())
                 response = await getAppointmentOfUserInTimespace(
                     selectedUser[0].id,
                     moment(start).format("DD.MM.YYYY HH:mm").toString(),
