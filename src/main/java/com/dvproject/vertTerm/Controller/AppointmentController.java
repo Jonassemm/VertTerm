@@ -78,6 +78,13 @@ public class AppointmentController {
     {
         return service.update(newAppointment);
     }
+    
+    @PutMapping("/{id}/{customerIsWaiting}")
+    private boolean setCustomerIsWaiting(
+    		@PathVariable String id,
+    		@PathVariable boolean customerIsWaiting) {
+    	return appointmentService.setCustomerIsWaiting(id, customerIsWaiting);
+    }
 
     @DeleteMapping("/{id}")
     public boolean DeleteAppointment(@PathVariable String id)

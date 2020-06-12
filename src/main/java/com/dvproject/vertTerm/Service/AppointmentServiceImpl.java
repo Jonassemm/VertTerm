@@ -5,6 +5,7 @@ import com.dvproject.vertTerm.repository.AppointmentRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.rest.webmvc.ResourceNotFoundException;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.PathVariable;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -93,6 +94,23 @@ public class AppointmentServiceImpl implements BasicService<Appointment> {
             return repo.save(updatedInstance);
         }
         return null;
+    }
+    
+    public boolean setCustomerIsWaiting(String id, boolean customerIsWaiting) {
+    	Appointment appointment = this.getById(id);
+    	
+    	if(appointment.getActualStarttime() == null && appointment.getActualEndtime() == null && 
+    			appointment.getStatus() == AppointmentStatus.PLANNED) {
+    		throw new IllegalArgumentException("Customer of this appointment can not be set");
+    	}
+    	
+    	if (!StatusService.isUpdateable(appointment.getBookedCustomer().getSystemStatus())) {
+    		throw new IllegalArgumentException("Customer can not be updated");
+    	}
+    	
+    	appointment.setCustomerIsWaiting(customerIsWaiting);
+    	
+    	return repo.save(appointment).isCustomerIsWaiting() == customerIsWaiting;
     }
 
     @Override

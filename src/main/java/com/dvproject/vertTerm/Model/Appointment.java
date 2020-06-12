@@ -33,6 +33,7 @@ public class Appointment implements Serializable {
 	private AppointmentStatus status;
 	@NotNull
 	private List<Warning> warnings = new ArrayList<>();
+	private boolean customerIsWaiting = false;
 
 	private Date plannedStarttime;
 	private Date plannedEndtime;
@@ -160,6 +161,14 @@ public class Appointment implements Serializable {
 		if (warnings.contains(warning)) {
 			warnings.remove(warning);
 		}
+	}
+
+	public boolean isCustomerIsWaiting() {
+		return customerIsWaiting;
+	}
+
+	public void setCustomerIsWaiting(boolean customerIsWaiting) {
+		this.customerIsWaiting = customerIsWaiting;
 	}
 
 	public void testBlockage(AppointmentServiceImpl appointmentService) {
