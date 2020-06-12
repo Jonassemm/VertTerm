@@ -37,8 +37,8 @@ public class AppointmentController {
     @GetMapping("/user/{userid}")
     public List<Appointment> getAppointmentsWithUserInTimeInterval(
     		@PathVariable String userid,
-    		@RequestParam Date starttime,
-    		@RequestParam Date endtime){
+    		@RequestParam(required = false) Date starttime,
+    		@RequestParam(required = false) Date endtime){
     	List<Appointment> appointments = null;
     	
     	if (starttime == null && endtime == null) {
