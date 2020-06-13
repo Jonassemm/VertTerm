@@ -15,15 +15,15 @@ function ProcedureForm({ onCancel, edit, selected }) {
 
     const [name, setName] = useState("")
     const [description, setDescription] = useState("")
-    const [duration, setDuration] = useState(0)
+    const [duration, setDuration] = useState(null)
     const [status, setStatus] = useState("active")
     const [precedingRelations, setPrecedingRelations] = useState([])
     const [selectedPrecedingRelation, setSelectedPrecedingRelation] = useState()
-    const [precedingRelationTime, setPrecedingRelationTime] = useState(["", ""])
+    const [precedingRelationTime, setPrecedingRelationTime] = useState([null, null])
     const precedingRef = useRef()
     const [subsequentRelations, setSubsequentRelations] = useState([])
     const [selectedSubsequentRelation, setSelectedSubsequentRelation] = useState()
-    const [subsequentRelationTime, setSubsequentRelationTime] = useState(["", ""])
+    const [subsequentRelationTime, setSubsequentRelationTime] = useState([null, null])
     const subsequentRef = useRef()
     const [positions, setPositions] = useState([])
     const [resourceTypes, setResourceTypes] = useState([])
@@ -44,11 +44,19 @@ function ProcedureForm({ onCancel, edit, selected }) {
         } else { initialized.current = initialized.current + 1 }
     }, [name, description, duration, status, precedingRelations, subsequentRelations, positions, resourceTypes, availabilities, pricePerHour, pricePerInvocation, restrictions, resourceTypesCount, positionsCount])
 
+    const secondsToMinutes = (time) => {
+        if (time === null) {
+            return null
+        } else {
+            return (time / 60)
+        }
+    }
+
     function buildInitialValues() {
         if (edit) {
             setName(selected.name)
             setDescription(selected.description)
-            setDuration(selected.duration)
+            setDuration(secondsToMinutes(selected.duration))
             setStatus(selected.status)
             setPrecedingRelations(selected.precedingRelations)
             setSubsequentRelations(selected.subsequentRelations)
@@ -140,11 +148,11 @@ function ProcedureForm({ onCancel, edit, selected }) {
 
     function resetRelationInput(ident) {
         if (ident == "p") {
-            setPrecedingRelationTime(["", ""])
+            setPrecedingRelationTime([null, null])
             setSelectedPrecedingRelation({})
             precedingRef.current.resetSelected()
         } else {
-            setSubsequentRelationTime(["", ""])
+            setSubsequentRelationTime([null, null])
             setSelectedSubsequentRelation({})
             subsequentRef.current.resetSelected()
         }
@@ -191,6 +199,14 @@ function ProcedureForm({ onCancel, edit, selected }) {
     const handleSubmit = async event => {
         event.preventDefault()
 
+        const transformTimes = (timeString) => {
+            if (timeString === null) {
+                return null
+            } else {
+                return Number(timeString) * 60
+            }
+        }
+
         //combines the selected positions with the count
         let extendedPositions = []
         for (let i = 0; i < positions.length; i++) {
@@ -209,23 +225,23 @@ function ProcedureForm({ onCancel, edit, selected }) {
         let reducedPrecedingRelations = precedingRelations.map(item => {
             return {
                 procedure: { id: item.procedure.id, ref: "procedure" },
-                maxDifference: Number(item.maxDifference),
-                minDifference: Number(item.minDifference)
+                maxDifference: transformTimes(item.maxDifference),
+                minDifference: transformTimes(item.minDifference)
             }
         })
 
         let reducedSubsequentRelations = subsequentRelations.map(item => {
             return {
                 procedure: { id: item.procedure.id, ref: "procedure" },
-                maxDifference: Number(item.maxDifference),
-                minDifference: Number(item.minDifference)
+                maxDifference: transformTimes(item.maxDifference),
+                minDifference: transformTimes(item.minDifference)
             }
         })
 
         const data = {
             name: name,
             description: description,
-            duration: Number(duration),
+            duration: transformTimes(duration),
             pricePerInvocation: pricePerInvocation,
             pricePerHour: pricePerHour,
             status: status,
@@ -244,6 +260,7 @@ function ProcedureForm({ onCancel, edit, selected }) {
             data.id = selected.id
             const res = await editProcedure(selected.id, data)
         }
+
         onCancel()
     }
 
@@ -291,8 +308,11 @@ function ProcedureForm({ onCancel, edit, selected }) {
                                 min="0"
                                 name="duration"
                                 placeholder="Dauer in Minuten eingeben"
-                                value={duration || 0}
-                                onChange={e => setDuration(event.target.value)}
+                                value={duration || null}
+                                onChange={e => {
+                                    if(e.target.value === "") setDuration(null)
+                                    else setDuration(event.target.value)
+                                }}
                             />
                         </Form.Row>
                         <Form.Row style={{ marginTop: "10px" }}>
@@ -354,7 +374,7 @@ function ProcedureForm({ onCancel, edit, selected }) {
                                     min="0"
                                     max={precedingRelationTime[1] != "" && precedingRelationTime[1]}
                                     placeholder="Mindestabstand"
-                                    value={precedingRelationTime[0] || ""}
+                                    value={precedingRelationTime[0] || null}
                                     onChange={e => setPrecedingRelationTime(precedingRelationTime.map((item, index) => {
                                         if (index == 0) return e.target.value
                                         return item
@@ -366,7 +386,7 @@ function ProcedureForm({ onCancel, edit, selected }) {
                                     type="number"
                                     min={precedingRelationTime[0] != "" ? precedingRelationTime[0] : "0"}
                                     placeholder="Maximalabstand"
-                                    value={precedingRelationTime[1] || ""}
+                                    value={precedingRelationTime[1] || null}
                                     onChange={e => setPrecedingRelationTime(precedingRelationTime.map((item, index) => {
                                         if (index == 1) return e.target.value
                                         return item
@@ -387,10 +407,10 @@ function ProcedureForm({ onCancel, edit, selected }) {
                                                     {item.procedure.name}
                                                 </td>
                                                 <td style={{ width: "23%" }}>
-                                                    {item.minDifference}
+                                                    {secondsToMinutes(item.minDifference)}
                                                 </td>
                                                 <td style={{ width: "23%" }}>
-                                                    {item.maxDifference}
+                                                    {secondsToMinutes(item.maxDifference)}
                                                 </td>
                                                 <td className="buttonCol">
                                                     <Button style={{ width: "35px" }} variant="danger" onClick={e => handleRelationDeletion(e, "p")}>-</Button>
@@ -414,7 +434,7 @@ function ProcedureForm({ onCancel, edit, selected }) {
                                     min="0"
                                     max={subsequentRelationTime[1] != "" && subsequentRelationTime[1]}
                                     placeholder="Mindestabstand"
-                                    value={subsequentRelationTime[0] || ""}
+                                    value={subsequentRelationTime[0] || null}
                                     onChange={e => setSubsequentRelationTime(subsequentRelationTime.map((item, index) => {
                                         if (index == 0) return e.target.value
                                         return item
@@ -426,7 +446,7 @@ function ProcedureForm({ onCancel, edit, selected }) {
                                     type="number"
                                     min={subsequentRelationTime[0] != "" ? subsequentRelationTime[0] : "0"}
                                     placeholder="Maximalabstand"
-                                    value={subsequentRelationTime[1] || ""}
+                                    value={subsequentRelationTime[1] || null}
                                     onChange={e => setSubsequentRelationTime(subsequentRelationTime.map((item, index) => {
                                         if (index == 1) return e.target.value
                                         return item
@@ -447,10 +467,10 @@ function ProcedureForm({ onCancel, edit, selected }) {
                                                     {item.procedure.name}
                                                 </td>
                                                 <td style={{ width: "23%" }}>
-                                                    {item.minDifference}
+                                                    {secondsToMinutes(item.minDifference)}
                                                 </td>
                                                 <td style={{ width: "23%" }}>
-                                                    {item.maxDifference}
+                                                    {secondsToMinutes(item.maxDifference)}
                                                 </td>
                                                 <td className="buttonCol">
                                                     <Button style={{ width: "35px" }} variant="danger" onClick={e => handleRelationDeletion(e, "s")}>-</Button>

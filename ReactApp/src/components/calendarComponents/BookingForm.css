@@ -72,3 +72,8 @@
     text-align: right;
   
 }
+
+.endDate {
+    height: 35px;
+    border: 1px solid #bbb;
+}
