@@ -104,7 +104,7 @@ public class AvailabilityServiceImpl {
 			availabilities.set(i, repoAvailability);
 		}
 
-		if (availabilityHasChanged) {
+		if (availabilityHasChanged && entity.getId() != null) {
 			testAppointmentsOfAvailable(entity, earliestDateChanged);
 		}
 	}
