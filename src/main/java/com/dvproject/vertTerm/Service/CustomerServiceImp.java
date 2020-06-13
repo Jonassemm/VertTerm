@@ -55,7 +55,6 @@ public class CustomerServiceImp implements CustomerService {
     @Override
     public Customer create(Customer newInstance) {
         if (newInstance.getId() == null) {
-        	newInstance.setAvailabilities(null);
         	userService.testMandatoryFields(newInstance);
         	userService.encodePassword(newInstance);
             return repo.save(newInstance);
