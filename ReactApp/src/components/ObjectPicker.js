@@ -11,7 +11,7 @@ import { getUsers, getEmployees, getCustomers, getProcedures, getRoles, getPosit
 
 const ObjectPicker = forwardRef((props, ref) => {
     let { DbObject, setState, initial, multiple, ident, selectedItem } = props
-    if (!selectedItem) selectedItem = { id: -1 }
+    if (!selectedItem) selectedItem = { id: null }
     const [options, setOptions] = useState([])
     const [labelKey, setLabelKey] = useState("")
     const [selected, setSelected] = useState([])
@@ -89,7 +89,6 @@ const ObjectPicker = forwardRef((props, ref) => {
         })
         //filter for Anonymous and Admin user
         for (let i = 0; i < result.length; i++) {
-                console.log(result[i].username)
                 if ((result[i].username == "admin") || (result[i].username == "anonymousUser")) {
                     result.splice(i, 1)
                     i -= 1
@@ -138,7 +137,7 @@ const ObjectPicker = forwardRef((props, ref) => {
         res.data.map((item) => {
             //reduce the selection
             if (item.id != selectedItem.id && item.status != "deleted") {
-                if (call == "childResource" && selectedItem.id != -1) { //reduce selection of all parent resources
+                if (call == "childResource" && selectedItem.id != null) { //reduce selection of all parent resources
                     if (checkChildResources(item, selectedItem)) {
                         finalResult.push(item)
                     }

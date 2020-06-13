@@ -99,9 +99,12 @@ function ProcedureForm({ onCancel, edit, selected }) {
         setAvailability(availability => [...availability, newAvailability]);
     }
 
-    const editedAvailabilities = (isEdited) => {
-        setEdited(isEdited)
-    }
+    const updateAvailabilities = (newAvailabilities) => {
+        setAvailabilities([])
+        newAvailabilities.map((SingleAvailability)=> {
+          setAvailabilities(availabilities => [...availabilities, SingleAvailability]);
+        })
+      }
 
     const handleDelete = async () => {
         const res = await deleteProcedure(selected.id)
@@ -359,8 +362,8 @@ function ProcedureForm({ onCancel, edit, selected }) {
                             </Form.Row>
                         }
                     </Tab>
-                    <Tab eventKey="availability" title="Verfügbarkeit" style={TabStyle}>
-                        <Availability availabilities={availabilities} addAvailability={addAvailability} editedAvailability={editedAvailabilities} />
+                    <Tab eventKey="availability" title="Verfügbarkeit" style={TabStyle}>                                                            
+                        <Availability availabilities={availabilities} addAvailability={addAvailability} updateAvailabilities={updateAvailabilities} editedAvailabilities={setEdited} />
                     </Tab>
                     <Tab eventKey="dependencies" title="Abhängigkeiten" style={TabStyle}>
                         <Form.Label>Zwingende Vorläufer</Form.Label>

@@ -39,10 +39,10 @@ var moment = require('moment');
 ----------------------------------------------------------------------------------------------------------------------------*/
 
 const Availability = (props) => {
-    //props.addAvailability
     //props.availabilities
-    //props.editedAvailabilities
-    //props.updateAvailabilities
+    //props.addAvailability()
+    //props.editedAvailabilities()
+    //props.updateAvailabilities()
 
     //Availability
     const availabilityRhythm ={
@@ -58,6 +58,8 @@ const Availability = (props) => {
     const [frequency, setFrequency] = useState(1)
     const [endOfSeriesDateString, setEndOfSeriesDateString] = useState(null)
     const [withSeriesEnd, setWithSeriesEnd] = useState(false)
+
+    const [addedAvailabilities, setAddedAvailabilities] = useState([])
     
 
     //---------------------------------HandleChange---------------------------------
@@ -144,19 +146,35 @@ const Availability = (props) => {
         const newAvailability = {startDate: startDateString, endDate: endDateString, rhythm, frequency, endOfSeries: endOfSeriesDateString}
         props.addAvailability(newAvailability)
         props.editedAvailabilities(true)
+        setAddedAvailabilities(addedAvailabilities => [...addedAvailabilities, newAvailability])
     }
+    
 
     const handleCancleAvailability = data => {
-        const answer = confirm("Möchten Sie diese Verfügbarkeit wirklich deaktivieren? ")
-        if (answer) {
-            props.availabilities.map((singleAvailability, index) => {
-                if(index == data.target.value) {
-                    singleAvailability.endOfSeries = moment().format("DD.MM.YYYY HH:mm").toString()
+        var IndexDifference = props.availabilities.length - addedAvailabilities.length
+        props.availabilities.map((singleAvailability, index) => {
+            if(index == data.target.value) {
+                if((index >= IndexDifference)) { //the availabilities which are added, but not submitted   
+                    props.availabilities.splice((index),1) // remove  at "index" and just remove "1" 
+                    addedAvailabilities.splice((index-IndexDifference),1)
+                    props.updateAvailabilities(props.availabilities)
+
+                }else {
+                    const answer = confirm("Möchten Sie diese Verfügbarkeit wirklich deaktivieren? ")
+                    if (answer) {
+                        props.availabilities.map((singleAvailability, index) => {
+                            if(index == data.target.value) {
+                                singleAvailability.endOfSeries = moment().format("DD.MM.YYYY HH:mm").toString()
+                            }
+                        })
+                        props.updateAvailabilities(props.availabilities)
+                        props.editedAvailabilities(true)   
+                    }
                 }
-            })
-            props.updateAvailabilities(props.availabilities)
-            props.editedAvailabilities(true)   
-        }
+            }
+        })
+        console.log("Abilities:")
+        console.log(props.availabilities)
     }
 
     return (
@@ -313,7 +331,7 @@ const Availability = (props) => {
                                 </tr>
                             </thead>
                             <tbody>
-                                {renderAvailabilityTable(props.availabilities, availabilityRhythm, handleCancleAvailability)}
+                                {renderAvailabilityTable(props.availabilities, addedAvailabilities.length, availabilityRhythm, handleCancleAvailability)}
                             </tbody>
                         </Table> 
                     </Form.Row>
