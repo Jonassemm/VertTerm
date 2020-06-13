@@ -105,6 +105,7 @@ public class EmployeeServiceImp implements EmployeeService, AvailabilityService 
 
     @Override
     public boolean delete(String id) {
+    	userService.testAppointments(id);
         repo.deleteById(id);
         return repo.existsById(id);
     }

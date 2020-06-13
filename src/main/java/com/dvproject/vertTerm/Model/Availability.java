@@ -16,10 +16,8 @@ public class Availability {
 	@Id
 	private String id;
 	
-	public static Availability Always = new Availability(null, null, AvailabilityRhythm.ALWAYS);
-	@NotNull
+	public static Availability Always = new Availability("1", null, null, AvailabilityRhythm.ALWAYS);
 	private Date startDate;
-	@NotNull
 	private Date endDate;
 	
 	/**
@@ -107,6 +105,11 @@ public class Availability {
 		this(startDate, endDate, rythm, 1);
 	}
 	
+	public Availability (String id, Date startDate, Date endDate, AvailabilityRhythm rythm) {
+		this(startDate, endDate, rythm, 1);
+		this.id = id;
+	}
+	
 	public Availability (Date startDate, Date endDate, AvailabilityRhythm rhythm, int frequency) {
 		this.startDate = startDate;
 		this.endDate = endDate;
@@ -114,13 +117,18 @@ public class Availability {
 		this.frequency = frequency;
 	}
 	
-	@PersistenceConstructor
 	public Availability (Date startDate, Date endDate, AvailabilityRhythm rhythm, Date endOfSeries, int frequency) {
 		this.startDate = startDate;
 		this.endDate = endDate;
 		this.endOfSeries = endOfSeries;
 		this.rhythm = rhythm;
 		this.frequency = frequency;
+	}
+	
+	@PersistenceConstructor
+	public Availability (String id, Date startDate, Date endDate, AvailabilityRhythm rhythm, Date endOfSeries, int frequency) {
+		this(startDate, endDate, rhythm, endOfSeries, frequency);
+		this.id = id;
 	}
 	
 	public Availability () {

@@ -66,6 +66,11 @@ public class AppointmentServiceImpl implements AppointmentService {
     }
     
     @Override
+    public List<Appointment> getAppointmentsByUserid(String id, AppointmentStatus appointmentStatus){
+    	return repo.findByBookedCustomerId(id, appointmentStatus);
+    }
+    
+    @Override
     public List<Appointment> getAppointmentsOfBookedEmployeeInTimeinterval(String employeeid, Date starttime, Date endtime, AppointmentStatus status){
     	return repo.findAppointmentsByBookedEmployeeInTimeinterval(employeeid, starttime, endtime, status);
     }
