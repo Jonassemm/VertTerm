@@ -102,7 +102,7 @@ public class AppointmentServiceImpl implements AppointmentService {
     
     @Override
 	public List<Appointment> getAppointments(Available available, Date endOfSeries) {
-    	return available.getAppointmentsOfAvailable(this, endOfSeries);
+    	return available.getAppointmentsAfterDate(this, endOfSeries);
 	}
     
     @Override

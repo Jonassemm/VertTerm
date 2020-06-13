@@ -81,7 +81,7 @@ public class Resource extends Bookable implements Serializable, Available {
     }
     
     public void isAvailable(Date startdate, Date enddate) {
-		for (Availability availability : super.getAvailabilities()) {
+		for (Availability availability : getAvailabilities()) {
 			if (availability.isAvailableBetween(startdate, enddate)) {
 				return;
 			}
@@ -91,7 +91,22 @@ public class Resource extends Bookable implements Serializable, Available {
     }
     
 	@Override
-	public List<Appointment> getAppointmentsOfAvailable(AppointmentService appointmentService, Date endOfSeries) {
-		return appointmentService.getAppointmentsOfResource(super.getId(), endOfSeries);
+	public List<Appointment> getAppointmentsAfterDate(AppointmentService appointmentService, Date startdate) {
+		List<Appointment> appointments = appointmentService.getAppointmentsOfResource(getId(), startdate);
+		
+		for (Appointment appointment : appointments) {
+			List<Resource> resources = appointment.getBookedResources();
+			Resource resource;
+			for (int i = 0; i < resources.size(); i++) {
+				resource = resources.get(i);
+				
+				if (resource.getId().equals(getId())) {
+					resources.set(i, this);
+					break;
+				}
+			}
+		}
+		
+		return appointments;
 	}
 }

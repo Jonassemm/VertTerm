@@ -180,6 +180,7 @@ public class Availability {
 		Calendar endCal = getCalendar(enddate);
 
 		switch (rhythm) {
+		case ONE_TIME:
 		case DAILY:
 			difference = getDaysBetweenDates(startCal, availStartCalendar);
 			break;
@@ -212,7 +213,7 @@ public class Availability {
 			difference = startCal.get(Calendar.MONTH) - availStartCalendar.get(Calendar.MONTH)
 					+ getYearDifference(startCal, availStartCalendar) * 12;
 
-			retVal = getDaysBetweenDates(startCal, endCal) < 7;
+			retVal = getDaysBetweenDates(startCal, endCal) < 31;
 
 			break;
 		case YEARLY:

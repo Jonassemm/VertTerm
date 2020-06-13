@@ -7,9 +7,11 @@ import com.dvproject.vertTerm.Model.Availability;
 import com.dvproject.vertTerm.Service.AppointmentService;
 
 public interface Available {
-	List<Appointment> getAppointmentsOfAvailable(AppointmentService appointmentService, Date endOfSeries);
+	List<Appointment> getAppointmentsAfterDate(AppointmentService appointmentService, Date startdate);
 	
 	List<Availability> getAvailabilities();
+	
+	void isAvailable(Date startdate, Date enddate);
 	
 	String getId();
 }

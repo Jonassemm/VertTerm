@@ -109,9 +109,7 @@ public class Procedure implements Serializable, Available {
 	}
 
 	public void setPrecedingRelations(List<ProcedureRelation> precedingRelations) {
-		for (ProcedureRelation procedureRelation : precedingRelations) {
-			testProcedureRelation(procedureRelation);
-		}
+		precedingRelations.forEach(procedureRelation -> testProcedureRelation(procedureRelation));
 		
 		this.precedingRelations = precedingRelations;
 	}
@@ -121,9 +119,7 @@ public class Procedure implements Serializable, Available {
 	}
 
 	public void setSubsequentRelations(List<ProcedureRelation> subsequentRelations) {
-		for (ProcedureRelation procedureRelation : subsequentRelations) {
-			testProcedureRelation(procedureRelation);
-		}
+		subsequentRelations.forEach(procedureRelation -> testProcedureRelation(procedureRelation));
 		
 		this.subsequentRelations = subsequentRelations;
 	}
@@ -261,17 +257,17 @@ public class Procedure implements Serializable, Available {
 	}
 	
 	public void testAllRelations() {
-		for (ProcedureRelation procedureRelation : precedingRelations) {
-			testProcedureRelation(procedureRelation);
-		}
-		for (ProcedureRelation procedureRelation : subsequentRelations) {
-			testProcedureRelation(procedureRelation);
-		}
+		precedingRelations.forEach(procedureRelation -> testProcedureRelation(procedureRelation));
+		subsequentRelations.forEach(procedureRelation -> testProcedureRelation(procedureRelation));
 	}
 	
 	@Override
-	public List<Appointment> getAppointmentsOfAvailable(AppointmentService appointmentService, Date endOfSeries) {
-		return appointmentService.getAppointmentsOfProcedure(id, endOfSeries);
+	public List<Appointment> getAppointmentsAfterDate(AppointmentService appointmentService, Date startdate) {
+		List<Appointment> appointments = appointmentService.getAppointmentsOfProcedure(id, startdate);
+		
+		appointments.forEach(appointment -> appointment.getBookedProcedure().setAvailabilities(availabilities));
+		
+		return appointments;
 	}
 
 	

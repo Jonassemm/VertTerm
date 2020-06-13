@@ -12,7 +12,9 @@ import com.dvproject.vertTerm.Model.Appointment;
 import com.dvproject.vertTerm.Model.Availability;
 import com.dvproject.vertTerm.Model.Available;
 import com.dvproject.vertTerm.Model.BookingTester;
-import com.dvproject.vertTerm.Model.OverrideBookingTester;
+import com.dvproject.vertTerm.Model.NormalBookingTester;
+import com.dvproject.vertTerm.Model.Warning;
+import com.dvproject.vertTerm.exception.AvailabilityException;
 import com.dvproject.vertTerm.repository.AvailabilityRepository;
 
 @Service
@@ -62,8 +64,8 @@ public class AvailabilityServiceImpl {
 
 	public void update(List<Availability> availabilities, Available entity) {
 		Availability repoAvailability;
-		boolean endetAvailability = false;
-		Date earliestEndOfSeries = null;
+		boolean availabilityHasChanged = false;
+		Date earliestDateChanged = null;
 
 		for (int i = 0; i < availabilities.size(); i++) {
 			Availability availability = availabilities.get(i);
@@ -71,38 +73,39 @@ public class AvailabilityServiceImpl {
 			if (availability.getId() != null) {
 				repoAvailability = availRepo.findById(availability.getId()).orElse(null);
 				if (repoAvailability != null) {
+					// endOfSeries should be set
 					if (repoAvailability.getEndOfSeries() == null && availability.getEndOfSeries() != null) {
 						Date endOfSeries = availability.getEndOfSeries();
 						repoAvailability.setEndOfSeries(endOfSeries);
 						availRepo.save(repoAvailability);
 
-						endetAvailability = true;
-						if (earliestEndOfSeries == null || endOfSeries.before(earliestEndOfSeries)) {
-							earliestEndOfSeries = endOfSeries;
+						if (!availabilityHasChanged || endOfSeries.before(earliestDateChanged)) {
+							earliestDateChanged = endOfSeries;
 						}
 					}
 				} else {
 					repoAvailability = create(availability);
+					
+					Date startdate = availability.getStartDate();
+					if (!availabilityHasChanged || startdate.before(earliestDateChanged)) {
+						earliestDateChanged = startdate;
+					}
 				}
 			} else {
 				repoAvailability = create(availability);
+				
+				Date startdate = availability.getStartDate();
+				if (!availabilityHasChanged || startdate.before(earliestDateChanged)) {
+					earliestDateChanged = startdate;
+				}
 			}
 
-			availability = repoAvailability;
+			availabilityHasChanged = earliestDateChanged != null;
+			availabilities.set(i, repoAvailability);
 		}
 
-		if (endetAvailability) {
-			BookingTester tester = new OverrideBookingTester();
-			List<Appointment> appointmentsToTest = entity.getAppointmentsOfAvailable(appointmentService,
-					earliestEndOfSeries);
-
-			for (Appointment appointment : appointmentsToTest) {
-				tester.setAppointment(appointment);
-
-				tester.testAvailabilities();
-
-				appointmentService.update(appointment);
-			}
+		if (availabilityHasChanged) {
+			testAppointmentsOfAvailable(entity, earliestDateChanged);
 		}
 	}
 
@@ -136,5 +139,33 @@ public class AvailabilityServiceImpl {
 	public void loadAllAvailablitiesOfEntityViaId(List<Availability> availabilities, String id,
 			AvailabilityService availabilityService) {
 		loadAllAvailabilitiesOfEntity(availabilities, availabilityService.getById(id), availabilityService);
+	}
+
+	private void testAppointmentsOfAvailable(Available entity, Date startdateOfTest) {
+		BookingTester bookingTester = new NormalBookingTester();
+		List<Appointment> appointmentsToTest = entity.getAppointmentsAfterDate(appointmentService, startdateOfTest);
+
+		for (Appointment appointment : appointmentsToTest) {
+			Date startdate = appointment.getPlannedStarttime();
+			Date enddate = appointment.getPlannedEndtime();
+			List<Warning> warningsOfAppointment = appointment.getWarnings();
+			boolean hasChanged = false;
+
+			try {
+				if (warningsOfAppointment.contains(Warning.AVAILABILITY_WARNING)) {
+					bookingTester.setAppointment(appointment);
+					bookingTester.testAvailabilities();
+					appointment.removeWarning(Warning.AVAILABILITY_WARNING);
+					hasChanged = true;
+				} else {
+					entity.isAvailable(startdate, enddate);
+				}
+			} catch (AvailabilityException ex) {
+				hasChanged = appointment.addWarning(Warning.AVAILABILITY_WARNING);
+			} finally {
+				if (hasChanged)
+					appointmentService.update(appointment);
+			}
+		}
 	}
 }

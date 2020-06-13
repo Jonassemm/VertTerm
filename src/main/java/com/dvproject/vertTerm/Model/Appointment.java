@@ -151,10 +151,15 @@ public class Appointment implements Serializable {
 		this.warnings = warnings;
 	}
 
-	public void addWarning(Warning warning) {
+	public boolean addWarning(Warning warning) {
+		boolean warningHasBeenAdded = false;
+		
 		if (!warnings.contains(warning)) {
 			warnings.add(warning);
+			warningHasBeenAdded = true;
 		}
+		
+		return warningHasBeenAdded;
 	}
 
 	public void removeWarning(Warning warning) {
@@ -179,7 +184,7 @@ public class Appointment implements Serializable {
 
 	public void testOverlapping(List<TimeInterval> timeIntervallsOfAppointments) {
 		boolean errorOccured = false;
-		
+
 		for (TimeInterval timeinterval : timeIntervallsOfAppointments) {
 			if (timeinterval.isInTimeInterval(plannedStarttime, plannedEndtime)) {
 				errorOccured = true;
@@ -188,7 +193,7 @@ public class Appointment implements Serializable {
 		}
 
 		timeIntervallsOfAppointments.add(new TimeInterval(plannedStarttime, plannedEndtime));
-		
+
 		if (errorOccured)
 			throw new AppointmentTimeException("An appointment overlaps with annother appointment", this);
 	}
@@ -225,18 +230,28 @@ public class Appointment implements Serializable {
 	}
 
 	public void testAvailabilitiesOfProcedure_Employees_Resources() {
+		testAvailabilitiesOfProcedur();
+		testAvailabilitiesOfEmployees();
+		testAvailabilitiesOfResources();
+	}
+	
+	public void testAvailabilitiesOfProcedur() {
 		// test avilability of procedure
 		bookedProcedure.isAvailable(plannedStarttime, plannedEndtime);
+	}
 
+	public void testAvailabilitiesOfEmployees() {
+		for (Employee employee : bookedEmployees) {
+			// test availability of employees
+			employee.isAvailable(plannedStarttime, plannedEndtime);
+		}
+	}
+
+	public void testAvailabilitiesOfResources() {
 		for (Resource resource : bookedResources) {
 			// test availability of resources
 			resource.isAvailable(plannedStarttime, plannedEndtime);
 
-		}
-
-		for (Employee employee : bookedEmployees) {
-			// test availability of employees
-			employee.isAvailable(plannedStarttime, plannedEndtime);
 		}
 	}
 
@@ -310,7 +325,7 @@ public class Appointment implements Serializable {
 		}
 	}
 
-	void testDistinctBookedAttributes() {
+	public void testDistinctBookedAttributes() {
 		hasDistinctEmployees();
 		hasDistinctResources();
 	}
@@ -373,9 +388,7 @@ public class Appointment implements Serializable {
 						AppointmentStatus.PLANNED);
 
 		if (!appointmentsOfCustomerAtThisAppointmentPlannedTimes.isEmpty()) {
-			throw new AppointmentException("The customer already has an appointment in the given time interval",
-					this);
+			throw new AppointmentException("The customer already has an appointment in the given time interval", this);
 		}
 	}
-
 }
