@@ -11,18 +11,11 @@ import org.springframework.data.rest.webmvc.ResourceNotFoundException;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 
-import com.dvproject.vertTerm.Model.Availability;
-import com.dvproject.vertTerm.Model.Procedure;
-import com.dvproject.vertTerm.Model.Resource;
-import com.dvproject.vertTerm.Model.ResourceType;
-import com.dvproject.vertTerm.Model.Restriction;
-import com.dvproject.vertTerm.Model.Right;
-import com.dvproject.vertTerm.Model.Status;
 import com.dvproject.vertTerm.repository.RessourceRepository;
 import com.dvproject.vertTerm.repository.RestrictionRepository;
 
 @Service
-public class ResourceServiceImp implements ResourceService {
+public class ResourceServiceImp implements ResourceService, AvailabilityService {
 
 	@Autowired
 	private RessourceRepository ResRepo;
@@ -47,9 +40,10 @@ public class ResourceServiceImp implements ResourceService {
 
 	// @PreAuthorize("hasAuthority('RESOURCE_DATA_WRITE')")
 	public Resource create(Resource res) {
-		if (this.ResRepo.findByName(res.getName()) == null)
+		if (this.ResRepo.findByName(res.getName()) == null) {
+			availabilityService.update(res.getAvailabilities(), res);
 			return ResRepo.save(res);
-		else
+		} else
 			throw new ResourceNotFoundException("Resource with the given id :" + res.getId() + " already exists");
 
 	}
@@ -67,6 +61,7 @@ public class ResourceServiceImp implements ResourceService {
 	public Resource update(Resource res) {
 		if (res.getId() != null && ResRepo.findById(res.getId()).isPresent()) {
 			testCorrectDependencies(res);
+			availabilityService.loadAllAvailabilitiesOfEntity(res.getAvailabilities(), res, this);
 			return ResRepo.save(res);
 		} else {
 			throw new ResourceNotFoundException("Resource with the given id :" + res.getId() + "not found");
@@ -97,6 +92,17 @@ public class ResourceServiceImp implements ResourceService {
 		}
 		return dep;
 
+	}
+	
+	@Override
+	public List<Availability> getAllAvailabilities(String id) {
+		Resource resource = this.getById(id);
+		
+		if (resource == null) {
+			throw new IllegalArgumentException("No resource with the given id");
+		}
+		
+		return resource.getAvailabilities();
 	}
 
 

@@ -81,6 +81,11 @@ public class AppointmentServiceImpl implements AppointmentService {
     }
     
     @Override
+    public List<Appointment> getAppointmentsOfBookedProcedureInTimeinterval(String procedureid, Date starttime, Date endtime, AppointmentStatus status){
+    	return repo.findAppointmentsByBookedProceudreInTimeinterval(procedureid, starttime, endtime, status);
+    }
+    
+    @Override
     public List<Appointment> getAppointmentsWithUseridAndTimeInterval(String userid, Date starttime, Date endtime){
     	return repo.findAppointmentsByBookedUserAndTimeinterval(userid, starttime, endtime);
     }
@@ -94,6 +99,26 @@ public class AppointmentServiceImpl implements AppointmentService {
     public List<Appointment> getAppointmentsInTimeInterval(Date starttime, Date endtime){
     	return repo.findAppointmentsByTimeinterval(starttime, endtime);
     }
+    
+    @Override
+	public List<Appointment> getAppointments(Available available, Date endOfSeries) {
+    	return available.getAppointmentsOfAvailable(this, endOfSeries);
+	}
+    
+    @Override
+	public List<Appointment> getAppointmentsOfEmployee(String employeeid, Date startdate) {
+    	return repo.findByBookedEmployeeId(employeeid, startdate);
+	}
+    
+    @Override
+	public List<Appointment> getAppointmentsOfProcedure(String procedureid, Date startdate) {
+    	return repo.findByBookedProcedureId(procedureid, startdate);
+    }
+    
+    @Override
+	public List<Appointment> getAppointmentsOfResource(String resourceid, Date startdate) {
+    	return repo.findByBookedResourceId(resourceid, startdate);
+	}
 
     @Override
     public Appointment update(Appointment updatedInstance) {

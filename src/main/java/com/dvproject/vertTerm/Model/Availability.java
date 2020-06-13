@@ -6,23 +6,42 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.TimeZone;
 
+import javax.validation.constraints.NotNull;
+
+import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.PersistenceConstructor;
 
 public class Availability {
+	
+	@Id
+	private String id;
+	
 	public static Availability Always = new Availability(null, null, AvailabilityRhythm.ALWAYS);
+	@NotNull
 	private Date startDate;
+	@NotNull
 	private Date endDate;
 	
 	/**
 	 * defines the type of rhythm (e.g. daily or weekly)
 	 */
+	@NotNull
 	private AvailabilityRhythm rhythm;
 	
 	/**
 	 * defines the frequency of the rhythm (e.g. 2 -> every two rhythms)
 	 */
+	@NotNull
 	private int frequency;
 	private Date endOfSeries;
+	
+	public String getId() {
+		return id;
+	}
+
+	public void setId(String id) {
+		this.id = id;
+	}
 
 	public Date getEarliestAvailability(Date date, Duration duration){
 		if(this.getRhythm() == AvailabilityRhythm.ALWAYS){

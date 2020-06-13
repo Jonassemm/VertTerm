@@ -1,5 +1,6 @@
 package com.dvproject.vertTerm.Service;
 
+import com.dvproject.vertTerm.Model.Availability;
 import com.dvproject.vertTerm.Model.Employee;
 import com.dvproject.vertTerm.Model.Position;
 import com.dvproject.vertTerm.Model.Status;
@@ -16,13 +17,16 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
-public class EmployeeServiceImp implements EmployeeService {
+public class EmployeeServiceImp implements EmployeeService, AvailabilityService {
 
     @Autowired
     EmployeeRepository repo;
     
     @Autowired
     private UserService userService;
+    
+    @Autowired
+    private AvailabilityServiceImpl availableService;
 
     @Override
     public List<Employee> getAll() {
@@ -62,12 +66,24 @@ public class EmployeeServiceImp implements EmployeeService {
         Optional<Employee> appointment = repo.findById(id);
         return appointment.orElse(null);
     }
+    
+	@Override
+	public List<Availability> getAllAvailabilities(String id) {
+		Employee employee = this.getById(id);
+		
+		if (employee == null) {
+			throw new IllegalArgumentException("No employee with the given id");
+		}
+		
+		return employee.getAvailabilities();
+	}
 
     @Override
     public Employee create(Employee newInstance) {
         if (newInstance.getId() == null) {
         	userService.testMandatoryFields(newInstance);
         	userService.encodePassword(newInstance);
+        	availableService.update(newInstance.getAvailabilities(), newInstance);
             return repo.save(newInstance);
         }
         if (repo.findById(newInstance.getId()).isPresent()) {
@@ -81,6 +97,7 @@ public class EmployeeServiceImp implements EmployeeService {
         if (updatedInstance.getId() != null && repo.findById(updatedInstance.getId()).isPresent()) {
         	userService.testMandatoryFields(updatedInstance);
         	userService.encodePassword(updatedInstance);
+        	availableService.loadAllAvailabilitiesOfEntity(updatedInstance.getAvailabilities(), updatedInstance, this);
             return repo.save(updatedInstance);
         }
         return null;

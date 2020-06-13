@@ -8,6 +8,7 @@ import java.util.List;
 
 import javax.validation.constraints.NotNull;
 
+import com.dvproject.vertTerm.Service.AppointmentService;
 import com.dvproject.vertTerm.Service.AppointmentServiceImpl;
 import com.dvproject.vertTerm.Service.EmployeeService;
 import com.dvproject.vertTerm.Service.ResourceService;
@@ -19,7 +20,7 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.DBRef;
 
-public class Procedure implements Serializable {
+public class Procedure implements Serializable, Available {
 	private static final long serialVersionUID = 1758602258863163151L;
 
 	@Autowired
@@ -48,6 +49,7 @@ public class Procedure implements Serializable {
 	private List<Position> neededEmployeePositions;
 	@DBRef
 	private List<Restriction> restrictions;
+	@DBRef
 	private List<Availability> availabilities;
 
 	public String getId() {
@@ -266,6 +268,12 @@ public class Procedure implements Serializable {
 			testProcedureRelation(procedureRelation);
 		}
 	}
+	
+	@Override
+	public List<Appointment> getAppointmentsOfAvailable(AppointmentService appointmentService, Date endOfSeries) {
+		return appointmentService.getAppointmentsOfProcedure(id, endOfSeries);
+	}
+
 	
 	private void testProcedureRelation (ProcedureRelation procedureRelation) {
 		if (procedureRelation.getProcedure().getId().equals(this.getId())) {

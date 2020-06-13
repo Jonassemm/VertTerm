@@ -13,10 +13,11 @@ import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import com.dvproject.vertTerm.Service.AppointmentService;
 import com.dvproject.vertTerm.exception.AvailabilityException;
 
 @Document("resource")
-public class Resource extends Bookable implements Serializable{
+public class Resource extends Bookable implements Serializable, Available {
 	private static final long serialVersionUID = 7443614129275947603L;
 
 	@Indexed(unique = true)
@@ -88,4 +89,9 @@ public class Resource extends Bookable implements Serializable{
 		
 		throw new AvailabilityException("No availability for the resource " + name);
     }
+    
+	@Override
+	public List<Appointment> getAppointmentsOfAvailable(AppointmentService appointmentService, Date endOfSeries) {
+		return appointmentService.getAppointmentsOfResource(super.getId(), endOfSeries);
+	}
 }
