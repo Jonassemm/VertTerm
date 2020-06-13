@@ -2,6 +2,7 @@ package com.dvproject.vertTerm.Controller;
 
 import com.dvproject.vertTerm.Model.Appointment;
 import com.dvproject.vertTerm.Model.AppointmentStatus;
+import com.dvproject.vertTerm.Model.Warning;
 import com.dvproject.vertTerm.Service.AppointmentService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -41,6 +42,21 @@ public class AppointmentController {
     		appointments = service.getAppointmentsByUserid(userid);
     	} else if (starttime != null && endtime != null) {
     			appointments =  service.getAppointmentsWithUseridAndTimeInterval(userid, starttime, endtime);
+    	}
+    	
+    	return appointments;
+    }
+    
+    @GetMapping(path = {"/Warnings/{userid}", "/Warnings", "/Warnings/"})
+    public List<Appointment> getAppointmentsWithWarnings(
+    		@PathVariable(required = false) String userid,
+    		@RequestBody(required = true) List<Warning> warnings){
+    	List<Appointment> appointments = null;
+    	
+    	if (userid == null || userid.equals("")) {
+    		appointments = service.getAppointmentsByWarnings(warnings);
+    	} else {
+    		appointments = service.getAppointmentsByWarningsAndId(userid, warnings);
     	}
     	
     	return appointments;

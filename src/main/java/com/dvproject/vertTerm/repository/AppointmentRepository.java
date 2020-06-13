@@ -15,15 +15,19 @@ import com.dvproject.vertTerm.Model.Warning;
 public interface AppointmentRepository extends MongoRepository<Appointment, String> {
 	Optional<Appointment> findById(String id);
 
-	List<Appointment> findByWarnings(Warning warning);
+	List<Appointment> findByWarnings(Warning warnings);
+	
+	List<Appointment> findByWarningsIn(List<Warning> warnings);
+	
+	List<Appointment> findByBookedCustomerIdAndWarnings(String userid, Warning warning);
+	
+	List<Appointment> findByBookedCustomerIdAndWarningsIn(String userid, List<Warning> warnings);
 
 	List<Appointment> findByStatus(Status status);
 
-	@Query("{'bookedCustomer.$id': ObjectId(?0)}")
 	List<Appointment> findByBookedCustomerId(String id);
 	
-	@Query("{'bookedCustomer.$id': ObjectId(?0), 'status': ?1}")
-	List<Appointment> findByBookedCustomerId(String id, AppointmentStatus appointmentStatus);
+	List<Appointment> findByBookedCustomerIdAndStatus(String id, AppointmentStatus status);
 	
 	@Query("{'bookedProcedure.$id': ObjectId(?0), 'plannedStarttime': {'$gte': ?1}}")
 	List<Appointment> findByBookedProcedureId(String id, Date startdate);

@@ -67,7 +67,7 @@ public class AppointmentServiceImpl implements AppointmentService {
     
     @Override
     public List<Appointment> getAppointmentsByUserid(String id, AppointmentStatus appointmentStatus){
-    	return repo.findByBookedCustomerId(id, appointmentStatus);
+    	return repo.findByBookedCustomerIdAndStatus(id, appointmentStatus);
     }
     
     @Override
@@ -123,6 +123,25 @@ public class AppointmentServiceImpl implements AppointmentService {
     @Override
 	public List<Appointment> getAppointmentsOfResource(String resourceid, Date startdate) {
     	return repo.findByBookedResourceId(resourceid, startdate);
+	}
+    
+	@Override
+	public List<Appointment> getAppointmentsByWarning(Warning warning) {
+		return repo.findByWarnings(warning);
+	}
+	
+	public List<Appointment> getAppointmentsByWarnings(List<Warning> warnings){
+		return repo.findByWarningsIn(warnings);
+	}
+
+	@Override
+	public List<Appointment> getAppointmentsByWarningAndId(String userid, Warning warning) {
+		return repo.findByBookedCustomerIdAndWarnings(userid, warning);
+	}
+
+	@Override
+	public List<Appointment> getAppointmentsByWarningsAndId(String userid, List<Warning> warnings) {
+		return repo.findByBookedCustomerIdAndWarningsIn(userid, warnings);
 	}
 
     @Override
