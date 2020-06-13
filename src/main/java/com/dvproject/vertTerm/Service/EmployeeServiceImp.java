@@ -26,7 +26,7 @@ public class EmployeeServiceImp implements EmployeeService, AvailabilityService 
     private UserService userService;
     
     @Autowired
-    private AvailabilityServiceImpl availableService;
+    private AvailabilityServiceImpl availabilityService;
 
     @Override
     public List<Employee> getAll() {
@@ -83,7 +83,7 @@ public class EmployeeServiceImp implements EmployeeService, AvailabilityService 
         if (newInstance.getId() == null) {
         	userService.testMandatoryFields(newInstance);
         	userService.encodePassword(newInstance);
-        	availableService.update(newInstance.getAvailabilities(), newInstance);
+        	availabilityService.update(newInstance.getAvailabilities(), newInstance);
             return repo.save(newInstance);
         }
         if (repo.findById(newInstance.getId()).isPresent()) {
@@ -97,7 +97,7 @@ public class EmployeeServiceImp implements EmployeeService, AvailabilityService 
         if (updatedInstance.getId() != null && repo.findById(updatedInstance.getId()).isPresent()) {
         	userService.testMandatoryFields(updatedInstance);
         	userService.encodePassword(updatedInstance);
-        	availableService.loadAllAvailabilitiesOfEntity(updatedInstance.getAvailabilities(), updatedInstance, this);
+        	availabilityService.loadAllAvailabilitiesOfEntity(updatedInstance.getAvailabilities(), updatedInstance, this);
             return repo.save(updatedInstance);
         }
         return null;
