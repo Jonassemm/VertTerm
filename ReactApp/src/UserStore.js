@@ -33,21 +33,30 @@ class UserStore {
     }
 
     async getData() {
-            const res = await getUserData(this.userID)
-            console.log(res)
-            this.setRoles(res.data.roles.map(item => {
-                        return (item.name)
+        const res = await getUserData(this.userID)
+        console.log(res)
+        this.setRoles(res.data.roles.map(item => {
+                    return (item.name)
 
-                    }))
-            const tempRights = []
-            res.data.roles.forEach((item,index,array) => {
-                item.rights.forEach((item, index) => {
-                    tempRights.push(item)
-                })
+                }))
+        /* const tempRights = []
+        res.data.roles.forEach((item,index,array) => {
+            item.rights.forEach((item, index) => {
+                tempRights.push(item)
             })
-            this.setRights(tempRights) //muss noch gefiltert werden (Rechte können bei mehreren Rollen doppelt vorkommen)
-            this.setUsername(res.data.username)
-            this.setUserID(res.data.id)
+        }) */
+        var allRights = []
+        res.data.roles.map((role) => {
+            role.rights.map((right)=> {
+                if(!allRights.some(allRights => allRights.id == right.id)){
+                    allRights.push(right) //only push rights which are not in allRights
+                }
+            })
+        })
+
+        this.setRights(allRights) //without multiple rights
+        this.setUsername(res.data.username)
+        this.setUserID(res.data.id)
     }
 
     deleteCurrentUser() {

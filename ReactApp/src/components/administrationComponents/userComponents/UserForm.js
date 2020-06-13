@@ -45,7 +45,6 @@ function UserForm({onCancel, edit, selected, type}) {
   const [roles, setRoles] = useState([])
   //Restrictions
   const [restrictions, setRestrictions] = useState([])
-  
   //Optional Attributes (Employee)
   const [optionalAttributesOfUser, setOptionalAttributesOfUser] = useState([])
   //Optional Attributes (Employee)
@@ -53,14 +52,15 @@ function UserForm({onCancel, edit, selected, type}) {
   //Optional Attributes (Customer)
   const [optionalAttributesOfCustomer, setOptionalAttributesOfCustomer] = useState([])
   //Attribute Input
-  const [optionalAttributInput, setOptionalAttributeInput] = useState() //needed to render page when editing any extUserInfo
-  
+  const [optionalAttributInput, setOptionalAttributeInput] = useState() //needed to render page when editing any optional attribute
+  //
+  const [passwordChanged, setPasswordChanged] = useState(false)
 
   //HANDEL CHANGE
   const handleFirstnameChange = event => {setFirstname(event.target.value); setEdited(true)}
   const handleLastnameChange = event => {setLastname(event.target.value); setEdited(true)}
   const handleUsernameChange = event => {setUsername(event.target.value); setEdited(true)}
-  const handlePasswordChange = event => {setPassword(event.target.value); setEdited(true)}
+  const handlePasswordChange = event => {setPasswordChanged(true); setPassword(event.target.value); setEdited(true)}
   const handleSystemStatusChange = event => {setSystemStatus(event.target.value); setEdited(true)}
   const handlePositionsChange = data => {setPositions(data); setEdited(true)}
   const handleRoleChange = data => {setRoles(data); setEdited(true)}
@@ -72,13 +72,11 @@ function UserForm({onCancel, edit, selected, type}) {
   };
 
   useEffect(() => { 
-    console.log("useEffect-Call: loadExtandUserInformation")
-    //loadOptionalAttributes()
     if(edit) {
         setFirstname(selected.firstName)
         setLastname(selected.lastName)
         setUsername(selected.username)
-        setPassword("EncryptedPassword")
+        setPassword("Password1") //only for the view
         setSystemStatus(selected.systemStatus)
         if(selected.roles != null && selected.roles.length > 0) {
           setRoles(selected.roles)
@@ -161,24 +159,21 @@ function UserForm({onCancel, edit, selected, type}) {
   //ADD
   const handleSubmit = async event => {
     event.preventDefault();//reload the page after clicking "Enter"
-    var newPassword = password
-    if(password == "EncryptedPassword") {
-      newPassword = ""
+    var newPassword = ""
+    if(passwordChanged) {
+      newPassword = password
     }
-    console.log(newPassword)
     if(validation()) {
       if(edit) { //editing-mode
         var id = selected.id
         var updateData = {}
         try {
           if(isEmployee){ //employee
-              console.log("AXIOS: updateEmployee()")
               updateData = {id, firstName, lastName, username, password: newPassword, systemStatus, roles, positions, availabilities, restrictions, 
                             optionalAttributes: optionalAttributesOfUser}
               await updateEmployee(id, updateData);
           }else { //customer
-              console.log("AXIOS: updateCustomer()")
-              updateData = {id, firstName, lastName, username, password, systemStatus, roles, restrictions,
+              updateData = {id, firstName, lastName, username, password: newPassword, systemStatus, roles, restrictions,
                             optionalAttributes: optionalAttributesOfUser}
               await updateCustomer(id, updateData);
           }
@@ -190,12 +185,10 @@ function UserForm({onCancel, edit, selected, type}) {
           var newData = {}
           try {
           if(isEmployee){ //employee
-              console.log("AXIOS: addEmployee()")
               newData = {firstName, lastName, username, password, systemStatus, roles, positions, availabilities, restrictions,
                           optionalAttributes: optionalAttributesOfUser}
               await addEmployee(newData);
           }else { //customer
-              console.log("AXIOS: addCustomer()")
               newData = {firstName, lastName, username, password, systemStatus, roles, restrictions, 
                           optionalAttributes: optionalAttributesOfUser}
               await addCustomer(newData);
@@ -388,8 +381,8 @@ function UserForm({onCancel, edit, selected, type}) {
                     <InputGroup>
                         <Form.Control
                           required
-                          //pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}" //min 8 characters with one upper and one lower case letter
-                          //title="Das Passwort muss mindestens 8 Zeichen lang sein und einen Groß- sowie Klein-Buchstaben enthalten"
+                          //pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}" //min 8 characters with one upper and one lower case letter and one digit
+                          //title="Das Passwort muss mindestens 8 Zeichen lang sein und einen Groß- sowie Klein-Buchstaben enthalten, sowie mindestens eine Zahl"
                           name="password"
                           type="password"
                           placeholder="Passwort"
