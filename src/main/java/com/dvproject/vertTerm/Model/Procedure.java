@@ -208,7 +208,7 @@ public class Procedure implements Serializable, Available {
 		// do the same for  roles
 		for (Position position : this.getNeededEmployeePositions()) {
 			Date newEarliestDateFinal = null;
-			for (Employee employee : employeeService.getAll(position)) {
+			for (Employee employee : employeeService.getAll(position.getId())) {
 				if(currentAppointment.getBookedEmployees().contains(employee)){
 					continue;
 				}

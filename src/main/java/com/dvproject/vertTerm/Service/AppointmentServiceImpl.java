@@ -197,7 +197,7 @@ public class AppointmentServiceImpl implements AppointmentService {
     	List<Employee> Employees=new ArrayList<>();
         
     	for (Position pos : Positions) {
-    		for (Employee employee : EmpSer.getAll(pos)) 
+    		for (Employee employee : EmpSer.getAll(pos.getId()))
     			if (!employee.isAvailable(startdate, duration)) 
     				Employees.add(employee);
 		}

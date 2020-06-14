@@ -9,5 +9,5 @@ import java.util.List;
 
 public interface EmployeeService extends BasicService<Employee>{
     List<Employee> getAll(Status status);
-    List<Employee> getAll(Position position);
+    List<Employee> getAll(String positionId);
 }

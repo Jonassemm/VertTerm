@@ -17,13 +17,18 @@ public class EmployeeController {
 
     @GetMapping()
     public @ResponseBody
-    List<Employee> get(@RequestParam(value = "status", required = false) Status status)
+    List<Employee> get(@RequestParam(value = "status", required = false) Status status,
+                       @RequestParam(value = "position", required = false) String positionId)
     {
-        if(status == null){
+        if (status != null) {
+            return service.getAll(status);
+        }
+        if (positionId != null) {
+            return service.getAll(positionId);
+        }
+        else {
             return service.getAll();
         }
-        else
-            return service.getAll(status);
     }
 
     @GetMapping("/{id}")
