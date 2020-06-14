@@ -208,7 +208,7 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
 			WebRequest request) {
 		Appointment appointment = exception.getAppointment();
 		StringBuilder builder = new StringBuilder(exception.getMessage());
-		HttpHeaders headers = addExceptionHeader(null, "appointment");
+		HttpHeaders headers = addExceptionHeader(null, "AppointmentTime");
 
 		if (appointment != null) {
 			builder.append(": procedure ");
