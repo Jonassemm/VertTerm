@@ -8,15 +8,22 @@ import {getAllResourceTypes} from "./administrationComponents/resourceTypeCompon
 import {getAllResources} from "./administrationComponents/resourceComponents/ResourceRequests"
 import {getAllRestrictions} from "./administrationComponents/restrictionComponents/RestrictionRequests"
 
-export const getActiveUsers = () => axios.get(`${APIURL}/api/Users?status=ACTIVE`)
 export const addAppointmentGroup = (data, userID) => axios.post(`${APIURL}/api/Appointmentgroups/${userID}`,data)
+export const addAppointmentGroupOverride = (data, userID) => axios.post(`${APIURL}/api/Appointmentgroups/override/${userID}`,data)
+export const getAppointmentGroup = (id) => axios.get(`${APIURL}/api/Appointmentgroups/${id}`)
 
 export const getUsers = getAllUsers
-export const getEmployees = getEmployeeList
+export const getActiveUsers = () => axios.get(`${APIURL}/api/Users?status=ACTIVE`)
 export const getCustomers = getCustomerList
+
+export const getEmployees = getEmployeeList
+export const getEmployeesOfPosition = positionID => axios.get(`${APIURL}/api/Employees?position=${positionID}`)
+ export {getRoles}
 export const getPositions = getAllPositions
+
 export const getResourcetypes = getAllResourceTypes
 export const getResources = getAllResources
-export const getRestrictions = getAllRestrictions
+export const getResourcesOfType = type => axios.get(`${APIURL}/api/Resource/restyp/${type}`)
+
 export {getProcedures}
-export {getRoles}
+export const getRestrictions = getAllRestrictions

@@ -30,6 +30,7 @@ export default observer(function App({ userStore, calendarStore }) {
             <Route exact path="/calendar" component={() => (<HomePage calendarStore={calendarStore} />)} />
             <Route path="/appointment" component={() => <AppointmentPage calendarStore={calendarStore} userStore={userStore} />} />
             <Route exact path="/booking" component={() => (<BookingForm/>)}/>
+            <Route exact path="/booking/:appointmentID/:appointmentGroupID" component={BookingForm}/>
           </Switch>
         </div>
       </Suspense>

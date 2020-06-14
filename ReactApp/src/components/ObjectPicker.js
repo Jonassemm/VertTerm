@@ -1,6 +1,6 @@
 import React, { useState, useEffect, forwardRef, useImperativeHandle } from "react"
 import { Typeahead } from "react-bootstrap-typeahead"
-import { getUsers, getEmployees, getCustomers, getProcedures, getRoles, getPositions, getResourcetypes, getResources, getRestrictions, getActiveUsers } from "./requests"
+import { getUsers, getEmployees, getCustomers, getProcedures, getRoles, getPositions, getResourcetypes, getResources, getRestrictions, getActiveUsers, getResourcesOfType, getEmployeesOfPosition } from "./requests"
 
 // when using this Object you have to give 4 props:
 // DbObject: defining what Object you want to pick (select out of predefined list below)
@@ -10,7 +10,7 @@ import { getUsers, getEmployees, getCustomers, getProcedures, getRoles, getPosit
 // exclude: the element which is removed from the selection
 
 const ObjectPicker = forwardRef((props, ref) => {
-    let { DbObject, setState, initial, multiple, ident, selectedItem } = props
+    let { DbObject, setState, initial, multiple, ident, selectedItem, filter } = props
     if (!selectedItem) selectedItem = { id: null }
     const [options, setOptions] = useState([])
     const [labelKey, setLabelKey] = useState("")
@@ -39,7 +39,6 @@ const ObjectPicker = forwardRef((props, ref) => {
             case 'customer': getUserData(); break;
             case 'procedure': getProcedureData(); break;
             case 'resource': getResourceData(); break;
-            case 'childResource': getResourceData("childResource"); break;
             case 'resourceType': getResourceTypeData(); break;
             case 'position': getPositionData(); break;
             case 'customerRole': getRoleData("customer"); break;
@@ -78,7 +77,13 @@ const ObjectPicker = forwardRef((props, ref) => {
         switch (DbObject) {
             case 'user': res = await getUsers(); break;
             case 'customer': res = await getCustomers(); break;
-            case 'employee': res = await getEmployees(); break;
+            case 'employee': {
+                if (filter) {
+                    res = await getEmployeesOfPosition(filter)
+                } else {
+                    res = await getEmployees()
+                }
+            }
             case 'activeUser': res = await getActiveUsers()
         }
         const result = res.data.map(item => {
@@ -90,10 +95,11 @@ const ObjectPicker = forwardRef((props, ref) => {
         //filter for Anonymous and Admin user
         for (let i = 0; i < result.length; i++) {
                 if ((result[i].username == "admin") || (result[i].username == "anonymousUser")) {
-                    result.splice(i, 1)
-                    i -= 1
-                }
+            if ((result[i].username == "admin") || (result[i].username == "anonymousUser")) {
+                result.splice(i, 1)
+                i -= 1
             }
+        }
         //reduce the selection
         result.map((item) => {
             if (item.id != selectedItem.id && item.systemStatus != "deleted") {
@@ -105,7 +111,7 @@ const ObjectPicker = forwardRef((props, ref) => {
         setInit(true)
     }
 
-    //REKURSIVE function to prevent setting a parent-resource "A" as a child-resource of his child-resource "B" (-> ChildOf(A) = B, ChildOf(B) = A) 
+   /*  //REKURSIVE function to prevent setting a parent-resource "A" as a child-resource of his child-resource "B" (-> ChildOf(A) = B, ChildOf(B) = A) 
     function checkChildResources(resource, reference) {
         var feedback = true
         var results = [] // for each child
@@ -125,28 +131,22 @@ const ObjectPicker = forwardRef((props, ref) => {
                 }
             }))
                 return feedback
-
         } else {
             return feedback // resource cannot contain the reference as a child resource
         }
-    }
+    } */
 
-    async function getResourceData(call = "normal") {
-        let finalResult = []
-        const res = await getResources()
-        res.data.map((item) => {
-            //reduce the selection
-            if (item.id != selectedItem.id && item.status != "deleted") {
-                if (call == "childResource" && selectedItem.id != null) { //reduce selection of all parent resources
-                    if (checkChildResources(item, selectedItem)) {
-                        finalResult.push(item)
-                    }
-                } else { //normal selection
-                    finalResult.push(item)
-                }
-            }
+    async function getResourceData() {
+        let res = {}
+        if (filter) {
+            res = await getResourcesOfType(filter)
+        } else {
+            res = await getResources()
+        }
+        const result = res.data.map(item => {
+            return { ...item }
         })
-        setOptions(finalResult)
+        setOptions(result)
         setLabelKey("name")
         setInit(true)
     }
