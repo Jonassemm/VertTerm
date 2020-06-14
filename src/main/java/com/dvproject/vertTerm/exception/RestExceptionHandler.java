@@ -17,6 +17,7 @@ import com.dvproject.vertTerm.Model.Procedure;
 import com.dvproject.vertTerm.Model.ProcedureRelation;
 import com.dvproject.vertTerm.Model.Resource;
 import com.dvproject.vertTerm.Model.ResourceType;
+import com.dvproject.vertTerm.Model.Restriction;
 import com.dvproject.vertTerm.Model.User;
 
 import net.springboot.javaguides.exception.ResourceNotFoundException;
@@ -55,18 +56,58 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
 				request);
 	}
 
+	@ExceptionHandler(RestrictionException.class)
+	public ResponseEntity<Object> handleRestrictionException(RestrictionException exception, WebRequest request) {
+		Restriction restriction = exception.getRestriction();
+		StringBuilder builder = new StringBuilder(exception.getMessage());
+		HttpHeaders headers = addExceptionHeader(null, restriction.getClass().getSimpleName());
+		
+		if (restriction != null) {
+			builder.append(": restriction ");
+			builder.append(restriction.getName());
+		}
+
+		return handleExceptionInternal(exception, builder.toString(), headers, HttpStatus.UNPROCESSABLE_ENTITY,
+				request);
+	}
+
+	@ExceptionHandler(AppointmentException.class)
+	public ResponseEntity<Object> handleAppointmentException(AppointmentException exception, WebRequest request) {
+		Appointment appointment = exception.getAppointment();
+		StringBuilder builder = new StringBuilder(exception.getMessage());
+		HttpHeaders headers = addExceptionHeader(null, appointment.getClass().getSimpleName());
+		
+		if (appointment != null) {
+			builder.append(": appointment from procedure ");
+			builder.append(appointment.getBookedProcedure().getName());
+		}
+
+		return handleExceptionInternal(exception, builder.toString(), headers, HttpStatus.UNPROCESSABLE_ENTITY,
+				request);
+	}
+
+	@ExceptionHandler(AvailabilityException.class)
+	public ResponseEntity<Object> handleAvailabilityException(AvailabilityException exception, WebRequest request) {
+		StringBuilder builder = new StringBuilder(exception.getMessage());
+		HttpHeaders headers = addExceptionHeader(null, "Availability");
+
+		return handleExceptionInternal(exception, builder.toString(), headers, HttpStatus.UNPROCESSABLE_ENTITY,
+				request);
+	}
+
 	@ExceptionHandler(ResourceTypeException.class)
 	public ResponseEntity<Object> handleResourceTypeException(ResourceTypeException exception, WebRequest request) {
 		ResourceType resourcetype = exception.getResourceType();
 		StringBuilder builder = new StringBuilder(exception.getMessage());
 		HttpHeaders headers = addExceptionHeader(null, resourcetype.getClass().getSimpleName());
-		
+
 		if (resourcetype != null) {
 			builder.append(": resourcetype ");
 			builder.append(resourcetype.getName());
 		}
 
-		return handleExceptionInternal(exception, builder.toString(), headers, HttpStatus.UNPROCESSABLE_ENTITY, request);
+		return handleExceptionInternal(exception, builder.toString(), headers, HttpStatus.UNPROCESSABLE_ENTITY,
+				request);
 	}
 
 	@ExceptionHandler(ResourceException.class)
@@ -74,49 +115,53 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
 		Resource resource = exception.getResource();
 		StringBuilder builder = new StringBuilder(exception.getMessage());
 		HttpHeaders headers = addExceptionHeader(null, resource.getClass().getSimpleName());
-		
+
 		if (resource != null) {
 			builder.append(": resource ");
 			builder.append(resource.getName());
 		}
 
-		return handleExceptionInternal(exception, builder.toString(), headers, HttpStatus.UNPROCESSABLE_ENTITY, request);
+		return handleExceptionInternal(exception, builder.toString(), headers, HttpStatus.UNPROCESSABLE_ENTITY,
+				request);
 	}
 
 	@ExceptionHandler(ProcedureRelationException.class)
-	public ResponseEntity<Object> handleProcedureRelationException(ProcedureRelationException exception, WebRequest request) {
+	public ResponseEntity<Object> handleProcedureRelationException(ProcedureRelationException exception,
+			WebRequest request) {
 		ProcedureRelation procedurerelation = exception.getProcedureRelation();
 		StringBuilder builder = new StringBuilder(exception.getMessage());
 		HttpHeaders headers = addExceptionHeader(null, procedurerelation.getClass().getSimpleName());
-		
+
 		if (procedurerelation != null) {
 			builder.append(": procedurerelation ");
 			builder.append(procedurerelation.getProcedure().getName());
 		}
 
-		return handleExceptionInternal(exception, builder.toString(), headers, HttpStatus.UNPROCESSABLE_ENTITY, request);
+		return handleExceptionInternal(exception, builder.toString(), headers, HttpStatus.UNPROCESSABLE_ENTITY,
+				request);
 	}
-	
+
 	@ExceptionHandler(ProcedureException.class)
 	public ResponseEntity<Object> handleProcedureException(ProcedureException exception, WebRequest request) {
 		Procedure procedure = exception.getProcedure();
 		StringBuilder builder = new StringBuilder(exception.getMessage());
 		HttpHeaders headers = addExceptionHeader(null, procedure.getClass().getSimpleName());
-		
+
 		if (procedure != null) {
 			builder.append(": procedure ");
 			builder.append(procedure.getName());
 		}
 
-		return handleExceptionInternal(exception, builder.toString(), headers, HttpStatus.UNPROCESSABLE_ENTITY, request);
+		return handleExceptionInternal(exception, builder.toString(), headers, HttpStatus.UNPROCESSABLE_ENTITY,
+				request);
 	}
-	
+
 	@ExceptionHandler(EmployeeException.class)
 	public ResponseEntity<Object> handleEmployeeException(EmployeeException exception, WebRequest request) {
 		Employee employee = exception.getEmployee();
 		StringBuilder builder = new StringBuilder(exception.getMessage());
 		HttpHeaders headers = addExceptionHeader(null, employee.getClass().getSimpleName());
-		
+
 		if (employee != null) {
 			builder.append(": employee ");
 			builder.append(employee.getFirstName());
@@ -124,43 +169,47 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
 			builder.append(employee.getLastName());
 		}
 
-		return handleExceptionInternal(exception, builder.toString(), headers, HttpStatus.UNPROCESSABLE_ENTITY, request);
+		return handleExceptionInternal(exception, builder.toString(), headers, HttpStatus.UNPROCESSABLE_ENTITY,
+				request);
 	}
-	
+
 	@ExceptionHandler(BookedCustomerException.class)
 	public ResponseEntity<Object> handleBookedCustomerException(BookedCustomerException exception, WebRequest request) {
 		User user = exception.getUser();
 		StringBuilder builder = new StringBuilder(exception.getMessage());
 		HttpHeaders headers = addExceptionHeader(null, user.getClass().getSimpleName());
-		
+
 		if (user != null) {
 			builder.append(": user ");
 			builder.append(user.getUsername());
 		}
 
-		return handleExceptionInternal(exception, builder.toString(), headers, HttpStatus.UNPROCESSABLE_ENTITY, request);
+		return handleExceptionInternal(exception, builder.toString(), headers, HttpStatus.UNPROCESSABLE_ENTITY,
+				request);
 	}
-	
+
 	@ExceptionHandler(PositionException.class)
 	public ResponseEntity<Object> handlePositionException(PositionException exception, WebRequest request) {
 		Position position = exception.getPosition();
 		StringBuilder builder = new StringBuilder(exception.getMessage());
 		HttpHeaders headers = addExceptionHeader(null, position.getClass().getSimpleName());
-		
+
 		if (position != null) {
 			builder.append(": position ");
 			builder.append(position.getName());
 		}
 
-		return handleExceptionInternal(exception, builder.toString(), headers, HttpStatus.UNPROCESSABLE_ENTITY, request);
+		return handleExceptionInternal(exception, builder.toString(), headers, HttpStatus.UNPROCESSABLE_ENTITY,
+				request);
 	}
-	
+
 	@ExceptionHandler(AppointmentTimeException.class)
-	public ResponseEntity<Object> handleAppointmentTimeException(AppointmentTimeException exception, WebRequest request) {
+	public ResponseEntity<Object> handleAppointmentTimeException(AppointmentTimeException exception,
+			WebRequest request) {
 		Appointment appointment = exception.getAppointment();
 		StringBuilder builder = new StringBuilder(exception.getMessage());
 		HttpHeaders headers = addExceptionHeader(null, "appointment");
-		
+
 		if (appointment != null) {
 			builder.append(": procedure ");
 			builder.append(appointment.getBookedProcedure().getName());
@@ -170,7 +219,8 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
 			builder.append(appointment.getPlannedEndtime());
 		}
 
-		return handleExceptionInternal(exception, builder.toString(), headers, HttpStatus.UNPROCESSABLE_ENTITY, request);
+		return handleExceptionInternal(exception, builder.toString(), headers, HttpStatus.UNPROCESSABLE_ENTITY,
+				request);
 	}
 
 	@ExceptionHandler(RuntimeException.class)
@@ -191,6 +241,7 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
 		}
 
 		headers.add("exception", value);
+		headers.add("Access-Control-Expose-Headers", "exception");
 
 		return headers;
 	}
