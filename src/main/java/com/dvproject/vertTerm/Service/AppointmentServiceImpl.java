@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.rest.webmvc.ResourceNotFoundException;
 import org.springframework.stereotype.Service;
 
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -16,7 +17,10 @@ public class AppointmentServiceImpl implements BasicService<Appointment> {
 
     @Autowired
     AppointmentRepository repo;
-
+    @Autowired
+    ResourceService ResSer;
+    @Autowired
+    EmployeeService EmpSer;
     @Override
     public List<Appointment> getAll() {
         return repo.findAll();
@@ -95,5 +99,32 @@ public class AppointmentServiceImpl implements BasicService<Appointment> {
     public boolean delete(String id) {
         repo.deleteById(id);
         return repo.existsById(id);
+     
     }
+    
+    private Res_Emp getAvailableResourcesAndEmployees(Procedure procedure, Date startdate, Duration duration) {
+    	
+    	Res_Emp list= new Res_Emp();
+    	List<ResourceType> ResourceTypes=procedure.getNeededResourceTypes();
+    	List<Resource> Resources=new ArrayList<>();
+    	
+    	for (ResourceType rt : ResourceTypes) {
+    		for (Resource resource : ResSer.getAll(rt))   		     
+    			if (!resource.isAvailable(startdate, duration)) 
+    				Resources.add(resource);
+		}
+    	
+    	List<Position> Positions=procedure.getNeededEmployeePositions();
+    	List<Employee> Employees=new ArrayList<>();
+        
+    	for (Position pos : Positions) {
+    		for (Employee employee : EmpSer.getAll(pos)) 
+    			if (!employee.isAvailable(startdate, duration)) 
+    				Employees.add(employee);
+		}
+    	
+    	list.setResources(Resources);
+    	list.setEmployees(Employees);
+    	return list;
+	}
 }
