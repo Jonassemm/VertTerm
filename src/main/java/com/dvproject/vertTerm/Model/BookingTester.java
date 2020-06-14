@@ -25,21 +25,21 @@ public abstract class BookingTester {
 		this.appointment = appointment;
 	}
 
-	abstract void testAppointmentTimes(List<TimeInterval> timeIntervallsOfAppointments);
+	public abstract void testAppointmentTimes(List<TimeInterval> timeIntervallsOfAppointments);
 
-	abstract void testEmployees();
+	public abstract void testEmployees();
 
-	abstract void testProcedurePositions();
+	public abstract void testProcedurePositions();
 
-	abstract void testResources();
+	public abstract void testResources();
 
-	abstract void testProcedureResourceTypes();
+	public abstract void testProcedureResourceTypes();
 
-	abstract void testProcedure();
+	public abstract void testProcedure();
 
-	abstract void testAvailabilities();
+	public abstract void testAvailabilities();
 
-	abstract void testRestrictions(RestrictionService restrictionService);
+	public abstract void testRestrictions(RestrictionService restrictionService);
 
-	abstract void testAppointment(AppointmentServiceImpl appointmentService);
+	public abstract void testAppointment(AppointmentServiceImpl appointmentService);
 }

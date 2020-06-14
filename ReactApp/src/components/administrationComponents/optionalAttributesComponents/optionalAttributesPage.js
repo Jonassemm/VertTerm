@@ -42,7 +42,7 @@ function optionalAttributesPage() {
             }
             return ([
                 index + 1,
-                item.classOfOptionalAttribut]
+                attributeClass]
             )
         })
 

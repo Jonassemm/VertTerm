@@ -9,6 +9,7 @@ import "./BookingForm.css"
 import DatePicker from "react-datepicker"
 import { addAppointmentGroup } from "../requests"
 import { Redirect } from "react-router"
+import { useHistory } from "react-router-dom"
 
 const localizer = momentLocalizer(moment)
 
@@ -19,9 +20,18 @@ function BookingForm() {
     const [description, setDescription] = useState("")
     const [custom, setCustom] = useState(false)
     const [apts, setApts] = useState([])
+    const history = useHistory()
 
     function setupPresetTime(item) {
 
+    }
+
+    const secondsToMinutes = (time) => {
+        if (time === null) {
+            return null
+        } else {
+            return (time / 60)
+        }
     }
 
     function validateTime(data) {
@@ -36,7 +46,10 @@ function BookingForm() {
             return { ...item }
         })
 
-        // defining function
+        //function for Appointments with fixed procedure duration
+
+
+        // defining function for Appointments without a fixed duration
         const calculateDifference = (ref1, ref2, end) => {
             if (ref1) {
                 //checking if selected date is in the future
@@ -61,14 +74,29 @@ function BookingForm() {
         }
         // checking wheter a selected time is in the past and if the differece between start and end is positive
         const refIndex = tempApts.findIndex(item => item.bookedProcedure.id == data.ref.bookedProcedure.id)
+        const procedureDuration = tempApts[refIndex].bookedProcedure.duration / 60
         if (data.ident == "start") {
             const [ref1, ref2] = calculateDifference(tempApts[refIndex].plannedEndtime, tempApts[refIndex].plannedStarttime)
-            tempApts[refIndex].plannedEndtime = ref1
             tempApts[refIndex].plannedStarttime = ref2
+            if (tempApts[refIndex].bookedProcedure.duration != null) {
+                const temp = new Date(ref2)
+                temp.setMinutes(ref2.getMinutes() + procedureDuration)
+                tempApts[refIndex].plannedEndtime = temp
+            } else {
+                tempApts[refIndex].plannedEndtime = ref1
+            }
+
         } else {
             const [ref1, ref2] = calculateDifference(tempApts[refIndex].plannedStarttime, tempApts[refIndex].plannedEndtime, true)
             tempApts[refIndex].plannedEndtime = ref2
-            tempApts[refIndex].plannedStarttime = ref1
+            if (tempApts[refIndex].bookedProcedure.duration != null) {
+                const temp = new Date(ref2)
+                temp.setMinutes(ref2.getMinutes() - procedureDuration)
+                if(temp.getTime() - currentDate.getTime() > 0) tempApts[refIndex].plannedStarttime = temp
+                else tempApts[refIndex].plannedStarttime = null
+            } else {
+                tempApts[refIndex].plannedStarttime = ref1
+            }
         }
         setApts(tempApts)
     }
@@ -157,10 +185,10 @@ function BookingForm() {
                 bookedCustomer: { id: selectedCustomer[0].id, ref: "user" },
                 bookedProcedure: { id: item.bookedProcedure.id, ref: "procedure" },
                 bookedEmployees: item.bookedEmployees.map(item => {
-                    return {id: item.id, ref:"user"}
+                    return { id: item.id, ref: "user" }
                 }),
                 bookedResources: item.bookedResources.map(item => {
-                    return {id: item.id, ref:"resource"}
+                    return { id: item.id, ref: "resource" }
                 }),
                 plannedEndtime: moment(item.plannedEndtime).format("DD.MM.YYYY HH:mm").toString(),
                 plannedStarttime: moment(item.plannedStarttime).format("DD.MM.YYYY HH:mm").toString(),
@@ -170,8 +198,8 @@ function BookingForm() {
         console.log(finalData)
         const aptGroup = { appointments: finalData, status: "active" }
         const res = await addAppointmentGroup(aptGroup, finalData[0].bookedCustomer.id)
-        if(res.status == 200){
-            <Redirect push to="/appointment"/>
+        if (res.status == 200) {
+            history.push("/appointment")
         }
     }
 
@@ -215,8 +243,8 @@ function BookingForm() {
                                 type="text"
                                 value={description || ""}
                                 placeholder="Beschreibung"
-                                onChange={e => {setDescription(e.target.value)}}
-                                />
+                                onChange={e => { setDescription(e.target.value) }}
+                            />
                         </Form.Group>
                     </Form.Row>
                     <Form.Row>
@@ -237,6 +265,7 @@ function BookingForm() {
                                 <div className="parent">
                                     <div className="namebox">
                                         <h4>{item.bookedProcedure.name}</h4>
+                                        {item.bookedProcedure.duration != null && <p>{secondsToMinutes(item.bookedProcedure.duration)} Minuten Dauer</p>}
                                     </div>
                                     <div className="box wrap">
                                         {item.bookedProcedure.neededEmployeePositions && item.bookedProcedure.neededEmployeePositions.map((innerItem, index) => {
@@ -319,10 +348,26 @@ function BookingForm() {
                         )
                     })}
                     <hr />
-                    <div style={{ textAlign: "right" }}>
-                        <Button>Terminvorschlag</Button>
-                        <Button variant="success" type="submit" style={{ marginLeft: "5px" }}>Buchen</Button>
-                    </div>
+                    <Row>
+                        <Col xs={8} style={{ textAlign: "left", display: "flex", alignItems: "baseline", justifyContent: "space-between" }}>
+                            <Form.Control style={{ width: "50%" }} as="select">
+                                <option>Frühstes Ende</option>
+                                <option>Wenig Wartezeit</option>
+                                <option>Wenige Teiltermine</option>
+                            </Form.Control>
+                            <DatePicker
+                                className="endDate"
+                                selected={new Date()}
+                                timeFormat="HH:mm"
+                                dateFormat="dd.M.yyyy"
+                            />
+                            <Button>Terminvorschlag</Button>
+                        </Col>
+                        <Col style={{ textAlign: "right" }}>
+                            <Button variant="success" type="submit" style={{ marginLeft: "5px" }}>Buchen</Button>
+                        </Col>
+                    </Row>
+
                     <hr />
                 </Form>
                 <Calendar

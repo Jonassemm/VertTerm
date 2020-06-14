@@ -15,10 +15,6 @@ export function validateDates(startDateString, endDateString, endOfSeriesString)
     var startDate = moment(startDateString, "DD.MM.yyyy HH:mm").toDate();
     var endDate = moment(endDateString, "DD.MM.yyyy HH:mm").toDate();
 
-    /* console.log(startDate + " vs " + endDate)
-    console.log(startDate > endDate)
-    console.log(startDate.getTime() == endDate.getTime()) */
-
     if(startDate > endDate) {
         alert("Ungültiges Ende! Das Ende darf nicht vor dem Start sein!")
         return false
@@ -60,7 +56,7 @@ function availabilityRhythmGE(rhythm) {
 }
 
 //---------------------------------RENDERING---------------------------------
-export function renderAvailabilityTable(allAvailabilities, availabilityRhythm, handleCancleAvailability) {
+export function renderAvailabilityTable(allAvailabilities, addedAvailabilitiesLength, availabilityRhythm, handleCancleAvailability) {
     if(allAvailabilities.length > 0)
     {
       return ( 
@@ -83,7 +79,10 @@ export function renderAvailabilityTable(allAvailabilities, availabilityRhythm, h
                                   SingleAvailability.rhythm == availabilityRhythm.oneTime ? "-" :
                                   "Ohne Ende"}/></td>
       
-                      <td><Button variant="danger" value={index} onClick={handleCancleAvailability}>Deaktivieren</Button></td>
+                      <td>{((allAvailabilities.length - addedAvailabilitiesLength) > index) ? 
+                            <Button variant="danger" value={index} onClick={handleCancleAvailability}>Deaktivieren</Button>:
+                            <Button variant="secondary" value={index} onClick={handleCancleAvailability}>Entfernen</Button>
+                        }</td>
                     </tr>
                 )
             }

@@ -6,23 +6,40 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.TimeZone;
 
+import javax.validation.constraints.NotNull;
+
+import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.PersistenceConstructor;
 
 public class Availability {
-	public static Availability Always = new Availability(null, null, AvailabilityRhythm.ALWAYS);
+	
+	@Id
+	private String id;
+	
+	public static Availability Always = new Availability("1", null, null, AvailabilityRhythm.ALWAYS);
 	private Date startDate;
 	private Date endDate;
 	
 	/**
 	 * defines the type of rhythm (e.g. daily or weekly)
 	 */
+	@NotNull
 	private AvailabilityRhythm rhythm;
 	
 	/**
 	 * defines the frequency of the rhythm (e.g. 2 -> every two rhythms)
 	 */
+	@NotNull
 	private int frequency;
 	private Date endOfSeries;
+	
+	public String getId() {
+		return id;
+	}
+
+	public void setId(String id) {
+		this.id = id;
+	}
 
 	public Date getEarliestAvailability(Date date, Duration duration){
 		if(this.getRhythm() == AvailabilityRhythm.ALWAYS){
@@ -88,6 +105,11 @@ public class Availability {
 		this(startDate, endDate, rythm, 1);
 	}
 	
+	public Availability (String id, Date startDate, Date endDate, AvailabilityRhythm rythm) {
+		this(startDate, endDate, rythm, 1);
+		this.id = id;
+	}
+	
 	public Availability (Date startDate, Date endDate, AvailabilityRhythm rhythm, int frequency) {
 		this.startDate = startDate;
 		this.endDate = endDate;
@@ -95,13 +117,18 @@ public class Availability {
 		this.frequency = frequency;
 	}
 	
-	@PersistenceConstructor
 	public Availability (Date startDate, Date endDate, AvailabilityRhythm rhythm, Date endOfSeries, int frequency) {
 		this.startDate = startDate;
 		this.endDate = endDate;
 		this.endOfSeries = endOfSeries;
 		this.rhythm = rhythm;
 		this.frequency = frequency;
+	}
+	
+	@PersistenceConstructor
+	public Availability (String id, Date startDate, Date endDate, AvailabilityRhythm rhythm, Date endOfSeries, int frequency) {
+		this(startDate, endDate, rhythm, endOfSeries, frequency);
+		this.id = id;
 	}
 	
 	public Availability () {
@@ -161,6 +188,7 @@ public class Availability {
 		Calendar endCal = getCalendar(enddate);
 
 		switch (rhythm) {
+		case ONE_TIME:
 		case DAILY:
 			difference = getDaysBetweenDates(startCal, availStartCalendar);
 			break;
@@ -193,7 +221,7 @@ public class Availability {
 			difference = startCal.get(Calendar.MONTH) - availStartCalendar.get(Calendar.MONTH)
 					+ getYearDifference(startCal, availStartCalendar) * 12;
 
-			retVal = getDaysBetweenDates(startCal, endCal) < 7;
+			retVal = getDaysBetweenDates(startCal, endCal) < 31;
 
 			break;
 		case YEARLY:

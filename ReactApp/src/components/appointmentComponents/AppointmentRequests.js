@@ -3,14 +3,16 @@ import {APIURL} from "../../APIConfig"
 
 
 //Appointment
-export const updateAppointment = (userID,data) => axios.put(`${APIURL}/api/Appointments/${userID}`, data) 
+export const updateAppointment = (id,data) => axios.put(`${APIURL}/api/Appointments/${id}`, data) 
 export const getAllAppointments = () => axios.get(`${APIURL}/api/Appointments/`) 
+export const getAppointmentOfUserInTimespace = (id, starttime, endtime) => axios.get(`${APIURL}/api/Appointments/user/${id}`, {params: {starttime: starttime, endtime: endtime}}) 
+export const getAppointmentOfUser = id => axios.get(`${APIURL}/api/Appointments/user/${id}`) 
+export const updateCustomerIsWaiting = (id, customerIsWaiting) => axios.put(`${APIURL}/api/Appointments/${id}/${customerIsWaiting}`) 
+export const deleteAppointment = id => axios.delete(`${APIURL}/api/Appointments/${id}/`)
 
 
-//AppointmentGroup
-export const updateCustomer = (userID,data) => axios.put(`${APIURL}/api/Appointmentgroups/${userID}`, data) 
-export const getCustomerList = () => axios.get(`${APIURL}/api/Appointmentgroups/`) 
-
+//Appointmentgroup
+export const getGroupOfAppointment = id => axios.get(`${APIURL}/api/Appointmentgroups//Appointment/${id}`) 
 
 
 

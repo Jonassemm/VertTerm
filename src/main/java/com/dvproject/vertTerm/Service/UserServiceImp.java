@@ -20,6 +20,9 @@ public class UserServiceImp implements UserService {
     private UserRepository repo;
     
     @Autowired
+    private AppointmentService appointmentService;
+    
+    @Autowired
     private OptionalAttributesService optionalAttributesService;
     
     @Autowired
@@ -80,6 +83,11 @@ public class UserServiceImp implements UserService {
 
 	@Override
 	public boolean delete(String id) {
+		testAppointments(id);
+		
+    	User user = this.getById(id);
+    	obfuscateUser(user);
+		
 		repo.deleteById(id);
 		return repo.existsById(id);
 	}
@@ -195,6 +203,20 @@ public class UserServiceImp implements UserService {
 	public void testMandatoryFields(User user) {
 		List<OptionalAttribute> optionalAttributes = new ArrayList<>(user.getOptionalAttributes());
 		optionalAttributesService.testMandatoryFields(User.class.getSimpleName(), optionalAttributes);
+	}
+	
+	public void testAppointments(String userid) {
+		List<Appointment> appointments = appointmentService.getAppointmentsByUserid(userid, AppointmentStatus.PLANNED);
+		
+		if (appointments != null && appointments.size() > 0) {
+			throw new IllegalArgumentException("User can not be deleted because he has booked appointments");
+		}
+	}
+	
+	public void obfuscateUser(User user) {
+    	if (user != null) {
+    		user.obfuscate();
+    	}
 	}
 
 }

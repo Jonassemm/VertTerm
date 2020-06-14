@@ -3,6 +3,7 @@ package com.dvproject.vertTerm.Service;
 import com.dvproject.vertTerm.Model.OptionalAttribute;
 import com.dvproject.vertTerm.Model.OptionalAttributes;
 import com.dvproject.vertTerm.Model.Resource;
+import com.dvproject.vertTerm.Model.Restriction;
 import com.dvproject.vertTerm.Model.Role;
 import com.dvproject.vertTerm.Model.User;
 import com.dvproject.vertTerm.repository.OptionalAttributesRepository;
@@ -150,6 +151,28 @@ public OptionalAttributes update(OptionalAttributes OAttribute) {
 		throw new ResourceNotFoundException("OptionalAttributes with the given id : "+id +"not found");   
 	}
 
+	
+	public List<OptionalAttributes> getOptionalAttributeswithIDS(String[] ids) {
+		   	List<OptionalAttributes> OpAttsList = new ArrayList<> ();
+
+		   	for (String id : ids) {
+		   		OpAttsList.add(this.getById(id));
+		   	}
+
+		   	return OpAttsList;
+		
+	}
+	
+	public List<OptionalAttribute> getOptionalAttributes(String id) {
+		List<OptionalAttribute> OA = new ArrayList<>();
+		OptionalAttributes oas = getById(id);
+		for (OptionalAttribute rest : oas.getOptionalAttributes()) {
+			if (!OA.contains(rest))
+				OA.add(rest);
+		}
+		return OA;
+
+	}
 	public OptionalAttributes getByClassname(String classname) {
 		return OptionalAttributesRepo.findByClass(classname);
 	}
@@ -158,6 +181,8 @@ public OptionalAttributes update(OptionalAttributes OAttribute) {
 	public void testMandatoryFields(String classname, List<OptionalAttribute> optionalAttributes) {
 		getByClassname(classname).testMandatoryFields(optionalAttributes);
 	}
+
+
 }
 
 

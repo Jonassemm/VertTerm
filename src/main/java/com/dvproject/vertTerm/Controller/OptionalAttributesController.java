@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.dvproject.vertTerm.Model.OptionalAttribute;
 import com.dvproject.vertTerm.Model.OptionalAttributes;
+import com.dvproject.vertTerm.Model.Role;
 import com.dvproject.vertTerm.Service.OptionalAttributesService;
 
 import org.springframework.web.bind.annotation.*;
@@ -34,18 +35,27 @@ public class OptionalAttributesController {
 	 public List<OptionalAttributes> getAllOptionalAttributes() {
 	    return OpAttsService.getAll();
 	 }
-	
+	 
 	 @GetMapping("/{id}")
 	 public  @ResponseBody  OptionalAttributes getOptionalAttributesById(@PathVariable String id) {
 	     return OpAttsService.getById(id);
 	 }
 	 
+	 @GetMapping("/")
+	 public List<OptionalAttributes> getOptionalAttributeswithIDS(@RequestParam String [] ids) {
+			return OpAttsService.getOptionalAttributeswithIDS(ids);
+	}
+	 
+	  @GetMapping("/OAs/{id}")
+		 public List<OptionalAttribute> getOptionalAttributes(@PathVariable String id) {
+			return OpAttsService.getOptionalAttributes(id);
+		 }
+		 
 	 @PostMapping
 	 public OptionalAttributes createOptionalAttributes(@RequestBody OptionalAttributes opatts) {
 			return OpAttsService.create(opatts);
      }
 
-    
 	@PutMapping("/{id}")
     public OptionalAttributes updateOptionalAttributes(@PathVariable String id,@RequestBody OptionalAttributes opatts) {	 
 		opatts.setId(id);

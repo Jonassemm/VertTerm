@@ -13,6 +13,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.dvproject.vertTerm.Model.Availability;
+import com.dvproject.vertTerm.Model.AvailabilityRhythm;
 import com.dvproject.vertTerm.Model.Customer;
 import com.dvproject.vertTerm.Model.Employee;
 import com.dvproject.vertTerm.Model.OptionalAttribute;
@@ -21,6 +23,8 @@ import com.dvproject.vertTerm.Model.Right;
 import com.dvproject.vertTerm.Model.Role;
 import com.dvproject.vertTerm.Model.Status;
 import com.dvproject.vertTerm.Model.User;
+import com.dvproject.vertTerm.Service.AvailabilityServiceImpl;
+import com.dvproject.vertTerm.repository.AvailabilityRepository;
 import com.dvproject.vertTerm.repository.CustomerRepository;
 import com.dvproject.vertTerm.repository.EmployeeRepository;
 import com.dvproject.vertTerm.repository.OptionalAttributesRepository;
@@ -50,6 +54,9 @@ public class SetupDataLoader implements ApplicationListener<ContextRefreshedEven
 
 	@Autowired
 	private OptionalAttributesRepository optionalAttributesRepository;
+	
+	@Autowired
+	private AvailabilityRepository availablityService;
 
 	@Autowired
 	private PasswordEncoder passwordEncoder;
@@ -68,6 +75,8 @@ public class SetupDataLoader implements ApplicationListener<ContextRefreshedEven
 		createUserIfNotFound("anonymousUser", "password", Arrays.asList(userRole));
 
 		setupOptionalAttributes();
+		
+		availablityService.save(new Availability("1", null, null, AvailabilityRhythm.ALWAYS));
 
 		alreadySetup = true;
 	}
@@ -126,7 +135,7 @@ public class SetupDataLoader implements ApplicationListener<ContextRefreshedEven
 		User user = userRepository.findByUsername(username);
 
 		if (user == null) {
-			user = new Customer();
+			user = new User();
 			user.setUsername(username);
 			user.setPassword(passwordEncoder.encode(password));
 			user.setRoles(roles);

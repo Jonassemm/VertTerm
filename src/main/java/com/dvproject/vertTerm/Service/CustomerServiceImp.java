@@ -77,7 +77,12 @@ public class CustomerServiceImp implements CustomerService {
 
     @Override
     public boolean delete(String id) {
-        repo.deleteById(id);
-        return repo.existsById(id);
+    	userService.testAppointments(id);
+    	
+    	User user = this.getById(id);
+    	userService.obfuscateUser(user);
+    	
+    	repo.deleteById(id);
+    	return repo.existsById(id);
     }
 }

@@ -2,8 +2,8 @@ package com.dvproject.vertTerm.Controller;
 
 import com.dvproject.vertTerm.Model.Appointment;
 import com.dvproject.vertTerm.Model.AppointmentStatus;
-import com.dvproject.vertTerm.Service.AppointmentServiceImpl;
-import com.dvproject.vertTerm.Service.BasicService;
+import com.dvproject.vertTerm.Model.Warning;
+import com.dvproject.vertTerm.Service.AppointmentService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -14,10 +14,7 @@ import java.util.List;
 @RequestMapping("/Appointments")
 public class AppointmentController {
     @Autowired
-    BasicService<Appointment> service;
-    
-    @Autowired
-    private AppointmentServiceImpl appointmentService;
+    AppointmentService service;
 
 
     @GetMapping()
@@ -37,9 +34,32 @@ public class AppointmentController {
     @GetMapping("/user/{userid}")
     public List<Appointment> getAppointmentsWithUserInTimeInterval(
     		@PathVariable String userid,
-    		@RequestParam Date starttime,
-    		@RequestParam Date endtime){
-    	return appointmentService.getAppointmentsWithUseridAndTimeInterval(userid, starttime, endtime);
+    		@RequestParam(required = false) Date starttime,
+    		@RequestParam(required = false) Date endtime){
+    	List<Appointment> appointments = null;
+    	
+    	if (starttime == null && endtime == null) {
+    		appointments = service.getAppointmentsByUserid(userid);
+    	} else if (starttime != null && endtime != null) {
+    			appointments =  service.getAppointmentsWithUseridAndTimeInterval(userid, starttime, endtime);
+    	}
+    	
+    	return appointments;
+    }
+    
+    @GetMapping(path = {"/Warnings/{userid}", "/Warnings", "/Warnings/"})
+    public List<Appointment> getAppointmentsWithWarnings(
+    		@PathVariable(required = false) String userid,
+    		@RequestBody(required = true) List<Warning> warnings){
+    	List<Appointment> appointments = null;
+    	
+    	if (userid == null || userid.equals("")) {
+    		appointments = service.getAppointmentsByWarnings(warnings);
+    	} else {
+    		appointments = service.getAppointmentsByWarningsAndId(userid, warnings);
+    	}
+    	
+    	return appointments;
     }
     
     @GetMapping("/status/{status}")
@@ -50,9 +70,9 @@ public class AppointmentController {
     	List<Appointment> retVal = null;
     	
     	if (status == null) {
-    		retVal = appointmentService.getAppointmentsInTimeInterval(starttime, endtime);
+    		retVal = service.getAppointmentsInTimeInterval(starttime, endtime);
     	} else {
-    		retVal = appointmentService.getAppointmentsInTimeIntervalWithStatus(starttime, endtime, status);
+    		retVal = service.getAppointmentsInTimeIntervalWithStatus(starttime, endtime, status);
     	}
     	
     	return retVal;
@@ -69,6 +89,13 @@ public class AppointmentController {
     public Appointment UpdateAppointment(@RequestBody Appointment newAppointment)
     {
         return service.update(newAppointment);
+    }
+    
+    @PutMapping("/{id}/{customerIsWaiting}")
+    private boolean setCustomerIsWaiting(
+    		@PathVariable String id,
+    		@PathVariable boolean customerIsWaiting) {
+    	return service.setCustomerIsWaiting(id, customerIsWaiting);
     }
 
     @DeleteMapping("/{id}")

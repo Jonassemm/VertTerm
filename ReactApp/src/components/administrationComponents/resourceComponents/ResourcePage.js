@@ -64,7 +64,6 @@ function ResourcePage() {
                 item.description,
                 type,
                 item.amountInStock,
-                item.numberOfUses,
                 price,
                 status]
             )
@@ -85,7 +84,7 @@ function ResourcePage() {
             <OverviewPage 
                 pageTitle="Ressourcen"
                 newItemText="Neue Ressource"
-                tableHeader={["#", "Bezeichnung", "Beschreibung", "Ressourcentyp", "Bestandsmenge", "Verwendungsanzahl", "Einzelpreis", "Status"]}
+                tableHeader={["#", "Bezeichnung", "Beschreibung", "Ressourcentyp", "Bestandsmenge", "Einzelpreis", "Status"]}
                 tableBody={tableBody}
                 modal={modal}
                 data={resources}

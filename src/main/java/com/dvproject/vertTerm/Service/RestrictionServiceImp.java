@@ -97,21 +97,20 @@ public class RestrictionServiceImp implements RestrictionService {
        return RestrictionRepo.existsById(id);
     }
    
-  	public boolean testRestrictions(List<Restriction> L1,List<Restriction> L2) {
-		     boolean Result=true;
-	   	 for (Restriction elmL1 : L1 )
+ 	public boolean testRestrictions(List<Restriction> L1,List<Restriction> L2) {
+		 boolean Result=true;
+
+		  for (Restriction elmL1 : L1 )
 		  {    	 String name1=elmL1.getName();
 			 	 for (Restriction elmL2 : L2 )
-				  {    	 String name2=elmL2.getName();
-				     if (!(name1.equals(name2)) )
+				  {  String name2=elmL2.getName();
+				     if (name1.equals(name2))
 				     {
-				    	 Result &= true;
+				    	 Result = false;
+				    	 break;
 				     }
-				     else
-				    	 Result &= false;
-				   }
-		}
-		
+				  }
+		 }
 		return Result;
 }
 

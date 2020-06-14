@@ -6,7 +6,6 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -23,6 +22,7 @@ import com.dvproject.vertTerm.Model.Appointment;
 import com.dvproject.vertTerm.Model.Appointmentgroup;
 import com.dvproject.vertTerm.Model.Optimizationstrategy;
 import com.dvproject.vertTerm.Model.Status;
+import com.dvproject.vertTerm.Model.User;
 import com.dvproject.vertTerm.Service.AppointmentgroupService;
 
 @RestController
@@ -69,14 +69,14 @@ public class AppointmentgroupController {
 	}
 	
 	@PostMapping("/{userid}")
-	public boolean bookAppointments (
+	public User bookAppointments (
 			@PathVariable String userid, 
 			@RequestBody Appointmentgroup appointmentgroup) {
 		return appointmentgroupService.bookAppointmentgroup(userid, appointmentgroup, false);
 	}
 	
 	@PostMapping("/override/{userid}")
-	public boolean bookAppointmentsOverride (
+	public User bookAppointmentsOverride (
 			@PathVariable String userid, 
 			@RequestBody Appointmentgroup appointmentgroup) {
 		Collection<? extends GrantedAuthority> auth = SecurityContextHolder.getContext().getAuthentication().getAuthorities();
@@ -87,6 +87,16 @@ public class AppointmentgroupController {
 	@PutMapping("")
 	public Appointmentgroup updateAppointmentgroup (@RequestBody Appointmentgroup appointmentgroup) {
 		return appointmentgroupService.update(appointmentgroup);
+	}
+	
+	@PutMapping("/start/{appointmentId}")
+	public boolean startAppointment(@PathVariable(required = true) String appointmentId) {
+		return appointmentgroupService.startAppointment(appointmentId);
+	}
+	
+	@PutMapping("/stop/{appointmentId}")
+	public boolean stopAppointment(@PathVariable(required = true) String appointmentId) {
+		return appointmentgroupService.stopAppointment(appointmentId);
 	}
 	
 	@DeleteMapping("/{id}")

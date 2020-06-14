@@ -15,6 +15,8 @@ const Styles = Styled.div`
 
 
 function NavBar({ userStore }) {
+    var x = document.cookie
+    console.log(x)
     return (
         <Styles>
             <Navbar  variant="dark" bg="dark" expand="lg" justify-content="end" fixed="top">

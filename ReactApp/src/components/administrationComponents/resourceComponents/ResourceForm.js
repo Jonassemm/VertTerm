@@ -19,7 +19,6 @@ const RessourceForm = ({ onCancel, edit, selected }) => {
 
     const [isConsumable, setIsConsumable] = useState(false)
     const [amountInStock, setAmountInStock] = useState(null)
-    const [numberOfUses, setNumberOfUses] = useState(null)
     const [pricePerUnit, setPricePerUnit] = useState(null)
 
     useEffect(() => {
@@ -27,14 +26,12 @@ const RessourceForm = ({ onCancel, edit, selected }) => {
       if(selected != undefined) {
         //check if this item is a resource or a consumable
         if(selected.amountInStock == undefined && 
-          selected.numberOfUses == undefined &&
           selected.pricePerUnit == undefined) {
           setIsConsumable(false) //item is resource
           } else {
             setIsConsumable(true) //item is consumable
             if(edit) {
               setAmountInStock((selected.amountInStock).toString())
-              setNumberOfUses((selected.numberOfUses).toString())
               setPricePerUnit(((selected.pricePerUnit / 100).toFixed(2)).toString())
             }
           }
@@ -59,7 +56,6 @@ const RessourceForm = ({ onCancel, edit, selected }) => {
     const handleRestrictionChange = data => {setRestrictions(data); setEdited(true)}
 
     const handleAmountInStockChange = event => {console.log(parseInt(event.target.value)); setAmountInStock(event.target.value); setEdited(true)}
-    const handleNumberOfUsesChange = event => {console.log(parseInt(event.target.value)); setNumberOfUses(event.target.value); setEdited(true)}
     const handlePricePerUnitChange = event => {console.log(parseInt((parseFloat(event.target.value)*100).toFixed(1))); setPricePerUnit(event.target.value); setEdited(true)}
 
 
@@ -87,13 +83,11 @@ const RessourceForm = ({ onCancel, edit, selected }) => {
         event.preventDefault()
         if(validation()) {
           const amountInStockAsInt = parseInt(amountInStock)
-          const numberOfUsesAsInt = parseInt(numberOfUses)
           const pricePerUnitAsInt = parseInt((parseFloat(pricePerUnit)*100).toFixed(1))
           var data 
           if(isConsumable) {
             data = {name, description, status, childResources, availabilities, restrictions, resourceTypes,
                     amountInStock: amountInStockAsInt,
-                    numberOfUses: numberOfUsesAsInt,
                     pricePerUnit: pricePerUnitAsInt}
             if(edit) {
               await editConsumable(selected.id, data)
@@ -119,14 +113,12 @@ const RessourceForm = ({ onCancel, edit, selected }) => {
       if (answer) {
         const deleteStatus = "deleted" // fix delteStatus
         const amountInStockAsInt = parseInt(amountInStock)
-        const numberOfUsesAsInt = parseInt(numberOfUses)
         const pricePerUnitAsInt = parseInt((parseFloat(pricePerUnit)*100).toFixed(1))
         var data
         try {
           if(isConsumable) {
             data = {id: selected.id, name, description, status,  childResources, availabilities, restrictions, resourceTypes,
               amountInStock: amountInStockAsInt,
-              numberOfUses: numberOfUsesAsInt,
               pricePerUnit: pricePerUnitAsInt}
             await editConsumable(selected.id, data)
           } else {
@@ -183,7 +175,9 @@ const RessourceForm = ({ onCancel, edit, selected }) => {
           <Form id="resourceAdd" onSubmit={(e) => handleSubmit(e)}>
           <Form.Row style={{ alignItems: "baseline" }}>
             <Form.Group as={Col}>
-              <h5 style={{fontWeight: "bold"}}>{edit ? "Ressource bearbeiten" : "Ressource hinzufügen"}</h5>
+              <h5 style={{fontWeight: "bold"}}>{edit ? isConsumable ? "Verbrauchbare Ressource bearbeiten":
+                                                                    "Ressource bearbeiten" : isConsumable ?
+                                                                    "Verbrauchbare Ressource hinzufügen": "Ressource hinzufügen"}</h5>
             </Form.Group>
             <Form.Group as={Col} style={{textAlign: "right"}}>
               {!edit && 
@@ -194,7 +188,7 @@ const RessourceForm = ({ onCancel, edit, selected }) => {
                     value={isConsumable || true}
                     onChange={e => setIsConsumable(!isConsumable)}
                     checked={isConsumable}
-                    label={isConsumable ? "Als verbrauchbare Ressource anlegen": "Als normale Ressource anlegen"}
+                    label={"Als verbrauchbare Ressource anlegen"}
                   />
               }
             </Form.Group>
@@ -265,7 +259,7 @@ const RessourceForm = ({ onCancel, edit, selected }) => {
                   </Form.Group>
                 </Form.Row>
                 <Form.Row>
-                  <Form.Group as={Col} md="6">
+                  {/* <Form.Group as={Col} md="6">
                     <Form.Label>Unterressourcen:</Form.Label>
                       {edit && <ObjectPicker 
                           setState={handleChildResourcesChange}
@@ -280,7 +274,7 @@ const RessourceForm = ({ onCancel, edit, selected }) => {
                           initial={childResources} 
                           multiple={true}/>
                       }
-                  </Form.Group>
+                  </Form.Group> */}
                   <Form.Group as={Col} md="6">
                     <Form.Label>Einschränkungen:</Form.Label>
                       <ObjectPicker 
@@ -289,10 +283,8 @@ const RessourceForm = ({ onCancel, edit, selected }) => {
                           initial={restrictions} 
                           multiple={true}/>
                   </Form.Group>
-                </Form.Row>
-                {isConsumable &&
-                  <Form.Row>
-                    <Form.Group as={Col} md="2" >
+                  {isConsumable &&
+                    <Form.Group as={Col} md="3" >
                       <Form.Label>Bestandsmenge:</Form.Label>
                           <Form.Control
                             required={isConsumable ? true : false}
@@ -305,20 +297,8 @@ const RessourceForm = ({ onCancel, edit, selected }) => {
                             onChange={handleAmountInStockChange}
                           />
                     </Form.Group>
-                    <Form.Group as={Col} md="2" >
-                      <Form.Label>Verwendungsanzahl:</Form.Label>
-                          <Form.Control
-                            required={isConsumable ? true : false}
-                            pattern="[0-9]{1,}" //Only numbers but at least one
-                            title="Die Anzahl bis eine Ressource aufgebraucht ist muss mindestens 1 sein!"
-                            name="numberOfUses"
-                            type="text"
-                            placeholder="1"
-                            value={numberOfUses || ""}
-                            onChange={handleNumberOfUsesChange}
-                          />
-                    </Form.Group>
-                    <Form.Group as={Col} md="2" >
+                  }{isConsumable &&
+                    <Form.Group as={Col} md="3" >
                       <Form.Label>Einzelpreis:</Form.Label>
                           <Form.Control
                             required={isConsumable ? true : false} 
@@ -331,8 +311,8 @@ const RessourceForm = ({ onCancel, edit, selected }) => {
                             onChange={handlePricePerUnitChange}
                           />
                     </Form.Group>
-                  </Form.Row>
-                }
+                  }
+                </Form.Row>
               </Tab>
               <Tab eventKey="availability" title="Verfügbarkeit">
                 <Form.Row style={{marginTop: "25px"}}>
