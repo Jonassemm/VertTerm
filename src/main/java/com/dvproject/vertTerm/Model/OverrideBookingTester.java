@@ -94,6 +94,7 @@ public class OverrideBookingTester extends BookingTester {
 	public void testAppointment(AppointmentServiceImpl appointmentService) {
 		try {
 			appointment.testDistinctBookedAttributes();
+			appointment.testBlockage(appointmentService);
 		} catch (AppointmentException ex) {
 			appointment.addWarning(Warning.APPOINTMENT_WARNING);
 		}

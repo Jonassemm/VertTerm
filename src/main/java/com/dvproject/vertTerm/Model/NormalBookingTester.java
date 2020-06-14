@@ -53,6 +53,7 @@ public class NormalBookingTester extends BookingTester {
 	@Override
 	public void testAppointment(AppointmentServiceImpl appointmentService) {
 		appointment.testDistinctBookedAttributes();
+		appointment.testBlockage(appointmentService);
 	}
 
 }
