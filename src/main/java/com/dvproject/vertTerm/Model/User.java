@@ -1,10 +1,12 @@
 package com.dvproject.vertTerm.Model;
 
 import java.io.Serializable;
+import java.nio.charset.Charset;
 import java.time.Duration;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import java.util.Random;
 import java.util.TimeZone;
 
 import javax.validation.constraints.NotNull;
@@ -150,5 +152,23 @@ public class User extends Bookable implements Serializable
 
 	public void setCreationDate(Date creationDate) {
 		this.creationDate = creationDate;
+	}
+	
+	public void obfuscate() {
+	    byte[] array = new byte[15];
+	    Random random = new Random(System.currentTimeMillis());
+	    
+	    random.nextBytes(array);
+		username = getRandomString(array);
+		password = null;
+		random.nextBytes(array);
+		lastName = getRandomString(array);
+		random.nextBytes(array);
+		firstName = getRandomString(array);
+		optionalAttributes = null;
+	}
+	
+	private String getRandomString(byte [] array) {
+		return new String(array, Charset.forName("UTF-8"));
 	}
 }

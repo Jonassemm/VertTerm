@@ -1,6 +1,7 @@
 package com.dvproject.vertTerm.Service;
 
 import com.dvproject.vertTerm.Model.Availability;
+import com.dvproject.vertTerm.Model.Customer;
 import com.dvproject.vertTerm.Model.Employee;
 import com.dvproject.vertTerm.Model.Position;
 import com.dvproject.vertTerm.Model.Status;
@@ -106,6 +107,10 @@ public class EmployeeServiceImp implements EmployeeService, AvailabilityService 
     @Override
     public boolean delete(String id) {
     	userService.testAppointments(id);
+    	
+    	User user = this.getById(id);
+    	userService.obfuscateUser(user);
+    	
         repo.deleteById(id);
         return repo.existsById(id);
     }
