@@ -8,8 +8,11 @@ import java.util.List;
 import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import com.dvproject.vertTerm.Service.AppointmentService;
+import com.dvproject.vertTerm.exception.AvailabilityException;
+
 @Document("user")
-public class Employee extends User implements Serializable {
+public class Employee extends User implements Serializable, Available {
 	private static final long serialVersionUID = -4432631544443788288L;
 
 	@DBRef
@@ -22,4 +25,35 @@ public class Employee extends User implements Serializable {
 	public void setPositions(List<Position> positions) {
 		this.positions = positions;
 	}
+	
+	public void isAvailable (Date startdate, Date enddate) {
+		for (Availability availability : getAvailabilities()) {
+			if (availability.isAvailableBetween(startdate, enddate)) {
+				return;
+			}
+		}
+		
+		throw new AvailabilityException("No availability for the employee " + getFirstName() + " " + getLastName());
+	}
+
+	@Override
+	public List<Appointment> getAppointmentsAfterDate(AppointmentService appointmentService, Date startdate) {
+		List<Appointment> appointments = appointmentService.getAppointmentsOfEmployee(getId(), startdate);
+		
+		for (Appointment appointment : appointments) {
+			List<Employee> employees = appointment.getBookedEmployees();
+			Employee employee;
+			for (int i = 0; i < employees.size(); i++) {
+				employee = employees.get(i);
+				
+				if (employee.getId().equals(getId())) {
+					employees.set(i, this);
+					break;
+				}
+			}
+		}
+		
+		return appointments;
+	}
+
 }

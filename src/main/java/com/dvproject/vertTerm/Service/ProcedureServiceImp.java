@@ -10,7 +10,7 @@ import org.springframework.stereotype.Service;
 import java.util.*;
 
 @Service
-public class ProcedureServiceImp implements ProcedureService {
+public class ProcedureServiceImp implements ProcedureService, AvailabilityService {
 	@Autowired
 	private ProcedureRepository procedureRepository;
 
@@ -76,6 +76,7 @@ public class ProcedureServiceImp implements ProcedureService {
 	public Procedure create(Procedure procedure) {
 		if (procedure.getId() == null) {
 			procedure.testAllRelations();
+			availabilityService.update(procedure.getAvailabilities(), procedure);
 			return procedureRepository.save(procedure);
 		}
 		if (procedureRepository.findById(procedure.getId()).isPresent()) {
@@ -90,10 +91,14 @@ public class ProcedureServiceImp implements ProcedureService {
 		Procedure oldProcedure = getProcedureFromDB(procedure.getId());
 		
 		procedure.testAllRelations();
+		
+		availabilityService.loadAllAvailabilitiesOfEntity(procedure.getAvailabilities(), procedure, this);
 
 		testUpdatebility(oldProcedure.getStatus());
 
-		return procedureRepository.save(procedure);
+		procedureRepository.save(procedure);
+		
+		return getProcedureFromDB(procedure.getId());
 	}
 
 	@Override

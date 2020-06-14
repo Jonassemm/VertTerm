@@ -25,7 +25,7 @@ public abstract class Bookable {
 
     @Id
     private String id;
-
+    @DBRef
     private List<Availability> availabilities;
 
     @Transient

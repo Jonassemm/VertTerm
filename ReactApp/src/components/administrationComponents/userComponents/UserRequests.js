@@ -21,6 +21,7 @@ export const deleteCustomer = userID => axios.delete(`${APIURL}/api/Customers/${
 
 //USERS
 export const getAllUsers = () => axios.get(`${APIURL}/api/Users`) 
+export const getUser = userID => axios.get(`${APIURL}/api/Users/${userID}`) 
 
 //ROLES
 export const getAllRoles = getRoles

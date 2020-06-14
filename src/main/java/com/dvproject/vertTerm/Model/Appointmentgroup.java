@@ -1,5 +1,6 @@
 package com.dvproject.vertTerm.Model;
 
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
@@ -13,6 +14,9 @@ import javax.validation.constraints.NotNull;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.DBRef;
 
+import com.dvproject.vertTerm.Service.AppointmentServiceImpl;
+import com.dvproject.vertTerm.Service.RestrictionService;
+import com.dvproject.vertTerm.exception.ProcedureException;
 import com.dvproject.vertTerm.exception.ProcedureRelationException;
 
 public class Appointmentgroup {
@@ -50,15 +54,18 @@ public class Appointmentgroup {
 		this.appointments = appointments;
 	}
 
-	public void isBookable() {
-		hasCorrectProcedureRelations();
+	public void testBookability(RestrictionService restrictionService, AppointmentServiceImpl appointmentService,
+			BookingTester bookingTester) {
+		List<TimeInterval> timeIntervallsOfAppointments = new ArrayList<>();
 
 		for (Appointment appointment : appointments) {
-			appointment.isBookable();
+			bookingTester.setAppointment(appointment);
+
+			bookingTester.testAll(appointmentService, restrictionService, timeIntervallsOfAppointments);
 		}
 	}
 
-	public void hasCorrectProcedureRelations() {
+	public void testProcedureRelations() {
 		// procedure.id -> appointment
 		Map<String, Appointment> appointmentsMap = new HashMap<>();
 		// procedure.id -> procedure
@@ -66,7 +73,12 @@ public class Appointmentgroup {
 
 		// populate maps
 		for (Appointment appointment : appointments) {
-			String id = appointment.getBookedProcedure().getId();
+			Procedure procedureOfAppointment = appointment.getBookedProcedure();
+			String id = procedureOfAppointment.getId();
+
+			if (proceduresMap.containsKey(id)) {
+				throw new ProcedureException("Two different appointments of one procedure", procedureOfAppointment);
+			}
 
 			proceduresMap.put(id, appointment.getBookedProcedure());
 			appointmentsMap.put(id, appointment);

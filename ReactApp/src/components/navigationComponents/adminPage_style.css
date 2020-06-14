@@ -18,7 +18,7 @@
 
   body {
     transition: background-color 0.3s;
-    overflow: hidden;
+    overflow-x: hidden;
   }
   
   #page-content-wrapper {
