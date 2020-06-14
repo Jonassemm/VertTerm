@@ -49,6 +49,8 @@ public class EmployeeController {
     @DeleteMapping("/{id}")
     public boolean DeleteEmployee(@PathVariable String id)
     {
-        return service.delete(id);
+        Employee user = this.get(id);
+        user.setSystemStatus(Status.DELETED);
+        return this.UpdateEmployee(user).equals(user);
     }
 }
