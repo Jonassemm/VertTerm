@@ -31,10 +31,21 @@ public class AppointmentController {
 	public @ResponseBody Appointment get(@PathVariable String id) {
 		return service.getById(id);
 	}
+	
+	@GetMapping("/Resources/{resourceId}")
+	public @ResponseBody List<Appointment> getByResourceId(
+			@PathVariable String resourceId,
+			@RequestParam Date starttime,
+			@RequestParam Date endtime,
+			@RequestParam(required = false, defaultValue = "PLANNED") AppointmentStatus status) {
+		return service.getAppointmentsOfBookedResourceInTimeinterval(resourceId, starttime, endtime, status);
+	}
 
 	@GetMapping("/user/{userid}")
-	public List<Appointment> getAppointmentsWithUserInTimeInterval(@PathVariable String userid,
-			@RequestParam(required = false) Date starttime, @RequestParam(required = false) Date endtime) {
+	public List<Appointment> getAppointmentsWithUserInTimeInterval(
+			@PathVariable String userid,
+			@RequestParam(required = false) Date starttime, 
+			@RequestParam(required = false) Date endtime) {
 		List<Appointment> appointments = null;
 		boolean isEmployee = userService.getById(userid) instanceof Employee;
 
@@ -54,7 +65,8 @@ public class AppointmentController {
 	}
 
 	@GetMapping(path = { "/Warnings/{userid}", "/Warnings", "/Warnings/" })
-	public List<Appointment> getAppointmentsWithWarnings(@PathVariable(required = false) String userid,
+	public List<Appointment> getAppointmentsWithWarnings(
+			@PathVariable(required = false) String userid,
 			@RequestBody(required = true) List<Warning> warnings) {
 		List<Appointment> appointments = null;
 
@@ -68,8 +80,10 @@ public class AppointmentController {
 	}
 
 	@GetMapping("/status/{status}")
-	public List<Appointment> getAppointmentsInTimeInterval(@PathVariable AppointmentStatus status,
-			@RequestParam Date starttime, @RequestParam Date endtime) {
+	public List<Appointment> getAppointmentsInTimeInterval(
+			@PathVariable(required = false) AppointmentStatus status,
+			@RequestParam Date starttime, 
+			@RequestParam Date endtime) {
 		List<Appointment> retVal = null;
 
 		if (status == null) {
@@ -92,7 +106,9 @@ public class AppointmentController {
 	}
 
 	@PutMapping("/{id}/{customerIsWaiting}")
-	public boolean setCustomerIsWaiting(@PathVariable String id, @PathVariable boolean customerIsWaiting) {
+	public boolean setCustomerIsWaiting(
+			@PathVariable String id, 
+			@PathVariable boolean customerIsWaiting) {
 		return service.setCustomerIsWaiting(id, customerIsWaiting);
 	}
 
