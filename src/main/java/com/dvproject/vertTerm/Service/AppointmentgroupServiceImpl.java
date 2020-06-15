@@ -16,6 +16,7 @@ import org.springframework.stereotype.Service;
 import com.dvproject.vertTerm.Model.Appointment;
 import com.dvproject.vertTerm.Model.AppointmentStatus;
 import com.dvproject.vertTerm.Model.Appointmentgroup;
+import com.dvproject.vertTerm.Model.BookingTester;
 import com.dvproject.vertTerm.Model.Employee;
 import com.dvproject.vertTerm.Model.NormalBookingTester;
 import com.dvproject.vertTerm.Model.Optimizationstrategy;
@@ -67,7 +68,7 @@ public class AppointmentgroupServiceImpl implements AppointmentgroupService {
 		if (id == null) {
 			throw new NullPointerException("The id of the given appointment is null");
 		}
-		if (appointmentService.getById(id) != null) {
+		if (appointmentService.getById(id) == null) {
 			throw new ResourceNotFoundException("The id of the given appointment is invalid");
 		}
 
@@ -223,6 +224,25 @@ public class AppointmentgroupServiceImpl implements AppointmentgroupService {
 		Appointmentgroup appointmentgroup = this.getAppointmentInternal(id);
 
 		return appointmentgroup.getStatus() == Status.DELETED;
+	}
+	
+	@Override
+	public boolean deleteAppointment(String id, boolean override) {
+		Appointment appointment = appointmentService.getById(id);
+		Appointmentgroup appointmentgroupOfAppointment = getAppointmentgroupContainingAppointmentID(id);
+		
+		appointmentgroupOfAppointment.getAppointments().removeIf(app -> app.getId().equals(appointment.getId()));
+		
+		try {
+			appointmentgroupOfAppointment.testProcedureRelations();
+		} catch(ProcedureException | ProcedureRelationException ex) {
+			if (!override) {
+				throw new RuntimeException("Appointment can not be deleted: " + ex.getMessage());
+			}
+		}
+		
+		appointmentService.delete(id);
+		return appointmentService.getById(id).getStatus() == AppointmentStatus.DELETED;
 	}
 
 	private Appointmentgroup deleteAppointmentgroup(String id) {

@@ -100,7 +100,12 @@ public class AppointmentgroupController {
 	}
 	
 	@DeleteMapping("/{id}")
-	public boolean deleteAppointmentGroup (@PathVariable String id) {
-		return appointmentgroupService.delete(id);
+	public boolean deleteAppointmentGroup (@PathVariable(name = "id")String appointmentGroupId) {
+		return appointmentgroupService.delete(appointmentGroupId);
+	}
+	
+	@DeleteMapping("/Appointment/{id}")
+	public boolean deleteAppointment (@PathVariable(name = "id") String appointmentId) {
+		return appointmentgroupService.deleteAppointment(appointmentId, false);
 	}
 }

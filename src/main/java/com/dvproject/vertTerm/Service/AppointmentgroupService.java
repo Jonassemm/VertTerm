@@ -26,4 +26,7 @@ public interface AppointmentgroupService extends BasicService<Appointmentgroup> 
 	boolean stopAppointment(String appointmentid);
 	
 	Appointment shiftAppointment (String appointmentId, Date startdate, Date enddate);
+	
+	//delete
+	boolean deleteAppointment(String id, boolean override);
 }
