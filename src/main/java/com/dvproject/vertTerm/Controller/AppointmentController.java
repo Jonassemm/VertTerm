@@ -3,13 +3,18 @@ package com.dvproject.vertTerm.Controller;
 import com.dvproject.vertTerm.Model.Appointment;
 import com.dvproject.vertTerm.Model.AppointmentStatus;
 import com.dvproject.vertTerm.Model.Employee;
+import com.dvproject.vertTerm.Model.User;
 import com.dvproject.vertTerm.Model.Warning;
 import com.dvproject.vertTerm.Service.AppointmentService;
 import com.dvproject.vertTerm.Service.UserService;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
+import java.security.Principal;
+import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 
@@ -30,6 +35,18 @@ public class AppointmentController {
 	@GetMapping("/{id}")
 	public @ResponseBody Appointment get(@PathVariable String id) {
 		return service.getById(id);
+	}
+	
+	@GetMapping("/Own")
+	public @ResponseBody List<Appointment> getOwnAppointments(Principal principal) {
+		Collection<? extends GrantedAuthority> auth = SecurityContextHolder.getContext().getAuthentication().getAuthorities();
+		// TODO: test authority
+		if (principal == null) {
+			throw new IllegalArgumentException("No principal available");
+		}
+		
+		User user = userService.getOwnUser(principal);
+		return service.getAppointmentsByUserid(user.getId());
 	}
 	
 	@GetMapping("/Resources/{resourceId}")

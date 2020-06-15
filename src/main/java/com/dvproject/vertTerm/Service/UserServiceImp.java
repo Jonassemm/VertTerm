@@ -92,7 +92,7 @@ public class UserServiceImp implements UserService {
 		return repo.existsById(id);
 	}
 
-	@PreAuthorize("hasAuthority('OWN_USER_DATA_READ')")
+//	@PreAuthorize("hasAuthority('OWN_USER_DATA_READ')")
     public User getOwnUser(Principal principal) {
 	User user = null;
 	
