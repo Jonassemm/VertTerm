@@ -37,6 +37,26 @@ public class Appointmentgroup {
 	public void setId(String id) {
 		this.id = id;
 	}
+	
+	public boolean hasNoAppointmentIdSet() {
+		for (Appointment appointment : appointments) {
+			if (appointment.hasId()) {
+				return false;
+			}
+		}
+		
+		return true;
+	}
+	
+	public boolean hasAllAppointmentIdSet() {
+		for (Appointment appointment : appointments) {
+			if (!appointment.hasId()) {
+				return false;
+			}
+		}
+		
+		return true;
+	}
 
 	public Status getStatus() {
 		return status;

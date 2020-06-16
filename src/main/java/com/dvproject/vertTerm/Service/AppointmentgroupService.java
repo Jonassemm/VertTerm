@@ -1,9 +1,7 @@
 package com.dvproject.vertTerm.Service;
 
-import java.util.Date;
 import java.util.List;
 
-import com.dvproject.vertTerm.Model.Appointment;
 import com.dvproject.vertTerm.Model.Appointmentgroup;
 import com.dvproject.vertTerm.Model.Optimizationstrategy;
 import com.dvproject.vertTerm.Model.Status;
@@ -24,8 +22,6 @@ public interface AppointmentgroupService extends BasicService<Appointmentgroup> 
 	boolean startAppointment(String appointmentid);
 	
 	boolean stopAppointment(String appointmentid);
-	
-	Appointment shiftAppointment (String appointmentId, Date startdate, Date enddate);
 	
 	//delete
 	boolean deleteAppointment(String id, boolean override);

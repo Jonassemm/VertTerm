@@ -16,8 +16,6 @@ import org.springframework.stereotype.Service;
 import com.dvproject.vertTerm.Model.Appointment;
 import com.dvproject.vertTerm.Model.AppointmentStatus;
 import com.dvproject.vertTerm.Model.Appointmentgroup;
-import com.dvproject.vertTerm.Model.BookingTester;
-import com.dvproject.vertTerm.Model.Customer;
 import com.dvproject.vertTerm.Model.Employee;
 import com.dvproject.vertTerm.Model.NormalBookingTester;
 import com.dvproject.vertTerm.Model.Optimizationstrategy;
@@ -29,6 +27,7 @@ import com.dvproject.vertTerm.Model.User;
 import com.dvproject.vertTerm.Model.Warning;
 import com.dvproject.vertTerm.exception.ProcedureException;
 import com.dvproject.vertTerm.exception.ProcedureRelationException;
+import com.dvproject.vertTerm.repository.AppointmentRepository;
 import com.dvproject.vertTerm.repository.AppointmentgroupRepository;
 import com.dvproject.vertTerm.repository.UserRepository;
 
@@ -39,6 +38,9 @@ public class AppointmentgroupServiceImpl implements AppointmentgroupService {
 
 	@Autowired
 	private AppointmentServiceImpl appointmentService;
+	
+	@Autowired
+	private AppointmentRepository appointmentRepository;
 
 	@Autowired
 	private ProcedureService procedureService;
@@ -181,19 +183,13 @@ public class AppointmentgroupServiceImpl implements AppointmentgroupService {
 		// create all appointments of the appointmentgroup
 		for (Appointment appointment : appointments) {
 			appointment.setStatus(AppointmentStatus.PLANNED);
-			appointmentService.create(appointment);
+			appointmentRepository.save(appointment);
 		}
 
 		appointmentgroup.setStatus(Status.ACTIVE);
 		appointmentgroupRepository.save(appointmentgroup);
 
 		return noUserAttached ? user : null;
-	}
-
-	@Override
-	// TODO
-	public Appointment shiftAppointment(String appointmentId, Date startdate, Date enddate) {
-		return null;
 	}
 
 	@Override
@@ -218,8 +214,12 @@ public class AppointmentgroupServiceImpl implements AppointmentgroupService {
 		}
 
 		appointment.setActualEndtime(getDateOfNow());
+		appointment.setStatus(AppointmentStatus.DONE);
+		
+		appointmentService.update(appointment);
+		appointment = appointmentService.getById(appointmentid);
 
-		return appointmentService.update(appointment).getActualEndtime() != null;
+		return appointment.getActualEndtime() != null && appointment.getStatus() == AppointmentStatus.DONE;
 	}
 
 	@Override

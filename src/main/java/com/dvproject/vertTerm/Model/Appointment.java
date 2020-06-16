@@ -62,6 +62,10 @@ public class Appointment implements Serializable {
 	public void setId(String id) {
 		this.id = id;
 	}
+	
+	public boolean hasId() {
+		return id != null;
+	}
 
 	public String getDescription() {
 		return description;
@@ -358,11 +362,11 @@ public class Appointment implements Serializable {
 
 	private void testEmployeeAppointments(AppointmentServiceImpl appointmentService) {
 		for (Employee employee : bookedEmployees) {
-			List<Appointment> appointmentsOfEmployeeAtThisAppointmentPlannedTimes = appointmentService
-					.getAppointmentsOfBookedEmployeeInTimeinterval(employee.getId(), plannedStarttime, plannedEndtime,
-							AppointmentStatus.PLANNED);
+			List<Appointment> appointmentsOfEmployee = appointmentService.getAppointmentsOfBookedEmployeeInTimeinterval(
+					employee.getId(), plannedStarttime, plannedEndtime, AppointmentStatus.PLANNED);
 
-			if (!appointmentsOfEmployeeAtThisAppointmentPlannedTimes.isEmpty()) {
+			if (!appointmentsOfEmployee.isEmpty()
+					&& (appointmentsOfEmployee.size() != 1 || !appointmentsOfEmployee.get(0).getId().equals(id))) {
 				throw new AppointmentException("An employee already has an appointment in the given time interval",
 						this);
 			}
@@ -371,11 +375,11 @@ public class Appointment implements Serializable {
 
 	private void testResourceAppointments(AppointmentServiceImpl appointmentService) {
 		for (Resource resource : bookedResources) {
-			List<Appointment> appointmentsOfResourceAtThisAppointmentPlannedTimes = appointmentService
-					.getAppointmentsOfBookedResourceInTimeinterval(resource.getId(), plannedStarttime, plannedEndtime,
-							AppointmentStatus.PLANNED);
+			List<Appointment> appointmentsOfResource = appointmentService.getAppointmentsOfBookedResourceInTimeinterval(
+					resource.getId(), plannedStarttime, plannedEndtime, AppointmentStatus.PLANNED);
 
-			if (!appointmentsOfResourceAtThisAppointmentPlannedTimes.isEmpty()) {
+			if (!appointmentsOfResource.isEmpty()
+					&& (appointmentsOfResource.size() != 1 || !appointmentsOfResource.get(0).getId().equals(id))) {
 				throw new AppointmentException("A resource already has an appointment in the given time interval",
 						this);
 			}
@@ -384,12 +388,13 @@ public class Appointment implements Serializable {
 
 	private void testCustomerAppointments(AppointmentServiceImpl appointmentService) {
 		try {
-			List<Appointment> appointmentsOfCustomerAtThisAppointmentPlannedTimes = appointmentService
-					.getAppointmentsOfBookedCustomerInTimeinterval(bookedCustomer.getId(), plannedStarttime,
-							plannedEndtime, AppointmentStatus.PLANNED);
-			
-			if (!appointmentsOfCustomerAtThisAppointmentPlannedTimes.isEmpty()) {
-				throw new AppointmentException("The customer already has an appointment in the given time interval", this);
+			List<Appointment> appointmentsOfCustomer = appointmentService.getAppointmentsOfBookedCustomerInTimeinterval(
+					bookedCustomer.getId(), plannedStarttime, plannedEndtime, AppointmentStatus.PLANNED);
+
+			if (!appointmentsOfCustomer.isEmpty()
+					&& (appointmentsOfCustomer.size() != 1 || !appointmentsOfCustomer.get(0).getId().equals(id))) {
+				throw new AppointmentException("The customer already has an appointment in the given time interval",
+						this);
 			}
 		} catch (NullPointerException ey) {
 			if (!bookedCustomer.getUsername().contains("anonymousUser"))

@@ -116,6 +116,7 @@ public class ApplicationSecurityConfiguration extends WebSecurityConfigurerAdapt
 		configuration.setAllowedOrigins(Arrays.asList("*"));
 		configuration.setAllowedMethods(Arrays.asList("*"));
 		configuration.setAllowedHeaders(Arrays.asList("*"));
+		configuration.setAllowCredentials(true);
 
 		source.registerCorsConfiguration("/**", configuration);
 		return source;
