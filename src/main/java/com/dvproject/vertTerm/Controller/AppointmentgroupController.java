@@ -68,20 +68,24 @@ public class AppointmentgroupController {
 		return appointmentgroupService.shiftAppointment(appointmentId, startdate, enddate);
 	}
 	
-	@PostMapping("/{userid}")
-	public User bookAppointments (
-			@PathVariable String userid, 
+	@PostMapping(value = {"/", "/{userid}"})
+	public String bookAppointments (
+			@PathVariable(required = false) String userid, 
 			@RequestBody Appointmentgroup appointmentgroup) {
-		return appointmentgroupService.bookAppointmentgroup(userid, appointmentgroup, false);
+		User user =  appointmentgroupService.bookAppointmentgroup(userid, appointmentgroup, false);
+		
+		return user != null ? user.generateLoginLink() : null;
 	}
 	
-	@PostMapping("/override/{userid}")
-	public User bookAppointmentsOverride (
+	@PostMapping(value = {"/override/", "/override/{userid}"})
+	public String bookAppointmentsOverride (
 			@PathVariable String userid, 
 			@RequestBody Appointmentgroup appointmentgroup) {
 		Collection<? extends GrantedAuthority> auth = SecurityContextHolder.getContext().getAuthentication().getAuthorities();
 		
-		return appointmentgroupService.bookAppointmentgroup(userid, appointmentgroup, true);
+		User user = appointmentgroupService.bookAppointmentgroup(userid, appointmentgroup, true);
+		
+		return user != null ? user.generateLoginLink() : null;
 	}
 	
 	@PutMapping("")

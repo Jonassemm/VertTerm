@@ -168,6 +168,17 @@ public class User extends Bookable implements Serializable
 		optionalAttributes = null;
 	}
 	
+	public String generateLoginLink() {
+		String loginLink = null;
+		
+		if (username.contains("anonymousUser")) {
+			String password = this.password.substring(6);
+			loginLink = "/api/?username=" + username + "&password=" + password;
+		}
+		
+		return loginLink;
+	}
+	
 	private String getRandomString(byte [] array) {
 		return new String(array, Charset.forName("UTF-8"));
 	}
