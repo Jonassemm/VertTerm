@@ -234,7 +234,7 @@ export default function AppointmentPage({calendarStore, userStore}) {
                     <Button style={{margin:"5px 0px 0px 10px"}} variant="primary" onClick={() => setAppointments(loadMode.own)}>Eigene</Button>
                     <Button style={{margin:"5px 0px 0px 10px"}} variant="primary" onClick={() => setAppointments(loadMode.foreignUnpicked)}>Fremde</Button>
                     <Button style={{margin:"5px 0px 0px 10px"}} variant="primary" onClick={() => setAppointments(loadMode.all)}>Alle</Button>
-                   {/*  <Button style={{margin:"5px 0px 0px 10px"}} variant="success" onClick={() => loadAppointments(appointmentsOf)}>Aktualisieren</Button> */}
+                    <Button style={{margin:"5px 0px 0px 10px"}} variant="success" onClick={() => loadAppointments(appointmentsOf)}>Aktualisieren</Button>
                 </div>
             </div>
             {(selectedUser.length == 1 || appointmentsOf == loadMode.all) &&
@@ -273,7 +273,7 @@ export default function AppointmentPage({calendarStore, userStore}) {
                         modal={modal}
                         data={tableAppointments}
                         modalSize="lg"
-                        refreshData={loadAppointments}
+                        refreshData={() => loadAppointments(appointmentsOf)}
                         withoutCreate={true}
                     /> 
                     </Tab>
