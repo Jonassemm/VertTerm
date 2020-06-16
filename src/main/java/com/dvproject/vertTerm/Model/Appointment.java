@@ -153,12 +153,12 @@ public class Appointment implements Serializable {
 
 	public boolean addWarning(Warning warning) {
 		boolean warningHasBeenAdded = false;
-		
+
 		if (!warnings.contains(warning)) {
 			warnings.add(warning);
 			warningHasBeenAdded = true;
 		}
-		
+
 		return warningHasBeenAdded;
 	}
 
@@ -234,7 +234,7 @@ public class Appointment implements Serializable {
 		testAvailabilitiesOfEmployees();
 		testAvailabilitiesOfResources();
 	}
-	
+
 	public void testAvailabilitiesOfProcedur() {
 		// test avilability of procedure
 		bookedProcedure.isAvailable(plannedStarttime, plannedEndtime);
@@ -383,12 +383,17 @@ public class Appointment implements Serializable {
 	}
 
 	private void testCustomerAppointments(AppointmentServiceImpl appointmentService) {
-		List<Appointment> appointmentsOfCustomerAtThisAppointmentPlannedTimes = appointmentService
-				.getAppointmentsOfBookedCustomerInTimeinterval(bookedCustomer.getId(), plannedStarttime, plannedEndtime,
-						AppointmentStatus.PLANNED);
-
-		if (!appointmentsOfCustomerAtThisAppointmentPlannedTimes.isEmpty()) {
-			throw new AppointmentException("The customer already has an appointment in the given time interval", this);
+		try {
+			List<Appointment> appointmentsOfCustomerAtThisAppointmentPlannedTimes = appointmentService
+					.getAppointmentsOfBookedCustomerInTimeinterval(bookedCustomer.getId(), plannedStarttime,
+							plannedEndtime, AppointmentStatus.PLANNED);
+			
+			if (!appointmentsOfCustomerAtThisAppointmentPlannedTimes.isEmpty()) {
+				throw new AppointmentException("The customer already has an appointment in the given time interval", this);
+			}
+		} catch (NullPointerException ey) {
+			if (!bookedCustomer.getUsername().contains("anonymousUser"))
+				throw ey;
 		}
 	}
 }
