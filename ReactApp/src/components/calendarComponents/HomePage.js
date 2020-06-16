@@ -8,10 +8,11 @@ import CalendarForm from "./CalendarForm"
 import AppointmentForm from "../appointmentComponents/AppointmentForm"
 import { observer } from "mobx-react"
 import { getCalendar } from "./calendarRequests"
-import {getAppointmentOfUserInTimespace, getAppointmentOfUser, deleteAppointment} from "../appointmentComponents/AppointmentRequests"
+import {getAppointmentOfUserInTimespace, getAllAppointmentInTimespace} from "../appointmentComponents/AppointmentRequests"
 import styled from "styled-components"
 import Axios from "axios"
 import "react-big-calendar/lib/css/react-big-calendar.css"
+import {loadMode} from "../appointmentComponents/AppointmentPage"
 
 const Style = styled.div`
 .loadview {
@@ -32,9 +33,10 @@ const Style = styled.div`
 moment.locale('de'); 
 const localizer = momentLocalizer(moment)
 const views = {day: "day", week: "week", month: "month"};
-function HomePage({ calendarStore, User} ){
 
-    //const [showAddModal, setShowAddModal] = useState(false)
+
+function HomePage({calendarStore, User} ){
+
     const [showEditModal, setShowEditModal] = useState(false)
     const [calendarEvent, setCalendarEvent] = useState({})
     const [initialized, setInitialized] = useState(false)
@@ -54,9 +56,13 @@ function HomePage({ calendarStore, User} ){
 
      const handleSelectEvent = (event, e) => {
         setCalendarEvent(event)
-        //setShowAddModal(false)
         setShowEditModal(true)
     }
+
+    const hideModal = () => {
+            setShowEditModal(false)
+        }
+
 
     useEffect(() => {
         const loadDifferentMonth = (
@@ -64,78 +70,60 @@ function HomePage({ calendarStore, User} ){
             newReferenceDateOfView.getMonth() != referenceDateOfView.getMonth()
         )
         console.log()
-        //let source = Axios.CancelToken.source()
         if(!initialized || loadDifferentMonth) {
-            getCalendarEvents()
+            loadCalendarEvents()
         }
     },[referenceDateOfView])
+    
 
-
-    const hideModals = () => {
-        //setShowAddModal(false)
-        setShowEditModal(false)
-    }
-
-    const getCalendarEvents = async () => { 
+    const loadCalendarEvents = async () => { 
         setLoading(true)
-        //ONLY FOR TESTING
-        /* const plannedStarttime = moment("04.06.2020 19:30", "DD.MM.yyyy HH:mm").toDate();
-        const plannedEndtime = moment("04.06.2020 20:30", "DD.MM.yyyy HH:mm").toDate();
-        const bookedProcedure = {name: "Prozess1"}
-        const bookedCustomer= {firstName: "Angelina", lastName: "Jolie", username: "LaraCroft"}
-        const title = bookedProcedure.name + "-" + bookedCustomer.username
-
-        const evts = [{id: "1", description: "Dies ist eine längerer Text um zu verdeutlichen wie lang eine Beschreibung einer Prozedur sein kann. Damit wir auch in die zweite Zeile gelangenen steht hier noch etwas mehr ;)",
-                status: "planned", warning: "", 
-                plannedStarttime: plannedStarttime, plannedEndtime: plannedEndtime, actualStarttime: null, actualEndtime: null, 
-                bookedProcedure: bookedProcedure, 
-                bookedCustomer: bookedCustomer,
-                bookedEmployees: [{firstName: "Bruce", lastName: "Willis"},{firstName: "Will", lastName: "Smith"}],
-                bookedResources: [{name: "Stift"}, {name: "Papier"}, {name: "Laptop"}],
-                title: title
-            }]
-            calendarStore.setCalendarEvents(evts)
-            setInitialized(true) */
-        //END OF TESTING
-
-        try {
-            var startDate = new Date
-            var endDate = new Date
-            const month = referenceDateOfView.getMonth()
-            const year =  referenceDateOfView.getFullYear()
-            startDate.setMonth(month - 1)
-            startDate.setFullYear(year)
-            endDate.setMonth(month + 1)
-            endDate.setFullYear(year)
-            const response = await getAppointmentOfUserInTimespace(
-                User.id, 
-                moment(startDate).format("DD.MM.YYYY HH:mm").toString(), 
-                moment(endDate).format("DD.MM.YYYY HH:mm").toString()
-            )
-            const evts = response.data.map(item => {
-                return {
-                    ...item
-                }
-            })
-            calendarStore.setCalendarEvents(evts)
-            setInitialized(true) 
-        } catch (error) {
-            if(Axios.isCancel(error)){
-                console.log("caught cancel")
-            }else{
+        var response = []
+        var startDate = new Date
+        var endDate = new Date
+        const month = referenceDateOfView.getMonth()
+        const year =  referenceDateOfView.getFullYear()
+        startDate.setMonth(month - 1)
+        startDate.setFullYear(year)
+        endDate.setMonth(month + 1)
+        endDate.setFullYear(year)
+        const startDateString = moment(startDate).format("DD.MM.YYYY HH:mm").toString();
+        const endDateString =  moment(endDate).format("DD.MM.YYYY HH:mm").toString();
+        if(User == null){//case all appointments
+            try{
+               response = await getAllAppointmentInTimespace( 
+                    startDateString, 
+                    endDateString
+               )
+            }catch (error) {
+                    console.log(Object.keys(error), error.message)
+            }
+        }else {//case "own" and "foreign" appointments
+            try {
+                if(User != null) {
+                    response = await getAppointmentOfUserInTimespace(
+                        User.id, 
+                        startDateString, 
+                        endDateString
+                    )
+                } 
+            } catch (error) {
                 console.log(Object.keys(error), error.message)
             }
         }
+        //prepare response for calendar
+        const evts = response.data.map(item => {
+            return {
+                ...item,
+                plannedStarttime: moment(item.plannedStarttime, "DD.MM.yyyy HH:mm").toDate(),
+                plannedEndtime: moment(item.plannedEndtime, "DD.MM.yyyy HH:mm").toDate(),
+                title: item.bookedProcedure.name
+            }
+        })
+        calendarStore.setCalendarEvents(evts)
+        setInitialized(true)
         setLoading(false)
     }
-
-    /* const handleSelect = (event, e) => {
-        const {start, end} = event
-        const data = {title: "", start, end, allDay: false}
-        setShowAddModal(true)
-        setShowEditModal(false)
-        setCalendarEvent(data)
-    } */
 
     const renderfkt = () => {
         console.log("------Render-CALENDAR------")
@@ -146,27 +134,14 @@ function HomePage({ calendarStore, User} ){
         {renderfkt()}
         <div className="page">
             {loading ? <div className="loadview"><div>Loading</div></div> : null}
-            {/* <Modal show={showAddModal} onHide={hideModals}>
-                <Modal.Header closeButton>
-                    <Modal.Title>Add Calendar Event</Modal.Title>
-                </Modal.Header>
-                <Modal.Body>
-                    <CalendarForm
-                        calendarStore={calendarStore}
-                        calendarEvent={calendarEvent}
-                        onCancel={hideModals}
-                        edit={false}
-                    />
-                </Modal.Body>
-            </Modal> */}
-            <Modal size="lg" show={showEditModal} onHide={hideModals}>
+            <Modal size="lg" show={showEditModal} onHide={hideModal}>
                 <Modal.Header closeButton>
                     <Modal.Title>{calendarEvent.title}</Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
                     <AppointmentForm
                         selected={calendarEvent}
-                        onCancel={hideModals}
+                        onCancel={hideModal}
                         edit={true}
                     />
                 </Modal.Body>
@@ -204,11 +179,11 @@ function HomePage({ calendarStore, User} ){
                   eventPropGetter={
                     (event, plannedStarttime, plannedEndtime, isSelected) => {
                       let newStyle = {
-                        backgroundColor: "#0066f5",
+                        backgroundColor: "#5384cf",
                         color: 'white',
                         borderRadius: "0px",
                         border: "none"
-                      };
+                      };    
                 
                       if(event.warning == "warning"){
                         newStyle.backgroundColor = "red"

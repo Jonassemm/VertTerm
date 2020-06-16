@@ -94,19 +94,19 @@ const ObjectPicker = forwardRef((props, ref) => {
         })
         //filter for Anonymous and Admin user
         for (let i = 0; i < result.length; i++) {
-                if ((result[i].username == "admin") || (result[i].username == "anonymousUser")) {
             if ((result[i].username == "admin") || (result[i].username == "anonymousUser")) {
                 result.splice(i, 1)
                 i -= 1
             }
         }
         //reduce the selection
+        console.log(selectedItem)
         result.map((item) => {
             if (item.id != selectedItem.id && item.systemStatus != "deleted") {
                 finalResult.push(item)
             }
         })
-        setOptions(result)
+        setOptions(finalResult)
         setLabelKey("labelKey")
         setInit(true)
     }

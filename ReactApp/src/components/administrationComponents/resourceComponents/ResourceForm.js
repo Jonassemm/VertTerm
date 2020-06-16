@@ -6,6 +6,8 @@ import Availability from "../availabilityComponents/Availability"
 import { deleteResourceType } from "../resourceTypeComponents/ResourceTypeRequests"
 
 const RessourceForm = ({ onCancel, edit, selected }) => {
+    const [valideForm, setValideForm] = useState(false)
+  
     const [tabKey, setTabKey] = useState('general')  
     const [edited, setEdited] = useState(false)
 
@@ -13,7 +15,6 @@ const RessourceForm = ({ onCancel, edit, selected }) => {
     const [description, setDescription] = useState("")
     const [status, setStatus] = useState("active")
     const [resourceTypes, setResourceTypes] = useState([]) // Array with only one Item (for ObjectPicker)
-    const [childResources, setChildResources] = useState([])
     const [restrictions, setRestrictions] = useState([])
     const [availabilities, setAvailabilities] = useState([])
 
@@ -41,7 +42,6 @@ const RessourceForm = ({ onCancel, edit, selected }) => {
           setDescription(selected.description)
           setStatus(selected.status)
           setResourceTypes(selected.resourceTypes)
-          setChildResources(selected.childResources)
           setAvailabilities(selected.availabilities)
           setRestrictions(selected.restrictions)
       }
@@ -51,29 +51,49 @@ const RessourceForm = ({ onCancel, edit, selected }) => {
     const handleStatusChange = event => {setStatus(event.target.value); setEdited(true)}
     const handleDescriptionChange = event => {setDescription(event.target.value); setEdited(true)}
     //with ObjectPicker
-    const handleResourceTypeChange = data => {setResourceTypes(data); setEdited(true)} //setResourceTypes(resourceTypes => [...resourceTypes, data]);
-    const handleChildResourcesChange = data => {setChildResources(data); setEdited(true)}
+    const handleResourceTypeChange = data => {setResourceTypes(data); setEdited(true)}
     const handleRestrictionChange = data => {setRestrictions(data); setEdited(true)}
 
-    const handleAmountInStockChange = event => {console.log(parseInt(event.target.value)); setAmountInStock(event.target.value); setEdited(true)}
-    const handlePricePerUnitChange = event => {console.log(parseInt((parseFloat(event.target.value)*100).toFixed(1))); setPricePerUnit(event.target.value); setEdited(true)}
+    const handleAmountInStockChange = event => {setAmountInStock(event.target.value); setEdited(true)}
+    const handlePricePerUnitChange = event => {setPricePerUnit(event.target.value); setEdited(true)}
 
 
     function validation() {
       var result = true;
-      var errorMsg 
-      //check resourceType
-      if(resourceTypes.length == 0) { 
-        result = false
-        errorMsg = "noResourceType"
+      var consumableFieldsAreSet = true
+      if(isConsumable) {
+        consumableFieldsAreSet = (
+          amountInStock != null &&
+          pricePerUnit != null
+        )
       }
-      //print error
-      switch(errorMsg) {
-        case "noResourceType": 
+      const generalFieldsAreSet = (
+        name != "" &&
+        resourceTypes.length == 1 &&
+        (status == "active" || status == "inactive") &&
+        consumableFieldsAreSet
+      )
+      
+      //--------------------------General-VIEW-------------------------
+      if(tabKey == "general"){
+        //check resourceType
+        if(resourceTypes.length == 0) { 
+          result = false
           alert("Fehler: Bitte wählen Sie einen Ressourcentyp aus!")
-          break;
+        }
       }
-      return result
+
+      //--------------------------Availability-VIEW-------------------------
+      if(tabKey == "availability" && !generalFieldsAreSet){
+        if(resourceTypes.length != 1) {
+          alert("Bitte wählen Sie auf der Allgemein-Ansicht einen Ressourcentyp aus!")
+        } else {
+          alert("Bitte Felder auf der Allgemein-Ansicht überprüfen!")
+        }
+        result = false
+      }
+  
+      setValideForm(result)
     }
 
 
@@ -81,12 +101,12 @@ const RessourceForm = ({ onCancel, edit, selected }) => {
     //ADD RESOURCE
     const handleSubmit = async event => {
         event.preventDefault()
-        if(validation()) {
+        if(valideForm) {
           const amountInStockAsInt = parseInt(amountInStock)
           const pricePerUnitAsInt = parseInt((parseFloat(pricePerUnit)*100).toFixed(1))
           var data 
           if(isConsumable) {
-            data = {name, description, status, childResources, availabilities, restrictions, resourceTypes,
+            data = {name, description, status, availabilities, restrictions, resourceTypes,
                     amountInStock: amountInStockAsInt,
                     pricePerUnit: pricePerUnitAsInt}
             if(edit) {
@@ -95,7 +115,7 @@ const RessourceForm = ({ onCancel, edit, selected }) => {
               await addConsumable(data)
             }
           }else {
-            data = {name, description, status, childResources, availabilities, restrictions, resourceTypes}
+            data = {name, description, status, availabilities, restrictions, resourceTypes}
             if (edit){
               await editResource(selected.id, data)
             }else{
@@ -117,12 +137,12 @@ const RessourceForm = ({ onCancel, edit, selected }) => {
         var data
         try {
           if(isConsumable) {
-            data = {id: selected.id, name, description, status,  childResources, availabilities, restrictions, resourceTypes,
+            data = {id: selected.id, name, description, status, availabilities, restrictions, resourceTypes,
               amountInStock: amountInStockAsInt,
               pricePerUnit: pricePerUnitAsInt}
             await editConsumable(selected.id, data)
           } else {
-            data = {id: selected.id, name, description, status, childResources, availabilities, restrictions, resourceTypes}
+            data = {id: selected.id, name, description, status, availabilities, restrictions, resourceTypes}
             await editResource(selected.id, data)
           }
         } catch (error) {
@@ -259,22 +279,6 @@ const RessourceForm = ({ onCancel, edit, selected }) => {
                   </Form.Group>
                 </Form.Row>
                 <Form.Row>
-                  {/* <Form.Group as={Col} md="6">
-                    <Form.Label>Unterressourcen:</Form.Label>
-                      {edit && <ObjectPicker 
-                          setState={handleChildResourcesChange}
-                          DbObject="childResource"
-                          initial={childResources} 
-                          multiple={true}
-                          selectedItem={selected}/>
-                      }
-                      {!edit && <ObjectPicker 
-                          setState={handleChildResourcesChange}
-                          DbObject="childResource"
-                          initial={childResources} 
-                          multiple={true}/>
-                      }
-                  </Form.Group> */}
                   <Form.Group as={Col} md="6">
                     <Form.Label>Einschränkungen:</Form.Label>
                       <ObjectPicker 
@@ -333,8 +337,8 @@ const RessourceForm = ({ onCancel, edit, selected }) => {
                   }
                   <Button variant="secondary" onClick={onCancel} style={{marginRight: "20px"}}>Abbrechen</Button>
                   {(edit ? edited ? 
-                    <Button variant="success" type="submit">Übernehmen</Button>:
-                    null : <Button variant="success"  type="submit">Ressource anlegen</Button>)
+                    <Button variant="success" type="submit" onClick={() => validation()}>Übernehmen</Button>:
+                    null : <Button variant="success" type="submit" onClick={() => validation()}>Ressource anlegen</Button>)
                   }
                   </Container>
                 </Form.Row>
