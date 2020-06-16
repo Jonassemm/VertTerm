@@ -24,7 +24,7 @@ public interface ResourceService extends BasicService<Resource> {
     List<Availability> updateResourceAvailabilities(String id, List<Availability> availabilities);
     List<Restriction> updateResourceRestrictions(String id,String[] rids);
     boolean isResourceAvailableBetween(String id, Date startdate, Date enddate);
-
+    List<Availability> getAllAvailabilities(String id) ;
     List<ResourceType> getResourceTypes(String id);
     List<Resource> getResources(String ResTid);
 

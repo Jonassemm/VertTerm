@@ -72,6 +72,8 @@ public class RightServiceImp implements RightService {
 		   
 			return listrole;
 	}
+   
+
 }
 
 

@@ -25,7 +25,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping(value= "/OptionalAttribute")
+@RequestMapping(value= "/OptionalAttributes")
 public class OptionalAttributesController {
 	
 	 @Autowired

@@ -28,7 +28,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping(value= "/Role")
+@RequestMapping(value= "/Roles")
 public class RoleController
 {
 	@Autowired
@@ -64,7 +64,7 @@ public class RoleController
 		 return roleService.updateRoleRights(id,Rids);
 	 }
 	
-	 //TODO es gibt einen Bug
+	
 	 @PutMapping("/users/{id}") 
      public  @ResponseBody List<User> updateRoleUsers(@PathVariable String id, @RequestParam String[] Uids) {
 		 return roleService.updateRoleUsers(id,Uids);

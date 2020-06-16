@@ -29,6 +29,7 @@ public class PositionServiceImp implements PositionService {
 	@Override
 	public Position update(Position position) {
 		if (position.getId() != null && positionRepository.findById(position.getId()).isPresent()) {
+			position.setName(capitalize(position.getName()));  
 			return positionRepository.save(position);
 		}
 		return null;
@@ -54,6 +55,7 @@ public class PositionServiceImp implements PositionService {
 	@Override
 	public Position create(Position position) {
 		if (position.getId() == null) {
+			position.setName(capitalize(position.getName())); 
 			return positionRepository.save(position);
 		}
 		if (positionRepository.findById(position.getId()).isPresent()) {
@@ -74,4 +76,12 @@ public class PositionServiceImp implements PositionService {
 			throw new ResourceNotFoundException("No procedure with the given id (" + id + ") can be found.");
 		}
 	}
+	
+	
+	  public static String capitalize(String str)
+	    {
+	        if(str == null) return str;
+	        return str.toUpperCase() ;
+	        
+	    }
 }

@@ -38,8 +38,9 @@ public class RestrictionServiceImp implements RestrictionService {
 
    //@PreAuthorize("hasAuthority('RestrictionS_WRITE')") 
    public Restriction create(Restriction Restriction) {
-      if(this.RestrictionRepo.findByName(Restriction.getName()) == null)
-	   return RestrictionRepo.save(Restriction);
+      if(this.RestrictionRepo.findByName(Restriction.getName()) == null) {
+        Restriction.setName(capitalize(Restriction.getName()));  
+	   return RestrictionRepo.save(Restriction);}
       else {
 	    	throw new ResourceNotFoundException("Restriction with the given id :" +Restriction.getId() + "already exsist");  
 	    } 
@@ -50,6 +51,7 @@ public class RestrictionServiceImp implements RestrictionService {
    //@PreAuthorize("hasAuthority('Restriction_RIGHTS_WRITE','RestrictionS_WRITE')")  
    public Restriction update(Restriction Restriction) {
 	   if (RestrictionRepo.findById(Restriction.getId()).isPresent()) {
+		   Restriction.setName(capitalize(Restriction.getName()));  
 			return RestrictionRepo.save(Restriction);
 		}
 	   else {
@@ -114,7 +116,12 @@ public class RestrictionServiceImp implements RestrictionService {
 		return Result;
 }
 
-
+	  public static String capitalize(String str)
+	    {
+	        if(str == null) return str;
+	        return str.toUpperCase() ;
+	        
+	    }
 
 	
 }

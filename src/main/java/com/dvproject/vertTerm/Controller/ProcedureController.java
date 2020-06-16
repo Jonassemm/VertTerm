@@ -47,7 +47,7 @@ public class ProcedureController {
 	public List<Procedure> getProcedureRequestParam (@RequestParam String [] ids){
 		return procedureService.getByIds(ids);
 	}
-	
+
 	@GetMapping("/{id}/PrecedingProcedure")
 	public List<ProcedureRelation> getProcedurePrecedingProcedures (@PathVariable String id) {
 		return procedureService.getPrecedingProcedures(id);

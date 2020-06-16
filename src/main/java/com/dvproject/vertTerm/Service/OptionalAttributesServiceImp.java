@@ -42,8 +42,17 @@ Optional<OptionalAttributes> OptionalAttributes = OptionalAttributesRepo.findByI
 
 @Override
 public OptionalAttributes create(OptionalAttributes OAttribute) {
-   if(this.OptionalAttributesRepo.findByClass(OAttribute.getClassOfOptionalAttribut()) == null)  
+	List<OptionalAttribute> OpAttList=new ArrayList<>();
+   if(this.OptionalAttributesRepo.findByClass(OAttribute.getClassOfOptionalAttribut()) == null)  {
+	   for(OptionalAttribute oa: OAttribute.getOptionalAttributes())
+	   {
+		   oa.setName(capitalize(oa.getName())); 
+		   OpAttList.add(oa);  
+	   }
+	   OAttribute.setOptionalAttributes(OpAttList);
 	   return OptionalAttributesRepo.save(OAttribute);
+		
+   }
    else
 		throw new ResourceNotFoundException("OptionalAttributes  with the given Class :" +OAttribute.getClass() + "already exsist");   
 }
@@ -51,8 +60,15 @@ public OptionalAttributes create(OptionalAttributes OAttribute) {
 
 @Override
 public OptionalAttributes update(OptionalAttributes OAttribute) {
-	Optional<OptionalAttributes> OptionalAttributes = OptionalAttributesRepo.findById(OAttribute.getId());
+	List<OptionalAttribute> OpAttList=new ArrayList<>();
+		Optional<OptionalAttributes> OptionalAttributes = OptionalAttributesRepo.findById(OAttribute.getId());
 	if (OptionalAttributes.isPresent()) {
+		   for(OptionalAttribute oa: OAttribute.getOptionalAttributes())
+			   {
+				   oa.setName(capitalize(oa.getName())); 
+				   OpAttList.add(oa);  
+			   }
+			   OAttribute.setOptionalAttributes(OpAttList);
 		return OptionalAttributesRepo.save(OAttribute);
 	}
 	else	
@@ -81,6 +97,7 @@ public OptionalAttributes update(OptionalAttributes OAttribute) {
 	    	 List<OptionalAttribute> OAlist = oasUpdate.getOptionalAttributes();
 	    	 List<String> names = new ArrayList<> ();
 	    	// if (!OAlist.contains(OAtt)) 
+	    	 OAtt.setName(capitalize(OAtt.getName())); 
 	    	 OAlist.add(OAtt);
 			 		
 	    	 for (OptionalAttribute oa : OAlist )
@@ -154,11 +171,9 @@ public OptionalAttributes update(OptionalAttributes OAttribute) {
 	
 	public List<OptionalAttributes> getOptionalAttributeswithIDS(String[] ids) {
 		   	List<OptionalAttributes> OpAttsList = new ArrayList<> ();
-
 		   	for (String id : ids) {
 		   		OpAttsList.add(this.getById(id));
 		   	}
-
 		   	return OpAttsList;
 		
 	}
@@ -182,6 +197,13 @@ public OptionalAttributes update(OptionalAttributes OAttribute) {
 		getByClassname(classname).testMandatoryFields(optionalAttributes);
 	}
 
+
+	  public static String capitalize(String str)
+	    {
+	        if(str == null) return str;
+	        return str.toUpperCase() ;
+	        
+	    }
 
 }
 

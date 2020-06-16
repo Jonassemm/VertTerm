@@ -2,11 +2,15 @@ package com.dvproject.vertTerm.Controller;
 
 import com.dvproject.vertTerm.Model.Appointment;
 import com.dvproject.vertTerm.Model.AppointmentStatus;
+import com.dvproject.vertTerm.Model.Appointmentgroup;
+import com.dvproject.vertTerm.Model.Procedure;
+import com.dvproject.vertTerm.Model.Res_Emp;
 import com.dvproject.vertTerm.Model.Warning;
 import com.dvproject.vertTerm.Service.AppointmentService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.Duration;
 import java.util.Date;
 import java.util.List;
 
@@ -46,6 +50,14 @@ public class AppointmentController {
     	
     	return appointments;
     }
+    
+    @GetMapping("/ResEmp")
+    public @ResponseBody Res_Emp getAvailableResourcesAndEmployees(@RequestBody Appointmentgroup group,
+    		@RequestParam Date startdate,@RequestParam Date enddate)
+    {
+    	return service.getAvailableResourcesAndEmployees(group, startdate, enddate);
+    }
+	
     
     @GetMapping(path = {"/Warnings/{userid}", "/Warnings", "/Warnings/"})
     public List<Appointment> getAppointmentsWithWarnings(

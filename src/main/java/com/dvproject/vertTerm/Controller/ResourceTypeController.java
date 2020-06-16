@@ -18,7 +18,7 @@ import com.dvproject.vertTerm.Model.ResourceType;
 import com.dvproject.vertTerm.Service.ResourceTypeService;
 
 @RestController
-@RequestMapping(value= "/ResourceType")
+@RequestMapping(value= "/ResourceTypes")
 public class ResourceTypeController
 {
 	@Autowired

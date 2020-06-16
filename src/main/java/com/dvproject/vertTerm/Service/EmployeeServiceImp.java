@@ -4,9 +4,12 @@ import com.dvproject.vertTerm.Model.Availability;
 import com.dvproject.vertTerm.Model.Customer;
 import com.dvproject.vertTerm.Model.Employee;
 import com.dvproject.vertTerm.Model.Position;
+import com.dvproject.vertTerm.Model.Resource;
 import com.dvproject.vertTerm.Model.Status;
 import com.dvproject.vertTerm.Model.User;
 import com.dvproject.vertTerm.repository.EmployeeRepository;
+import com.sun.tools.javac.util.StringUtils;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Example;
 import org.springframework.data.rest.webmvc.ResourceNotFoundException;
@@ -14,6 +17,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
@@ -84,6 +88,8 @@ public class EmployeeServiceImp implements EmployeeService, AvailabilityService 
         if (newInstance.getId() == null) {
         	userService.testMandatoryFields(newInstance);
         	userService.encodePassword(newInstance);
+         	newInstance.setFirstName(capitalize(newInstance.getFirstName()));
+        	newInstance.setLastName(capitalize(newInstance.getLastName()));
         	availabilityService.update(newInstance.getAvailabilities(), newInstance);
             return repo.save(newInstance);
         }
@@ -98,6 +104,8 @@ public class EmployeeServiceImp implements EmployeeService, AvailabilityService 
         if (updatedInstance.getId() != null && repo.findById(updatedInstance.getId()).isPresent()) {
         	userService.testMandatoryFields(updatedInstance);
         	userService.encodePassword(updatedInstance);
+        	updatedInstance.setFirstName(capitalize(updatedInstance.getFirstName()));
+        	updatedInstance.setLastName(capitalize(updatedInstance.getLastName()));
         	availabilityService.loadAllAvailabilitiesOfEntity(updatedInstance.getAvailabilities(), updatedInstance, this);
             return repo.save(updatedInstance);
         }
@@ -113,5 +121,17 @@ public class EmployeeServiceImp implements EmployeeService, AvailabilityService 
     	
         repo.deleteById(id);
         return repo.existsById(id);
+    }
+
+    @Override
+    public boolean isEmployeeAvailableBetween(String id, Date startdate, Date enddate) {
+		Employee Emp = getById(id);
+		return availabilityService.isAvailable(Emp.getAvailabilities(), startdate, enddate);
+	}
+    public static String capitalize(String str)
+    {
+        if(str == null) return str;
+        return str.toUpperCase() ;
+        
     }
 }

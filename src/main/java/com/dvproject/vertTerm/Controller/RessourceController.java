@@ -30,7 +30,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping(value= "/Resource")
+@RequestMapping(value= "/Resources")
 public class RessourceController {
 	
 	 @Autowired
@@ -75,14 +75,13 @@ public class RessourceController {
 	 }
 	
 	@GetMapping("/isAvailable/{id}")
-	public boolean isAvailable (@PathVariable String id,
-			@RequestParam Date startdate,
-			@RequestParam Date enddate) {
+	public boolean isAvailable (@PathVariable String id,@RequestParam Date startdate,@RequestParam Date enddate) {
 		return resservice.isResourceAvailableBetween(id, startdate, enddate);
 	}
+	
 	@GetMapping("/Availability/{id}")
-	public List<Availability> getProcedureAvailability (@PathVariable String id) {
-		return resservice.getById(id).getAvailabilities();
+	public List<Availability> getResourceAvailability (@PathVariable String id) {
+		return resservice.getAllAvailabilities(id);
 	}
 	
 	 @GetMapping("/Restriction/{id}")

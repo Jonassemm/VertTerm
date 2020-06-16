@@ -10,6 +10,7 @@ import com.dvproject.vertTerm.repository.UserRepository;
 import net.springboot.javaguides.exception.ResourceExsistException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.rest.webmvc.ResourceNotFoundException;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -38,10 +39,11 @@ public class RoleServiceImp implements RoleService {
    @Autowired
    private UserService userService;
 
-   //@PreAuthorize("hasAuthority('ROLES_WRITE')") 
+   //@PreAuthorize("hasAuthority('ROLE_WRITE')") 
    public Role create(Role role) {
       if(this.RoleRepo.findByName(role.getName()) == null)
-	   return RoleRepo.save(role);
+      {  role.setName(capitalize(role.getName()));  	
+	   return RoleRepo.save(role);}
       else {
 	    	throw new ResourceNotFoundException("Role with the given id :" +role.getId() + "already exsist");  
 	    } 
@@ -52,6 +54,7 @@ public class RoleServiceImp implements RoleService {
    //@PreAuthorize("hasAuthority('ROLE_RIGHTS_WRITE','ROLES_WRITE')")  
    public Role update(Role role) {
 	   if (RoleRepo.findById(role.getId()).isPresent()) {
+		    role.setName(capitalize(role.getName()));  
 			return RoleRepo.save(role);
 		}
 	   else {
@@ -238,6 +241,13 @@ public class RoleServiceImp implements RoleService {
 
 		  return userslist;
 	}
+	 
+	  public static String capitalize(String str)
+	    {
+	        if(str == null) return str;
+	        return str.toUpperCase() ;
+	        
+	    }
 }
 
 

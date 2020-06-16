@@ -5,14 +5,17 @@ import java.util.List;
 
 import com.dvproject.vertTerm.Model.Appointment;
 import com.dvproject.vertTerm.Model.AppointmentStatus;
+import com.dvproject.vertTerm.Model.Appointmentgroup;
 import com.dvproject.vertTerm.Model.Available;
 import com.dvproject.vertTerm.Model.Bookable;
+import com.dvproject.vertTerm.Model.Res_Emp;
 import com.dvproject.vertTerm.Model.Warning;
 
 public interface AppointmentService extends BasicService<Appointment> {
 	// GET
 	List<Appointment> getAll(Bookable bookable);
-
+	//Available Resources and Employees
+	public Res_Emp getAvailableResourcesAndEmployees(Appointmentgroup group,Date startdate, Date enddate);
 	// appointments with warning
 	List<Appointment> getAppointmentsByWarning(Warning warning);
 	

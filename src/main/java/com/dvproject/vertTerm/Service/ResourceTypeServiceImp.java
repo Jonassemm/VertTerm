@@ -43,8 +43,10 @@ public class ResourceTypeServiceImp implements ResourceTypeService {
 
 	//@PreAuthorize("hasAuthority('RESOURCETYPE_DATA_WRITE')")
    public ResourceType create(ResourceType restype) {
-	     if(this.ResourceTypeRepo.findByName(restype.getName()) == null)
+	     if(this.ResourceTypeRepo.findByName(restype.getName()) == null) {
+	    	 restype.setName(capitalize(restype.getName()));  
 	  	   return ResourceTypeRepo.save(restype);
+	  	   }
 	       if (ResourceTypeRepo.findById(restype.getId()).isPresent()) {
 	   		throw new ResourceNotFoundException("ResourceType with the given id :" + restype.getId() + " already exists");
 	  		}
@@ -55,6 +57,7 @@ public class ResourceTypeServiceImp implements ResourceTypeService {
     //@PreAuthorize("hasAuthority('RESOURCETYPE_DATA_WRITE')")
     public ResourceType update(ResourceType restype) {
 		if (restype.getId() != null && ResourceTypeRepo.findById(restype.getId()).isPresent()) {
+			 restype.setName(capitalize(restype.getName()));  
 			return ResourceTypeRepo.save(restype);
 		}
 	    else {
@@ -85,6 +88,13 @@ public class ResourceTypeServiceImp implements ResourceTypeService {
 
 	   	return ResTypes;
 	   }
+	  
+		  public static String capitalize(String str)
+		    {
+		        if(str == null) return str;
+		        return str.toUpperCase() ;
+		        
+		    }
 
 
 }

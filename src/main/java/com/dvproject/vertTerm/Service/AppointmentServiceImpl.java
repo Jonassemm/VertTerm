@@ -2,6 +2,9 @@ package com.dvproject.vertTerm.Service;
 
 import com.dvproject.vertTerm.Model.*;
 import com.dvproject.vertTerm.repository.AppointmentRepository;
+
+import sun.security.krb5.internal.APOptions;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.rest.webmvc.ResourceNotFoundException;
 import org.springframework.stereotype.Service;
@@ -181,27 +184,33 @@ public class AppointmentServiceImpl implements AppointmentService {
      
     }
     
-    private Res_Emp getAvailableResourcesAndEmployees(Procedure procedure, Date startdate, Duration duration) {
+      public Res_Emp getAvailableResourcesAndEmployees(Appointmentgroup group, Date startdate, Date enddate) {
     	
     	Res_Emp list= new Res_Emp();
-    	List<ResourceType> ResourceTypes=procedure.getNeededResourceTypes();
-    	List<Resource> Resources=new ArrayList<>();
-    	
-    	for (ResourceType rt : ResourceTypes) {
-    		for (Resource resource : ResSer.getAll(rt))   		     
-    			if (!resource.isAvailable(startdate, duration)) 
-    				Resources.add(resource);
-		}
-    	
-    	List<Position> Positions=procedure.getNeededEmployeePositions();
     	List<Employee> Employees=new ArrayList<>();
-        
-    	for (Position pos : Positions) {
-    		for (Employee employee : EmpSer.getAll(pos)) 
-    			if (!employee.isAvailable(startdate, duration)) 
-    				Employees.add(employee);
-		}
-    	
+    	List<Resource> Resources=new ArrayList<>();
+    	List<Appointment> apps=group.getAppointments();
+    	for (Appointment app : apps) {
+//    		Procedure procedure=app.getBookedProcedure();
+//    		List<ResourceType> ResourceTypes=procedure.getNeededResourceTypes();	     	
+//    		for (ResourceType rt : ResourceTypes) {
+//	    		for (Resource resource : ResSer.getAll(rt))   		
+//	    			{ //
+//	    			 //
+//	    			 //
+//	    			if ((ResSer.isResourceAvailableBetween(resource.getId(), startdate, enddate)))
+//	    				Resources.add(resource);
+//	    			}
+//	    	}
+//	    	List<Position> Positions=procedure.getNeededEmployeePositions();	    
+//	    	for (Position pos : Positions) {
+//	    		for (Employee employee : EmpSer.getAll(pos))
+//		    		{
+//	    			if (EmpSer.isEmployeeAvailableBetween(employee.getId(),startdate, enddate)) 
+//	    				Employees.add(employee);
+//	    			}
+//			}
+    	}
     	list.setResources(Resources);
     	list.setEmployees(Employees);
     	return list;

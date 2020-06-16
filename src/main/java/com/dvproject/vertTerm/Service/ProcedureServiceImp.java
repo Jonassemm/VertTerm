@@ -77,6 +77,7 @@ public class ProcedureServiceImp implements ProcedureService, AvailabilityServic
 		if (procedure.getId() == null) {
 			procedure.testAllRelations();
 			availabilityService.update(procedure.getAvailabilities(), procedure);
+			procedure.setName(capitalize(procedure.getName()));
 			return procedureRepository.save(procedure);
 		}
 		if (procedureRepository.findById(procedure.getId()).isPresent()) {
@@ -91,7 +92,7 @@ public class ProcedureServiceImp implements ProcedureService, AvailabilityServic
 		Procedure oldProcedure = getProcedureFromDB(procedure.getId());
 		
 		procedure.testAllRelations();
-		
+		procedure.setName(capitalize(procedure.getName()));
 		availabilityService.loadAllAvailabilitiesOfEntity(procedure.getAvailabilities(), procedure, this);
 
 		testUpdatebility(oldProcedure.getStatus());
@@ -107,7 +108,7 @@ public class ProcedureServiceImp implements ProcedureService, AvailabilityServic
 
 		testUpdatebility(procedure.getStatus());
 
-		oldProcedure.setName(procedure.getName());
+		oldProcedure.setName(capitalize(procedure.getName()));
 		oldProcedure.setDescription(procedure.getDescription());
 		oldProcedure.setPricePerHour(procedure.getPricePerHour());
 		oldProcedure.setPricePerInvocation(procedure.getPricePerInvocation());
@@ -145,8 +146,9 @@ public class ProcedureServiceImp implements ProcedureService, AvailabilityServic
 		Procedure procedure = getProcedureFromDB(id);
 
 		testUpdatebility(procedure.getStatus());
-
+       
 		procedure.setNeededResourceTypes(resourceTypes);
+
 		procedureRepository.save(procedure);
 
 		return getProcedureFromDB(id).getNeededResourceTypes();
@@ -157,8 +159,9 @@ public class ProcedureServiceImp implements ProcedureService, AvailabilityServic
 		Procedure procedure = getProcedureFromDB(id);
 
 		testUpdatebility(procedure.getStatus());
-
+		 
 		procedure.setNeededEmployeePositions(positions);
+		
 		procedureRepository.save(procedure);
 
 		return getProcedureFromDB(id).getNeededEmployeePositions();
@@ -169,7 +172,6 @@ public class ProcedureServiceImp implements ProcedureService, AvailabilityServic
 		Procedure procedure = getProcedureFromDB(id);
 
 		testUpdatebility(procedure.getStatus());
-
 		procedure.setAvailabilities(availabilities);
 		procedureRepository.save(procedure);
 
@@ -181,7 +183,10 @@ public class ProcedureServiceImp implements ProcedureService, AvailabilityServic
 		Procedure procedure = getProcedureFromDB(id);
 
 		testUpdatebility(procedure.getStatus());
-
+		 for(Restriction restr: restrictions)
+	        {
+			 restr.setName(capitalize(restr.getName()));
+	        }
 		procedure.setRestrictions(restrictions);
 		procedureRepository.save(procedure);
 
@@ -222,5 +227,10 @@ public class ProcedureServiceImp implements ProcedureService, AvailabilityServic
 			throw new IllegalArgumentException("The given procedure is not updateable");
 		}
 	}
-
+    public static String capitalize(String str)
+    {
+        if(str == null) return str;
+        return str.toUpperCase() ;
+        
+    }
 }

@@ -57,6 +57,8 @@ public class CustomerServiceImp implements CustomerService {
         if (newInstance.getId() == null) {
         	userService.testMandatoryFields(newInstance);
         	userService.encodePassword(newInstance);
+        	newInstance.setFirstName(capitalize(newInstance.getFirstName()));
+        	newInstance.setLastName(capitalize(newInstance.getLastName()));
             return repo.save(newInstance);
         }
         if (repo.findById(newInstance.getId()).isPresent()) {
@@ -70,6 +72,8 @@ public class CustomerServiceImp implements CustomerService {
         if (updatedInstance.getId() != null && repo.findById(updatedInstance.getId()).isPresent()) {
         	userService.testMandatoryFields(updatedInstance);
         	userService.encodePassword(updatedInstance);
+        	updatedInstance.setFirstName(capitalize(updatedInstance.getFirstName()));
+        	updatedInstance.setLastName(capitalize(updatedInstance.getLastName()));
             return repo.save(updatedInstance);
         }
         return null;
@@ -84,5 +88,12 @@ public class CustomerServiceImp implements CustomerService {
     	
     	repo.deleteById(id);
     	return repo.existsById(id);
+    }
+    
+    public static String capitalize(String str)
+    {
+        if(str == null) return str;
+        return str.toUpperCase();
+        
     }
 }

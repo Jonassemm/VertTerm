@@ -1,5 +1,6 @@
 package com.dvproject.vertTerm.Controller;
 
+import com.dvproject.vertTerm.Model.Availability;
 import com.dvproject.vertTerm.Model.Employee;
 import com.dvproject.vertTerm.Model.Status;
 import com.dvproject.vertTerm.Service.EmployeeService;
@@ -32,7 +33,12 @@ public class EmployeeController {
     {
         return service.getById(id);
     }
-
+    
+    @GetMapping("/Availability/{id}")
+	public List<Availability> getResourceAvailability (@PathVariable String id) {
+		return service.getAllAvailabilities(id);
+	}
+    
     @PostMapping()
     public @ResponseBody
     Employee create(@RequestBody Employee newEmployee)

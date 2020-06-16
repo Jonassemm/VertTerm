@@ -42,8 +42,10 @@ public class ResourceServiceImp implements ResourceService, AvailabilityService 
 	public Resource create(Resource res) {
 		if (this.ResRepo.findByName(res.getName()) == null) {
 			availabilityService.update(res.getAvailabilities(), res);
+			res.setName(capitalize(res.getName()));
 			return ResRepo.save(res);
-		} else
+		} 
+		else
 			throw new ResourceNotFoundException("Resource with the given id :" + res.getId() + " already exists");
 
 	}
@@ -62,8 +64,10 @@ public class ResourceServiceImp implements ResourceService, AvailabilityService 
 		if (res.getId() != null && ResRepo.findById(res.getId()).isPresent()) {
 			testCorrectDependencies(res);
 			availabilityService.loadAllAvailabilitiesOfEntity(res.getAvailabilities(), res, this);
+			res.setName(capitalize(res.getName()));
 			return ResRepo.save(res);
-		} else {
+		}
+		else {
 			throw new ResourceNotFoundException("Resource with the given id :" + res.getId() + "not found");
 		}
 	}
@@ -97,14 +101,12 @@ public class ResourceServiceImp implements ResourceService, AvailabilityService 
 	@Override
 	public List<Availability> getAllAvailabilities(String id) {
 		Resource resource = this.getById(id);
-		
 		if (resource == null) {
 			throw new IllegalArgumentException("No resource with the given id");
 		}
 		
 		return resource.getAvailabilities();
 	}
-
 
 
 	// @PreAuthorize("hasAuthority('RESOURCE_AVAILABILITIES_WRITE')")
@@ -248,4 +250,11 @@ public class ResourceServiceImp implements ResourceService, AvailabilityService 
 			resourcesToTest.remove(0);
 		}
 	}
+	
+	  public static String capitalize(String str)
+	    {
+	        if(str == null) return str;
+	        return str.toUpperCase() ;
+	        
+	    }
 }
