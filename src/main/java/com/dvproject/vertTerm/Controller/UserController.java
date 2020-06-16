@@ -29,10 +29,24 @@ public class UserController
 			return service.getAll(status);
 	}
 
+	@PutMapping("/{id}")
+	public User UpdateUser(@RequestBody User user)
+	{
+		return service.update(user);
+	}
+
 	@GetMapping("/{id}")
 	public @ResponseBody
 	User getUser(@PathVariable String id)
 	{
 		return service.getById(id);
+	}
+
+	@DeleteMapping("/{id}")
+	public boolean DeleteUser(@PathVariable String id)
+	{
+		User user = this.getUser(id);
+		user.setSystemStatus(Status.DELETED);
+		return this.UpdateUser(user).equals(user);
 	}
 }

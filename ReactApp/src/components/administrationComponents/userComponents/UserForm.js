@@ -18,19 +18,17 @@ import {
 
 
 function UserForm({onCancel, edit, selected, type}) {
-  //Editing
-  const [edited, setEdited] = useState(false)
-
   //Switch
   var initialTypeIsEmployee = false
   if(type == "employee") {
       initialTypeIsEmployee = true
   }
   const [isEmployee, setIsEmployee] = useState(initialTypeIsEmployee)
-
+  const [valideForm, setValideForm] = useState(false)
+  //Editing
+  const [edited, setEdited] = useState(false)
   //Tabs
   const [tabKey, setTabKey] = useState('general')
-
   //User
   const [firstName, setFirstname] = useState("")
   const [lastName, setLastname] = useState("")
@@ -48,11 +46,12 @@ function UserForm({onCancel, edit, selected, type}) {
   //Optional Attributes (Employee)
   const [optionalAttributesOfUser, setOptionalAttributesOfUser] = useState([])
   //Optional Attributes (Employee)
-  const [optionalAttributesOfEmployees, setOptionalAttributesOfEmployees] = useState([])
+  //const [optionalAttributesOfEmployees, setOptionalAttributesOfEmployees] = useState([])
   //Optional Attributes (Customer)
-  const [optionalAttributesOfCustomer, setOptionalAttributesOfCustomer] = useState([])
+  //const [optionalAttributesOfCustomer, setOptionalAttributesOfCustomer] = useState([])
   //Attribute Input
   const [optionalAttributInput, setOptionalAttributeInput] = useState() //needed to render page when editing any optional attribute
+  const [requiredOptionalAttributCounter, setRequiredOptionalAttributCounter] = useState(0)
   //
   const [passwordChanged, setPasswordChanged] = useState(false)
 
@@ -70,6 +69,13 @@ function UserForm({onCancel, edit, selected, type}) {
     setOptionalAttributeInput([e.target.value, name]); //only for rendering
     setEdited(true) 
   };
+  const incrementRequiredCounter = () => {
+    setRequiredOptionalAttributCounter(requiredOptionalAttributCounter => requiredOptionalAttributCounter + 1)
+  }
+  const decrementRequiredCounter = () => {
+    setRequiredOptionalAttributCounter(requiredOptionalAttributCounter => requiredOptionalAttributCounter - 1)
+  }
+  
 
   useEffect(() => { 
     if(edit) {
@@ -109,13 +115,17 @@ function UserForm({onCancel, edit, selected, type}) {
         if(attributeList.classOfOptionalAttribut == "User" && attributeList.optionalAttributes.length > 0) {
           attributeList.optionalAttributes.map(attribute => {
             var initialValue = ""
-            //set values of user attributes into the predefined list
+            //set values of user attributes into the predefined list (edit-mode)
             if(edit && selected.optionalAttributes.length > 0) {
               selected.optionalAttributes.map(loadedAttribute =>{
                 if(loadedAttribute.name == attribute.name) {
-                  initialValue = loadedAttribute.value
+                  initialValue = loadedAttribute.value //Change initialValue when loading attributes
                 }
               })
+            }
+            //increase counter to the number of required predefined attributes
+            if(attribute.mandatoryField){
+              incrementRequiredCounter()
             }
             const {name, mandatoryField} = attribute
             const initializedAttribute = {name, mandatoryField, value: initialValue}
@@ -127,7 +137,7 @@ function UserForm({onCancel, edit, selected, type}) {
     }
   };
 
-  function validation() {
+  /* function validation() {
     var result = true;
     var errorMsg 
     //check position
@@ -152,6 +162,69 @@ function UserForm({onCancel, edit, selected, type}) {
         break;
     }
     return result
+  } */
+
+  function validation() {
+    var result = true;
+    var employeeFieldsAreSet = true
+    if(isEmployee) {
+      employeeFieldsAreSet = (
+        positions.length != 0 &&
+        roles.length != 0
+      )
+    }
+    const generalFieldsAreSet = (
+      firstName != "" &&
+      lastName != "" &&
+      username != "" &&
+      password != "" &&
+      (systemStatus == "active" || systemStatus == "inactive") &&
+      requiredOptionalAttributCounter == 0 &&
+      employeeFieldsAreSet
+    )
+    
+    //--------------------------General-VIEW-------------------------
+    if(tabKey == "general"){
+      if(isEmployee){
+        if(roles.length == 0) { //check roles
+          result = false
+          alert("Bitte wählen Sie mindestens eine Rolle aus!")
+        }else if(positions.length == 0) { //check positions
+          result = false
+          alert("Bitte wählen Sie mindestens eine Position aus!")
+        }
+      }else {
+        if(roles.length == 0) { //check roles
+          result = false
+          alert("Bitte wählen Sie mindestens eine Rolle aus!")
+        }
+      }
+    }
+
+    //--------------------------Availability-VIEW-------------------------
+    if(tabKey == "availability" && !generalFieldsAreSet){
+      if(isEmployee){
+        if(requiredOptionalAttributCounter != 0){
+          alert("Bitte füllen Sie in der Allgemein-Ansicht die erforderlichen optionalen Attribute aus!")
+        } else if(roles.length == 0) { //check roles
+          alert("Bitte wählen Sie in der Allgemein-Ansicht mindestens eine Rolle aus!")
+        }else if(positions.length == 0) { //check positions
+          alert("Bitte wählen Sie in der Allgemein-Ansicht mindestens eine Position aus!")
+        }else {
+          alert("Bitte Felder auf der Allgemein-Ansicht überprüfen!")
+        }
+      }else {
+        if(requiredOptionalAttributCounter != 0){
+          alert("Bitte füllen Sie in der Allgemein-Ansicht die erforderlichen optionalen Attribute aus!")
+        } else if(roles.length == 0) { //check roles
+          alert("Bitte wählen Sie in der Allgemein-Ansicht mindestens eine Rolle aus!")
+        }else {
+          alert("Bitte Felder auf der Allgemein-Ansicht überprüfen!")
+        }
+      }
+      result = false
+    }
+    setValideForm(result)
   }
 
 
@@ -163,7 +236,7 @@ function UserForm({onCancel, edit, selected, type}) {
     if(passwordChanged) {
       newPassword = password
     }
-    if(validation()) {
+    if(valideForm) {
       if(edit) { //editing-mode
         var id = selected.id
         var updateData = {}
@@ -201,27 +274,6 @@ function UserForm({onCancel, edit, selected, type}) {
     } 
   };
 
-  //DELETE
-  /* const handleDeleteUser = async () => {
-    const deleteStatus = "deleted" // fix delteStatus
-    const id = selected.id
-    var data = {}
-    const answer = confirm("Möchten Sie diesen Mitarbeiter wirklich löschen? ")
-      if (answer) {
-        try {
-          if(isEmployee) { //delete employee
-              data = {id, firstName, lastName, username, password, systemStatus: deleteStatus, roles, positions, availabilities, restrictions}
-              await updateEmployee(id, data)
-          } else { //delete customer
-              data = {id, firstName, lastName, username, password, systemStatus: deleteStatus, role, restrictions}
-              await updateCustomer(id, data);
-          }
-        } catch (error) {
-            console.log(Object.keys(error), error.message)
-        }
-      }
-        onCancel()
-  } */
   const handleDeleteUser = async () => {
     if(isEmployee){
       const answer = confirm("Möchten Sie diesen Mitarbeiter wirklich löschen? ")
@@ -251,6 +303,13 @@ function UserForm({onCancel, edit, selected, type}) {
       optionalAttributesOfUser.map(attribute=> {
         if(attribute.name == name) {
           attribute.value = value
+          if(attribute.mandatoryField) {
+            if(value != "") {
+              decrementRequiredCounter()
+            }else{
+              incrementRequiredCounter()
+            }
+          }
         }
       })
     }
@@ -479,8 +538,8 @@ function UserForm({onCancel, edit, selected, type}) {
                 }
                 <Button variant="secondary" onClick={onCancel} style={{marginRight: "20px"}}>Abbrechen</Button>
                 {(edit ? edited ? 
-                  <Button variant="success" type="submit">Übernehmen</Button>:
-                  null : <Button variant="success"  type="submit">Benutzer anlegen</Button>)
+                  <Button variant="success" type="submit" onClick={() => validation()}>Übernehmen</Button>:
+                  null : <Button variant="success"  type="submit" onClick={() => validation()}>Benutzer anlegen</Button>)
                 }
                 </Container>
               </Form.Row>

@@ -179,6 +179,9 @@ public class Procedure implements Serializable, Available {
 		for (ResourceType resourceType : this.getNeededResourceTypes()) {
 			Date newEarliestDateFinal = null;
 			for (Resource ressource : resourceService.getAll(resourceType)) {
+				if(currentAppointment.getBookedResources().contains(ressource)){
+					continue;
+				}
 				ressource.populateAppointments(appointmentService);
 				Date temp = ressource.getAvailableDate(earliestRequestedDate, this.getDuration());
 				if (temp != null) {
@@ -205,7 +208,10 @@ public class Procedure implements Serializable, Available {
 		// do the same for  roles
 		for (Position position : this.getNeededEmployeePositions()) {
 			Date newEarliestDateFinal = null;
-			for (Employee employee : employeeService.getAll(position)) {
+			for (Employee employee : employeeService.getAll(position.getId())) {
+				if(currentAppointment.getBookedEmployees().contains(employee)){
+					continue;
+				}
 				employee.populateAppointments(appointmentService);
 				Date temp = employee.getAvailableDate(earliestRequestedDate, this.getDuration());
 				if (temp != null) {

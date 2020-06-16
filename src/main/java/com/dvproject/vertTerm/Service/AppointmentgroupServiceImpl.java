@@ -27,7 +27,9 @@ import com.dvproject.vertTerm.Model.User;
 import com.dvproject.vertTerm.Model.Warning;
 import com.dvproject.vertTerm.exception.ProcedureException;
 import com.dvproject.vertTerm.exception.ProcedureRelationException;
+import com.dvproject.vertTerm.repository.AppointmentRepository;
 import com.dvproject.vertTerm.repository.AppointmentgroupRepository;
+import com.dvproject.vertTerm.repository.UserRepository;
 
 @Service
 public class AppointmentgroupServiceImpl implements AppointmentgroupService {
@@ -36,6 +38,9 @@ public class AppointmentgroupServiceImpl implements AppointmentgroupService {
 
 	@Autowired
 	private AppointmentServiceImpl appointmentService;
+	
+	@Autowired
+	private AppointmentRepository appointmentRepository;
 
 	@Autowired
 	private ProcedureService procedureService;
@@ -45,6 +50,9 @@ public class AppointmentgroupServiceImpl implements AppointmentgroupService {
 
 	@Autowired
 	private EmployeeService employeeService;
+
+	@Autowired
+	private UserRepository userRepository;
 
 	@Autowired
 	private UserService userService;
@@ -67,7 +75,7 @@ public class AppointmentgroupServiceImpl implements AppointmentgroupService {
 		if (id == null) {
 			throw new NullPointerException("The id of the given appointment is null");
 		}
-		if (appointmentService.getById(id) != null) {
+		if (appointmentService.getById(id) == null) {
 			throw new ResourceNotFoundException("The id of the given appointment is invalid");
 		}
 
@@ -125,7 +133,7 @@ public class AppointmentgroupServiceImpl implements AppointmentgroupService {
 	@Override
 	public User bookAppointmentgroup(String userid, Appointmentgroup appointmentgroup, boolean override) {
 		List<Appointment> appointments = appointmentgroup.getAppointments();
-		boolean noUserAttached = userid.equals("");
+		boolean noUserAttached = userid == null || userid.equals("");
 		User user = noUserAttached ? userService.getAnonymousUser() : userService.getById(userid);
 
 		for (Appointment appointment : appointments) {
@@ -169,13 +177,13 @@ public class AppointmentgroupServiceImpl implements AppointmentgroupService {
 		}
 
 		if (noUserAttached) {
-			userService.create(user);
+			userRepository.save(user);
 		}
 
 		// create all appointments of the appointmentgroup
 		for (Appointment appointment : appointments) {
 			appointment.setStatus(AppointmentStatus.PLANNED);
-			appointmentService.create(appointment);
+			appointmentRepository.save(appointment);
 		}
 
 		appointmentgroup.setStatus(Status.ACTIVE);
@@ -185,19 +193,13 @@ public class AppointmentgroupServiceImpl implements AppointmentgroupService {
 	}
 
 	@Override
-	// TODO
-	public Appointment shiftAppointment(String appointmentId, Date startdate, Date enddate) {
-		return null;
-	}
-
-	@Override
 	public boolean startAppointment(String appointmentid) {
 		Appointment appointment = appointmentService.getById(appointmentid);
 
 		if (hasActualTimeValue(appointment)) {
 			throw new UnsupportedOperationException("You can not start an appointment that has already been started");
 		}
-		
+
 		appointment.setActualStarttime(getDateOfNow());
 
 		return appointmentService.update(appointment).getActualStarttime() != null;
@@ -212,8 +214,12 @@ public class AppointmentgroupServiceImpl implements AppointmentgroupService {
 		}
 
 		appointment.setActualEndtime(getDateOfNow());
+		appointment.setStatus(AppointmentStatus.DONE);
+		
+		appointmentService.update(appointment);
+		appointment = appointmentService.getById(appointmentid);
 
-		return appointmentService.update(appointment).getActualEndtime() != null;
+		return appointment.getActualEndtime() != null && appointment.getStatus() == AppointmentStatus.DONE;
 	}
 
 	@Override
@@ -223,6 +229,25 @@ public class AppointmentgroupServiceImpl implements AppointmentgroupService {
 		Appointmentgroup appointmentgroup = this.getAppointmentInternal(id);
 
 		return appointmentgroup.getStatus() == Status.DELETED;
+	}
+
+	@Override
+	public boolean deleteAppointment(String id, boolean override) {
+		Appointment appointment = appointmentService.getById(id);
+		Appointmentgroup appointmentgroupOfAppointment = getAppointmentgroupContainingAppointmentID(id);
+
+		appointmentgroupOfAppointment.getAppointments().removeIf(app -> app.getId().equals(appointment.getId()));
+
+		try {
+			appointmentgroupOfAppointment.testProcedureRelations();
+		} catch (ProcedureException | ProcedureRelationException ex) {
+			if (!override) {
+				throw new RuntimeException("Appointment can not be deleted: " + ex.getMessage());
+			}
+		}
+
+		appointmentService.delete(id);
+		return appointmentService.getById(id).getStatus() == AppointmentStatus.DELETED;
 	}
 
 	private Appointmentgroup deleteAppointmentgroup(String id) {
@@ -274,13 +299,13 @@ public class AppointmentgroupServiceImpl implements AppointmentgroupService {
 	private boolean hasBeenStarted(Appointment appointment) {
 		return appointment.getActualStarttime() != null && appointment.getActualEndtime() == null;
 	}
-	
+
 	private Date getDateOfNow() {
 		LocalDateTime nowInOtherTimeZone = LocalDateTime.ofInstant(Instant.now(), ZoneId.of("CET"));
 		System.out.println(TimeZone.getDefault());
 		Date now = Date.from(nowInOtherTimeZone.atZone(ZoneId.systemDefault()).toInstant());
-		
-	    return now;
+
+		return now;
 	}
 
 }

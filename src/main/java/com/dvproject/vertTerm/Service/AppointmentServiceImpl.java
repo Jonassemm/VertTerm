@@ -118,18 +118,23 @@ public class AppointmentServiceImpl implements AppointmentService {
 	}
     
     @Override
+    public List<Appointment> getAppointmentsByEmployeeid(String id) {
+    	return repo.findByBookedEmployeesId(id);
+    }
+    
+    @Override
 	public List<Appointment> getAppointmentsOfEmployee(String employeeid, Date startdate) {
-    	return repo.findByBookedEmployeeId(employeeid, startdate);
+    	return repo.findByBookedEmployeesIdAndPlannedStarttimeAfter(employeeid, startdate);
 	}
     
     @Override
 	public List<Appointment> getAppointmentsOfProcedure(String procedureid, Date startdate) {
-    	return repo.findByBookedProcedureId(procedureid, startdate);
+    	return repo.findByBookedProcedureIdAndPlannedStarttimeAfter(procedureid, startdate);
     }
     
     @Override
 	public List<Appointment> getAppointmentsOfResource(String resourceid, Date startdate) {
-    	return repo.findByBookedResourceId(resourceid, startdate);
+    	return repo.findByBookedResourcesIdAndPlannedStarttimeAfter(resourceid, startdate);
 	}
     
 	@Override
@@ -188,6 +193,7 @@ public class AppointmentServiceImpl implements AppointmentService {
     	
     	Res_Emp list= new Res_Emp();
     	List<Employee> Employees=new ArrayList<>();
+
     	List<Resource> Resources=new ArrayList<>();
     	List<Appointment> apps=group.getAppointments();
     	for (Appointment app : apps) {
@@ -211,6 +217,9 @@ public class AppointmentServiceImpl implements AppointmentService {
 //	    			}
 //			}
     	}
+
+ 
+ 
     	list.setResources(Resources);
     	list.setEmployees(Employees);
     	return list;

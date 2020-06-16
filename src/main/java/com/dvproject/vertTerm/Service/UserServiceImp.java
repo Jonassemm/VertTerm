@@ -92,7 +92,7 @@ public class UserServiceImp implements UserService {
 		return repo.existsById(id);
 	}
 
-	@PreAuthorize("hasAuthority('OWN_USER_DATA_READ')")
+//	@PreAuthorize("hasAuthority('OWN_USER_DATA_READ')")
     public User getOwnUser(Principal principal) {
 	User user = null;
 	
@@ -189,15 +189,15 @@ public class UserServiceImp implements UserService {
 	public User getAnonymousUser() {
 		String username = "anonymousUser";
 		User user = this.getUsersWithUsernames(new String [] {username}).get(0);
+		User newUser = new User();
 		
-		//delete the id, so mongodb creates a new one 
-		user.setId(null);
 		//create unique username
-		user.setUsername(username + repo.count());
-		user.setPassword("{noop}" + UUID.randomUUID().toString());
-		user.setSystemStatus(Status.ACTIVE);
+		newUser.setUsername(username + repo.count());
+		newUser.setPassword("{noop}" + UUID.randomUUID().toString());
+		newUser.setSystemStatus(Status.ACTIVE);
+		newUser.setRoles(user.getRoles());
 		
-		return user;
+		return newUser;
 	}
 	
 	public void testMandatoryFields(User user) {

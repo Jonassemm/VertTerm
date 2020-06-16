@@ -27,4 +27,7 @@ public interface EmployeeRepository extends MongoRepository<Employee, String>{
     
     @Query("{'username' : ?0, '_class' : 'com.dvproject.vertTerm.Model.Employee'}")
     Employee findByUsername (String username);
+    
+//    @Query("{'positions.$id' : ObjectId(?0), '_class' : 'com.dvproject.vertTerm.Model.Employee'}")
+    List<Employee> findByPositionsId(String id);
 }

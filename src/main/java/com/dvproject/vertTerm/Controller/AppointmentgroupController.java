@@ -60,33 +60,46 @@ public class AppointmentgroupController {
 		return appointmentgroupService.getOptimizedSuggestion(appointmentgroup, optimizationstrategy);
 	}
 	
-	@GetMapping("/Shift/{appointmentId}")
-	public Appointment shiftAppointment (
-			@PathVariable String appointmentId,
-			@RequestParam Date startdate,
-			@RequestParam Date enddate) {
-		return appointmentgroupService.shiftAppointment(appointmentId, startdate, enddate);
-	}
-	
-	@PostMapping("/{userid}")
-	public User bookAppointments (
-			@PathVariable String userid, 
+	@PostMapping(value = {"/", "/{userid}"})
+	public String bookAppointments (
+			@PathVariable(required = false) String userid, 
 			@RequestBody Appointmentgroup appointmentgroup) {
-		return appointmentgroupService.bookAppointmentgroup(userid, appointmentgroup, false);
+		if(!appointmentgroup.hasNoAppointmentIdSet()) {
+			throw new IllegalArgumentException("Appointments must not contain ids");
+		}
+		
+		User user =  appointmentgroupService.bookAppointmentgroup(userid, appointmentgroup, false);
+		
+		return user != null ? user.generateLoginLink() : null;
 	}
 	
-	@PostMapping("/override/{userid}")
-	public User bookAppointmentsOverride (
+	@PostMapping(value = {"/override/", "/override/{userid}"})
+	public String bookAppointmentsOverride (
 			@PathVariable String userid, 
 			@RequestBody Appointmentgroup appointmentgroup) {
 		Collection<? extends GrantedAuthority> auth = SecurityContextHolder.getContext().getAuthentication().getAuthorities();
 		
-		return appointmentgroupService.bookAppointmentgroup(userid, appointmentgroup, true);
+		User user = appointmentgroupService.bookAppointmentgroup(userid, appointmentgroup, true);
+		
+		return user != null ? user.generateLoginLink() : null;
 	}
 	
 	@PutMapping("")
 	public Appointmentgroup updateAppointmentgroup (@RequestBody Appointmentgroup appointmentgroup) {
 		return appointmentgroupService.update(appointmentgroup);
+	}
+	
+	@PutMapping("/{userid}")
+	public String updateAppointments (
+			@PathVariable String userid, 
+			@RequestBody Appointmentgroup appointmentgroup) {
+		if(!appointmentgroup.hasAllAppointmentIdSet()) {
+			throw new IllegalArgumentException("Appointments must contain ids");
+		}
+		
+		User user =  appointmentgroupService.bookAppointmentgroup(userid, appointmentgroup, false);
+		
+		return user != null ? user.generateLoginLink() : null;
 	}
 	
 	@PutMapping("/start/{appointmentId}")
@@ -100,7 +113,12 @@ public class AppointmentgroupController {
 	}
 	
 	@DeleteMapping("/{id}")
-	public boolean deleteAppointmentGroup (@PathVariable String id) {
-		return appointmentgroupService.delete(id);
+	public boolean deleteAppointmentGroup (@PathVariable(name = "id")String appointmentGroupId) {
+		return appointmentgroupService.delete(appointmentGroupId);
+	}
+	
+	@DeleteMapping("/Appointment/{id}")
+	public boolean deleteAppointment (@PathVariable(name = "id") String appointmentId) {
+		return appointmentgroupService.deleteAppointment(appointmentId, false);
 	}
 }

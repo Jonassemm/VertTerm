@@ -55,15 +55,18 @@ public class EmployeeServiceImp implements EmployeeService, AvailabilityService 
         return (users);
     }
 
-    public List<Employee> getAll(Position pos){
-        List<Employee> result= new ArrayList<>();
-        for(Employee employee : repo.findAll()){
-            for (Position position : employee.getPositions())
-            if(position.equals(pos)) {
-                result.add(employee);
-            }
-        }
-        return result;
+    public List<Employee> getAll(String positionId){
+//        List<Employee> result= new ArrayList<>();
+//        for(Employee employee : repo.findAll()){
+//            for (Position position : employee.getPositions())
+//            if(position.getId().equals(positionId)) {
+//                result.add(employee);
+//            }
+//        }
+//        return result;
+        
+        return repo.findByPositionsId(positionId);
+        
     }
 
     @Override
