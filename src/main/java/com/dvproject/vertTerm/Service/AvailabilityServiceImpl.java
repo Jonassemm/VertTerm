@@ -5,6 +5,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import javax.servlet.http.HttpServletResponse;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -22,6 +24,9 @@ public class AvailabilityServiceImpl {
 
 	@Autowired
 	private AppointmentService appointmentService;
+	
+	@Autowired
+	private HttpServletResponse response;
 
 	@Autowired
 	private AvailabilityRepository availRepo;
@@ -85,7 +90,7 @@ public class AvailabilityServiceImpl {
 					}
 				} else {
 					repoAvailability = create(availability);
-					
+
 					Date startdate = availability.getStartDate();
 					if (!availabilityHasChanged || startdate.before(earliestDateChanged)) {
 						earliestDateChanged = startdate;
@@ -93,7 +98,7 @@ public class AvailabilityServiceImpl {
 				}
 			} else {
 				repoAvailability = create(availability);
-				
+
 				Date startdate = availability.getStartDate();
 				if (!availabilityHasChanged || startdate.before(earliestDateChanged)) {
 					earliestDateChanged = startdate;
@@ -144,6 +149,7 @@ public class AvailabilityServiceImpl {
 	private void testAppointmentsOfAvailable(Available entity, Date startdateOfTest) {
 		BookingTester bookingTester = new NormalBookingTester();
 		List<Appointment> appointmentsToTest = entity.getAppointmentsAfterDate(appointmentService, startdateOfTest);
+		boolean hasNewWarning = false;
 
 		for (Appointment appointment : appointmentsToTest) {
 			Date startdate = appointment.getPlannedStarttime();
@@ -162,10 +168,16 @@ public class AvailabilityServiceImpl {
 				}
 			} catch (AvailabilityException ex) {
 				hasChanged = appointment.addWarning(Warning.AVAILABILITY_WARNING);
+				hasNewWarning = true;
 			} finally {
 				if (hasChanged)
 					appointmentService.update(appointment);
 			}
+		}
+		
+		if (hasNewWarning) {
+			response.addHeader("exception", Availability.class.getSimpleName());
+			response.addHeader("Access-Control-Expose-Headers", "exception");
 		}
 	}
 }

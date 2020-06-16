@@ -94,6 +94,7 @@ const ObjectPicker = forwardRef((props, ref) => {
         })
         //filter for Anonymous and Admin user
         for (let i = 0; i < result.length; i++) {
+                //if ((result[i].username == "admin") || (result[i].username == "anonymousUser")) {
             if ((result[i].username == "admin") || (result[i].username == "anonymousUser")) {
                 result.splice(i, 1)
                 i -= 1
