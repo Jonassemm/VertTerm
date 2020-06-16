@@ -11,8 +11,6 @@ function ProcedureForm({ onCancel, edit, selected }) {
     const [enterPrice, setEnterPrice] = useState(false)
     const initialized = useRef(0)
 
-
-
     const [name, setName] = useState("")
     const [description, setDescription] = useState("")
     const [duration, setDuration] = useState(null)
@@ -241,6 +239,13 @@ function ProcedureForm({ onCancel, edit, selected }) {
             }
         })
 
+        let restrictionsRef = restrictions.map(item => {
+            return {
+                id: item.id,
+                ref: "restriction"
+            }
+        })
+
         const data = {
             name: name,
             description: description,
@@ -252,7 +257,7 @@ function ProcedureForm({ onCancel, edit, selected }) {
             subsequentRelations: subsequentRelations,
             neededResourceTypes: extendedResourceTypes,
             neededEmployeePositions: extendedPositions,
-            restrictions: restrictions,
+            restrictions: restrictionsRef,
             availabilities: availabilities
         }
         console.log(data)
@@ -263,9 +268,10 @@ function ProcedureForm({ onCancel, edit, selected }) {
             data.id = selected.id
             const res = await editProcedure(selected.id, data)
         }
-
         onCancel()
     }
+
+    const LabelStyle = {marginTop: "10px"}
 
     const TabStyle = { paddingTop: "10px" }
     return (
@@ -291,7 +297,7 @@ function ProcedureForm({ onCancel, edit, selected }) {
                             />
                         </Form.Row>
                         <Form.Row>
-                            <Form.Label>
+                            <Form.Label style={LabelStyle}>
                                 Beschreibung
                             </Form.Label>
                             <Form.Control
@@ -303,7 +309,13 @@ function ProcedureForm({ onCancel, edit, selected }) {
                             />
                         </Form.Row>
                         <Form.Row>
-                            <Form.Label>
+                            <Form.Label style={LabelStyle}>
+                                Einschränkungen
+                            </Form.Label>
+                            <ObjectPicker DbObject="restriction" setState={setRestrictions} multiple={true} initial={edit ? restrictions : []}/>
+                        </Form.Row>
+                        <Form.Row>
+                            <Form.Label style={LabelStyle}>
                                 Dauer
                             </Form.Label>
                             <Form.Control
@@ -332,7 +344,7 @@ function ProcedureForm({ onCancel, edit, selected }) {
                         {enterPrice &&
                             <Form.Row>
                                 <Form.Group as={Col}>
-                                    <Form.Label>
+                                    <Form.Label style={LabelStyle}>
                                         Preis pro Stunde
                                         </Form.Label>
                                     <Form.Control
@@ -346,7 +358,7 @@ function ProcedureForm({ onCancel, edit, selected }) {
                                     />
                                 </Form.Group>
                                 <Form.Group as={Col}>
-                                    <Form.Label>
+                                    <Form.Label style={LabelStyle}>
                                         Preis je Termin
                                         </Form.Label>
                                     <Form.Control
@@ -532,7 +544,6 @@ function ProcedureForm({ onCancel, edit, selected }) {
                                             value={positionsCount[index] || 1}
                                             onChange={e => {
                                                 setPositionsCount(positionsCount.map((item, index) => {
-                                                    console.log(typeof (e.target.value))
                                                     if (index == e.target.name) {
                                                         return Number(e.target.value)
                                                     } else {

@@ -18,7 +18,6 @@ function BookingForm(props) {
     const [calendarEvents, setCalendarEvents] = useState([])
     const [selectedProcedures, setSelectedProcedures] = useState([])
     const [selectedCustomer, setSelectedCustomer] = useState({})
-    const [description, setDescription] = useState("")
     const [custom, setCustom] = useState(false)
     const [apts, setApts] = useState([])
     const [formComplete, setFormComplete] = useState(false)
@@ -75,7 +74,10 @@ function BookingForm(props) {
                         else ref2 = data.date
                     } else {
                         if (end) ref2 = data.date
-                        else ref2 = ref1
+                        else {
+                            ref2 = data.date
+                            ref1 = data.date
+                        }
                     }
                 } else {
                     if (end) ref2 = ref1
@@ -251,20 +253,18 @@ function BookingForm(props) {
                 }),
                 plannedEndtime: moment(item.plannedEndtime).format("DD.MM.YYYY HH:mm").toString(),
                 plannedStarttime: moment(item.plannedStarttime).format("DD.MM.YYYY HH:mm").toString(),
-                description: description
             }
         })
         const aptGroup = { appointments: finalData, status: "active" }
-        console.log(aptGroup)
         return aptGroup
     }
 
     async function overrideSubmit() {
         if (selectedCustomer.length != 0 || selectedCustomer === {}) {
-        const aptGroup = buildFinalData()
-        await addAppointmentGroupOverride(aptGroup, selectedCustomer[0].id)
-        history.push("/appointment")
-        }else {
+            const aptGroup = buildFinalData()
+            await addAppointmentGroupOverride(aptGroup, selectedCustomer[0].id)
+            history.push("/appointment")
+        } else {
             setException("customer")
             setShowExceptionModal(true)
         }
@@ -274,6 +274,7 @@ function BookingForm(props) {
         event.preventDefault()
         if (selectedCustomer.length != 0 || selectedCustomer === {}) {
             const aptGroup = buildFinalData()
+            console.log(aptGroup)
             try {
                 const res = await addAppointmentGroup(aptGroup, selectedCustomer[0].id)
                 history.push("/appointment")
@@ -281,6 +282,7 @@ function BookingForm(props) {
                 setException(error.response.headers.exception)
                 setShowExceptionModal(true)
             }
+
         } else {
             setException("customer")
             setShowExceptionModal(true)
@@ -320,19 +322,6 @@ function BookingForm(props) {
                     </Form.Row>
                     <Form.Row>
                         <Form.Group as={Col} style={{ textAlign: "bottom" }}>
-                            <Form.Label>Beschreibung:</Form.Label>
-                        </Form.Group>
-                        <Form.Group as={Col}>
-                            <Form.Control
-                                type="text"
-                                value={description || ""}
-                                placeholder="Beschreibung"
-                                onChange={e => { setDescription(e.target.value) }}
-                            />
-                        </Form.Group>
-                    </Form.Row>
-                    <Form.Row>
-                        <Form.Group as={Col} style={{ textAlign: "bottom" }}>
                             <Form.Label>Prozeduren:</Form.Label>
                         </Form.Group>
                         <Form.Group as={Col}>
@@ -352,6 +341,29 @@ function BookingForm(props) {
                                         {item.bookedProcedure.duration != null && <p>{secondsToMinutes(item.bookedProcedure.duration)} Minuten Dauer</p>}
                                     </div>
                                     <div className="box wrap">
+                                        <div className="middleBox" id={item.bookedProcedure.id}>
+                                            <div className="middleBoxLeft">
+                                                <span>Beschreibung</span>
+                                            </div>
+                                            <div className="middleBoxRight">
+                                                <Form.Control
+                                                    type="text"
+                                                    value={item.description ||""}
+                                                    placeholder="Beschreibung"
+                                                    onChange={e => {setApts(apts.map(innerItem => {
+                                                        if(innerItem.bookedProcedure.id = e.target.parentElement.parentElement.id)
+                                                        return {
+                                                            ...innerItem,
+                                                            description: e.target.value
+                                                        }
+                                                        else 
+                                                        return {...innerItem}
+                                                       
+                                                    }))}}
+                                                />
+                                                <hr/>
+                                            </div>
+                                        </div>
                                         {/* all ObjectPickers for needed Employees */}
                                         {item.bookedProcedure.neededEmployeePositions && item.bookedProcedure.neededEmployeePositions.map((innerItem, index) => {
                                             return (
