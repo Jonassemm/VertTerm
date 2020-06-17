@@ -3,8 +3,6 @@ package com.dvproject.vertTerm.Service;
 import com.dvproject.vertTerm.Model.*;
 import com.dvproject.vertTerm.repository.AppointmentRepository;
 
-import sun.security.krb5.internal.APOptions;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.rest.webmvc.ResourceNotFoundException;
 import org.springframework.stereotype.Service;
