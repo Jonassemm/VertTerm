@@ -60,6 +60,7 @@ public class ApplicationSecurityConfiguration extends WebSecurityConfigurerAdapt
 						AuthenticationException exception) -> response.sendError(401, "Failure to log in"))
 				.successHandler(
 						(HttpServletRequest request, HttpServletResponse response, Authentication authentication) -> {
+							response.addHeader("Access-Control-Expose-Headers", "Set-Cookie");
 							response.setStatus(HttpServletResponse.SC_OK);
 							PrintWriter out = response.getWriter();
 							out.write(userRepository.findByUsername(authentication.getName()).getId());
