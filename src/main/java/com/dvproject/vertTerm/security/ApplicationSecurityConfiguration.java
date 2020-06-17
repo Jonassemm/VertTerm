@@ -25,6 +25,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.web.authentication.HttpStatusEntryPoint;
 import org.springframework.validation.beanvalidation.LocalValidatorFactoryBean;
+import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -48,7 +49,7 @@ public class ApplicationSecurityConfiguration extends WebSecurityConfigurerAdapt
 
 	@Autowired
 	private UserRepository userRepository;
-	
+
 	@Autowired
 	private SetupDataLoader setupData;
 
@@ -60,7 +61,8 @@ public class ApplicationSecurityConfiguration extends WebSecurityConfigurerAdapt
 						AuthenticationException exception) -> response.sendError(401, "Failure to log in"))
 				.successHandler(
 						(HttpServletRequest request, HttpServletResponse response, Authentication authentication) -> {
-							response.addHeader("Access-Control-Expose-Headers", "Set-Cookie");
+							response.addHeader("sessionid",
+									RequestContextHolder.currentRequestAttributes().getSessionId());
 							response.setStatus(HttpServletResponse.SC_OK);
 							PrintWriter out = response.getWriter();
 							out.write(userRepository.findByUsername(authentication.getName()).getId());
@@ -79,7 +81,7 @@ public class ApplicationSecurityConfiguration extends WebSecurityConfigurerAdapt
 				.deleteCookies("JSESSIONID").clearAuthentication(true).invalidateHttpSession(true);
 
 		http.csrf().disable();
-		
+
 		http.headers().disable();
 
 		http.cors();
@@ -94,7 +96,7 @@ public class ApplicationSecurityConfiguration extends WebSecurityConfigurerAdapt
 		List<GrantedAuthority> authorities = new ArrayList<GrantedAuthority>();
 		Role anonymousRole = roleReposiroty.findByName("ANONYMOUS_ROLE");
 		List<Right> rights = null;
-		
+
 		if (anonymousRole == null) {
 			setupData.setupRights();
 			rights = setupData.setUpAnonymusUserRights();
@@ -119,6 +121,8 @@ public class ApplicationSecurityConfiguration extends WebSecurityConfigurerAdapt
 		configuration.setAllowedHeaders(Arrays.asList("*"));
 		configuration.setAllowCredentials(true);
 
+		configuration.setExposedHeaders(Arrays.asList("sessionid", "Set-Cookie"));
+
 		source.registerCorsConfiguration("/**", configuration);
 		return source;
 	}
@@ -132,16 +136,16 @@ public class ApplicationSecurityConfiguration extends WebSecurityConfigurerAdapt
 			}
 		};
 	}
-	
-    @Bean
-    public Validator getValidator() {
-      LocalValidatorFactoryBean validator = new LocalValidatorFactoryBean();
-      return validator;
-    }
 
-    @Bean
-    public ValidatingMongoEventListener validatingMongoEventListener() {
-        return new ValidatingMongoEventListener(getValidator());
-    }
-    
+	@Bean
+	public Validator getValidator() {
+		LocalValidatorFactoryBean validator = new LocalValidatorFactoryBean();
+		return validator;
+	}
+
+	@Bean
+	public ValidatingMongoEventListener validatingMongoEventListener() {
+		return new ValidatingMongoEventListener(getValidator());
+	}
+
 }
