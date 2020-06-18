@@ -25,7 +25,6 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.web.authentication.HttpStatusEntryPoint;
 import org.springframework.validation.beanvalidation.LocalValidatorFactoryBean;
-import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -57,17 +56,13 @@ public class ApplicationSecurityConfiguration extends WebSecurityConfigurerAdapt
 	protected void configure(HttpSecurity http) throws Exception {
 		http.formLogin().loginPage("/login").permitAll().loginProcessingUrl("/login").permitAll()
 				.usernameParameter("username").passwordParameter("password")
-				.failureHandler((HttpServletRequest request, HttpServletResponse response,
-						AuthenticationException exception) -> response.sendError(401, "Failure to log in"))
-				.successHandler(
-						(HttpServletRequest request, HttpServletResponse response, Authentication authentication) -> {
-							response.addHeader("sessionid",
-									RequestContextHolder.currentRequestAttributes().getSessionId());
-							response.setStatus(HttpServletResponse.SC_OK);
-							PrintWriter out = response.getWriter();
-							out.write(userRepository.findByUsername(authentication.getName()).getId());
-							out.flush();
-						});
+				.failureHandler((request, response, exception) -> response.sendError(401, "Failure to log in"))
+				.successHandler((request, response, authentication) -> {
+					response.setStatus(HttpServletResponse.SC_OK);
+					PrintWriter out = response.getWriter();
+					out.write(userRepository.findByUsername(authentication.getName()).getId());
+					out.flush();
+				});
 
 		http.anonymous().authorities(getAuthoritiesOfAnonymousUsers());
 
@@ -76,8 +71,7 @@ public class ApplicationSecurityConfiguration extends WebSecurityConfigurerAdapt
 		http.exceptionHandling().authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED));
 
 		http.logout().logoutUrl("/logout")
-				.logoutSuccessHandler((HttpServletRequest request, HttpServletResponse response,
-						Authentication authentication) -> response.setStatus(200))
+				.logoutSuccessHandler((request, response, authentication) -> response.setStatus(200))
 				.deleteCookies("JSESSIONID").clearAuthentication(true).invalidateHttpSession(true);
 
 		http.csrf().disable();
@@ -119,9 +113,8 @@ public class ApplicationSecurityConfiguration extends WebSecurityConfigurerAdapt
 		configuration.setAllowedOrigins(Arrays.asList("*"));
 		configuration.setAllowedMethods(Arrays.asList("*"));
 		configuration.setAllowedHeaders(Arrays.asList("*"));
+		configuration.setExposedHeaders(Arrays.asList("Set-Cookie"));
 		configuration.setAllowCredentials(true);
-
-		configuration.setExposedHeaders(Arrays.asList("sessionid", "Set-Cookie"));
 
 		source.registerCorsConfiguration("/**", configuration);
 		return source;
