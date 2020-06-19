@@ -98,7 +98,7 @@ function AppointmentForm({onCancel, edit, selected, selectedUser}) {
         var data = true
         
         try{
-            const response = await startAppointment();
+            const response = await startAppointment(selected.id);
             console.log("RESPONSE OF start:")
             console.log(response.data)
           } catch (error){
@@ -117,7 +117,7 @@ function AppointmentForm({onCancel, edit, selected, selectedUser}) {
         var updateData = {actualEndTime: newEndtime, status: newStatus}
         
         try{
-            const response = await stopAppointment();
+            const response = await stopAppointment(selected.id);
             console.log("RESPONSE OF stop:")
             console.log(response.data)
           } catch (error){
