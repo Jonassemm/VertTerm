@@ -187,9 +187,13 @@ public class AppointmentServiceImpl implements AppointmentService {
 
     @Override
     public boolean delete(String id) {
-        repo.deleteById(id);
-        return repo.existsById(id);
-     
+    	Appointment appointment = getById(id);
+    	
+    	appointment.setStatus(AppointmentStatus.DELETED);
+    	
+    	repo.save(appointment);
+    	
+    	return getById(id).getStatus() == AppointmentStatus.DELETED;
     }
     
       public Res_Emp getAvailableResourcesAndEmployees(Appointmentgroup group, Date startdate, Date enddate) {
