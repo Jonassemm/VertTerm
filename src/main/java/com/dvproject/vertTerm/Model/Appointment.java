@@ -4,6 +4,7 @@ import java.io.Serializable;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
@@ -86,6 +87,22 @@ public class Appointment implements Serializable {
 	public Date getPlannedEndtime() {
 		return plannedEndtime;
 	}
+	
+	public Date generatePlannedEndtime() {
+		Calendar enddate = Calendar.getInstance();
+		enddate.setTime(this.plannedStarttime);
+		int proceduredDurationInMinutesInt = 0;
+		long procedureDurationInMinutesLong = bookedProcedure.getDuration().toMinutes();
+		
+		do {
+			proceduredDurationInMinutesInt = procedureDurationInMinutesLong > Integer.MAX_VALUE ? Integer.MAX_VALUE
+					: (int) procedureDurationInMinutesLong;
+			enddate.add(Calendar.MINUTE, proceduredDurationInMinutesInt);
+			procedureDurationInMinutesLong -= Integer.MAX_VALUE;
+		} while (procedureDurationInMinutesLong > 0);
+		
+		return enddate.getTime();
+	}
 
 	public void setPlannedEndtime(Date plannedEndtime) {
 		this.plannedEndtime = plannedEndtime;
@@ -155,12 +172,14 @@ public class Appointment implements Serializable {
 		this.warnings = warnings;
 	}
 
-	public boolean addWarning(Warning warning) {
+	public boolean addWarning(Warning... warnings) {
 		boolean warningHasBeenAdded = false;
 
-		if (!warnings.contains(warning)) {
-			warnings.add(warning);
-			warningHasBeenAdded = true;
+		for (Warning warning : warnings) {
+			if (!this.warnings.contains(warning)) {
+				this.warnings.add(warning);
+				warningHasBeenAdded = true;
+			}
 		}
 
 		return warningHasBeenAdded;

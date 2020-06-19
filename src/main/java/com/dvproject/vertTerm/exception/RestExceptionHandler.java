@@ -241,7 +241,6 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
 		}
 
 		headers.add("exception", value);
-		headers.add("Access-Control-Expose-Headers", "exception");
 
 		return headers;
 	}

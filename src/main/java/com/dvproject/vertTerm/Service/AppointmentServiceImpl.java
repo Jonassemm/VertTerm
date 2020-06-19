@@ -22,6 +22,8 @@ public class AppointmentServiceImpl implements AppointmentService {
     ResourceService ResSer;
     @Autowired
     EmployeeService EmpSer;
+    @Autowired
+    private AppointmentgroupService appointmentgroupService;
     @Override
     public List<Appointment> getAll() {
         return repo.findAll();
@@ -166,8 +168,8 @@ public class AppointmentServiceImpl implements AppointmentService {
     public boolean setCustomerIsWaiting(String id, boolean customerIsWaiting) {
     	Appointment appointment = this.getById(id);
     	
-    	if(appointment.getActualStarttime() == null && appointment.getActualEndtime() == null && 
-    			appointment.getStatus() == AppointmentStatus.PLANNED) {
+    	if(appointment.getActualStarttime() != null && appointment.getActualEndtime() != null && 
+    			appointment.getStatus() != AppointmentStatus.PLANNED) {
     		throw new IllegalArgumentException("Customer of this appointment can not be set");
     	}
     	
@@ -176,8 +178,11 @@ public class AppointmentServiceImpl implements AppointmentService {
     	}
     	
     	appointment.setCustomerIsWaiting(customerIsWaiting);
+    	appointment = repo.save(appointment);
     	
-    	return repo.save(appointment).isCustomerIsWaiting() == customerIsWaiting;
+    	appointmentgroupService.setPullableAppointment(appointment);
+    	
+    	return appointment.isCustomerIsWaiting() == customerIsWaiting;
     }
 
     @Override
