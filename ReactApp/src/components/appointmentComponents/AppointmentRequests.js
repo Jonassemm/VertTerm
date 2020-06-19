@@ -32,5 +32,5 @@ export const getOwnAppointments = () => axios.get(`${APIURL}/api/Appointments/Ow
 
 //Appointmentgroup
 export const getGroupOfAppointment = appointmentId => axios.get(`${APIURL}/api/Appointmentgroups/Appointment/${appointmentId}`) 
-export const startAppointment = appointmentId => axios.get(`${APIURL}/api/Appointmentgroups/start/${appointmentId}`)  
-export const stopAppointment = appointmentId => axios.get(`${APIURL}/api/Appointmentgroups/stop/${appointmentId}`)  
+export const startAppointment = appointmentId => axios.put(`${APIURL}/api/Appointmentgroups/start/${appointmentId}`)  
+export const stopAppointment = appointmentId => axios.put(`${APIURL}/api/Appointmentgroups/stop/${appointmentId}`)  

@@ -66,6 +66,7 @@ function AppointmentForm({onCancel, edit, selected, selectedUser}) {
             setWarnings(selected.warnings)   
             setBookedEmployees(selected.bookedEmployees)     
             setBookedResources(selected.bookedResources)
+            setCustomerIsWaiting(selected.customerIsWaiting)
         } 
     }, [])
 
@@ -91,6 +92,7 @@ function AppointmentForm({onCancel, edit, selected, selectedUser}) {
           } catch (error){
             console.log(Object.keys(error), error.message)
           }
+        onCancel()
     }
 
     
