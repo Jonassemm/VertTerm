@@ -7,6 +7,7 @@ import {getAllPositions} from "./administrationComponents/positionComponents/Pos
 import {getAllResourceTypes} from "./administrationComponents/resourceTypeComponents/ResourceTypeRequests"
 import {getAllResources} from "./administrationComponents/resourceComponents/ResourceRequests"
 import {getAllRestrictions} from "./administrationComponents/restrictionComponents/RestrictionRequests"
+import {getAllWarnings} from "./administrationComponents/appointmentWarningComponents/AppointmentWarningRequests"
 
 export const addAppointmentGroup = (data, userID) => axios.post(`${APIURL}/api/Appointmentgroups/${userID}`,data)
 export const addAppointmentGroupOverride = (data, userID) => axios.post(`${APIURL}/api/Appointmentgroups/override/${userID}`,data)
@@ -23,7 +24,9 @@ export const getPositions = getAllPositions
 
 export const getResourcetypes = getAllResourceTypes
 export const getResources = getAllResources
-export const getResourcesOfType = type => axios.get(`${APIURL}/api/Resource/restyp/${type}`)
+export const getResourcesOfType = type => axios.get(`${APIURL}/api/Resources/restyp/${type}`)
 
 export {getProcedures}
 export const getRestrictions = getAllRestrictions
+
+export const getWarnings = getAllWarnings

@@ -1,7 +1,7 @@
 import axios from "axios"
 import {APIURL} from "../../../APIConfig"
 
-export const getAllRestrictions = () => axios.get(`${APIURL}/api/Restriction`)
-export const addRestriction = data => axios.post(`${APIURL}/api/Restriction`,data)
-export const deleteRestriction = id => axios.delete(`${APIURL}/api/Restriction/${id}`)
-export const editRestriction = data => axios.put(`${APIURL}/api/Restriction`,data)
+export const getAllRestrictions = () => axios.get(`${APIURL}/api/Restrictions`)
+export const addRestriction = data => axios.post(`${APIURL}/api/Restrictions`,data)
+export const deleteRestriction = id => axios.delete(`${APIURL}/api/Restrictions/${id}`)
+export const editRestriction = data => axios.put(`${APIURL}/api/Restrictions`,data)
