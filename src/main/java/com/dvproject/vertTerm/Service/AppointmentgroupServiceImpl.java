@@ -104,25 +104,20 @@ public class AppointmentgroupServiceImpl implements AppointmentgroupService {
 
 	@Override
 	public void setPullableAppointment(Appointment appointment) {
-		if (appointment == null) {
-			List<Appointment> appointmentsToPull = getPullableAppointments(getDateOfNowRoundedUp());
-
-			if (appointmentsToPull != null && appointmentsToPull.size() >= 0)
-				appointment = appointmentsToPull.get(0);
-		} else {
-			if (!isPullable(appointment))
-				appointment = null;
-		}
-
-		if (appointment != null) {
-			DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm");
-			Date starttime = appointment.getPlannedStarttime();
-			LocalDateTime ldt = starttime.toInstant().atZone(ZoneId.of("UTC")).toLocalDateTime();
-
-			String dateString = formatter.format(ldt);
+		if (isPullable(appointment)) {
 			httpResponse.setHeader("appointmentid", appointment.getId());
-			httpResponse.setHeader("starttime", dateString);
+			httpResponse.setHeader("starttime", getStringRepresentationOf(appointment.getPlannedStarttime()));
 		}
+	}
+
+	@Override
+	public void setPullableAppointment() {
+		List<Appointment> appointmentsToPull = getPullableAppointments(getDateOfNowRoundedUp());
+		
+		appointmentsToPull.forEach(appointment -> {
+			httpResponse.addHeader("appointmentid", appointment.getId());
+			httpResponse.addHeader("starttime", getStringRepresentationOf(appointment.getPlannedStarttime()));
+		});
 	}
 
 	@Override
@@ -250,8 +245,8 @@ public class AppointmentgroupServiceImpl implements AppointmentgroupService {
 		appointmentService.update(appointment);
 		appointment = appointmentService.getById(appointmentid);
 
-		if (appointment.getActualEndtime().before(appointment.getPlannedEndtime()))
-			setPullableAppointment(null);
+//		if (appointment.getActualEndtime().before(appointment.getPlannedEndtime()))
+			setPullableAppointment();
 
 		return appointment.getActualEndtime() != null && appointment.getStatus() == AppointmentStatus.DONE;
 	}
@@ -270,6 +265,7 @@ public class AppointmentgroupServiceImpl implements AppointmentgroupService {
 		Appointment appointment = appointmentService.getById(id);
 		Appointmentgroup appointmentgroupOfAppointment = getAppointmentgroupContainingAppointmentID(id);
 		List<Appointment> appointments = appointmentgroupOfAppointment.getAppointments();
+		boolean retVal = false;
 
 		appointments.removeIf(app -> app.getId().equals(appointment.getId()));
 
@@ -284,9 +280,11 @@ public class AppointmentgroupServiceImpl implements AppointmentgroupService {
 				throw ex;
 		}
 
-		appointmentService.delete(id);
+		retVal = appointmentService.delete(id);
+		
+		setPullableAppointment();
 
-		return appointmentService.getById(id).getStatus() == AppointmentStatus.DELETED;
+		return retVal;
 	}
 
 	private boolean isPullable(Appointment appointment) {
@@ -399,6 +397,13 @@ public class AppointmentgroupServiceImpl implements AppointmentgroupService {
 		calendar.set(Calendar.MINUTE, 59);
 
 		return calendar.getTime();
+	}
+	
+	private String getStringRepresentationOf(Date date) {
+		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm");
+		LocalDateTime ldt = date.toInstant().atZone(ZoneId.of("UTC")).toLocalDateTime();
+
+		return formatter.format(ldt);
 	}
 
 }

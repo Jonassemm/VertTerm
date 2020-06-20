@@ -253,13 +253,10 @@ public class Procedure implements Serializable, Available {
 	}
 	
 	public void isAvailable (Date startdate, Date enddate) {
-		for (Availability availability : availabilities) {
-			if (availability.isAvailableBetween(startdate, enddate)) {
-				return;
-			}
+		if (!availabilities.stream()
+				.anyMatch(availability -> availability.isAvailableBetween(startdate, enddate))) {
+			throw new AvailabilityException("No availability for the procedure " + name);
 		}
-		
-		throw new AvailabilityException("No availability for the procedure " + name);
 	}
 	
 	public void testAllRelations() {

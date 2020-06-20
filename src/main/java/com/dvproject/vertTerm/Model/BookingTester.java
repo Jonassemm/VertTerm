@@ -13,6 +13,12 @@ public abstract class BookingTester {
 	public BookingTester (Appointment appointment) {
 		this.appointment = appointment;
 	}
+	
+	public void testAll(Appointment appointment, AppointmentServiceImpl appointmentService, RestrictionService restrictionService,
+			List<TimeInterval> timeIntervallsOfAppointments) {
+		this.appointment = appointment;
+		this.testAll(appointmentService, restrictionService, timeIntervallsOfAppointments);
+	}
 
 	public void testAll(AppointmentServiceImpl appointmentService, RestrictionService restrictionService,
 			List<TimeInterval> timeIntervallsOfAppointments) {
