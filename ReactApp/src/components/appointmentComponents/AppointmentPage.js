@@ -8,7 +8,7 @@ import ObjectPicker from "../ObjectPicker"
 
 var moment = require('moment'); 
 
-import {getAllAppointments, getAppointmentOfUser, getAppointmentOfUserInTimespace} from "./AppointmentRequests";
+import {getAllAppointments, getAppointmentOfUser, getOwnAppointments, getAppointmentOfUserInTimespace} from "./AppointmentRequests";
 
 import {getUser} from "../administrationComponents/userComponents/UserRequests"
 
@@ -23,7 +23,6 @@ export default function AppointmentPage({calendarStore, userStore}) {
     //Tabs
     const [tabKey, setTabKey] = useState('calendar')
     //Modal
-    const [userSelectModal, setUserSelectModal] = useState(false)
     const [selectedUser, setSelectedUser] = useState([])
     const [selectedUserInitialized, setSelectedUserInitialized] = useState(false)
     const [loggedInUser, setLoggedInUser] = useState(null)
@@ -46,10 +45,8 @@ export default function AppointmentPage({calendarStore, userStore}) {
         setAppointmentsOf(selection)
         switch(selection){
             case loadMode.own:
-                //loadLoggedInUser(loadMode.own)
                 break;
             case loadMode.foreignUnpicked:
-                //loadLoggedInUser(loadMode.foreign)
             case loadMode.all:
                 setSelectedUser([]) // reset selected user
                 break;
@@ -67,28 +64,31 @@ export default function AppointmentPage({calendarStore, userStore}) {
         //LOAD logged in user
         if(selection!= loadMode.all) { // when loading all users, loggedInUser is not necessary
             console.log("userID: " + userStore.userID)
-            const response = await getUser(userStore.userID);
-            if(response.data != "") { //logged in user found? ("" means no user is logged in)
-                if(response.data.username != "admin" && response.data.username != "anonymousUser") {
-                    //Initial LOAD
-                    if(!selectedUserInitialized){
+            try {
+                const response = await getUser(userStore.userID);
+                if(response.data != "") { //logged in user found? ("" means no user is logged in)
+                    if(response.data.username != "admin" && response.data.username != "anonymousUser") {
+                        //Initial LOAD
+                        if(!selectedUserInitialized){
+                            setLoggedInUser(response.data)
+                            currentLoggedInUser = response.data
+                            setSelectedUser([response.data])
+                            setSelectedUserInitialized(true)
+                        }
+                        if(selection == loadMode.own){ //Appointments for logged in user
+                            setSelectedUser([response.data]) 
+                        }
                         setLoggedInUser(response.data)
                         currentLoggedInUser = response.data
-                        setSelectedUser([response.data])
-                        setSelectedUserInitialized(true)
+                    } else {
+                        alert("Admin und AnonymousUser haben keine eigenen Termine!")
                     }
-                    if(selection == loadMode.own){ //Appointments for logged in user
-                        //setAppointmentsOf(loadMode.own)
-                        setSelectedUser([response.data]) 
-                    }
-                    setLoggedInUser(response.data)
-                    currentLoggedInUser = response.data
-                } else {
-                    alert("Admin und AnonymousUser haben keine eigenen Termine!")
+                }else{
+                    console.log("Bitte erst anmelden, diese Funktion steht normal nur angemeldeten Benutzer zur Verfügung!")
                 }
-            }else{
-                console.log("Bitte erst anmelden, diese Funktion steht normal nur angemeldeten Benutzer zur Verfügung!")
-            }
+            } catch (error) {
+                console.log(Object.keys(error), error.message)
+            }  
         }
 
         //LAOD Appointments for table
@@ -108,7 +108,8 @@ export default function AppointmentPage({calendarStore, userStore}) {
                         }  
                         break;
                     case loadMode.own:
-                        response = await getAppointmentOfUser(currentLoggedInUser.id);  
+                        //response = await getOwnAppointments(currentLoggedInUser.id);  
+                        response = await getOwnAppointments();
                         break;
                 }
                 
@@ -234,7 +235,7 @@ export default function AppointmentPage({calendarStore, userStore}) {
                     <Button style={{margin:"5px 0px 0px 10px"}} variant="primary" onClick={() => setAppointments(loadMode.own)}>Eigene</Button>
                     <Button style={{margin:"5px 0px 0px 10px"}} variant="primary" onClick={() => setAppointments(loadMode.foreignUnpicked)}>Fremde</Button>
                     <Button style={{margin:"5px 0px 0px 10px"}} variant="primary" onClick={() => setAppointments(loadMode.all)}>Alle</Button>
-                    <Button style={{margin:"5px 0px 0px 10px"}} variant="success" onClick={() => loadAppointments(appointmentsOf)}>Aktualisieren</Button>
+                    {/* <Button style={{margin:"5px 0px 0px 10px"}} variant="success" onClick={() => loadAppointments(appointmentsOf)}>Aktualisieren</Button> */}
                 </div>
             </div>
             {(selectedUser.length == 1 || appointmentsOf == loadMode.all) &&

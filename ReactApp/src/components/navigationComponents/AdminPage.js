@@ -41,7 +41,7 @@ function AdminPage({userStore}) {
                 <Route exact path="/admin" component={() => <UserPage userType={"customer"} heading={"Kunden"} />} />
                 <Route exact path="/admin/customer" component={() => <UserPage userType={"customer"} heading={"Kunden"} />} />
                 <Route exact path="/admin/employee" component={() => <UserPage userType={"employee"} heading={"Mitarbeiter"} />} />
-                <Route exact path="/admin/extUserInfo" component={OptionalAttributesPage} />
+                <Route exact path="/admin/optionalAttributes" component={OptionalAttributesPage} />
                 <Route exact path="/admin/resource" component={ResourcePage} />
                 <Route exact path="/admin/role" component={() => (<RolePage userStore={userStore} />)} />
                 <Route exact path="/admin/position" component={PositionPage} />

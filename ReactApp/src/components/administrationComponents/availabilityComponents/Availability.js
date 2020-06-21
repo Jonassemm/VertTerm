@@ -204,6 +204,7 @@ const Availability = (props) => {
                                 selected={moment(endDateString, "DD.MM.yyyy HH:mm").toDate()}
                                 onChange={handleEndDateStringChange}
                                 showTimeSelect
+                                showTimeSelectOnly
                                 timeFormat="HH:mm"
                                 timeIntervals={5}
                                 timeCaption="Uhrzeit"

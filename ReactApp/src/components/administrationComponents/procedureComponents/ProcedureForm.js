@@ -25,7 +25,7 @@ function ProcedureForm({ onCancel, edit, selected }) {
     const subsequentRef = useRef()
     const [positions, setPositions] = useState([])
     const [resourceTypes, setResourceTypes] = useState([])
-    const [availabilities, setAvailability] = useState([])
+    const [availabilities, setAvailabilities] = useState([])
     const [pricePerHour, setPricePerHour] = useState(0)
     const [pricePerInvocation, setPricePerInvocation] = useState(0)
     const [restrictions, setRestrictions] = useState([])
@@ -59,7 +59,7 @@ function ProcedureForm({ onCancel, edit, selected }) {
             setPrecedingRelations(selected.precedingRelations)
             setSubsequentRelations(selected.subsequentRelations)
             setResourceTypes(selected.neededResourceTypes)
-            setAvailability(selected.availabilities)
+            setAvailabilities(selected.availabilities)
             setPricePerHour(selected.pricePerHour)
             setPricePerInvocation(selected.pricePerInvocation)
             setRestrictions(selected.restrictions)
@@ -94,7 +94,7 @@ function ProcedureForm({ onCancel, edit, selected }) {
     }
 
     const addAvailability = (newAvailability) => {
-        setAvailability(availability => [...availability, newAvailability]);
+        setAvailabilities(availability => [...availability, newAvailability]);
     }
 
     const updateAvailabilities = (newAvailabilities) => {

@@ -3,8 +3,6 @@ package com.dvproject.vertTerm.Service;
 import com.dvproject.vertTerm.Model.*;
 import com.dvproject.vertTerm.repository.AppointmentRepository;
 
-import sun.security.krb5.internal.APOptions;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.rest.webmvc.ResourceNotFoundException;
 import org.springframework.stereotype.Service;
@@ -28,6 +26,8 @@ public class AppointmentServiceImpl implements AppointmentService {
     ProcedureService ProcedureSer;
     @Autowired
     RestrictionService RestrictionSer;
+    private AppointmentgroupService appointmentgroupService;
+
     @Override
     public List<Appointment> getAll() {
         return repo.findAll();
@@ -172,8 +172,8 @@ public class AppointmentServiceImpl implements AppointmentService {
     public boolean setCustomerIsWaiting(String id, boolean customerIsWaiting) {
     	Appointment appointment = this.getById(id);
     	
-    	if(appointment.getActualStarttime() == null && appointment.getActualEndtime() == null && 
-    			appointment.getStatus() == AppointmentStatus.PLANNED) {
+    	if(appointment.getActualStarttime() != null && appointment.getActualEndtime() != null && 
+    			appointment.getStatus() != AppointmentStatus.PLANNED) {
     		throw new IllegalArgumentException("Customer of this appointment can not be set");
     	}
     	
@@ -182,15 +182,22 @@ public class AppointmentServiceImpl implements AppointmentService {
     	}
     	
     	appointment.setCustomerIsWaiting(customerIsWaiting);
+    	appointment = repo.save(appointment);
     	
-    	return repo.save(appointment).isCustomerIsWaiting() == customerIsWaiting;
+    	appointmentgroupService.setPullableAppointment(appointment);
+    	
+    	return appointment.isCustomerIsWaiting() == customerIsWaiting;
     }
 
     @Override
     public boolean delete(String id) {
-        repo.deleteById(id);
-        return repo.existsById(id);
-     
+    	Appointment appointment = getById(id);
+    	
+    	appointment.setStatus(AppointmentStatus.DELETED);
+    	
+    	repo.save(appointment);
+    	
+    	return getById(id).getStatus() == AppointmentStatus.DELETED;
     }
     
       public Res_Emp getAvailableResourcesAndEmployees(Appointmentgroup group) { 	

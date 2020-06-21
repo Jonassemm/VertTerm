@@ -5,7 +5,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.Validator;
 
@@ -19,8 +18,6 @@ import org.springframework.security.config.annotation.method.configuration.Enabl
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.web.authentication.HttpStatusEntryPoint;
@@ -48,7 +45,7 @@ public class ApplicationSecurityConfiguration extends WebSecurityConfigurerAdapt
 
 	@Autowired
 	private UserRepository userRepository;
-	
+
 	@Autowired
 	private SetupDataLoader setupData;
 
@@ -56,15 +53,13 @@ public class ApplicationSecurityConfiguration extends WebSecurityConfigurerAdapt
 	protected void configure(HttpSecurity http) throws Exception {
 		http.formLogin().loginPage("/login").permitAll().loginProcessingUrl("/login").permitAll()
 				.usernameParameter("username").passwordParameter("password")
-				.failureHandler((HttpServletRequest request, HttpServletResponse response,
-						AuthenticationException exception) -> response.sendError(401, "Failure to log in"))
-				.successHandler(
-						(HttpServletRequest request, HttpServletResponse response, Authentication authentication) -> {
-							response.setStatus(HttpServletResponse.SC_OK);
-							PrintWriter out = response.getWriter();
-							out.write(userRepository.findByUsername(authentication.getName()).getId());
-							out.flush();
-						});
+				.failureHandler((request, response, exception) -> response.sendError(401, "Failure to log in"))
+				.successHandler((request, response, authentication) -> {
+					response.setStatus(HttpServletResponse.SC_OK);
+					PrintWriter out = response.getWriter();
+					out.write(userRepository.findByUsername(authentication.getName()).getId());
+					out.flush();
+				});
 
 		http.anonymous().authorities(getAuthoritiesOfAnonymousUsers());
 
@@ -73,12 +68,11 @@ public class ApplicationSecurityConfiguration extends WebSecurityConfigurerAdapt
 		http.exceptionHandling().authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED));
 
 		http.logout().logoutUrl("/logout")
-				.logoutSuccessHandler((HttpServletRequest request, HttpServletResponse response,
-						Authentication authentication) -> response.setStatus(200))
+				.logoutSuccessHandler((request, response, authentication) -> response.setStatus(200))
 				.deleteCookies("JSESSIONID").clearAuthentication(true).invalidateHttpSession(true);
 
 		http.csrf().disable();
-		
+
 		http.headers().disable();
 
 		http.cors();
@@ -93,7 +87,7 @@ public class ApplicationSecurityConfiguration extends WebSecurityConfigurerAdapt
 		List<GrantedAuthority> authorities = new ArrayList<GrantedAuthority>();
 		Role anonymousRole = roleReposiroty.findByName("ANONYMOUS_ROLE");
 		List<Right> rights = null;
-		
+
 		if (anonymousRole == null) {
 			setupData.setupRights();
 			rights = setupData.setUpAnonymusUserRights();
@@ -116,6 +110,7 @@ public class ApplicationSecurityConfiguration extends WebSecurityConfigurerAdapt
 		configuration.setAllowedOrigins(Arrays.asList("*"));
 		configuration.setAllowedMethods(Arrays.asList("*"));
 		configuration.setAllowedHeaders(Arrays.asList("*"));
+		configuration.setExposedHeaders(Arrays.asList("Set-Cookie", "exception", "appointmentid", "starttime"));
 		configuration.setAllowCredentials(true);
 
 		source.registerCorsConfiguration("/**", configuration);
@@ -131,16 +126,16 @@ public class ApplicationSecurityConfiguration extends WebSecurityConfigurerAdapt
 			}
 		};
 	}
-	
-    @Bean
-    public Validator getValidator() {
-      LocalValidatorFactoryBean validator = new LocalValidatorFactoryBean();
-      return validator;
-    }
 
-    @Bean
-    public ValidatingMongoEventListener validatingMongoEventListener() {
-        return new ValidatingMongoEventListener(getValidator());
-    }
-    
+	@Bean
+	public Validator getValidator() {
+		LocalValidatorFactoryBean validator = new LocalValidatorFactoryBean();
+		return validator;
+	}
+
+	@Bean
+	public ValidatingMongoEventListener validatingMongoEventListener() {
+		return new ValidatingMongoEventListener(getValidator());
+	}
+
 }

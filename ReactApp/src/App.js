@@ -15,7 +15,7 @@ import HomePage from './components/calendarComponents/HomePage'
 import BookingForm from "./components/calendarComponents/BookingForm"
 import AdminPage from "./components/navigationComponents/AdminPage"
 import AppointmentPage from "./components/appointmentComponents/AppointmentPage"
-//import testComponent from "./components/testComponent"
+import { TestComponent } from './components/TestComponent';
 
 export default observer(function App({ userStore, calendarStore }) {
   console.log(document.cookie)
@@ -31,6 +31,7 @@ export default observer(function App({ userStore, calendarStore }) {
             <Route path="/appointment" component={() => <AppointmentPage calendarStore={calendarStore} userStore={userStore} />} />
             <Route exact path="/booking" component={() => (<BookingForm/>)}/>
             <Route exact path="/booking/:appointmentID/:appointmentGroupID" component={BookingForm}/>
+            <Route exact path="/test" component={TestComponent}/>
           </Switch>
         </div>
       </Suspense>

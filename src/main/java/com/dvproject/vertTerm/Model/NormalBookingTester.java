@@ -7,6 +7,14 @@ import com.dvproject.vertTerm.Service.RestrictionService;
 
 public class NormalBookingTester extends BookingTester {
 	
+	public NormalBookingTester () {
+		super();
+	}
+	
+	public NormalBookingTester (Appointment appointment) {
+		super(appointment);
+	}
+	
 	@Override
 	public void testAppointmentTimes(List<TimeInterval> timeIntervallsOfAppointments) {
 		appointment.testPlannedTimes();
