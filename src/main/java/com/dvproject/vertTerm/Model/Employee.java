@@ -1,7 +1,6 @@
 package com.dvproject.vertTerm.Model;
 
 import java.io.Serializable;
-import java.time.Duration;
 import java.util.Date;
 import java.util.List;
 
@@ -27,8 +26,7 @@ public class Employee extends User implements Serializable, Available {
 	}
 
 	public void isAvailable(Date startdate, Date enddate) {
-		if (!getAvailabilities().stream()
-				.anyMatch(availability -> availability.isAvailableBetween(startdate, enddate))) {
+		if (!getAvailabilities().stream().anyMatch(availability -> availability.isAvailableBetween(startdate, enddate))) {
 			throw new AvailabilityException("No availability for the employee " + getFirstName() + " " + getLastName());
 		}
 	}

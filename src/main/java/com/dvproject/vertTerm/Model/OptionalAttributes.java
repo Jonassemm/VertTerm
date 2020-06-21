@@ -20,8 +20,6 @@ public class OptionalAttributes implements Serializable {
 	@NotNull
 	private List<OptionalAttribute> optionalAttributes;
 
-	
-
 	public OptionalAttributes() {
 	}
 
@@ -51,20 +49,9 @@ public class OptionalAttributes implements Serializable {
 
 	public void testMandatoryFields(List<OptionalAttribute> attributesToTest) {
 		for (OptionalAttribute optionalAttribute : optionalAttributes) {
-			if (optionalAttribute.isMandatoryField()) {
-				boolean optionalAttributeFound = false;
-				
-				for (OptionalAttribute optA : attributesToTest) {
-					//test, whether a optionalAttribute with the same name is found
-					if (optionalAttribute.getName().equals(optA.getName())) {
-						optionalAttributeFound = true;
-						break;
-					}
-				}
-				
-				if (!optionalAttributeFound)
-					throw new IllegalArgumentException("Not all mandatory optional attributes are set");
-			}
+			if (optionalAttribute.isMandatoryField()
+					&& !attributesToTest.stream().anyMatch(optA -> optionalAttribute.getName().equals(optA.getName())))
+				throw new IllegalArgumentException("Not all mandatory optional attributes are set");
 		}
 	}
 

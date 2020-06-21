@@ -59,10 +59,18 @@
     	@GetMapping("/Resources/{resourceId}")
     	public @ResponseBody List<Appointment> getByResourceId(
     			@PathVariable String resourceId,
-    			@RequestParam Date starttime,
-    			@RequestParam Date endtime,
+    			@RequestParam(required = false) Date starttime,
+    			@RequestParam(required = false) Date endtime,
     			@RequestParam(required = false, defaultValue = "PLANNED") AppointmentStatus status) {
-    		return service.getAppointmentsOfBookedResourceInTimeinterval(resourceId, starttime, endtime, status);
+    		List<Appointment> appointments = null;
+    		
+    		if (starttime == null || endtime == null) {
+    			appointments = service.getAppointmentsByResourceid(resourceId);
+    		} else {
+    			appointments = service.getAppointmentsOfBookedResourceInTimeinterval(resourceId, starttime, endtime, status);
+    		}
+    		
+    		return appointments;
     	}
 
     	@GetMapping("/user/{userid}")
@@ -73,13 +81,14 @@
     		List<Appointment> appointments = null;
     		boolean isEmployee = userService.getById(userid) instanceof Employee;
 
-    		if (starttime == null && endtime == null) {
+    		if (starttime == null || endtime == null) {
     			appointments = service.getAppointmentsByUserid(userid);
 
     			if (isEmployee)
     				appointments.addAll(service.getAppointmentsByEmployeeid(userid));
     		} else if (starttime != null && endtime != null) {
     			appointments = service.getAppointmentsWithUseridAndTimeInterval(userid, starttime, endtime);
+    			
     			if (isEmployee)
     				appointments.addAll(service.getAppointmentsOfBookedEmployeeInTimeinterval(userid, starttime, endtime,
     						AppointmentStatus.PLANNED));

@@ -24,7 +24,7 @@ public class AvailabilityServiceImpl {
 
 	@Autowired
 	private AppointmentService appointmentService;
-	
+
 	@Autowired
 	private HttpServletResponse response;
 
@@ -84,40 +84,35 @@ public class AvailabilityServiceImpl {
 						repoAvailability.setEndOfSeries(endOfSeries);
 						availRepo.save(repoAvailability);
 
-						if (!availabilityHasChanged || endOfSeries.before(earliestDateChanged)) {
+						if (!availabilityHasChanged || endOfSeries.before(earliestDateChanged))
 							earliestDateChanged = endOfSeries;
-						}
 					}
-				} else {
+				} else { // id != null && no entity in db
 					repoAvailability = create(availability);
 
 					Date startdate = availability.getStartDate();
-					if (!availabilityHasChanged || startdate.before(earliestDateChanged)) {
+					if (!availabilityHasChanged || startdate.before(earliestDateChanged))
 						earliestDateChanged = startdate;
-					}
 				}
-			} else {
+			} else { // id == null
 				repoAvailability = create(availability);
 
 				Date startdate = availability.getStartDate();
-				if (!availabilityHasChanged || startdate.before(earliestDateChanged)) {
+				if (!availabilityHasChanged || startdate.before(earliestDateChanged))
 					earliestDateChanged = startdate;
-				}
 			}
 
 			availabilityHasChanged = earliestDateChanged != null;
 			availabilities.set(i, repoAvailability);
 		}
 
-		if (availabilityHasChanged && entity.getId() != null) {
+		if (availabilityHasChanged && entity.getId() != null)
 			testAppointmentsOfAvailable(entity, earliestDateChanged);
-		}
 	}
 
 	public Availability create(Availability availability) {
-		if (availability.getEndDate().before(availability.getStartDate()) && availability.getEndOfSeries() == null) {
+		if (availability.getEndDate().before(availability.getStartDate()) && availability.getEndOfSeries() == null)
 			throw new IllegalArgumentException("Enddate is before startdate");
-		}
 
 		return availRepo.save(availability);
 	}
@@ -132,13 +127,8 @@ public class AvailabilityServiceImpl {
 		List<Availability> availabilitiesFromDB = availabilityService.getAllAvailabilities(entity.getId());
 
 		// Load all availabilities from db
-		for (int i = 0; i < availabilitiesFromDB.size(); i++) {
-			Availability availabilityFromDB = availabilitiesFromDB.get(i);
-
-			if (!availabilitiesMap.containsKey(availabilityFromDB.getId())) {
-				availabilities.add(availabilityFromDB);
-			}
-		}
+		availabilities.addAll(availabilitiesFromDB.stream().filter(avail -> !availabilitiesMap.containsKey(avail.getId()))
+				.collect(Collectors.toList()));
 	}
 
 	public void loadAllAvailablitiesOfEntityViaId(List<Availability> availabilities, String id,
@@ -167,17 +157,15 @@ public class AvailabilityServiceImpl {
 					entity.isAvailable(startdate, enddate);
 				}
 			} catch (AvailabilityException ex) {
-				hasChanged = appointment.addWarning(Warning.AVAILABILITY_WARNING);
+				hasChanged    = appointment.addWarning(Warning.AVAILABILITY_WARNING);
 				hasNewWarning = true;
 			} finally {
 				if (hasChanged)
 					appointmentService.update(appointment);
 			}
 		}
-		
-		if (hasNewWarning) {
+
+		if (hasNewWarning)
 			response.addHeader("exception", Availability.class.getSimpleName());
-			response.addHeader("Access-Control-Expose-Headers", "exception");
-		}
 	}
 }

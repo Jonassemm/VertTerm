@@ -233,19 +233,17 @@ public class Appointment implements Serializable {
 
 			// resource and user contain the same restriction
 			if (restrictionsToTest != null
-					&& !restrictionService.testRestrictions(restrictionsToTest, userRestrictions)) {
+					&& !restrictionService.testRestrictions(restrictionsToTest, userRestrictions))
 				throw new RestrictionException("A resource contains a restriction that the user also has", null);
-			}
 		}
 	}
 
 	public void testPlannedTimes() {
-		if (plannedStarttime.after(plannedEndtime)) {
+		if (plannedStarttime.after(plannedEndtime))
 			throw new AppointmentTimeException("The planned starttime is after the planned endtime", this);
-		}
-		if (plannedStarttime.before(Date.from(Instant.now()))) {
+		
+		if (plannedStarttime.before(Date.from(Instant.now())))
 			throw new AppointmentTimeException("The planned starttime is in the past", this);
-		}
 	}
 
 	public void testAvailabilitiesOfProcedure_Employees_Resources() {
@@ -267,26 +265,20 @@ public class Appointment implements Serializable {
 	}
 
 	public void testBookedEmployeesAgainstPositionsOfProcedure() {
-		boolean testVal = false;
 		List<Position> procedurePositions = bookedProcedure.getNeededEmployeePositions();
 
 		for (int i = 0; i < bookedEmployees.size(); i++) {
+			boolean testVal = false;
 			Employee employee = bookedEmployees.get(i);
 			Position positionOfProcedure = procedurePositions.get(i);
 
 			List<Position> positionsOfEmployee = employee.getPositions();
 
-			for (Position position : positionsOfEmployee) {
-				if (position.getId().equals(positionOfProcedure.getId())) {
-					testVal = true;
-					break;
-				}
-			}
+			testVal = positionsOfEmployee.stream()
+					.anyMatch(position -> position.getId().equals(positionOfProcedure.getId()));
 
 			if (!testVal)
 				throw new PositionException("Missing employee for position", positionOfProcedure);
-
-			testVal = false;
 		}
 	}
 
@@ -324,10 +316,9 @@ public class Appointment implements Serializable {
 		Duration appointmentDuration = Duration.between(plannedStarttime.toInstant(), plannedEndtime.toInstant());
 		Duration procedureDuration = bookedProcedure.getDuration();
 
-		if (procedureDuration != null && appointmentDuration.toSeconds() != procedureDuration.toSeconds()) {
+		if (procedureDuration != null && appointmentDuration.toSeconds() != procedureDuration.toSeconds())
 			throw new ProcedureException("Duration of the appointment does not conform to the procedure ",
 					bookedProcedure);
-		}
 	}
 
 	public void testDistinctBookedAttributes() {
@@ -365,9 +356,8 @@ public class Appointment implements Serializable {
 
 	public void hasDistinctBookedCustomer() {
 		String bookedCustomerid = bookedCustomer.getId();
-		if (bookedEmployees.stream().anyMatch(emp -> emp.getId().equals(bookedCustomerid))) {
+		if (bookedEmployees.stream().anyMatch(emp -> emp.getId().equals(bookedCustomerid)))
 			throw new EmployeeException("The bookedCustomer can not be a used employee at the same time", null);
-		}
 	}
 
 	private void testEmployeeAppointments(AppointmentServiceImpl appointmentService) {
@@ -382,10 +372,9 @@ public class Appointment implements Serializable {
 			appointmentsOfEmployee.addAll(appointmentService.getAppointmentsOfBookedCustomerInTimeinterval(employeeid,
 					plannedStarttime, plannedEndtime, AppointmentStatus.PLANNED));
 
-			if (isNotEmptyAndDoesNotOnlyContainOnlyThisAppointment(appointmentsOfEmployee)) {
+			if (isNotEmptyAndDoesNotOnlyContainThisAppointment(appointmentsOfEmployee))
 				throw new AppointmentException("An employee already has an appointment in the given time interval",
 						this);
-			}
 		}
 	}
 
@@ -394,10 +383,9 @@ public class Appointment implements Serializable {
 			List<Appointment> appointmentsOfResource = appointmentService.getAppointmentsOfBookedResourceInTimeinterval(
 					resource.getId(), plannedStarttime, plannedEndtime, AppointmentStatus.PLANNED);
 
-			if (isNotEmptyAndDoesNotOnlyContainOnlyThisAppointment(appointmentsOfResource)) {
+			if (isNotEmptyAndDoesNotOnlyContainThisAppointment(appointmentsOfResource))
 				throw new AppointmentException("A resource already has an appointment in the given time interval",
 						this);
-			}
 		}
 	}
 
@@ -406,17 +394,16 @@ public class Appointment implements Serializable {
 			List<Appointment> appointmentsOfCustomer = appointmentService.getAppointmentsOfBookedCustomerInTimeinterval(
 					bookedCustomer.getId(), plannedStarttime, plannedEndtime, AppointmentStatus.PLANNED);
 
-			if (isNotEmptyAndDoesNotOnlyContainOnlyThisAppointment(appointmentsOfCustomer)) {
+			if (isNotEmptyAndDoesNotOnlyContainThisAppointment(appointmentsOfCustomer))
 				throw new AppointmentException("The customer already has an appointment in the given time interval",
 						this);
-			}
 		} catch (NullPointerException ex) {
 			if (!bookedCustomer.getUsername().contains("anonymousUser"))
 				throw ex;
 		}
 	}
 
-	private boolean isNotEmptyAndDoesNotOnlyContainOnlyThisAppointment(List<Appointment> appointments) {
+	private boolean isNotEmptyAndDoesNotOnlyContainThisAppointment(List<Appointment> appointments) {
 		return !appointments.isEmpty() && (appointments.size() != 1 || !appointments.get(0).getId().equals(id));
 	}
 }

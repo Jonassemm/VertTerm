@@ -11,6 +11,10 @@ public class NormalBookingTester extends BookingTester {
 		super();
 	}
 	
+	public NormalBookingTester(List<TimeInterval> timeIntervallsOfAppointments) {
+		super(null, timeIntervallsOfAppointments);
+	}
+	
 	public NormalBookingTester (Appointment appointment) {
 		super(appointment);
 	}

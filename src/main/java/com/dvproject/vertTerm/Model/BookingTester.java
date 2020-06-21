@@ -6,18 +6,18 @@ import com.dvproject.vertTerm.Service.AppointmentServiceImpl;
 import com.dvproject.vertTerm.Service.RestrictionService;
 
 public abstract class BookingTester {
-	Appointment appointment;
-	
+	protected Appointment appointment;
+	private List<TimeInterval> timeIntervallsOfAppointments;
+
 	public BookingTester () {}
-	
+
 	public BookingTester (Appointment appointment) {
 		this.appointment = appointment;
 	}
 	
-	public void testAll(Appointment appointment, AppointmentServiceImpl appointmentService, RestrictionService restrictionService,
-			List<TimeInterval> timeIntervallsOfAppointments) {
+	public BookingTester (Appointment appointment, List<TimeInterval> timeIntervallsOfAppointments) {
 		this.appointment = appointment;
-		this.testAll(appointmentService, restrictionService, timeIntervallsOfAppointments);
+		this.timeIntervallsOfAppointments = timeIntervallsOfAppointments;
 	}
 
 	public void testAll(AppointmentServiceImpl appointmentService, RestrictionService restrictionService,
@@ -33,6 +33,16 @@ public abstract class BookingTester {
 		this.testAppointment(appointmentService);
 	}
 	
+	public void testAll(Appointment appointment, AppointmentServiceImpl appointmentService,
+			RestrictionService restrictionService, List<TimeInterval> timeIntervallsOfAppointments) {
+		this.appointment = appointment;
+		testAll(appointmentService, restrictionService, timeIntervallsOfAppointments);
+	}
+	
+	public void testAll(Appointment appointment, AppointmentServiceImpl appointmentService, RestrictionService restrictionService) {
+		testAll(appointment, appointmentService, restrictionService, timeIntervallsOfAppointments);
+	}
+
 	public void setAppointment(Appointment appointment) {
 		this.appointment = appointment;
 	}

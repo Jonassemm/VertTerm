@@ -112,12 +112,11 @@ public class AppointmentgroupServiceImpl implements AppointmentgroupService {
 
 	@Override
 	public void setPullableAppointment() {
-		List<Appointment> appointmentsToPull = getPullableAppointments(getDateOfNowRoundedUp());
-		
-		appointmentsToPull.forEach(appointment -> {
-			httpResponse.addHeader("appointmentid", appointment.getId());
-			httpResponse.addHeader("starttime", getStringRepresentationOf(appointment.getPlannedStarttime()));
-		});
+		Date startdate = getDateOfNowRoundedUp();
+		List<Appointment> appointmentsToPull = getPullableAppointments(startdate);
+
+		httpResponse.addHeader("starttime", getStringRepresentationOf(startdate));
+		appointmentsToPull.forEach(appointment -> httpResponse.addHeader("appointmentid", appointment.getId()));
 	}
 
 	@Override
@@ -191,15 +190,14 @@ public class AppointmentgroupServiceImpl implements AppointmentgroupService {
 			try {
 				appointmentgroup.testProcedureRelations();
 			} catch (ProcedureRelationException ex) {
-				for (Appointment appointment : appointmentgroup.getAppointments()) {
-					appointment.addWarning(Warning.PROCEDURE_RELATION_WARNING);
-				}
+				appointmentgroup.getAppointments()
+						.forEach(appointment -> appointment.addWarning(Warning.PROCEDURE_RELATION_WARNING));
 			}
 
-			appointmentgroup.testBookability(restrictionService, appointmentService, new OverrideBookingTester());
+			appointmentgroup.testBookability(restrictionService, appointmentService, new OverrideBookingTester(new ArrayList<>()));
 		} else {
 			appointmentgroup.testProcedureRelations();
-			appointmentgroup.testBookability(restrictionService, appointmentService, new NormalBookingTester());
+			appointmentgroup.testBookability(restrictionService, appointmentService, new NormalBookingTester(new ArrayList<>()));
 		}
 
 		if (noUserAttached) {
@@ -245,7 +243,7 @@ public class AppointmentgroupServiceImpl implements AppointmentgroupService {
 		appointmentService.update(appointment);
 		appointment = appointmentService.getById(appointmentid);
 
-//		if (appointment.getActualEndtime().before(appointment.getPlannedEndtime()))
+		if (appointment.getActualEndtime().before(appointment.getPlannedEndtime()))
 			setPullableAppointment();
 
 		return appointment.getActualEndtime() != null && appointment.getStatus() == AppointmentStatus.DONE;
@@ -281,7 +279,7 @@ public class AppointmentgroupServiceImpl implements AppointmentgroupService {
 		}
 
 		retVal = appointmentService.delete(id);
-		
+
 		setPullableAppointment();
 
 		return retVal;
@@ -398,7 +396,7 @@ public class AppointmentgroupServiceImpl implements AppointmentgroupService {
 
 		return calendar.getTime();
 	}
-	
+
 	private String getStringRepresentationOf(Date date) {
 		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm");
 		LocalDateTime ldt = date.toInstant().atZone(ZoneId.of("UTC")).toLocalDateTime();

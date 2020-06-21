@@ -7,7 +7,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.rest.webmvc.ResourceNotFoundException;
 import org.springframework.stereotype.Service;
 
-import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -127,6 +126,11 @@ public class AppointmentServiceImpl implements AppointmentService {
     }
     
     @Override
+    public List<Appointment> getAppointmentsByResourceid(String id) {
+    	return repo.findByBookedResourcesId(id);
+    }
+    
+    @Override
 	public List<Appointment> getAppointmentsOfEmployee(String employeeid, Date startdate) {
     	return repo.findByBookedEmployeesIdAndPlannedStarttimeAfter(employeeid, startdate);
 	}
@@ -173,13 +177,11 @@ public class AppointmentServiceImpl implements AppointmentService {
     	Appointment appointment = this.getById(id);
     	
     	if(appointment.getActualStarttime() != null && appointment.getActualEndtime() != null && 
-    			appointment.getStatus() != AppointmentStatus.PLANNED) {
+    			appointment.getStatus() != AppointmentStatus.PLANNED)
     		throw new IllegalArgumentException("Customer of this appointment can not be set");
-    	}
     	
-    	if (!StatusService.isUpdateable(appointment.getBookedCustomer().getSystemStatus())) {
+    	if (!StatusService.isUpdateable(appointment.getBookedCustomer().getSystemStatus()))
     		throw new IllegalArgumentException("Customer can not be updated");
-    	}
     	
     	appointment.setCustomerIsWaiting(customerIsWaiting);
     	appointment = repo.save(appointment);

@@ -16,6 +16,14 @@ import com.dvproject.vertTerm.exception.RestrictionException;
 
 public class OverrideBookingTester extends BookingTester {
 
+	public OverrideBookingTester () {
+		super();
+	}
+
+	public OverrideBookingTester (List<TimeInterval> timeIntervallsOfAppointments) {
+		super(null, timeIntervallsOfAppointments);
+	}
+
 	@Override
 	public void testAppointmentTimes(List<TimeInterval> timeIntervallsOfAppointments) {
 		try {

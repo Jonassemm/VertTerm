@@ -31,6 +31,8 @@ public interface AppointmentService extends BasicService<Appointment> {
 	List<Appointment> getAppointmentsByUserid(String userid, AppointmentStatus appointmentStatus);
 	
 	List<Appointment> getAppointmentsByEmployeeid(String employeeid);
+	
+	List<Appointment> getAppointmentsByResourceid(String resourceid);
 
 	// appointments of an available-entity in a time interval
 	List<Appointment> getAppointmentsOfBookedEmployeeInTimeinterval(String employeeid, Date starttime, Date endtime,

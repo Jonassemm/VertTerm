@@ -29,6 +29,8 @@ public interface AppointmentRepository extends MongoRepository<Appointment, Stri
 	
 	List<Appointment> findByBookedEmployeesId(String id);
 	
+	List<Appointment> findByBookedResourcesId(String id);
+	
 	List<Appointment> findByBookedCustomerIdAndStatus(String id, AppointmentStatus status);
 	
 //	@Query("{'bookedProcedure.$id': ObjectId(?0), 'plannedStarttime': {'$gte': ?1}}")
