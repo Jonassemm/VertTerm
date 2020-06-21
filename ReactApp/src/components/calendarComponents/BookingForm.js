@@ -1,16 +1,16 @@
 import React, { useState, useEffect } from "react"
 import { Calendar, momentLocalizer } from "react-big-calendar"
 import moment from "moment"
-import { Container, Form, Col, Row, Button, Modal } from "react-bootstrap"
+import { Container, Form, Col, Row, Button, Modal, Spinner } from "react-bootstrap"
 import { observer } from "mobx-react"
 import "react-big-calendar/lib/css/react-big-calendar.css"
 import ObjectPicker from "../ObjectPicker"
 import "./BookingForm.css"
 import DatePicker from "react-datepicker"
 import { addAppointmentGroup, getAppointmentGroup, addAppointmentGroupOverride } from "../requests"
-import { Redirect } from "react-router"
 import { useHistory } from "react-router-dom"
 import { getErrorMessage } from "./bookingErrors"
+import SearchAptCalendar from "./SearchCalendar/SearchAptCalendar"
 
 const localizer = momentLocalizer(moment)
 
@@ -24,7 +24,10 @@ function BookingForm(props) {
     const [formEmpty, setFormEmpty] = useState(true)
     const [exception, setException] = useState("")
     const [showExceptionModal, setShowExceptionModal] = useState(false)
+    const [showSelectCalendarModal, setShowSelectCalendarModal] = useState(false)
+    const [searchProcedureApt, setSearchProcedureApt] = useState({})
     const history = useHistory()
+    const [loading, setLoading] = useState(false)
 
     useEffect(() => {
         checkCompletion()
@@ -42,7 +45,6 @@ function BookingForm(props) {
             setApts(data.appointments)
         }
     }
-
 
     const secondsToMinutes = (time) => {
         if (time === null) {
@@ -173,12 +175,9 @@ function BookingForm(props) {
             }
         } else {
             // add one
-            const tempEmployees = data[data.length - 1].neededEmployeePositions.map(item => {
-                return {}
-            })
             tempApts.push({
                 bookedProcedure: data[data.length - 1],
-                bookedEmployees: tempEmployees,
+                bookedEmployees: [],
                 bookedCustomer: {},
                 bookedResources: [],
                 plannedStarttime: null,
@@ -215,8 +214,8 @@ function BookingForm(props) {
     function checkFormEmpty() {
         let empty = false
         apts.forEach((item) => {
-            if ((item.plannedEndtime === null) &&
-                (item.plannedStarttime === null)) {
+            if ((item.plannedEndtime != null) &&
+                (item.plannedStarttime != null)) {
                 empty = true
                 for (let i = 0; i < item.bookedResources.length; i++) {
                     if (item.bookedResources[i] != undefined) empty = false
@@ -229,6 +228,19 @@ function BookingForm(props) {
             }
         })
         setFormEmpty(empty)
+    }
+
+    function setSelectedTime(procedure, timeslot){
+        setApts(apts.map(apt => {
+            if(apt.bookedProcedure.id == procedure.id){
+                return {
+                    ...apt,
+                    plannedStarttime: timeslot.start,
+                    plannedEndtime: timeslot.end
+                }
+            }else return {...apt}
+        }))
+        setShowSelectCalendarModal(false)
     }
 
     function optimizeAppointment() {
@@ -259,6 +271,11 @@ function BookingForm(props) {
         return aptGroup
     }
 
+    function handleSearchApt(procedure) {
+        setSearchProcedureApt(procedure)
+        setShowSelectCalendarModal(true)
+    }
+
     async function overrideSubmit() {
         if (selectedCustomer.length != 0 || selectedCustomer === {}) {
             const aptGroup = buildFinalData()
@@ -269,6 +286,7 @@ function BookingForm(props) {
             setShowExceptionModal(true)
         }
     }
+
 
     async function handleSubmit(event) {
         event.preventDefault()
@@ -348,20 +366,22 @@ function BookingForm(props) {
                                             <div className="middleBoxRight">
                                                 <Form.Control
                                                     type="text"
-                                                    value={item.description ||""}
+                                                    value={item.description || ""}
                                                     placeholder="Beschreibung"
-                                                    onChange={e => {setApts(apts.map(innerItem => {
-                                                        if(innerItem.bookedProcedure.id = e.target.parentElement.parentElement.id)
-                                                        return {
-                                                            ...innerItem,
-                                                            description: e.target.value
-                                                        }
-                                                        else 
-                                                        return {...innerItem}
-                                                       
-                                                    }))}}
+                                                    onChange={e => {
+                                                        setApts(apts.map(innerItem => {
+                                                            if (innerItem.bookedProcedure.id = e.target.parentElement.parentElement.id)
+                                                                return {
+                                                                    ...innerItem,
+                                                                    description: e.target.value
+                                                                }
+                                                            else
+                                                                return { ...innerItem }
+
+                                                        }))
+                                                    }}
                                                 />
-                                                <hr/>
+                                                <hr />
                                             </div>
                                         </div>
                                         {/* all ObjectPickers for needed Employees */}
@@ -442,6 +462,9 @@ function BookingForm(props) {
                                                 />
                                             </div>
                                         </div>
+                                        <div style={{ textAlign: "right" }}>
+                                            <Button style={{ marginTop: "10px", width: "40%", padding:"2px" }} onClick={e => handleSearchApt(item.bookedProcedure)}>Zeit suchen</Button>
+                                        </div>
                                     </div>
                                 </div>
                             </React.Fragment>
@@ -473,15 +496,8 @@ function BookingForm(props) {
 
                     <hr />
                 </Form>
-                <Calendar
-                    localizer={localizer}
-                    events={calendarEvents}
-                    startAccessor="start"
-                    endAccessor="end"
-                    selectable={true}
-                    style={{ height: "80vh" }}
-                />
             </Container>
+
             <Modal show={showExceptionModal} onHide={() => setShowExceptionModal(false)}>
                 <Modal.Header>
                     <Modal.Title>
@@ -495,6 +511,27 @@ function BookingForm(props) {
                     {exception != "customer" && <Button variant="danger" onClick={overrideSubmit}>Trotzdem buchen</Button>}
                     <Button onClick={() => setShowExceptionModal(false)} variant="secondary">OK</Button>
                 </Modal.Footer>
+            </Modal>
+
+            <Modal size="xl" show={showSelectCalendarModal} onHide={() => setShowSelectCalendarModal(false)}>
+                <Modal.Header>
+                    <Modal.Title>
+                        Termin suchen
+                       
+                    </Modal.Title>
+                    {loading && 
+                    <Spinner animation="border" role="status">
+                            <span className="sr-only">Loading...</span>
+                        </Spinner>
+                    } 
+                </Modal.Header>
+                <Modal.Body>
+                    <SearchAptCalendar procedure={searchProcedureApt} 
+                    neededPositions={searchProcedureApt.neededEmployeePositions} 
+                    neededResourceTypes={searchProcedureApt.neededResourceTypes} 
+                    setLoading={setLoading} 
+                    setSelectedTime={setSelectedTime}/>
+                </Modal.Body>
             </Modal>
 
         </div >

@@ -1,0 +1,22 @@
+.rbc-event-label {
+    display: none;
+  }
+
+.loadview {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  right: 0;
+  left: 0;
+  background-color: black;
+  opacity: 0.6;
+  z-index: 300;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: 0.5s;
+}
+
+.filtering  .rbc-time-view, .filtering .rbc-month-view {
+  opacity: 0.5;
+}

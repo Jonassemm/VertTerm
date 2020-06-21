@@ -23,7 +23,7 @@ export const getPositions = getAllPositions
 
 export const getResourcetypes = getAllResourceTypes
 export const getResources = getAllResources
-export const getResourcesOfType = type => axios.get(`${APIURL}/api/Resource/restyp/${type}`)
+export const getResourcesOfType = type => axios.get(`${APIURL}/api/Resources/restyp/${type}`)
 
 export {getProcedures}
 export const getRestrictions = getAllRestrictions
