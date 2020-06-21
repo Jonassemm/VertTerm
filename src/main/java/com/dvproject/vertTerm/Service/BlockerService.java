@@ -8,5 +8,4 @@ import com.dvproject.vertTerm.Model.Warning;
 
 public interface BlockerService extends BasicService<Blocker> {
 	List<Blocker> getBlockers(String[] id);
-	//List<Appointment> SetWarningFlag(String id);
 }

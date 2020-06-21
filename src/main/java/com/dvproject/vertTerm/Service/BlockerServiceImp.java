@@ -6,8 +6,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.dvproject.vertTerm.Model.Appointment;
+import com.dvproject.vertTerm.Model.Availability;
 import com.dvproject.vertTerm.Model.Blocker;
+import com.dvproject.vertTerm.Model.Employee;
+import com.dvproject.vertTerm.Model.Resource;
 import com.dvproject.vertTerm.Model.Warning;
+import com.dvproject.vertTerm.repository.AppointmentRepository;
 import com.dvproject.vertTerm.repository.BlockerRepository;
 
 import java.util.ArrayList;
@@ -22,16 +26,89 @@ public class BlockerServiceImp implements BlockerService {
 
    @Autowired
    private BlockerRepository blockerRepo;
+   @Autowired
+   private AppointmentRepository AppoRepo;
 
    @Autowired
    private AppointmentService AppoService;
-   // zeitraum , list resourcen and mitarbeitern
-   // 
+   @Autowired
+	private AvailabilityServiceImpl availabilityService;
+
+   
+   @Autowired
+   private EmployeeService EmpService;
+   @Autowired
+   private ResourceService ResService;
+
    public Blocker create(Blocker blocker) {
 	  Blocker b= blockerRepo.save(blocker);
-//      SetWarningFlag(blocker.getId());
+      SetWarningFlag(blocker.getId());
       return b;
    }
+   
+   public List<Appointment> SetWarningFlag(String id) {
+	   List<Appointment> appos=new ArrayList<>();
+	   Optional <Blocker> BlockerDb = this.blockerRepo.findById(id);
+       if (BlockerDb.isPresent()) {
+    	   Blocker blocker=  BlockerDb.get();
+    	
+    	   //get all employees from DB
+    	   List<Employee> emps=EmpService.getAll();
+    	   //get all Resources from DB
+    	   List<Resource> ress=ResService.getAll();
+    	   for(Employee emp : emps )
+    	   {   
+    		   //get Employee's Availability list
+    		   List<Availability> EmpAvasList=emp.getAvailabilities(); 
+    		   //get all appointments from Blocker and for each one 
+    		   //get an appointment by ID from DB
+    		   //check if the employee available to the appointment and if not then
+    		   //add EMPLOYEE_WARNING to the appointment / save it / add an Appointment to "appos" List
+               for(Appointment app :  blocker.getAppointments() )
+     	       {    
+          		  Appointment appDB=  this.AppoService.getById(app.getId());
+          		  if(!(availabilityService.isAvailable(EmpAvasList,appDB.getPlannedStarttime(), appDB.getActualEndtime()) ) )
+   		   	   	  {  
+               		   appDB.addWarning(Warning.EMPLOYEE_WARNING);
+             		   AppoRepo.save(appDB);
+                       appos.add(app);
+                   }
+          		  else
+          			 appos.add(app);
+                }
+		   }
+    	   for(Resource res : ress )
+    	   {	
+    		   //get Resource's Availability list
+    		   List<Availability> ResAvasList=res.getAvailabilities();
+    		   //get all appointments from Blocker and for each one 
+    		   //get an appointment by ID from DB
+    		   //check if the Resource available to the appointment and if not then
+    		   //add RESOURCE_WARNING to the appointment
+    		     for(Appointment app : blocker.getAppointments() )
+    		     {
+    		    	  Appointment appDB=  this.AppoService.getById(app.getId());
+              		  if(!(availabilityService.isAvailable(ResAvasList,appDB.getPlannedStarttime(), appDB.getActualEndtime()) ) )
+       		   	   	  {  
+                   		   appDB.addWarning(Warning.RESOURCE_WARNING);
+                 		   AppoRepo.save(appDB);
+                           appos.add(app);
+	                   }
+              		  else  
+              			  appos.add(app);
+    		     }
+    	   }
+    	
+    	//save changed Appointments to the blocker
+    	blocker.setAppointments(appos);
+       }
+   
+       else {
+    		throw new ResourceNotFoundException("Blocker with the given id :" +id + " not found");
+       }
+       
+      return appos;
+}
 
 
    public Blocker update(Blocker Blocker) {
@@ -81,32 +158,7 @@ public class BlockerServiceImp implements BlockerService {
     }
 
 	
-	public void SetWarningFlag(String id) {
-		//List<Appointment> appos=new ArrayList<>();
-		   Optional <Blocker> BlockerDb = this.blockerRepo.findById(id);
-	       if (BlockerDb.isPresent()) {
-	    	   Blocker b=  BlockerDb.get();
-	    	   Date BlockerStartDate= b.getStartDate();
-	    	   Date BlockerEndDate= b.getEndDate();
-	    	   List<Appointment> AllAppos =AppoService.getAll();
-	    	   for(Appointment app : AllAppos )
-	    	   {
-	    		   if((app.getActualStarttime() == BlockerStartDate) && (app.getActualEndtime() == BlockerEndDate))
-	    		   { 
-	    			   app.addWarning(Warning.APPOINTMENT_TIME_WARNING);
-	    			 //  appos.add(app);
-	    		   }
-	    	   }
-	       }
-	       else {
-	    		throw new ResourceNotFoundException("Blocker with the given id :" +id + " not found");
-	       }
-	      // return appos;
-	}
-
-
-
-
+	
 }
 
 

@@ -24,6 +24,10 @@ public class AppointmentServiceImpl implements AppointmentService {
     ResourceService ResSer;
     @Autowired
     EmployeeService EmpSer;
+    @Autowired
+    ProcedureService ProcedureSer;
+    @Autowired
+    RestrictionService RestrictionSer;
     @Override
     public List<Appointment> getAll() {
         return repo.findAll();
@@ -189,37 +193,48 @@ public class AppointmentServiceImpl implements AppointmentService {
      
     }
     
-      public Res_Emp getAvailableResourcesAndEmployees(Appointmentgroup group, Date startdate, Date enddate) {
-    	
+      public Res_Emp getAvailableResourcesAndEmployees(Appointmentgroup group) { 	
     	Res_Emp list= new Res_Emp();
     	List<Employee> Employees=new ArrayList<>();
-
     	List<Resource> Resources=new ArrayList<>();
-    	List<Appointment> apps=group.getAppointments();
-    	for (Appointment app : apps) {
-//    		Procedure procedure=app.getBookedProcedure();
-//    		List<ResourceType> ResourceTypes=procedure.getNeededResourceTypes();	     	
-//    		for (ResourceType rt : ResourceTypes) {
-//	    		for (Resource resource : ResSer.getAll(rt))   		
-//	    			{ //
-//	    			 //
-//	    			 //
-//	    			if ((ResSer.isResourceAvailableBetween(resource.getId(), startdate, enddate)))
-//	    				Resources.add(resource);
-//	    			}
-//	    	}
-//	    	List<Position> Positions=procedure.getNeededEmployeePositions();	    
-//	    	for (Position pos : Positions) {
-//	    		for (Employee employee : EmpSer.getAll(pos))
-//		    		{
-//	    			if (EmpSer.isEmployeeAvailableBetween(employee.getId(),startdate, enddate)) 
-//	    				Employees.add(employee);
-//	    			}
-//			}
+        // get all appointments from Appointmentgroup
+    	List<Appointment> appointments=group.getAppointments();
+    	//for each appointment	
+    	//1-get Booked Procedure
+		//2-get Procedure from DB
+		//3-get Needed ResourceTypes 
+    	//4-get Needed Employee Positions
+    	for (Appointment appointment : appointments) {
+    		Procedure procedureOfAppointment = appointment.getBookedProcedure();   		
+    		Procedure procedure = ProcedureSer.getById(procedureOfAppointment.getId());
+    		List<ResourceType> ResourceTypes=procedure.getNeededResourceTypes();
+    		List<Position> Positions=procedure.getNeededEmployeePositions();	
+    		//for each ResourceType
+    		//get all resources from this Type and for each one check if:
+    		//1- Resource Available to the appointment 
+    		//and 2- Check Restrictions of Resource and Procedure
+    		for (ResourceType rt : ResourceTypes) {
+	    		for (Resource resource : ResSer.getAll(rt))   		
+	    			{ 
+	    			if (ResSer.isResourceAvailableBetween(resource.getId(), appointment.getPlannedStarttime(), appointment.getPlannedEndtime())
+	    				 && RestrictionSer.testRestrictions(resource.getRestrictions(), procedure.getRestrictions()) )
+	    				Resources.add(resource);
+	    			}
+	    	}
+    		//for each position
+    		//get all Employees who has this Position and for each one check if:
+    		//1- Employee Available to the appointment 
+    		//and 2- Check Restrictions of Employee and Procedure   
+	    	for (Position pos : Positions) {
+	    		for (Employee employee : EmpSer.getAll(pos.getId()))
+		    		{
+	    			if (EmpSer.isEmployeeAvailableBetween(employee.getId(), appointment.getPlannedStarttime(), appointment.getPlannedEndtime())
+	    				 && RestrictionSer.testRestrictions(employee.getRestrictions(), procedure.getRestrictions()) )
+							Employees.add(employee);
+	    		    }
+			}
     	}
 
- 
- 
     	list.setResources(Resources);
     	list.setEmployees(Employees);
     	return list;

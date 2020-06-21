@@ -15,7 +15,7 @@ public interface AppointmentService extends BasicService<Appointment> {
 	// GET
 	List<Appointment> getAll(Bookable bookable);
 	//Available Resources and Employees
-	public Res_Emp getAvailableResourcesAndEmployees(Appointmentgroup group,Date startdate, Date enddate);
+	public Res_Emp getAvailableResourcesAndEmployees(Appointmentgroup group);
 	// appointments with warning
 	List<Appointment> getAppointmentsByWarning(Warning warning);
 	
