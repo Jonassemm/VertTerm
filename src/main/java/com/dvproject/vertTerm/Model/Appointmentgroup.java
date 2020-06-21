@@ -37,25 +37,13 @@ public class Appointmentgroup {
 	public void setId(String id) {
 		this.id = id;
 	}
-	
+
 	public boolean hasNoAppointmentIdSet() {
-		for (Appointment appointment : appointments) {
-			if (appointment.hasId()) {
-				return false;
-			}
-		}
-		
-		return true;
+		return appointments.stream().allMatch(appointment -> !appointment.hasId());
 	}
-	
+
 	public boolean hasAllAppointmentIdSet() {
-		for (Appointment appointment : appointments) {
-			if (!appointment.hasId()) {
-				return false;
-			}
-		}
-		
-		return true;
+		return appointments.stream().allMatch(Appointment::hasId);
 	}
 
 	public Status getStatus() {
@@ -78,11 +66,8 @@ public class Appointmentgroup {
 			BookingTester bookingTester) {
 		List<TimeInterval> timeIntervallsOfAppointments = new ArrayList<>();
 
-		for (Appointment appointment : appointments) {
-			bookingTester.setAppointment(appointment);
-
-			bookingTester.testAll(appointmentService, restrictionService, timeIntervallsOfAppointments);
-		}
+		appointments.forEach(appointment -> bookingTester.testAll(appointment, appointmentService, restrictionService,
+				timeIntervallsOfAppointments));
 	}
 
 	public void testProcedureRelations() {

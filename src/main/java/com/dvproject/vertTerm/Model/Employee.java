@@ -25,34 +25,31 @@ public class Employee extends User implements Serializable, Available {
 	public void setPositions(List<Position> positions) {
 		this.positions = positions;
 	}
-	
-	public void isAvailable (Date startdate, Date enddate) {
-		for (Availability availability : getAvailabilities()) {
-			if (availability.isAvailableBetween(startdate, enddate)) {
-				return;
-			}
+
+	public void isAvailable(Date startdate, Date enddate) {
+		if (!getAvailabilities().stream()
+				.anyMatch(availability -> availability.isAvailableBetween(startdate, enddate))) {
+			throw new AvailabilityException("No availability for the employee " + getFirstName() + " " + getLastName());
 		}
-		
-		throw new AvailabilityException("No availability for the employee " + getFirstName() + " " + getLastName());
 	}
 
 	@Override
 	public List<Appointment> getAppointmentsAfterDate(AppointmentService appointmentService, Date startdate) {
 		List<Appointment> appointments = appointmentService.getAppointmentsOfEmployee(getId(), startdate);
-		
+
 		for (Appointment appointment : appointments) {
 			List<Employee> employees = appointment.getBookedEmployees();
 			Employee employee;
 			for (int i = 0; i < employees.size(); i++) {
 				employee = employees.get(i);
-				
+
 				if (employee.getId().equals(getId())) {
 					employees.set(i, this);
 					break;
 				}
 			}
 		}
-		
+
 		return appointments;
 	}
 

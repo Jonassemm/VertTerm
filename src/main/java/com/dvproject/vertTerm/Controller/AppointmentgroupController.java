@@ -1,7 +1,6 @@
 package com.dvproject.vertTerm.Controller;
 
 import java.util.Collection;
-import java.util.Date;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,7 +17,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.dvproject.vertTerm.Model.Appointment;
 import com.dvproject.vertTerm.Model.Appointmentgroup;
 import com.dvproject.vertTerm.Model.Optimizationstrategy;
 import com.dvproject.vertTerm.Model.Status;
@@ -120,5 +118,10 @@ public class AppointmentgroupController {
 	@DeleteMapping("/Appointment/{id}")
 	public boolean deleteAppointment (@PathVariable(name = "id") String appointmentId) {
 		return appointmentgroupService.deleteAppointment(appointmentId, false);
+	}
+	
+	@DeleteMapping("/override/Appointment/{id}")
+	public boolean deleteAppointmentOverride (@PathVariable(name = "id") String appointmentId) {
+		return appointmentgroupService.deleteAppointment(appointmentId, true);
 	}
 }

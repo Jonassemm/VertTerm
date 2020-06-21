@@ -76,37 +76,34 @@ public class Resource extends Bookable implements Serializable, Available {
 		return resourceTypes;
 	}
 
-    public void setResourceTypes(List<ResourceType> resourceTypes) {
-        this.resourceTypes = resourceTypes;
-    }
-    
-    public void isAvailable(Date startdate, Date enddate) {
-		for (Availability availability : getAvailabilities()) {
-			if (availability.isAvailableBetween(startdate, enddate)) {
-				return;
-			}
+	public void setResourceTypes(List<ResourceType> resourceTypes) {
+		this.resourceTypes = resourceTypes;
+	}
+
+	public void isAvailable(Date startdate, Date enddate) {
+		if (!getAvailabilities().stream()
+				.anyMatch(availability -> availability.isAvailableBetween(startdate, enddate))) {
+			throw new AvailabilityException("No availability for the resource " + name);
 		}
-		
-		throw new AvailabilityException("No availability for the resource " + name);
-    }
-    
+	}
+
 	@Override
 	public List<Appointment> getAppointmentsAfterDate(AppointmentService appointmentService, Date startdate) {
 		List<Appointment> appointments = appointmentService.getAppointmentsOfResource(getId(), startdate);
-		
+
 		for (Appointment appointment : appointments) {
 			List<Resource> resources = appointment.getBookedResources();
 			Resource resource;
 			for (int i = 0; i < resources.size(); i++) {
 				resource = resources.get(i);
-				
+
 				if (resource.getId().equals(getId())) {
 					resources.set(i, this);
 					break;
 				}
 			}
 		}
-		
+
 		return appointments;
 	}
 }

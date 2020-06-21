@@ -22,7 +22,7 @@ const Side = ({closeFunction}) => {
                     <Nav.Link className="sidebarLink" as={Link} to="/admin/restriction">Einschränkungen</Nav.Link>
                 </Nav.Item>
                 <Nav.Item>
-                    <Nav.Link className="sidebarLink" as={Link} to="/admin/extUserInfo">Erweiterte Benutzerinformationen</Nav.Link>
+                    <Nav.Link className="sidebarLink" as={Link} to="/admin/optionalAttributes">Optionale Attribute</Nav.Link>
                 </Nav.Item>
                 <Nav.Item>
                     <Nav.Link className="sidebarLink" as={Link} to="/admin/position">Positionen</Nav.Link>

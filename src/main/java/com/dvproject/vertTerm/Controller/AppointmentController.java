@@ -48,7 +48,12 @@
     		}
     		
     		User user = userService.getOwnUser(principal);
-    		return service.getAppointmentsByUserid(user.getId());
+    		String id = user.getId();
+    		List<Appointment> appointments = service.getAppointmentsByUserid(id);
+    		if (user instanceof Employee)
+    			appointments.addAll(service.getAppointmentsByEmployeeid(id));
+    		
+    		return appointments;
     	}
     	
     	@GetMapping("/Resources/{resourceId}")

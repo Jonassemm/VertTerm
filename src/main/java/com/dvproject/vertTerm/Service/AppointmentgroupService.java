@@ -2,6 +2,7 @@ package com.dvproject.vertTerm.Service;
 
 import java.util.List;
 
+import com.dvproject.vertTerm.Model.Appointment;
 import com.dvproject.vertTerm.Model.Appointmentgroup;
 import com.dvproject.vertTerm.Model.Optimizationstrategy;
 import com.dvproject.vertTerm.Model.Status;
@@ -15,6 +16,10 @@ public interface AppointmentgroupService extends BasicService<Appointmentgroup> 
 
 	Appointmentgroup getOptimizedSuggestion(Appointmentgroup appointmentgroup,
 			Optimizationstrategy optimizationstrategy);
+
+	void setPullableAppointment(Appointment appointment);
+	
+	void setPullableAppointment();
 	
 	//PUT
 	User bookAppointmentgroup (String userid, Appointmentgroup appointmentgroup, boolean override);

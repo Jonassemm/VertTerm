@@ -11,6 +11,7 @@ import org.springframework.web.servlet.NoHandlerFoundException;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
 import com.dvproject.vertTerm.Model.Appointment;
+import com.dvproject.vertTerm.Model.Availability;
 import com.dvproject.vertTerm.Model.Employee;
 import com.dvproject.vertTerm.Model.Position;
 import com.dvproject.vertTerm.Model.Procedure;
@@ -60,7 +61,7 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
 	public ResponseEntity<Object> handleRestrictionException(RestrictionException exception, WebRequest request) {
 		Restriction restriction = exception.getRestriction();
 		StringBuilder builder = new StringBuilder(exception.getMessage());
-		HttpHeaders headers = addExceptionHeader(null, restriction.getClass().getSimpleName());
+		HttpHeaders headers = addExceptionHeader(null, Restriction.class.getSimpleName());
 		
 		if (restriction != null) {
 			builder.append(": restriction ");
@@ -75,7 +76,7 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
 	public ResponseEntity<Object> handleAppointmentException(AppointmentException exception, WebRequest request) {
 		Appointment appointment = exception.getAppointment();
 		StringBuilder builder = new StringBuilder(exception.getMessage());
-		HttpHeaders headers = addExceptionHeader(null, appointment.getClass().getSimpleName());
+		HttpHeaders headers = addExceptionHeader(null, Appointment.class.getSimpleName());
 		
 		if (appointment != null) {
 			builder.append(": appointment from procedure ");
@@ -89,7 +90,7 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
 	@ExceptionHandler(AvailabilityException.class)
 	public ResponseEntity<Object> handleAvailabilityException(AvailabilityException exception, WebRequest request) {
 		StringBuilder builder = new StringBuilder(exception.getMessage());
-		HttpHeaders headers = addExceptionHeader(null, "Availability");
+		HttpHeaders headers = addExceptionHeader(null, Availability.class.getSimpleName());
 
 		return handleExceptionInternal(exception, builder.toString(), headers, HttpStatus.UNPROCESSABLE_ENTITY,
 				request);
@@ -99,7 +100,7 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
 	public ResponseEntity<Object> handleResourceTypeException(ResourceTypeException exception, WebRequest request) {
 		ResourceType resourcetype = exception.getResourceType();
 		StringBuilder builder = new StringBuilder(exception.getMessage());
-		HttpHeaders headers = addExceptionHeader(null, resourcetype.getClass().getSimpleName());
+		HttpHeaders headers = addExceptionHeader(null, ResourceType.class.getSimpleName());
 
 		if (resourcetype != null) {
 			builder.append(": resourcetype ");
@@ -114,7 +115,7 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
 	public ResponseEntity<Object> handleResourceException(ResourceException exception, WebRequest request) {
 		Resource resource = exception.getResource();
 		StringBuilder builder = new StringBuilder(exception.getMessage());
-		HttpHeaders headers = addExceptionHeader(null, resource.getClass().getSimpleName());
+		HttpHeaders headers = addExceptionHeader(null, Resource.class.getSimpleName());
 
 		if (resource != null) {
 			builder.append(": resource ");
@@ -130,7 +131,7 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
 			WebRequest request) {
 		ProcedureRelation procedurerelation = exception.getProcedureRelation();
 		StringBuilder builder = new StringBuilder(exception.getMessage());
-		HttpHeaders headers = addExceptionHeader(null, procedurerelation.getClass().getSimpleName());
+		HttpHeaders headers = addExceptionHeader(null, ProcedureRelation.class.getSimpleName());
 
 		if (procedurerelation != null) {
 			builder.append(": procedurerelation ");
@@ -145,7 +146,7 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
 	public ResponseEntity<Object> handleProcedureException(ProcedureException exception, WebRequest request) {
 		Procedure procedure = exception.getProcedure();
 		StringBuilder builder = new StringBuilder(exception.getMessage());
-		HttpHeaders headers = addExceptionHeader(null, procedure.getClass().getSimpleName());
+		HttpHeaders headers = addExceptionHeader(null, Procedure.class.getSimpleName());
 
 		if (procedure != null) {
 			builder.append(": procedure ");
@@ -160,7 +161,7 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
 	public ResponseEntity<Object> handleEmployeeException(EmployeeException exception, WebRequest request) {
 		Employee employee = exception.getEmployee();
 		StringBuilder builder = new StringBuilder(exception.getMessage());
-		HttpHeaders headers = addExceptionHeader(null, employee.getClass().getSimpleName());
+		HttpHeaders headers = addExceptionHeader(null, Employee.class.getSimpleName());
 
 		if (employee != null) {
 			builder.append(": employee ");
@@ -177,7 +178,7 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
 	public ResponseEntity<Object> handleBookedCustomerException(BookedCustomerException exception, WebRequest request) {
 		User user = exception.getUser();
 		StringBuilder builder = new StringBuilder(exception.getMessage());
-		HttpHeaders headers = addExceptionHeader(null, user.getClass().getSimpleName());
+		HttpHeaders headers = addExceptionHeader(null, User.class.getSimpleName());
 
 		if (user != null) {
 			builder.append(": user ");
@@ -192,7 +193,7 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
 	public ResponseEntity<Object> handlePositionException(PositionException exception, WebRequest request) {
 		Position position = exception.getPosition();
 		StringBuilder builder = new StringBuilder(exception.getMessage());
-		HttpHeaders headers = addExceptionHeader(null, position.getClass().getSimpleName());
+		HttpHeaders headers = addExceptionHeader(null, Position.class.getSimpleName());
 
 		if (position != null) {
 			builder.append(": position ");
@@ -236,12 +237,8 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
 	}
 
 	private HttpHeaders addExceptionHeader(HttpHeaders headers, String value) {
-		if (headers == null) {
-			headers = new HttpHeaders();
-		}
-
+		headers = headers == null ? new HttpHeaders() : headers;
 		headers.add("exception", value);
-		headers.add("Access-Control-Expose-Headers", "exception");
 
 		return headers;
 	}
