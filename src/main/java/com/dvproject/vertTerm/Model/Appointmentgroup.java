@@ -80,7 +80,7 @@ public class Appointmentgroup {
 			if (proceduresMap.containsKey(id))
 				throw new ProcedureException("Two different appointments of one procedure", procedureOfAppointment);
 
-			proceduresMap.put(id, appointment.getBookedProcedure());
+			proceduresMap.put(id, procedureOfAppointment);
 			appointmentsMap.put(id, appointment);
 		}
 

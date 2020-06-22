@@ -28,7 +28,6 @@ public class NormalBookingTester extends BookingTester {
 	@Override
 	public void testEmployees() {
 		appointment.testEmployeesOfAppointment();
-		
 	}
 
 	@Override
