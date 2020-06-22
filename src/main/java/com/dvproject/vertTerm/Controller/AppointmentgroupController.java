@@ -34,12 +34,12 @@ public class AppointmentgroupController {
 	public List<Appointmentgroup> getAllAppointmentgroups () {
 		return appointmentgroupService.getAll();
 	}
-	
-	@GetMapping("/Status")
-	public List<Appointmentgroup> getAllAppointmentgroupsWithStatus (@RequestBody Status status){
+
+	@GetMapping("/Status/{status}")
+	public List<Appointmentgroup> getAllAppointmentgroupsWithStatus (@PathVariable Status status) {
 		return appointmentgroupService.getAppointmentgroupsWithStatus(status);
 	}
-	
+
 	@GetMapping("/{id}")
 	public Appointmentgroup getAppointmentGroup (@PathVariable String id) {
 		return appointmentgroupService.getById(id);
