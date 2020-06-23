@@ -33,6 +33,8 @@ public interface AppointmentRepository extends MongoRepository<Appointment, Stri
 	
 	List<Appointment> findByBookedCustomerIdAndStatus(String id, AppointmentStatus status);
 	
+	List<Appointment> findByBookedEmployeesIdAndStatus(String id, AppointmentStatus status);
+	
 //	@Query("{'bookedProcedure.$id': ObjectId(?0), 'plannedStarttime': {'$gte': ?1}}")
 	List<Appointment> findByBookedProcedureIdAndPlannedStarttimeAfter(String id, Date plannedStarttime);
 	
@@ -44,6 +46,9 @@ public interface AppointmentRepository extends MongoRepository<Appointment, Stri
 	
 	@Query("{'$and':[{'plannedStarttime': {'$gte': ?0}}, {'plannedEndtime': {'$lte': ?1}}]}")
 	List<Appointment> findAppointmentsByTimeinterval(Date starttime, Date endtime);
+	
+	@Query("{'$or':[{'$and':[{'plannedStarttime' : {'$lte': ?0}}, {'plannedEndtime': {'$gt': ?0}}]}, {'$and':[{'plannedStarttime' : {'$lt': ?1}}, {'plannedEndtime': {'$gte': ?1}}]}, {'$and':[{'plannedStarttime' : {'$gte': ?0}}, {'plannedEndtime': {'$lte': ?1}}]}], 'status': ?2}")
+	List<Appointment> findAllOverlappingAppointmentsWithStatus(Date starttime, Date endtime, AppointmentStatus status);
 	
 	@Query("{'$and':[{'plannedStarttime': {'$gte': ?0}}, {'plannedEndtime': {'$lte': ?1}}, {'status': ?2}]}")
 	List<Appointment> findAppointmentsByTimeintervalAndStatus(Date starttime, Date endtime, AppointmentStatus status);

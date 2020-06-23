@@ -1,5 +1,6 @@
 package com.dvproject.vertTerm.Model;
 
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
@@ -59,6 +60,10 @@ public class Appointmentgroup {
 
 	public void setAppointments(List<Appointment> appointments) {
 		this.appointments = appointments;
+	}
+
+	public void resetAllWarnings() {
+		appointments.forEach(app -> app.setWarnings(new ArrayList<Warning>()));
 	}
 
 	public void testBookability(RestrictionService restrictionService, AppointmentServiceImpl appointmentService,

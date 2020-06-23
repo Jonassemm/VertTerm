@@ -16,8 +16,8 @@ import org.springframework.data.mongodb.core.mapping.DBRef;
 
 import com.dvproject.vertTerm.Service.AppointmentServiceImpl;
 import com.dvproject.vertTerm.Service.RestrictionService;
-import com.dvproject.vertTerm.exception.AppointmentException;
 import com.dvproject.vertTerm.exception.AppointmentTimeException;
+import com.dvproject.vertTerm.exception.AppointmentInternalException;
 import com.dvproject.vertTerm.exception.EmployeeException;
 import com.dvproject.vertTerm.exception.PositionException;
 import com.dvproject.vertTerm.exception.ProcedureException;
@@ -52,7 +52,7 @@ public class Appointment implements Serializable {
 	@DBRef
 	private List<Resource> bookedResources;
 
-	public Appointment() {
+	public Appointment () {
 		this.bookedResources = new ArrayList<>();
 		this.bookedEmployees = new ArrayList<>();
 	}
@@ -203,9 +203,32 @@ public class Appointment implements Serializable {
 	}
 
 	public void testBlockage(AppointmentServiceImpl appointmentService) {
-		testEmployeeAppointments(appointmentService);
-		testResourceAppointments(appointmentService);
-		testCustomerAppointments(appointmentService);
+		List<Appointment> failedAppointments = new ArrayList<>();
+		String message = null;
+
+		try {
+			testEmployeeAppointments(appointmentService);
+		} catch (AppointmentInternalException ex) {
+			failedAppointments.addAll(ex.getAppointments());
+			message = message != null ? message : ex.getMessage();
+		}
+
+		try {
+			testResourceAppointments(appointmentService);
+		} catch (AppointmentInternalException ex) {
+			failedAppointments.addAll(ex.getAppointments());
+			message = message != null ? message : ex.getMessage();
+		}
+
+		try {
+			testCustomerAppointments(appointmentService);
+		} catch (AppointmentInternalException ex) {
+			failedAppointments.addAll(ex.getAppointments());
+			message = message != null ? message : ex.getMessage();
+		}
+
+		if (failedAppointments.size() != 0)
+			throw new AppointmentInternalException(failedAppointments, message, this);
 	}
 
 	public void testOverlapping(List<TimeInterval> timeIntervallsOfAppointments) {
@@ -233,8 +256,7 @@ public class Appointment implements Serializable {
 			restrictionsToTest = resource.getRestrictions();
 
 			// resource and user contain the same restriction
-			if (restrictionsToTest != null
-					&& !restrictionService.testRestrictions(restrictionsToTest, userRestrictions))
+			if (restrictionsToTest != null && !restrictionService.testRestrictions(restrictionsToTest, userRestrictions))
 				throw new RestrictionException("A resource contains a restriction that the user also has", null);
 		}
 	}
@@ -242,7 +264,7 @@ public class Appointment implements Serializable {
 	public void testPlannedTimes() {
 		if (plannedStarttime.after(plannedEndtime))
 			throw new AppointmentTimeException("The planned starttime is after the planned endtime", this);
-		
+
 		if (plannedStarttime.before(Date.from(Instant.now())))
 			throw new AppointmentTimeException("The planned starttime is in the past", this);
 	}
@@ -362,6 +384,7 @@ public class Appointment implements Serializable {
 	}
 
 	private void testEmployeeAppointments(AppointmentServiceImpl appointmentService) {
+		List<Appointment> failedAppointments = new ArrayList<>();
 		List<Appointment> appointmentsOfEmployee = null;
 
 		for (Employee employee : bookedEmployees) {
@@ -374,20 +397,30 @@ public class Appointment implements Serializable {
 					plannedStarttime, plannedEndtime, AppointmentStatus.PLANNED));
 
 			if (isNotEmptyAndDoesNotOnlyContainThisAppointment(appointmentsOfEmployee))
-				throw new AppointmentException("An employee already has an appointment in the given time interval",
-						this);
+				failedAppointments.addAll(
+						appointmentsOfEmployee.stream().filter(app -> !app.getId().equals(id)).collect(Collectors.toList()));
 		}
+
+		if (failedAppointments.size() != 0)
+			throw new AppointmentInternalException(failedAppointments,
+					"An employee already has an appointment in the given time interval", this);
 	}
 
 	private void testResourceAppointments(AppointmentServiceImpl appointmentService) {
+		List<Appointment> failedAppointments = new ArrayList<>();
+
 		for (Resource resource : bookedResources) {
 			List<Appointment> appointmentsOfResource = appointmentService.getAppointmentsOfBookedResourceInTimeinterval(
 					resource.getId(), plannedStarttime, plannedEndtime, AppointmentStatus.PLANNED);
 
 			if (isNotEmptyAndDoesNotOnlyContainThisAppointment(appointmentsOfResource))
-				throw new AppointmentException("A resource already has an appointment in the given time interval",
-						this);
+				failedAppointments.addAll(
+						appointmentsOfResource.stream().filter(app -> !app.getId().equals(id)).collect(Collectors.toList()));
 		}
+
+		if (failedAppointments.size() != 0)
+			throw new AppointmentInternalException(failedAppointments,
+					"A resource already has an appointment in the given time interval", this);
 	}
 
 	private void testCustomerAppointments(AppointmentServiceImpl appointmentService) {
@@ -395,9 +428,11 @@ public class Appointment implements Serializable {
 			List<Appointment> appointmentsOfCustomer = appointmentService.getAppointmentsOfBookedCustomerInTimeinterval(
 					bookedCustomer.getId(), plannedStarttime, plannedEndtime, AppointmentStatus.PLANNED);
 
-			if (isNotEmptyAndDoesNotOnlyContainThisAppointment(appointmentsOfCustomer))
-				throw new AppointmentException("The customer already has an appointment in the given time interval",
-						this);
+			if (isNotEmptyAndDoesNotOnlyContainThisAppointment(appointmentsOfCustomer)) {
+				throw new AppointmentInternalException(
+						appointmentsOfCustomer.stream().filter(app -> !app.getId().equals(id)).collect(Collectors.toList()),
+						"The customer already has an appointment in the given time interval", this);
+			}
 		} catch (NullPointerException ex) {
 			if (!bookedCustomer.getUsername().contains("anonymousUser"))
 				throw ex;

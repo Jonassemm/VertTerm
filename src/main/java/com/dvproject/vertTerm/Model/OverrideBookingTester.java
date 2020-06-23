@@ -6,6 +6,7 @@ import com.dvproject.vertTerm.Service.AppointmentServiceImpl;
 import com.dvproject.vertTerm.Service.RestrictionService;
 import com.dvproject.vertTerm.exception.AppointmentException;
 import com.dvproject.vertTerm.exception.AppointmentTimeException;
+import com.dvproject.vertTerm.exception.AppointmentInternalException;
 import com.dvproject.vertTerm.exception.AvailabilityException;
 import com.dvproject.vertTerm.exception.EmployeeException;
 import com.dvproject.vertTerm.exception.PositionException;
@@ -105,6 +106,13 @@ public class OverrideBookingTester extends BookingTester {
 			appointment.testBlockage(appointmentService);
 		} catch (AppointmentException ex) {
 			appointment.addWarning(Warning.APPOINTMENT_WARNING);
+		} catch (AppointmentInternalException ex) {
+			appointment.addWarning(Warning.APPOINTMENT_WARNING);
+			
+			ex.getAppointments().forEach(app -> { 
+				app.addWarning(Warning.APPOINTMENT_WARNING); 
+				appointmentService.update(app);
+			});
 		}
 	}
 }
