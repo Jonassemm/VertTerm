@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import java.util.TimeZone;
 import java.util.stream.Collectors;
 
 import javax.validation.constraints.NotNull;
@@ -89,11 +90,15 @@ public class Appointment implements Serializable {
 		return plannedEndtime;
 	}
 
-	public Date generatePlannedEndtime() {
-		Calendar enddate = Calendar.getInstance();
-		enddate.setTime(this.plannedStarttime);
+	public Date generatePlannedEndtime(Date starttime) {
+		Calendar enddate = Calendar.getInstance(TimeZone.getDefault());
 		int proceduredDurationInMinutesInt = 0;
-		long procedureDurationInMinutesLong = bookedProcedure.getDuration().toMinutes();
+		Duration duration = bookedProcedure.getDuration();
+		duration = duration == null ? Duration.between(this.plannedEndtime.toInstant(), this.plannedStarttime.toInstant())
+				: duration;
+		long procedureDurationInMinutesLong = duration.toMinutes();
+
+		enddate.setTime(starttime);
 
 		do {
 			proceduredDurationInMinutesInt = procedureDurationInMinutesLong > Integer.MAX_VALUE ? Integer.MAX_VALUE
@@ -187,9 +192,7 @@ public class Appointment implements Serializable {
 	}
 
 	public boolean removeWarning(Warning warning) {
-		if (warnings.contains(warning)) {
-			return warnings.remove(warning);
-		}
+		if (warnings.contains(warning)) { return warnings.remove(warning); }
 
 		return false;
 	}

@@ -16,9 +16,11 @@
     import org.springframework.web.bind.annotation.*;
 
     import java.security.Principal;
-    import java.util.Collection;
+import java.util.Arrays;
+import java.util.Collection;
     import java.util.Date;
     import java.util.List;
+import java.util.stream.Collectors;
 
     @RestController
     @RequestMapping("/Appointments")
@@ -97,11 +99,18 @@
     		return appointments;
     	}
 
-    	@GetMapping(path = { "/Warnings/{userid}", "/Warnings", "/Warnings/" })
+    	@GetMapping(path = { "/warnings" })
     	public List<Appointment> getAppointmentsWithWarnings(
-    			@PathVariable(required = false) String userid,
-    			@RequestBody(required = true) List<Warning> warnings) {
+    			@RequestParam(required = false) String userid,
+    			@RequestParam(required = false, name = "warnings") List<String> warningStrings) {
     		List<Appointment> appointments = null;
+    		List<Warning> warnings = null;
+    		if (warningStrings == null || warningStrings.isEmpty()) {
+    			warnings = Arrays.asList(Warning.values());
+    		} else {
+    		warnings = warningStrings.stream().map(warningString -> Warning.valueOf(warningString)).
+    				collect(Collectors.toList());
+    		}
 
     		if (userid == null || userid.equals("")) {
     			appointments = service.getAppointmentsByWarnings(warnings);

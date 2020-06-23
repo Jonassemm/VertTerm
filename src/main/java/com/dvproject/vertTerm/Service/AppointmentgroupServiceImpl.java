@@ -9,6 +9,8 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
+import java.util.TimeZone;
+import java.util.stream.Collectors;
 
 import javax.servlet.http.HttpServletResponse;
 
@@ -357,12 +359,13 @@ public class AppointmentgroupServiceImpl implements AppointmentgroupService {
 	}
 
 	private List<Appointment> getPullableAppointments(Date startdate) {
+		Date enddate = getLatestTimeOfToday();
 		List<Appointment> appointmentsToTest = appointmentService.getAppointmentsInTimeIntervalWithStatus(startdate,
-				getLatestTimeOfToday(), AppointmentStatus.PLANNED);
+				enddate, AppointmentStatus.PLANNED);
 
 		appointmentsToTest.removeIf(app -> {
+			app.setPlannedEndtime(app.generatePlannedEndtime(startdate));
 			app.setPlannedStarttime(startdate);
-			app.setPlannedEndtime(app.generatePlannedEndtime());
 
 			return !this.isPullable(app);
 		});
@@ -385,7 +388,7 @@ public class AppointmentgroupServiceImpl implements AppointmentgroupService {
 
 	private Date getDateOfNowRoundedUp() {
 		int addedMinutes = 2;
-		Calendar cal = Calendar.getInstance();
+		Calendar cal = getCalendar();
 		cal.set(Calendar.MINUTE, cal.get(Calendar.MINUTE) + addedMinutes);
 		cal.set(Calendar.SECOND, 0);
 
@@ -393,11 +396,17 @@ public class AppointmentgroupServiceImpl implements AppointmentgroupService {
 	}
 
 	private Date getLatestTimeOfToday() {
-		Calendar calendar = Calendar.getInstance();
+		Calendar calendar = getCalendar();
 		calendar.set(Calendar.HOUR_OF_DAY, 23);
 		calendar.set(Calendar.MINUTE, 59);
 
 		return calendar.getTime();
+	}
+
+	private Calendar getCalendar() {
+		Calendar cal = Calendar.getInstance(TimeZone.getDefault());
+		cal.setTime(getDateOfNow());
+		return cal;
 	}
 
 	private String getStringRepresentationOf(Date date) {
@@ -435,7 +444,7 @@ public class AppointmentgroupServiceImpl implements AppointmentgroupService {
 	private void testWarningsForAppointmentGroup(Appointmentgroup appointmentgroup) {
 		List<Appointment> appointmentsOfAppointmentgroup = appointmentgroup.getAppointments();
 		appointmentgroup.resetAllWarnings();
-		
+
 		try {
 			appointmentgroup.testProcedureRelations();
 		} catch (ProcedureException ex) {

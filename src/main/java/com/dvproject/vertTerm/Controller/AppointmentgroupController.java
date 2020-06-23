@@ -46,7 +46,7 @@ public class AppointmentgroupController {
 		return appointmentgroupService.getById(id);
 	}
 	
-	@GetMapping("/Appointment/{id}")
+	@GetMapping("/appointment/{id}")
 	public Appointmentgroup getAppointmentGroupByAppointmentId (@PathVariable String id) {
 		return appointmentgroupService.getAppointmentgroupContainingAppointmentID(id);
 	}
@@ -116,12 +116,12 @@ public class AppointmentgroupController {
 		return appointmentgroupService.delete(appointmentGroupId);
 	}
 	
-	@DeleteMapping("/Appointment/{id}")
+	@DeleteMapping("/appointment/{id}")
 	public boolean deleteAppointment (@PathVariable(name = "id") String appointmentId) {
 		return appointmentgroupService.deleteAppointment(appointmentId, false);
 	}
 	
-	@DeleteMapping("/override/Appointment/{id}")
+	@DeleteMapping("/override/appointment/{id}")
 	public boolean deleteAppointmentOverride (@PathVariable(name = "id") String appointmentId) {
 		return appointmentgroupService.deleteAppointment(appointmentId, true);
 	}
