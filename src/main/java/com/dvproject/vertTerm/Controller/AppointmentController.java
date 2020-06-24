@@ -106,9 +106,9 @@ import java.util.stream.Collectors;
     		List<Appointment> appointments = null;
     		List<Warning> warnings = null;
     		if (warningStrings == null || warningStrings.isEmpty()) {
-    			warnings = Arrays.asList(Warning.values());
+    			warnings = Warning.getAll();
     		} else {
-    		warnings = warningStrings.stream().map(warningString -> Warning.valueOf(warningString)).
+    			warnings = warningStrings.stream().map(warningString -> Warning.enumOf(warningString)).
     				collect(Collectors.toList());
     		}
 
