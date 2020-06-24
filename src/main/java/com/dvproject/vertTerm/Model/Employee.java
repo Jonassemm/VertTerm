@@ -33,7 +33,7 @@ public class Employee extends User implements Serializable, Available {
 
 	@Override
 	public List<Appointment> getAppointmentsAfterDate(AppointmentService appointmentService, Date startdate) {
-		List<Appointment> appointments = appointmentService.getAppointmentsOfEmployee(getId(), startdate);
+		List<Appointment> appointments = appointmentService.getAppointmentsOf(this, startdate);
 
 		for (Appointment appointment : appointments) {
 			List<Employee> employees = appointment.getBookedEmployees();

@@ -71,18 +71,35 @@ public class AppointmentServiceImpl implements AppointmentService {
 	}
 
 	@Override
-	public List<Appointment> getAppointmentsByUserid(String id) {
-		return repo.findByBookedCustomerId(id);
+	public List<Appointment> getAllAppointmentsByUseridAndWarnings(String userid, List<Warning> warnings) {
+		if (warnings == null || warnings.size() == 0)
+			throw new IllegalArgumentException("Warnings are needed!");
+
+		boolean isUseridEmpty = userid == null || userid.equals("");
+		boolean hasOneWarning = warnings.size() > 1;
+
+		if (isUseridEmpty) {
+			return hasOneWarning ? getAppointmentsByWarning(warnings.get(0)) : getAppointmentsByWarnings(warnings);
+		} else {
+			return hasOneWarning ? getAppointmentsByWarningAndId(userid, warnings.get(0))
+					: getAppointmentsByWarningsAndId(userid, warnings);
+		}
 	}
 
 	@Override
-	public List<Appointment> getAppointmentsByUserid(String id, AppointmentStatus appointmentStatus) {
-		return repo.findByBookedCustomerIdAndStatus(id, appointmentStatus);
+	public List<Appointment> getAppointmentsByUserIdAndAppointmentStatus(String userid, AppointmentStatus status) {
+		return status == null ? getAppointmentsByUserid(userid) : getAppointmentsByUserid(userid, status);
 	}
 
 	@Override
-	public List<Appointment> getAppointmentsByEmployeeid(String employeeid, AppointmentStatus appointmentStatus) {
-		return repo.findByBookedEmployeesIdAndStatus(employeeid, appointmentStatus);
+	public List<Appointment> getAppointmentsByEmployeeIdAndAppointmentStatus(String employeeid,
+			AppointmentStatus status) {
+		return status == null ? getAppointmentsByEmployeeid(employeeid) : getAppointmentsByEmployeeid(employeeid, status);
+	}
+
+	public List<Appointment> getAppointmentsByResourceIdAndAppointmentStatus(String resourceid,
+			AppointmentStatus status) {
+		return status == null ? getAppointmentsByResourceid(resourceid) : getAppointmentsByResourceid(resourceid, status);
 	}
 
 	@Override
@@ -115,14 +132,10 @@ public class AppointmentServiceImpl implements AppointmentService {
 	}
 
 	@Override
-	public List<Appointment> getAppointmentsInTimeIntervalWithStatus(Date starttime, Date endtime,
+	public List<Appointment> getAppointmentsInTimeIntervalAndStatus(Date starttime, Date endtime,
 			AppointmentStatus status) {
-		return repo.findAppointmentsByTimeintervalAndStatus(starttime, endtime, status);
-	}
-
-	@Override
-	public List<Appointment> getAppointmentsInTimeInterval(Date starttime, Date endtime) {
-		return repo.findAppointmentsByTimeinterval(starttime, endtime);
+		return status == null ? getAppointmentsInTimeInterval(starttime, endtime)
+				: getAppointmentsInTimeIntervalWithStatus(starttime, endtime, status);
 	}
 
 	@Override
@@ -132,52 +145,23 @@ public class AppointmentServiceImpl implements AppointmentService {
 	}
 
 	@Override
-	public List<Appointment> getAppointments(Available available, Date endOfSeries) {
-		return available.getAppointmentsAfterDate(this, endOfSeries);
+	public List<Appointment> getAppointments(Available available, Date startdate) {
+		return available.getAppointmentsAfterDate(this, startdate);
 	}
 
 	@Override
-	public List<Appointment> getAppointmentsByEmployeeid(String id) {
-		return repo.findByBookedEmployeesId(id);
+	public List<Appointment> getAppointmentsOf(Employee employee, Date startdate) {
+		return repo.findByBookedEmployeesIdAndPlannedStarttimeAfter(employee.getId(), startdate);
 	}
 
 	@Override
-	public List<Appointment> getAppointmentsByResourceid(String id) {
-		return repo.findByBookedResourcesId(id);
+	public List<Appointment> getAppointmentsOf(Procedure procedure, Date startdate) {
+		return repo.findByBookedProcedureIdAndPlannedStarttimeAfter(procedure.getId(), startdate);
 	}
 
 	@Override
-	public List<Appointment> getAppointmentsOfEmployee(String employeeid, Date startdate) {
-		return repo.findByBookedEmployeesIdAndPlannedStarttimeAfter(employeeid, startdate);
-	}
-
-	@Override
-	public List<Appointment> getAppointmentsOfProcedure(String procedureid, Date startdate) {
-		return repo.findByBookedProcedureIdAndPlannedStarttimeAfter(procedureid, startdate);
-	}
-
-	@Override
-	public List<Appointment> getAppointmentsOfResource(String resourceid, Date startdate) {
-		return repo.findByBookedResourcesIdAndPlannedStarttimeAfter(resourceid, startdate);
-	}
-
-	@Override
-	public List<Appointment> getAppointmentsByWarning(Warning warning) {
-		return repo.findByWarnings(warning);
-	}
-
-	public List<Appointment> getAppointmentsByWarnings(List<Warning> warnings) {
-		return repo.findByWarningsIn(warnings);
-	}
-
-	@Override
-	public List<Appointment> getAppointmentsByWarningAndId(String userid, Warning warning) {
-		return repo.findByBookedCustomerIdAndWarnings(userid, warning);
-	}
-
-	@Override
-	public List<Appointment> getAppointmentsByWarningsAndId(String userid, List<Warning> warnings) {
-		return repo.findByBookedCustomerIdAndWarningsIn(userid, warnings);
+	public List<Appointment> getAppointmentsOf(Resource resource, Date startdate) {
+		return repo.findByBookedResourcesIdAndPlannedStarttimeAfter(resource.getId(), startdate);
 	}
 
 	@Override
@@ -263,5 +247,54 @@ public class AppointmentServiceImpl implements AppointmentService {
 		list.setResources(Resources);
 		list.setEmployees(Employees);
 		return list;
+	}
+
+	private List<Appointment> getAppointmentsByWarning(Warning warning) {
+		return repo.findByWarnings(warning);
+	}
+
+	private List<Appointment> getAppointmentsByWarnings(List<Warning> warnings) {
+		return repo.findByWarningsIn(warnings);
+	}
+
+	private List<Appointment> getAppointmentsByWarningAndId(String userid, Warning warning) {
+		return repo.findByBookedCustomerIdAndWarnings(userid, warning);
+	}
+
+	private List<Appointment> getAppointmentsByWarningsAndId(String userid, List<Warning> warnings) {
+		return repo.findByBookedCustomerIdAndWarningsIn(userid, warnings);
+	}
+
+	private List<Appointment> getAppointmentsByUserid(String id) {
+		return repo.findByBookedCustomerId(id);
+	}
+
+	private List<Appointment> getAppointmentsByUserid(String id, AppointmentStatus appointmentStatus) {
+		return repo.findByBookedCustomerIdAndStatus(id, appointmentStatus);
+	}
+
+	private List<Appointment> getAppointmentsByEmployeeid(String id) {
+		return repo.findByBookedEmployeesId(id);
+	}
+
+	private List<Appointment> getAppointmentsByEmployeeid(String employeeid, AppointmentStatus appointmentStatus) {
+		return repo.findByBookedEmployeesIdAndStatus(employeeid, appointmentStatus);
+	}
+
+	private List<Appointment> getAppointmentsByResourceid(String id) {
+		return repo.findByBookedResourcesId(id);
+	}
+
+	private List<Appointment> getAppointmentsByResourceid(String resourceid, AppointmentStatus appointmentStatus) {
+		return repo.findByBookedResourcesIdAndStatus(resourceid, appointmentStatus);
+	}
+
+	private List<Appointment> getAppointmentsInTimeIntervalWithStatus(Date starttime, Date endtime,
+			AppointmentStatus status) {
+		return repo.findAppointmentsByTimeintervalAndStatus(starttime, endtime, status);
+	}
+
+	private List<Appointment> getAppointmentsInTimeInterval(Date starttime, Date endtime) {
+		return repo.findAppointmentsByTimeinterval(starttime, endtime);
 	}
 }

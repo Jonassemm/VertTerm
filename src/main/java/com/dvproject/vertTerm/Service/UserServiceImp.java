@@ -206,7 +206,8 @@ public class UserServiceImp implements UserService {
 	}
 	
 	public void testAppointments(String userid) {
-		List<Appointment> appointments = appointmentService.getAppointmentsByUserid(userid, AppointmentStatus.PLANNED);
+		List<Appointment> appointments = appointmentService.getAppointmentsByUserIdAndAppointmentStatus(userid, 
+				AppointmentStatus.PLANNED);
 		
 		if (appointments != null && appointments.size() > 0)
 			throw new IllegalArgumentException("User can not be deleted because he has booked appointments");

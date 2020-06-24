@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -57,6 +58,10 @@ public enum Warning {
 
 	public static Warning enumOf(String value) {
 		return lookup.get(value);
+	}
+	
+	public static List<Warning> enumOf(List<String> values) {
+		return values.stream().map(value -> enumOf(value)).collect(Collectors.toList());
 	}
 	
 	public static List<Warning> getAll() {

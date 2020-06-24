@@ -20,7 +20,6 @@ import java.util.Arrays;
 import java.util.Collection;
     import java.util.Date;
     import java.util.List;
-import java.util.stream.Collectors;
 
     @RestController
     @RequestMapping("/Appointments")
@@ -51,9 +50,9 @@ import java.util.stream.Collectors;
     		
     		User user = userService.getOwnUser(principal);
     		String id = user.getId();
-    		List<Appointment> appointments = service.getAppointmentsByUserid(id);
+    		List<Appointment> appointments = service.getAppointmentsByUserIdAndAppointmentStatus(id, null);
     		if (user instanceof Employee)
-    			appointments.addAll(service.getAppointmentsByEmployeeid(id));
+    			appointments.addAll(service.getAppointmentsByEmployeeIdAndAppointmentStatus(id, null));
     		
     		return appointments;
     	}
@@ -63,12 +62,13 @@ import java.util.stream.Collectors;
     			@PathVariable String resourceId,
     			@RequestParam(required = false) Date starttime,
     			@RequestParam(required = false) Date endtime,
-    			@RequestParam(required = false, defaultValue = "PLANNED") AppointmentStatus status) {
+    			@RequestParam(required = false, name = "status") String statusString) {
     		List<Appointment> appointments = null;
+    		AppointmentStatus status = statusString == null ? null : AppointmentStatus.enumOf(statusString);
     		
     		if (starttime == null || endtime == null) {
-    			appointments = service.getAppointmentsByResourceid(resourceId);
-    		} else {
+    			appointments = service.getAppointmentsByResourceIdAndAppointmentStatus(resourceId, status);
+    		} else if (starttime != null && endtime != null) {
     			appointments = service.getAppointmentsOfBookedResourceInTimeinterval(resourceId, starttime, endtime, status);
     		}
     		
@@ -79,21 +79,23 @@ import java.util.stream.Collectors;
     	public List<Appointment> getAppointmentsWithUserInTimeInterval(
     			@PathVariable String userid,
     			@RequestParam(required = false) Date starttime, 
-    			@RequestParam(required = false) Date endtime) {
+    			@RequestParam(required = false) Date endtime,
+    			@RequestParam(required = false, name = "status") String statusString) {
     		List<Appointment> appointments = null;
     		boolean isEmployee = userService.getById(userid) instanceof Employee;
+    		AppointmentStatus appointmentStatus = AppointmentStatus.enumOf(statusString);
 
     		if (starttime == null || endtime == null) {
-    			appointments = service.getAppointmentsByUserid(userid);
+    			appointments = service.getAppointmentsByUserIdAndAppointmentStatus(userid, null);
 
     			if (isEmployee)
-    				appointments.addAll(service.getAppointmentsByEmployeeid(userid));
+    				appointments.addAll(service.getAppointmentsByEmployeeIdAndAppointmentStatus(userid, null));
     		} else if (starttime != null && endtime != null) {
     			appointments = service.getAppointmentsWithUseridAndTimeInterval(userid, starttime, endtime);
     			
     			if (isEmployee)
     				appointments.addAll(service.getAppointmentsOfBookedEmployeeInTimeinterval(userid, starttime, endtime,
-    						AppointmentStatus.PLANNED));
+    						appointmentStatus));
     		}
 
     		return appointments;
@@ -103,38 +105,20 @@ import java.util.stream.Collectors;
     	public List<Appointment> getAppointmentsWithWarnings(
     			@RequestParam(required = false) String userid,
     			@RequestParam(required = false, name = "warnings") List<String> warningStrings) {
-    		List<Appointment> appointments = null;
     		List<Warning> warnings = null;
-    		if (warningStrings == null || warningStrings.isEmpty()) {
-    			warnings = Warning.getAll();
-    		} else {
-    			warnings = warningStrings.stream().map(warningString -> Warning.enumOf(warningString)).
-    				collect(Collectors.toList());
-    		}
+    		boolean areWarningStringsEmpty = warningStrings == null || warningStrings.isEmpty();
+    		
+    		warnings = areWarningStringsEmpty ? Warning.getAll() : Warning.enumOf(warningStrings);
 
-    		if (userid == null || userid.equals("")) {
-    			appointments = service.getAppointmentsByWarnings(warnings);
-    		} else {
-    			appointments = service.getAppointmentsByWarningsAndId(userid, warnings);
-    		}
-
-    		return appointments;
+    		return service.getAllAppointmentsByUseridAndWarnings(userid, warnings);
     	}
 
-    	@GetMapping("/status/{status}")
+    	@GetMapping({"/status/{status}", "/status/"})
     	public List<Appointment> getAppointmentsInTimeInterval(
     			@PathVariable(required = false) AppointmentStatus status,
     			@RequestParam Date starttime, 
     			@RequestParam Date endtime) {
-    		List<Appointment> retVal = null;
-
-    		if (status == null) {
-    			retVal = service.getAppointmentsInTimeInterval(starttime, endtime);
-    		} else {
-    			retVal = service.getAppointmentsInTimeIntervalWithStatus(starttime, endtime, status);
-    		}
-
-    		return retVal;
+    		return service.getAppointmentsInTimeIntervalAndStatus(starttime, endtime, status);
     	}
 		
         //@GetMapping("/ResEmp")

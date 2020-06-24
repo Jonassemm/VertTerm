@@ -84,7 +84,7 @@ public class Resource extends Bookable implements Serializable, Available {
 
 	@Override
 	public List<Appointment> getAppointmentsAfterDate(AppointmentService appointmentService, Date startdate) {
-		List<Appointment> appointments = appointmentService.getAppointmentsOfResource(getId(), startdate);
+		List<Appointment> appointments = appointmentService.getAppointmentsOf(this, startdate);
 
 		for (Appointment appointment : appointments) {
 			List<Resource> resources = appointment.getBookedResources();
