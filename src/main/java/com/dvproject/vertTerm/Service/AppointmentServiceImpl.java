@@ -1,6 +1,7 @@
 package com.dvproject.vertTerm.Service;
 
 import com.dvproject.vertTerm.Model.*;
+import com.dvproject.vertTerm.exception.AppointmentTimeException;
 import com.dvproject.vertTerm.repository.AppointmentRepository;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -200,50 +201,77 @@ public class AppointmentServiceImpl implements AppointmentService {
     	return getById(id).getStatus() == AppointmentStatus.DELETED;
     }
     
-      public Res_Emp getAvailableResourcesAndEmployees(Appointmentgroup group) { 	
-    	Res_Emp list= new Res_Emp();
+      public Appointmentgroup getAvailableResourcesAndEmployees(Appointmentgroup group) { 	   
     	List<Employee> Employees=new ArrayList<>();
     	List<Resource> Resources=new ArrayList<>();
-        // get all appointments from Appointmentgroup
+        //get all appointments from Appointmentgroup
     	List<Appointment> appointments=group.getAppointments();
+    	//Test 
+    	//Procedure Relations
+    	//each Appointment 
+    	group.testProcedureRelations();
+    	List <TimeInterval> timelist = new ArrayList<> ();
+        group.getAppointments().forEach(app -> new NormalBookingTester().testAppointmentTimes(timelist));
     	//for each appointment	
     	//1-get Booked Procedure
-		//2-get Procedure from DB
-		//3-get Needed ResourceTypes 
-    	//4-get Needed Employee Positions
+		//2-get Needed ResourceTypes 
+    	//3-get Needed Employee Positions
     	for (Appointment appointment : appointments) {
     		Procedure procedureOfAppointment = appointment.getBookedProcedure();   		
-    		Procedure procedure = ProcedureSer.getById(procedureOfAppointment.getId());
-    		List<ResourceType> ResourceTypes=procedure.getNeededResourceTypes();
-    		List<Position> Positions=procedure.getNeededEmployeePositions();	
+    		List<ResourceType> ResourceTypes=procedureOfAppointment.getNeededResourceTypes();
+    		List<Position> Positions=procedureOfAppointment.getNeededEmployeePositions();	
     		//for each ResourceType
     		//get all resources from this Type and for each one check if:
-    		//1- Resource Available to the appointment 
-    		//and 2- Check Restrictions of Resource and Procedure
+    		//Resource has any other appointment/s in the Timeinterval 
+    		//if no appointment/s could be found then add the resource to the "Resouces" List
+    		//throw an Exception if no resource available
     		for (ResourceType rt : ResourceTypes) {
-	    		for (Resource resource : ResSer.getAll(rt))   		
-	    			{ 
-	    			if (ResSer.isResourceAvailableBetween(resource.getId(), appointment.getPlannedStarttime(), appointment.getPlannedEndtime())
-	    				 && RestrictionSer.testRestrictions(resource.getRestrictions(), procedure.getRestrictions()) )
-	    				Resources.add(resource);
+    			    boolean Resourcefound=false;
+		    		for (Resource resource : ResSer.getAll(rt))   
+		    	  	{ 
+	    			 List<Appointment> ResApps=this.getAppointmentsOfBookedResourceInTimeinterval(resource.getId(),
+	    	          		  appointment.getPlannedStarttime(), appointment.getActualEndtime(),AppointmentStatus.PLANNED);    		
+	    			 if (ResApps.size() == 0 )
+	    			  {
+	    				 Resources.add(resource);
+	    				 Resourcefound=true;
+	    			     break;
+	    			  }
 	    			}
+		    		if(!(Resourcefound))
+	    				throw new AppointmentTimeException("No resource from type" + rt.getName()+" is available",appointment);
 	    	}
     		//for each position
     		//get all Employees who has this Position and for each one check if:
-    		//1- Employee Available to the appointment 
-    		//and 2- Check Restrictions of Employee and Procedure   
+    		//Employee has any other appointment/s in the Timeinterval 
+    		//if no appointment/s could be found then add the employee to the "Employees" List
+    		//throw an Exception if no employee available
 	    	for (Position pos : Positions) {
+	    	    boolean Employeefound=false;
 	    		for (Employee employee : EmpSer.getAll(pos.getId()))
 		    		{
-	    			if (EmpSer.isEmployeeAvailableBetween(employee.getId(), appointment.getPlannedStarttime(), appointment.getPlannedEndtime())
-	    				 && RestrictionSer.testRestrictions(employee.getRestrictions(), procedure.getRestrictions()) )
-							Employees.add(employee);
+	    			 List<Appointment> EmpApps=this.getAppointmentsOfBookedEmployeeInTimeinterval(employee.getId(),
+	    	          		  appointment.getPlannedStarttime(), appointment.getActualEndtime(),AppointmentStatus.PLANNED) ;
+	    			 if (EmpApps.size() == 0 )
+	    			 {  
+	    				 Employees.add(employee); 
+	    				 Employeefound=true;
+	    			 	  break;
+	    			 	}
+	    			}
+		    		 if(!(Employeefound))
+	    				throw new AppointmentTimeException("no employee from position" + pos.getName()+" is available",appointment);
 	    		    }
-			}
+	    	//set Resources and Employees to the appointment
+	    	appointment.setBookedResources(Resources);
+	    	appointment.setBookedEmployees(Employees);
+	    	//throw exceptions if not all needed employees/resources could be found
+	     	if(Positions.size() != appointment.getBookedEmployees().size())
+	    		throw new AppointmentTimeException("In the time interval not all needed employees for appointment could be found" ,appointment);
+	     	if(Resources.size() != appointment.getBookedResources().size())
+	    		throw new AppointmentTimeException("In the time interval not all needed resources for appointment could be found",appointment);		     
     	}
 
-    	list.setResources(Resources);
-    	list.setEmployees(Employees);
-    	return list;
+    	return group;
 	}
 }

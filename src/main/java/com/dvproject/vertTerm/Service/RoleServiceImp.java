@@ -21,9 +21,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-//import com.dvproject.vertTerm.Model.Right;
-//import com.dvproject.vertTerm.repository.RightRepository;
-
 
 @Service
 @Transactional
@@ -51,7 +48,7 @@ public class RoleServiceImp implements RoleService {
    }
 
  
-   //@PreAuthorize("hasAuthority('ROLE_RIGHTS_WRITE','ROLES_WRITE')")  
+   //@PreAuthorize("hasAuthority('ROLE_WRITE')")  
    public Role update(Role role) {
 	   if (RoleRepo.findById(role.getId()).isPresent()) {
 		    role.setName(capitalize(role.getName()));  
@@ -63,13 +60,13 @@ public class RoleServiceImp implements RoleService {
    }
    
   
-   //@PreAuthorize("hasAuthority('ROLES_READ')") 
+   //@PreAuthorize("hasAuthority('ROLE_READ')") 
    public List <Role> getAll() {
        return this.RoleRepo.findAll();
    }
    
  
-   //@PreAuthorize("hasAuthority('ROLES_READ')") 
+   //@PreAuthorize("hasAuthority('ROLE_READ')") 
    public Role getById(String id) {
 	   Optional <Role> RoleDb = this.RoleRepo.findById(id);
        if (RoleDb.isPresent()) {
@@ -102,7 +99,7 @@ public class RoleServiceImp implements RoleService {
        return RoleRepo.existsById(id);
     }
  
-    //@PreAuthorize("hasAuthority('ROLE_RIGHTS_READ','ROLES_READ')") 
+    //@PreAuthorize("hasAuthority('ROLES_READ')") 
 	public List<Right> getRoleRights(String id) {
 		List<Right> rights=new ArrayList<>();
 		Role role = getById(id);
@@ -244,9 +241,10 @@ public class RoleServiceImp implements RoleService {
 	 
 	  public static String capitalize(String str)
 	    {
-	        if(str == null) return str;
-	        return str.toUpperCase() ;
-	        
+	        if(str == null) 
+	        	return str;
+	       // return str.toUpperCase() ;
+	       return  str.substring(0, 1).toUpperCase()+str.substring(1).toLowerCase();
 	    }
 }
 

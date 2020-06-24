@@ -230,7 +230,7 @@ public class ProcedureServiceImp implements ProcedureService, AvailabilityServic
     public static String capitalize(String str)
     {
         if(str == null) return str;
-        return str.toUpperCase() ;
+        return  str.substring(0, 1).toUpperCase()+str.substring(1).toLowerCase();
         
     }
 }

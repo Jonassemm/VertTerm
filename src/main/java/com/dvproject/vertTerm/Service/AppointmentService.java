@@ -8,14 +8,15 @@ import com.dvproject.vertTerm.Model.AppointmentStatus;
 import com.dvproject.vertTerm.Model.Appointmentgroup;
 import com.dvproject.vertTerm.Model.Available;
 import com.dvproject.vertTerm.Model.Bookable;
-import com.dvproject.vertTerm.Model.Res_Emp;
 import com.dvproject.vertTerm.Model.Warning;
 
 public interface AppointmentService extends BasicService<Appointment> {
 	// GET
 	List<Appointment> getAll(Bookable bookable);
-	//Available Resources and Employees
-	public Res_Emp getAvailableResourcesAndEmployees(Appointmentgroup group);
+	
+	//Buchungoption2 get available Resources and Employees 
+	public Appointmentgroup getAvailableResourcesAndEmployees(Appointmentgroup group);
+	
 	// appointments with warning
 	List<Appointment> getAppointmentsByWarning(Warning warning);
 	

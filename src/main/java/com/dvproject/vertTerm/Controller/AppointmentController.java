@@ -4,7 +4,8 @@
 
     import com.dvproject.vertTerm.Model.Appointment;
     import com.dvproject.vertTerm.Model.AppointmentStatus;
-    import com.dvproject.vertTerm.Model.Employee;
+import com.dvproject.vertTerm.Model.Appointmentgroup;
+import com.dvproject.vertTerm.Model.Employee;
     import com.dvproject.vertTerm.Model.User;
     import com.dvproject.vertTerm.Model.Warning;
     import com.dvproject.vertTerm.Service.AppointmentService;
@@ -119,12 +120,11 @@
     		return retVal;
     	}
 		
-        //@GetMapping("/ResEmp")
-        //public @ResponseBody Res_Emp getAvailableResourcesAndEmployees(@RequestBody Appointmentgroup group,
-        //		@RequestParam Date startdate,@RequestParam Date enddate)
-        //{
-        //	return service.getAvailableResourcesAndEmployees(group, startdate, enddate);
-        //}
+        @GetMapping("/ResEmp")
+        public @ResponseBody Appointmentgroup getAvailableResourcesAndEmployees(@RequestBody Appointmentgroup group)
+        {
+        	return service.getAvailableResourcesAndEmployees(group);
+        }
 		
     	@PostMapping()
     	public @ResponseBody Appointment create(@RequestBody Appointment newAppointment) {

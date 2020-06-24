@@ -8,4 +8,5 @@ import com.dvproject.vertTerm.Model.Blocker;
 
 public interface BlockerRepository extends MongoRepository<Blocker, String>{
 	 Optional<Blocker> findById (String id);
+	 Blocker findByname (String name);
 }
