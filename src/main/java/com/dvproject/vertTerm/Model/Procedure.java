@@ -265,7 +265,7 @@ public class Procedure implements Serializable, Available {
 	
 	@Override
 	public List<Appointment> getAppointmentsAfterDate(AppointmentService appointmentService, Date startdate) {
-		List<Appointment> appointments = appointmentService.getAppointmentsOfProcedure(id, startdate);
+		List<Appointment> appointments = appointmentService.getAppointmentsOf(this, startdate);
 		
 		appointments.forEach(appointment -> appointment.getBookedProcedure().setAvailabilities(availabilities));
 		

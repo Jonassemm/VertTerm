@@ -10,7 +10,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import java.util.TimeZone;
-import java.util.stream.Collectors;
 
 import javax.servlet.http.HttpServletResponse;
 
@@ -360,7 +359,7 @@ public class AppointmentgroupServiceImpl implements AppointmentgroupService {
 
 	private List<Appointment> getPullableAppointments(Date startdate) {
 		Date enddate = getLatestTimeOfToday();
-		List<Appointment> appointmentsToTest = appointmentService.getAppointmentsInTimeIntervalWithStatus(startdate,
+		List<Appointment> appointmentsToTest = appointmentService.getAppointmentsInTimeIntervalAndStatus(startdate,
 				enddate, AppointmentStatus.PLANNED);
 
 		appointmentsToTest.removeIf(app -> {

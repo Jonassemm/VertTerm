@@ -35,13 +35,12 @@ public interface AppointmentRepository extends MongoRepository<Appointment, Stri
 	
 	List<Appointment> findByBookedEmployeesIdAndStatus(String id, AppointmentStatus status);
 	
-//	@Query("{'bookedProcedure.$id': ObjectId(?0), 'plannedStarttime': {'$gte': ?1}}")
+	List<Appointment> findByBookedResourcesIdAndStatus(String id, AppointmentStatus status);
+	
 	List<Appointment> findByBookedProcedureIdAndPlannedStarttimeAfter(String id, Date plannedStarttime);
 	
-//	@Query("{'bookedResource.$id': ObjectId(?0), 'plannedStarttime': {'$gte': ?1}}")
 	List<Appointment> findByBookedResourcesIdAndPlannedStarttimeAfter(String id, Date plannedStarttime);
 	
-//	@Query("{'bookedEmployee.$id': ObjectId(?0), 'plannedStarttime': {'$gte': ?1}}")
 	List<Appointment> findByBookedEmployeesIdAndPlannedStarttimeAfter(String id, Date plannedStarttime);
 	
 	@Query("{'$and':[{'plannedStarttime': {'$gte': ?0}}, {'plannedEndtime': {'$lte': ?1}}]}")
