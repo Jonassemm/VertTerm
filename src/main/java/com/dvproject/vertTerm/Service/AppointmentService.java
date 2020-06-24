@@ -13,25 +13,30 @@ import com.dvproject.vertTerm.Model.Warning;
 public interface AppointmentService extends BasicService<Appointment> {
 	// GET
 	List<Appointment> getAll(Bookable bookable);
+
 	
 	//Buchungoption2 get available Resources and Employees 
 	public Appointmentgroup getAvailableResourcesAndEmployees(Appointmentgroup group);
 	
 	// appointments with warning
 	List<Appointment> getAppointmentsByWarning(Warning warning);
-	
+
 	List<Appointment> getAppointmentsByWarnings(List<Warning> warnings);
-	
+
 	List<Appointment> getAppointmentsByWarningAndId(String userid, Warning warning);
-	
+
 	List<Appointment> getAppointmentsByWarningsAndId(String userid, List<Warning> warnings);
 
 	// appointments of user
 	List<Appointment> getAppointmentsByUserid(String userid);
 
 	List<Appointment> getAppointmentsByUserid(String userid, AppointmentStatus appointmentStatus);
-	
+
+	List<Appointment> getAppointmentsByEmployeeid(String employeeid, AppointmentStatus appointmentStatus);
+
 	List<Appointment> getAppointmentsByEmployeeid(String employeeid);
+
+	List<Appointment> getAppointmentsByResourceid(String resourceid);
 
 	// appointments of an available-entity in a time interval
 	List<Appointment> getAppointmentsOfBookedEmployeeInTimeinterval(String employeeid, Date starttime, Date endtime,
@@ -52,6 +57,8 @@ public interface AppointmentService extends BasicService<Appointment> {
 	List<Appointment> getAppointmentsInTimeIntervalWithStatus(Date starttime, Date endtime, AppointmentStatus status);
 
 	List<Appointment> getAppointmentsInTimeInterval(Date starttime, Date endtime);
+
+	List<Appointment> getOverlappingAppointmentsInTimeInterval(Date starttime, Date endtime, AppointmentStatus status);
 
 	// appointments of an available-entity
 	List<Appointment> getAppointments(Available available, Date endOfSeries);

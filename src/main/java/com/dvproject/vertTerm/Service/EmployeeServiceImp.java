@@ -1,21 +1,18 @@
 package com.dvproject.vertTerm.Service;
 
+import com.dvproject.vertTerm.Model.Appointment;
+import com.dvproject.vertTerm.Model.AppointmentStatus;
 import com.dvproject.vertTerm.Model.Availability;
-import com.dvproject.vertTerm.Model.Customer;
 import com.dvproject.vertTerm.Model.Employee;
-import com.dvproject.vertTerm.Model.Position;
-import com.dvproject.vertTerm.Model.Resource;
 import com.dvproject.vertTerm.Model.Status;
 import com.dvproject.vertTerm.Model.User;
 import com.dvproject.vertTerm.repository.EmployeeRepository;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Example;
 import org.springframework.data.rest.webmvc.ResourceNotFoundException;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
@@ -31,6 +28,9 @@ public class EmployeeServiceImp implements EmployeeService, AvailabilityService 
     
     @Autowired
     private AvailabilityServiceImpl availabilityService;
+    
+    @Autowired
+    private AppointmentService appointmentService;
 
     @Override
     public List<Employee> getAll() {
@@ -117,6 +117,7 @@ public class EmployeeServiceImp implements EmployeeService, AvailabilityService 
     @Override
     public boolean delete(String id) {
     	userService.testAppointments(id);
+    	this.testAppointments(id);
     	
     	User user = this.getById(id);
     	userService.obfuscateUser(user);
@@ -135,5 +136,12 @@ public class EmployeeServiceImp implements EmployeeService, AvailabilityService 
         if(str == null) return str;
         return  str.substring(0, 1).toUpperCase()+str.substring(1).toLowerCase();
         
+    }
+    
+    public void testAppointments(String id) {
+   	 List<Appointment> appointments = appointmentService.getAppointmentsByEmployeeid(id, AppointmentStatus.PLANNED);
+   	 
+ 		if (appointments != null && appointments.size() > 0)
+			throw new IllegalArgumentException("Employee can not be deleted because he is used as a bookedEmployee");
     }
 }

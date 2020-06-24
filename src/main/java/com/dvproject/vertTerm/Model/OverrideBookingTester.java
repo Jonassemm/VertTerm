@@ -6,6 +6,7 @@ import com.dvproject.vertTerm.Service.AppointmentServiceImpl;
 import com.dvproject.vertTerm.Service.RestrictionService;
 import com.dvproject.vertTerm.exception.AppointmentException;
 import com.dvproject.vertTerm.exception.AppointmentTimeException;
+import com.dvproject.vertTerm.exception.AppointmentInternalException;
 import com.dvproject.vertTerm.exception.AvailabilityException;
 import com.dvproject.vertTerm.exception.EmployeeException;
 import com.dvproject.vertTerm.exception.PositionException;
@@ -15,6 +16,14 @@ import com.dvproject.vertTerm.exception.ResourceTypeException;
 import com.dvproject.vertTerm.exception.RestrictionException;
 
 public class OverrideBookingTester extends BookingTester {
+
+	public OverrideBookingTester () {
+		super();
+	}
+
+	public OverrideBookingTester (List<TimeInterval> timeIntervallsOfAppointments) {
+		super(null, timeIntervallsOfAppointments);
+	}
 
 	@Override
 	public void testAppointmentTimes(List<TimeInterval> timeIntervallsOfAppointments) {
@@ -97,6 +106,13 @@ public class OverrideBookingTester extends BookingTester {
 			appointment.testBlockage(appointmentService);
 		} catch (AppointmentException ex) {
 			appointment.addWarning(Warning.APPOINTMENT_WARNING);
+		} catch (AppointmentInternalException ex) {
+			appointment.addWarning(Warning.APPOINTMENT_WARNING);
+			
+			ex.getAppointments().forEach(app -> { 
+				app.addWarning(Warning.APPOINTMENT_WARNING); 
+				appointmentService.update(app);
+			});
 		}
 	}
 }

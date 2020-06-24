@@ -18,13 +18,13 @@ public enum Warning {
 	@JsonProperty("ResourceTypeWarning")
 	RESOURCETYPE_WARNING,
 	
-	@JsonProperty("Position_Warning")
+	@JsonProperty("PositionWarning")
 	POSITION_WARINING,
 	
 	@JsonProperty("ResourceWarning")
 	RESOURCE_WARNING,
 	
-	@JsonProperty("EmplyeeWarning")
+	@JsonProperty("EmployeeWarning")
 	EMPLOYEE_WARNING,
 	
 	@JsonProperty("ProcedureWarning")

@@ -109,7 +109,7 @@ public class Procedure implements Serializable, Available {
 	}
 
 	public void setPrecedingRelations(List<ProcedureRelation> precedingRelations) {
-		precedingRelations.forEach(procedureRelation -> testProcedureRelation(procedureRelation));
+		precedingRelations.forEach(this::testProcedureRelation);
 		
 		this.precedingRelations = precedingRelations;
 	}
@@ -119,7 +119,7 @@ public class Procedure implements Serializable, Available {
 	}
 
 	public void setSubsequentRelations(List<ProcedureRelation> subsequentRelations) {
-		subsequentRelations.forEach(procedureRelation -> testProcedureRelation(procedureRelation));
+		subsequentRelations.forEach(this::testProcedureRelation);
 		
 		this.subsequentRelations = subsequentRelations;
 	}
@@ -254,14 +254,13 @@ public class Procedure implements Serializable, Available {
 	
 	public void isAvailable (Date startdate, Date enddate) {
 		if (!availabilities.stream()
-				.anyMatch(availability -> availability.isAvailableBetween(startdate, enddate))) {
+				.anyMatch(availability -> availability.isAvailableBetween(startdate, enddate)))
 			throw new AvailabilityException("No availability for the procedure " + name);
-		}
 	}
 	
 	public void testAllRelations() {
-		precedingRelations.forEach(procedureRelation -> testProcedureRelation(procedureRelation));
-		subsequentRelations.forEach(procedureRelation -> testProcedureRelation(procedureRelation));
+		precedingRelations.forEach(this::testProcedureRelation);
+		subsequentRelations.forEach(this::testProcedureRelation);
 	}
 	
 	@Override
@@ -275,8 +274,7 @@ public class Procedure implements Serializable, Available {
 
 	
 	private void testProcedureRelation (ProcedureRelation procedureRelation) {
-		if (procedureRelation.getProcedure().getId().equals(this.getId())) {
+		if (procedureRelation.getProcedure().getId().equals(this.getId()))
 			throw new IllegalArgumentException("Procedure can have no relation to itself");
-		}
 	}
 }

@@ -24,8 +24,8 @@ public class ProcedureController {
 		return procedureService.getAll();
 	}
 	
-	@GetMapping("/Status")
-	public List<Procedure> getAllProceduresWithStatus (@RequestBody Status status) {
+	@GetMapping("/Status/{status}")
+	public List<Procedure> getAllProceduresWithStatus (@PathVariable Status status) {
 		return procedureService.getAll(status);
 	}
 

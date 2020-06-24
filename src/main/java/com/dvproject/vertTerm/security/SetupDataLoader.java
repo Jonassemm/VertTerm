@@ -17,16 +17,17 @@ import com.dvproject.vertTerm.Model.Availability;
 import com.dvproject.vertTerm.Model.AvailabilityRhythm;
 import com.dvproject.vertTerm.Model.Customer;
 import com.dvproject.vertTerm.Model.Employee;
+import com.dvproject.vertTerm.Model.OpeningHours;
 import com.dvproject.vertTerm.Model.OptionalAttribute;
 import com.dvproject.vertTerm.Model.OptionalAttributes;
 import com.dvproject.vertTerm.Model.Right;
 import com.dvproject.vertTerm.Model.Role;
 import com.dvproject.vertTerm.Model.Status;
 import com.dvproject.vertTerm.Model.User;
-import com.dvproject.vertTerm.Service.AvailabilityServiceImpl;
 import com.dvproject.vertTerm.repository.AvailabilityRepository;
 import com.dvproject.vertTerm.repository.CustomerRepository;
 import com.dvproject.vertTerm.repository.EmployeeRepository;
+import com.dvproject.vertTerm.repository.OpeningHoursRepository;
 import com.dvproject.vertTerm.repository.OptionalAttributesRepository;
 import com.dvproject.vertTerm.repository.RightRepository;
 import com.dvproject.vertTerm.repository.RoleRepository;
@@ -57,6 +58,9 @@ public class SetupDataLoader implements ApplicationListener<ContextRefreshedEven
 	
 	@Autowired
 	private AvailabilityRepository availablityService;
+	
+	@Autowired
+	private OpeningHoursRepository openingHoursRepository;
 
 	@Autowired
 	private PasswordEncoder passwordEncoder;
@@ -77,6 +81,8 @@ public class SetupDataLoader implements ApplicationListener<ContextRefreshedEven
 		setupOptionalAttributes();
 		
 		availablityService.save(new Availability("1", null, null, AvailabilityRhythm.ALWAYS));
+		
+		setupOpeningHours();
 
 		alreadySetup = true;
 	}
@@ -189,6 +195,17 @@ public class SetupDataLoader implements ApplicationListener<ContextRefreshedEven
 		}
 
 		optionalAttributesRepository.save(optionalAttributes);
+	}
+	
+	private void setupOpeningHours() {
+		if (openingHoursRepository.count() == 1)
+			return;
+		
+		openingHoursRepository.deleteAll();
+		
+		OpeningHours openingHours = new OpeningHours();
+		
+		openingHoursRepository.save(openingHours);
 	}
 
 	public void setupRights () {

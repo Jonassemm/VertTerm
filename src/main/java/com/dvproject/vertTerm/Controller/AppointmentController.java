@@ -17,9 +17,11 @@ import com.dvproject.vertTerm.Model.Employee;
     import org.springframework.web.bind.annotation.*;
 
     import java.security.Principal;
-    import java.util.Collection;
+import java.util.Arrays;
+import java.util.Collection;
     import java.util.Date;
     import java.util.List;
+import java.util.stream.Collectors;
 
     @RestController
     @RequestMapping("/Appointments")
@@ -60,10 +62,18 @@ import com.dvproject.vertTerm.Model.Employee;
     	@GetMapping("/Resources/{resourceId}")
     	public @ResponseBody List<Appointment> getByResourceId(
     			@PathVariable String resourceId,
-    			@RequestParam Date starttime,
-    			@RequestParam Date endtime,
+    			@RequestParam(required = false) Date starttime,
+    			@RequestParam(required = false) Date endtime,
     			@RequestParam(required = false, defaultValue = "PLANNED") AppointmentStatus status) {
-    		return service.getAppointmentsOfBookedResourceInTimeinterval(resourceId, starttime, endtime, status);
+    		List<Appointment> appointments = null;
+    		
+    		if (starttime == null || endtime == null) {
+    			appointments = service.getAppointmentsByResourceid(resourceId);
+    		} else {
+    			appointments = service.getAppointmentsOfBookedResourceInTimeinterval(resourceId, starttime, endtime, status);
+    		}
+    		
+    		return appointments;
     	}
 
     	@GetMapping("/user/{userid}")
@@ -74,13 +84,14 @@ import com.dvproject.vertTerm.Model.Employee;
     		List<Appointment> appointments = null;
     		boolean isEmployee = userService.getById(userid) instanceof Employee;
 
-    		if (starttime == null && endtime == null) {
+    		if (starttime == null || endtime == null) {
     			appointments = service.getAppointmentsByUserid(userid);
 
     			if (isEmployee)
     				appointments.addAll(service.getAppointmentsByEmployeeid(userid));
     		} else if (starttime != null && endtime != null) {
     			appointments = service.getAppointmentsWithUseridAndTimeInterval(userid, starttime, endtime);
+    			
     			if (isEmployee)
     				appointments.addAll(service.getAppointmentsOfBookedEmployeeInTimeinterval(userid, starttime, endtime,
     						AppointmentStatus.PLANNED));
@@ -89,11 +100,18 @@ import com.dvproject.vertTerm.Model.Employee;
     		return appointments;
     	}
 
-    	@GetMapping(path = { "/Warnings/{userid}", "/Warnings", "/Warnings/" })
+    	@GetMapping(path = { "/warnings" })
     	public List<Appointment> getAppointmentsWithWarnings(
-    			@PathVariable(required = false) String userid,
-    			@RequestBody(required = true) List<Warning> warnings) {
+    			@RequestParam(required = false) String userid,
+    			@RequestParam(required = false, name = "warnings") List<String> warningStrings) {
     		List<Appointment> appointments = null;
+    		List<Warning> warnings = null;
+    		if (warningStrings == null || warningStrings.isEmpty()) {
+    			warnings = Arrays.asList(Warning.values());
+    		} else {
+    		warnings = warningStrings.stream().map(warningString -> Warning.valueOf(warningString)).
+    				collect(Collectors.toList());
+    		}
 
     		if (userid == null || userid.equals("")) {
     			appointments = service.getAppointmentsByWarnings(warnings);

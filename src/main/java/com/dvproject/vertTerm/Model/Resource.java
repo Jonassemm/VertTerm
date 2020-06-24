@@ -1,14 +1,11 @@
 package com.dvproject.vertTerm.Model;
 
 import java.io.Serializable;
-import java.time.Duration;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
 import javax.validation.constraints.NotNull;
 
-import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -81,10 +78,8 @@ public class Resource extends Bookable implements Serializable, Available {
 	}
 
 	public void isAvailable(Date startdate, Date enddate) {
-		if (!getAvailabilities().stream()
-				.anyMatch(availability -> availability.isAvailableBetween(startdate, enddate))) {
+		if (!getAvailabilities().stream().anyMatch(availability -> availability.isAvailableBetween(startdate, enddate)))
 			throw new AvailabilityException("No availability for the resource " + name);
-		}
 	}
 
 	@Override
