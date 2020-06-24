@@ -25,6 +25,7 @@ public class AppointmentServiceImpl implements AppointmentService {
 	ProcedureService ProcedureSer;
 	@Autowired
 	RestrictionService RestrictionSer;
+	@Autowired
 	private AppointmentgroupService appointmentgroupService;
 
 	@Override
