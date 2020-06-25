@@ -15,6 +15,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.rest.webmvc.ResourceNotFoundException;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 
 import com.dvproject.vertTerm.Model.Appointment;
@@ -70,16 +71,19 @@ public class AppointmentgroupServiceImpl implements AppointmentgroupService {
 	private HttpServletResponse httpResponse;
 
 	@Override
+//	@PreAuthorize("hasAuthority('APPOINTMENT_READ')")
 	public List<Appointmentgroup> getAll() {
 		return appointmentgroupRepository.findAll();
 	}
 
 	@Override
+//	@PreAuthorize("hasAuthority('APPOINTMENT_READ')")
 	public List<Appointmentgroup> getAppointmentgroupsWithStatus(Status status) {
 		return appointmentgroupRepository.findByStatus(status);
 	}
 
 	@Override
+//	@PreAuthorize("hasAuthority('APPOINTMENT_READ')")
 	public Appointmentgroup getAppointmentgroupContainingAppointmentID(String id) {
 		if (id == null)
 			throw new NullPointerException("The id of the given appointment is null");
@@ -91,6 +95,7 @@ public class AppointmentgroupServiceImpl implements AppointmentgroupService {
 	}
 
 	@Override
+//	@PreAuthorize("hasAuthority('APPOINTMENT_READ')")
 	public Appointmentgroup getOptimizedSuggestion(Appointmentgroup appointmentgroup,
 			Optimizationstrategy optimizationstrategy) {
 		// TODO
@@ -98,6 +103,7 @@ public class AppointmentgroupServiceImpl implements AppointmentgroupService {
 	}
 
 	@Override
+//	@PreAuthorize("hasAuthority('APPOINTMENT_READ')")
 	public Appointmentgroup getById(String id) {
 		return getAppointmentgroupInternal(id);
 	}
@@ -122,6 +128,7 @@ public class AppointmentgroupServiceImpl implements AppointmentgroupService {
 	}
 
 	@Override
+	@PreAuthorize("hasAuthority('APPOINTMENT_WRITE')")
 	public Appointmentgroup create(Appointmentgroup newInstance) {
 		if (!appointmentgroupRepository.existsById(newInstance.getId())) {
 			List<Appointment> appointments = newInstance.getAppointments();
