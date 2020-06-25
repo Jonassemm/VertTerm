@@ -21,8 +21,10 @@ public interface AppointmentgroupService extends BasicService<Appointmentgroup> 
 	
 	void setPullableAppointment();
 	
+	void testWarnings(String appointmentid);
+	
 	//PUT
-	User bookAppointmentgroup (String userid, Appointmentgroup appointmentgroup, boolean override);
+	String bookAppointmentgroup (String userid, Appointmentgroup appointmentgroup, boolean override);
 	
 	boolean startAppointment(String appointmentid);
 	

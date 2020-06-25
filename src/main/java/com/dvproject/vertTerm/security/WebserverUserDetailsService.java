@@ -25,9 +25,17 @@ public class WebserverUserDetailsService implements UserDetailsService {
 	public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
 		User user = userRepository.findByUsername(username);
 
-		if (user == null) {
-			throw new UsernameNotFoundException("No user with the given username");
-		}
+		if (user == null) { throw new UsernameNotFoundException("No user with the given username"); }
+
+		return new org.springframework.security.core.userdetails.User(user.getUsername(), user.getPassword(),
+				user.getSystemStatus() == Status.ACTIVE && !user.isAnonymousUser(), true, true, true,
+				getAuthorities(user.getRoles()));
+	}
+
+	public UserDetails loadAnonymousUserByUsername(String username) throws UsernameNotFoundException {
+		User user = userRepository.findByUsername(username);
+
+		if (user == null) { throw new UsernameNotFoundException("No user with the given username"); }
 
 		return new org.springframework.security.core.userdetails.User(user.getUsername(), user.getPassword(),
 				user.getSystemStatus() == Status.ACTIVE, true, true, true, getAuthorities(user.getRoles()));

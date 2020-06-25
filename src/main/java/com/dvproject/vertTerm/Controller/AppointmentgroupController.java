@@ -23,6 +23,7 @@ import com.dvproject.vertTerm.Model.Optimizationstrategy;
 import com.dvproject.vertTerm.Model.Status;
 import com.dvproject.vertTerm.Model.User;
 import com.dvproject.vertTerm.Service.AppointmentgroupService;
+import com.dvproject.vertTerm.Service.UserService;
 
 @RestController
 @RequestMapping("/Appointmentgroups")
@@ -30,6 +31,9 @@ import com.dvproject.vertTerm.Service.AppointmentgroupService;
 public class AppointmentgroupController {
 	@Autowired
 	private AppointmentgroupService appointmentgroupService;
+	
+	@Autowired
+	private UserService userService;
 	
 	@GetMapping("")
 	public List<Appointmentgroup> getAllAppointmentgroups () {
@@ -66,9 +70,7 @@ public class AppointmentgroupController {
 		if(!appointmentgroup.hasNoAppointmentIdSet())
 			throw new IllegalArgumentException("Appointments must not contain ids");
 		
-		User user =  appointmentgroupService.bookAppointmentgroup(userid, appointmentgroup, false);
-		
-		return user != null ? user.generateLoginLink() : null;
+		return appointmentgroupService.bookAppointmentgroup(userid, appointmentgroup, false);
 	}
 	
 	@PostMapping(value = {"/override/", "/override/{userid}"})
@@ -77,9 +79,7 @@ public class AppointmentgroupController {
 			@RequestBody Appointmentgroup appointmentgroup) {
 		Collection<? extends GrantedAuthority> auth = SecurityContextHolder.getContext().getAuthentication().getAuthorities();
 		
-		User user = appointmentgroupService.bookAppointmentgroup(userid, appointmentgroup, true);
-		
-		return user != null ? user.generateLoginLink() : null;
+		return appointmentgroupService.bookAppointmentgroup(userid, appointmentgroup, true);
 	}
 	
 	@PutMapping("")
@@ -91,14 +91,14 @@ public class AppointmentgroupController {
 	public String updateAppointments (
 			@PathVariable String userid, 
 			@RequestBody Appointmentgroup appointmentgroup) {
-		return updateAppointmentgroup(userid, appointmentgroup, false);
+		return updateAppointmentgroupInternal(userid, appointmentgroup, false);
 	}
 	
 	@PutMapping("/override{userid}")
 	public String updateAppointmentsOverride (
 			@PathVariable String userid, 
 			@RequestBody Appointmentgroup appointmentgroup) {
-		return updateAppointmentgroup(userid, appointmentgroup, true);
+		return updateAppointmentgroupInternal(userid, appointmentgroup, true);
 	}
 	
 	@PutMapping("/start/{appointmentId}")
@@ -109,6 +109,11 @@ public class AppointmentgroupController {
 	@PutMapping("/stop/{appointmentId}")
 	public boolean stopAppointment(@PathVariable(required = true) String appointmentId) {
 		return appointmentgroupService.stopAppointment(appointmentId);
+	}
+	
+	@PutMapping("/test/{appointmentid}")
+	public void testWarningsofAppointment (@PathVariable String appointmentid) {
+		appointmentgroupService.testWarnings(appointmentid);
 	}
 	
 	@DeleteMapping("/{id}")
@@ -126,7 +131,7 @@ public class AppointmentgroupController {
 		return appointmentgroupService.deleteAppointment(appointmentId, true);
 	}
 	
-	private String updateAppointmentgroup(String userid, Appointmentgroup appointmentgroup, boolean override) {
+	private String updateAppointmentgroupInternal(String userid, Appointmentgroup appointmentgroup, boolean override) {
 		List<Appointment> appointments = appointmentgroup.getAppointments();
 		
 		if(appointments == null || appointments.size() == 0)
@@ -136,8 +141,7 @@ public class AppointmentgroupController {
 			throw new IllegalArgumentException("Appointments must contain ids");
 		
 		appointmentgroup.setId(appointmentgroupService.getAppointmentgroupContainingAppointmentID(appointments.get(0).getId()).getId());
-		User user =  appointmentgroupService.bookAppointmentgroup(userid, appointmentgroup, override);
 		
-		return user != null ? user.generateLoginLink() : null;
+		return appointmentgroupService.bookAppointmentgroup(userid, appointmentgroup, override);
 	}
 }

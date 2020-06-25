@@ -109,6 +109,20 @@ public class AppointmentgroupServiceImpl implements AppointmentgroupService {
 	}
 
 	@Override
+	public void testWarnings(String appointmentid) {
+		Appointmentgroup appointmentgroup = getUpdatableAppointmentgroupContainingAppointmentID(appointmentid);
+		if (appointmentid != null) {
+			List<Appointment> appointments = appointmentgroup.getAppointments();
+			BookingTester tester = new OverrideBookingTester(new ArrayList<>());
+
+			appointmentgroup.resetAllWarnings();
+
+			appointments.forEach(appointment -> appointmentRepository
+					.save(tester.testAll(appointment, appointmentService, restrictionService)));
+		}
+	}
+
+	@Override
 	public void setPullableAppointment(Appointment appointment) {
 		if (isPullable(appointment)) {
 			httpResponse.setHeader("appointmentid", appointment.getId());
@@ -165,10 +179,11 @@ public class AppointmentgroupServiceImpl implements AppointmentgroupService {
 	 *                             conform to the conditions
 	 */
 	@Override
-	public User bookAppointmentgroup(String userid, Appointmentgroup appointmentgroup, boolean override) {
+	public String bookAppointmentgroup(String userid, Appointmentgroup appointmentgroup, boolean override) {
 		List<Appointment> appointments = appointmentgroup.getAppointments();
 		boolean noUserAttached = userid == null || userid.equals("");
 		User user = noUserAttached ? userService.getAnonymousUser() : userService.getById(userid);
+		String link = null;
 
 		for (Appointment appointment : appointments) {
 			if (!noUserAttached && appointment.getBookedCustomer() != null
@@ -204,6 +219,8 @@ public class AppointmentgroupServiceImpl implements AppointmentgroupService {
 		}
 
 		if (noUserAttached) {
+			link = user.generateLoginLink();
+			userService.encodePassword(user);
 			userRepository.save(user);
 		}
 
@@ -216,7 +233,7 @@ public class AppointmentgroupServiceImpl implements AppointmentgroupService {
 		appointmentgroup.setStatus(Status.ACTIVE);
 		appointmentgroupRepository.save(appointmentgroup);
 
-		return noUserAttached ? user : null;
+		return link;
 	}
 
 	@Override
@@ -462,6 +479,17 @@ public class AppointmentgroupServiceImpl implements AppointmentgroupService {
 
 		appointmentgroup.testBookability(restrictionService, appointmentService,
 				new OverrideBookingTester(new ArrayList<>()));
+	}
+
+	private Appointmentgroup getUpdatableAppointmentgroupContainingAppointmentID(String appointmentid) {
+		Appointmentgroup appointmentgroup = this.getAppointmentgroupContainingAppointmentID(appointmentid);
+		List<Appointment> appointments = appointmentgroup.getAppointments();
+		boolean isUpdateble = appointmentgroup.getStatus() == Status.ACTIVE;
+
+		isUpdateble &= appointments.stream()
+				.noneMatch(app -> hasActualTimeValue(app) && app.getStatus() == AppointmentStatus.DELETED);
+
+		return isUpdateble ? appointmentgroup : null;
 	}
 
 }

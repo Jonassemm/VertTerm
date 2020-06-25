@@ -14,9 +14,9 @@ public abstract class BookingTester {
 	public BookingTester (Appointment appointment) {
 		this.appointment = appointment;
 	}
-	
+
 	public BookingTester (Appointment appointment, List<TimeInterval> timeIntervallsOfAppointments) {
-		this.appointment = appointment;
+		this.appointment                  = appointment;
 		this.timeIntervallsOfAppointments = timeIntervallsOfAppointments;
 	}
 
@@ -32,15 +32,17 @@ public abstract class BookingTester {
 		this.testRestrictions(restrictionService);
 		this.testAppointment(appointmentService);
 	}
-	
+
 	public void testAll(Appointment appointment, AppointmentServiceImpl appointmentService,
 			RestrictionService restrictionService, List<TimeInterval> timeIntervallsOfAppointments) {
 		this.appointment = appointment;
 		testAll(appointmentService, restrictionService, timeIntervallsOfAppointments);
 	}
-	
-	public void testAll(Appointment appointment, AppointmentServiceImpl appointmentService, RestrictionService restrictionService) {
+
+	public Appointment testAll(Appointment appointment, AppointmentServiceImpl appointmentService,
+			RestrictionService restrictionService) {
 		testAll(appointment, appointmentService, restrictionService, timeIntervallsOfAppointments);
+		return appointment;
 	}
 
 	public void setAppointment(Appointment appointment) {

@@ -174,14 +174,12 @@ public class UserServiceImp implements UserService {
     	if (password == null || password.equals("")) {
     		Optional<User> optUser = repo.findById(user.getId());
     		
-    		if (optUser.isEmpty()) {
+    		if (optUser.isEmpty())
     			throw new IllegalArgumentException("A user can not be created without a password!");
-    		}
     		
     		user.setPassword(optUser.get().getPassword());
     	} else {
-    		String encodedPassword = passwordEncoder.encode(password);
-    		user.setPassword(encodedPassword);
+    		user.setPassword(passwordEncoder.encode(password));
     	}
     }
 
@@ -193,8 +191,9 @@ public class UserServiceImp implements UserService {
 		
 		//create unique username
 		newUser.setUsername(username + repo.count());
-		newUser.setPassword("{noop}" + UUID.randomUUID().toString());
+		newUser.setPassword(UUID.randomUUID().toString());
 		newUser.setSystemStatus(Status.ACTIVE);
+		newUser.setAnonymousUser(true);
 		newUser.setRoles(user.getRoles());
 		
 		return newUser;
