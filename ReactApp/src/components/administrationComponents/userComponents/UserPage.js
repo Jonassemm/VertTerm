@@ -13,9 +13,21 @@ export default function UserList(props) {
 
     const [userList, setUserList] = useState([])
 
+    //exception needs overriding (ExceptionModal)
+    const [exception, setException] = useState(null)
+    const [showExceptionModal, setShowExceptionModal] = useState(false)
+
     useEffect( () => {
         loadUserList()
     },[])
+
+
+    //-------------------------------ExceptionModal--------------------------------
+    const handleExceptionChange = (newException) => {
+        setException(newException)
+        setShowExceptionModal(true)
+    }
+
 
 
     //---------------------------------USER---------------------------------
@@ -111,6 +123,13 @@ export default function UserList(props) {
 
     return (
         <React.Fragment>
+            {exception != null && 
+                <ExceptionModal
+                    showExceptionModal={showExceptionModal} 
+                    setShowExceptionModal={setShowExceptionModal} 
+                    exception={exception}
+                />
+            }
             {props.userType == "employee" ? 
                 <OverviewPage
                     pageTitle="Mitarbeiter"

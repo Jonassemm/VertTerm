@@ -42,10 +42,11 @@ export default function AppointmentPage({calendarStore, userStore}) {
     const [tableAppointments, setTableAppointments] = useState([])
     const [appointmentsOf, setAppointmentsOf] = useState(loadMode.own)
 
-    //exception needs overriding
+    //exception needs overriding (ExceptionModal)
     const [exception, setException] = useState(null)
     const [showExceptionModal, setShowExceptionModal] = useState(false)
-    //preferalbe appointment 
+    
+    //preferalbe appointment (preferredAppointmentModal)
     const [showPreferredAppointmentModal, setShowPreferredAppointmentModal] = useState(false)
     const [preferredAppointment, setPreferredAppointment] = useState(null)
     //const [preferredAppointmentId, setPreferredAppointmentId] = useState(null)
@@ -59,29 +60,6 @@ export default function AppointmentPage({calendarStore, userStore}) {
             setAppointmentsOf(loadMode.foreignUnpicked)
         }
         setSelectedUser(data)
-    }
-
-    const handleExceptionChange = (newException) => {
-        setException(newException)
-        setShowExceptionModal(true)
-    }
-
-    //set information of preferable appointment
-    const handlePreferredAppointmentChange = (id, starttime) =>{
-        //setPreferredAppointmentId(id)
-        setPreferredAppointmentStarttime(starttime)
-        //load information to this appointment
-        loadPreferredAppointment(id)
-    }
-
-    const handleOverrideDelete = async () => {
-        try{
-            await deleteOverrideAppointment(selected.id);
-        } catch (error){
-            console.log(Object.keys(error), error.message)
-        }
-
-        handleOnCancel()
     }
 
 
@@ -104,7 +82,30 @@ export default function AppointmentPage({calendarStore, userStore}) {
         loadAppointments(selection)
     }
 
-    //---------------------------------LOAD---------------------------------
+
+    //-------------------------------ExceptionModal--------------------------------
+    const handleExceptionChange = (newException) => {
+        setException(newException)
+        setShowExceptionModal(true)
+    }
+
+    const handleOverrideDelete = async () => {
+        try{
+            await deleteOverrideAppointment(selected.id);
+        } catch (error){
+            console.log(Object.keys(error), error.message)
+        }
+    }
+
+    //-------------------------PreferredAppointmentModal----------------------------
+    //set information of preferable appointment
+    const handlePreferredAppointmentChange = (id, starttime) =>{
+        //setPreferredAppointmentId(id)
+        setPreferredAppointmentStarttime(starttime)
+        //load information to this appointment
+        loadPreferredAppointment(id)
+    }
+
     const loadPreferredAppointment = async (id) => {
         var data = null
         try {
@@ -122,7 +123,7 @@ export default function AppointmentPage({calendarStore, userStore}) {
         setShowPreferredAppointmentModal(true)
     }
 
-
+    //--------------------------LOAD-Appointments-------------------------
     const loadAppointments = async (selection) => {
         var data = []
         var response = null
@@ -156,8 +157,6 @@ export default function AppointmentPage({calendarStore, userStore}) {
                 console.log(Object.keys(error), error.message)
             }  
         }
-
-
         //LAOD Appointments for table 
         var reducedData = []
         if(tabKey == "table") {
@@ -279,7 +278,7 @@ export default function AppointmentPage({calendarStore, userStore}) {
         setLoading(false)
     }
 
-
+    //--------------------------Overview-Components-------------------------
     var tableBody = []
     if(tableAppointments.length > 0) {
         tableBody = tableAppointments.map((item, index) => { 
@@ -294,7 +293,6 @@ export default function AppointmentPage({calendarStore, userStore}) {
             )
         })
     }
-
 
     const modal = (onCancel,edit,selectedItem) => {
         var user = {}
@@ -320,14 +318,16 @@ export default function AppointmentPage({calendarStore, userStore}) {
     return (
         <React.Fragment>
             {renderfkt()}
-            {exception != null && <ExceptionModal //modal for deleting appointments
+            {exception != null && 
+                <ExceptionModal //modal for deleting appointments
                     showExceptionModal={showExceptionModal} 
                     setShowExceptionModal={setShowExceptionModal} 
                     overrideSubmit={handleOverrideDelete}
                     exception={exception}
                     overrideText="Trotzdem löschen"
                 />
-            }{preferredAppointment != null &&
+            }
+            {preferredAppointment != null &&
             <Modal size="lg" show={showPreferredAppointmentModal} onHide={() => setShowPreferredAppointmentModal(false)}>
                 <Modal.Header>
                     <Modal.Title>

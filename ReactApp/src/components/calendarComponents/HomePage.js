@@ -74,7 +74,7 @@ function HomePage({
             newReferenceDateOfView.getMonth() != referenceDateOfView.getMonth()
         )
         if(!initialized || loadDifferentMonth) {
-            handleLoadAppointments()
+            refreshCalendarAppointments()
         }
     },[referenceDateOfView])
     
@@ -85,9 +85,10 @@ function HomePage({
         {
             loadCalendarEvents()
         }
+        setInitialized(true)
     }
 
-    const handleLoadAppointments = () => {
+    /* const handleLoadAppointments = () => {
         setInitialized(true)
         if(loadAppointments != undefined) {
             loadAppointments(referenceDateOfView.getMonth(), referenceDateOfView.getFullYear(), UserID)  
@@ -95,7 +96,7 @@ function HomePage({
         {
             loadCalendarEvents()
         }
-    }
+    } */
 
     const loadCalendarEvents = async () => { 
         setLoading(true)
@@ -153,7 +154,6 @@ function HomePage({
             }
         })
         calendarStore.setCalendarEvents(evts)
-        setInitialized(true)
         setLoading(false)
     }
 
@@ -216,22 +216,25 @@ function HomePage({
                   }}
                   eventPropGetter={
                     (event, plannedStarttime, plannedEndtime, isSelected) => {
-                      let newStyle = {
+                      let currentStyle = {
                         backgroundColor: "#5384cf",
                         color: 'white',
-                        borderRadius: "0px",
-                        border: "none"
+                        borderRadius: "0.5px",
+                        border: "white",
+                        borderStyle: "solid"
                       };    
                 
-                      if(event.warning == "warning"){
-                        newStyle.backgroundColor = "red"
-                      }else{
-                        //newStyle.backgroundColor = "green"
+                      if(event.status == "done"){ //appointment is done
+                        currentStyle.backgroundColor = "#17c250"
+                      }else if(event.actualStarttime != null && event.actualEndtime == null) { //appointment was started but not completed 
+                        currentStyle.backgroundColor = "#00b0b3"
+                      }else if(event.warnings.length > 0){ //with warnings!!!
+                        currentStyle.backgroundColor = "#d1342a"
                       }
-                
+
                       return {
                         className: "",
-                        style: newStyle
+                        style: currentStyle
                       };
                     }
                   }

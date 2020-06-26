@@ -6,6 +6,8 @@ import "react-datepicker/dist/react-datepicker.css"
 import {setValidEndDateString, validateDates, renderAvailabilityTable} from "./AvailabilityHelpFunctions"
 import {setDate} from "../../TimeComponents/TimeFunctions"
 
+import {getOpeningHours} from "../openingHoursComponents/OpeningHoursRequests"
+
 var moment = require('moment'); 
 
 /* ---------------------------------------------------------FOR USAGE---------------------------------------------------------
@@ -171,16 +173,11 @@ const Availability = (props) => {
     }
 
     //---------------------------------Load---------------------------------
-    const loadOpeningHoursAvailabilities = () => {
+    const loadOpeningHoursAvailabilities = async () => {
         var data = []
         try {
-            /* const response = await getOpeningHoursAvailabilities();
-            data = response.data */
-            data =  [
-                {startDate: "26.06.2020 10:00", endDate: "26.06.2020 14:00", endOfSeries: null, frequency: "1", rhythm: "oneTime"},
-                {startDate: "26.06.2020 14:00", endDate: "26.06.2020 18:00", endOfSeries: null, frequency: "1", rhythm: "oneTime"},
-                {startDate: "27.06.2020 10:00", endDate: "27.06.2020 14:00", endOfSeries: "27.08.2020 14:00", frequency: "1", rhythm: "weekly"}
-            ]
+            const response = await getOpeningHours();
+            data = response.data.availabilities
         }catch (error) {
             console.log(Object.keys(error), error.message)
         }
@@ -213,7 +210,6 @@ const Availability = (props) => {
                         counter -= 1
                         console.log("REDUCE: countOfIncludeded")
                         setCountOfIncludedOpeningHours(countOfIncludedOpeningHours - 1)
-                        console.log("REDUCE: openingHoursIndex")
                         setOpeningHoursIndex(openingHoursIndex-1)
                     }else  //reduce before opening hours
                     if(index <= openingHoursIndex - counter){
@@ -228,13 +224,17 @@ const Availability = (props) => {
                 }else { //the submitted availabilities
                     const answer = confirm("Möchten Sie diese Verfügbarkeit wirklich deaktivieren? ")
                     if (answer) {
+                        console.log("CHECK-PAT")
+                        console.log(props.availabilities)
                         props.availabilities.map((singleAvailability, index) => {
                             if(index == data.target.value) {
+                                console.log("set endSeries")
                                 singleAvailability.endOfSeries = moment().format("DD.MM.YYYY HH:mm").toString()
                             }
                         })
                         props.updateAvailabilities(props.availabilities)
                         props.editedAvailabilities(true)   
+                        console.log(props.availabilities)
                     }
                 }
             }
