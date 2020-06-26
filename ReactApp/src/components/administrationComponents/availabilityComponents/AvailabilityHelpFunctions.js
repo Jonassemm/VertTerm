@@ -80,8 +80,8 @@ export function renderAvailabilityTable(allAvailabilities, addedAvailabilitiesLe
                                   "Ohne Ende"}/></td>
       
                       <td>{((allAvailabilities.length - addedAvailabilitiesLength) > index) ? 
-                            <Button variant="danger" value={index} onClick={handleCancleAvailability}>Deaktivieren</Button>:
-                            <Button variant="secondary" value={index} onClick={handleCancleAvailability}>Entfernen</Button>
+                            <Button style={{marginTop:"0px"}} variant="danger" value={index} onClick={handleCancleAvailability}>Deaktivieren</Button>:
+                            <Button style={{marginTop:"0px"}} variant="secondary" value={index} onClick={handleCancleAvailability}>Entfernen</Button>
                         }</td>
                     </tr>
                 )

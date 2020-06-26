@@ -1,6 +1,4 @@
 import React, {useState, useEffect} from 'react'
-//import CustomerForm from "./CustomerForm"
-//import EmployeeForm from "./EmployeeForm"
 import OverviewPage from "../../OverviewPage"
 import UserForm from "./UserForm"
 
@@ -15,9 +13,21 @@ export default function UserList(props) {
 
     const [userList, setUserList] = useState([])
 
+    //exception needs overriding (ExceptionModal)
+    const [exception, setException] = useState(null)
+    const [showExceptionModal, setShowExceptionModal] = useState(false)
+
     useEffect( () => {
         loadUserList()
     },[])
+
+
+    //-------------------------------ExceptionModal--------------------------------
+    const handleExceptionChange = (newException) => {
+        setException(newException)
+        setShowExceptionModal(true)
+    }
+
 
 
     //---------------------------------USER---------------------------------
@@ -113,6 +123,13 @@ export default function UserList(props) {
 
     return (
         <React.Fragment>
+            {exception != null && 
+                <ExceptionModal
+                    showExceptionModal={showExceptionModal} 
+                    setShowExceptionModal={setShowExceptionModal} 
+                    exception={exception}
+                />
+            }
             {props.userType == "employee" ? 
                 <OverviewPage
                     pageTitle="Mitarbeiter"

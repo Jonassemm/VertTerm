@@ -1,9 +1,12 @@
 import React, { useState, useEffect } from "react"
-import { Container, Form, Col, Row, Button } from "react-bootstrap"
+import { Container, Form, Col, Row, Modal, Button } from "react-bootstrap"
 import {Link} from 'react-router-dom';
 import {setDate} from "../TimeComponents/TimeFunctions"
+import {getWarningsAsString, getTranslatedWarning} from "../Warnings"
+import {appointmentStatus, translateStatus} from "./AppointmentStatus"
 import {
     deleteAppointment,
+    deleteOverrideAppointment,
     getAllAppointments,
     getGroupOfAppointment,
     updateCustomerIsWaiting,
@@ -14,21 +17,51 @@ import {
 var moment = require('moment'); 
 
 
-function AppointmentForm({onCancel, edit, selected, selectedUser}) {
+export const handleDeleteAppointment = async (id, handleOnCancel = undefined, setException, setPreferredAppointment) => {
+    const answer = confirm("Termin wirklich löschen? ")
+    if(answer) {
+        try{
+            await deleteAppointment(id)
+            .then(res => {
+                if (res.status = "200") {
+                    //deleting successful
+                }
+                console.log(res.headers)
+                if(res.headers.appointmentid != undefined && res.headers.starttime != undefined) {
+                    setPreferredAppointment(res.headers.appointmentid, res.headers.starttime)
+                }
+            })
+            .catch((error) => {
+                console.log("EXCEPTION while deleting appointment")
+                console.log(error.response.headers)
+                if(error.response.headers.exception != undefined) {
+                    setException(error.response.headers.exception)
+                }
+            })
+        } catch (error){
+        console.log(Object.keys(error), error.message)
+        }
+
+        //only necessary for rerender calendar
+        if(handleOnCancel!=undefined){
+            handleOnCancel()
+        }
+    }
+}
+
+
+function AppointmentForm({
+    onCancel,
+    edit, 
+    selected, 
+    handleExceptionChange,
+    handlePreferredAppointmentChange,
+    refreshData = null,                         //optional (HomePage)
+    month = null,                               //optional (HomePage)
+    year = null                                 //optional (HomePage)
+    }) {
     //Editing
     const [edited, setEdited] = useState(false)
-
-    const AppointmentStatus ={
-        planned: "planned",
-        done: "done",
-        deleted: "deleted"
-    }
-
-    const [calendarEvents, setCalendarEvents] = useState([])
-    
-    const [appointments, setAppointments] = useState([])
-    const [appointmentGroupID, setAppointmentGroupID] = useState(null)
-
     const [procedure, setProcedure] = useState(null)
     const [bookedEmployees, setBookedEmployees] = useState([])
     const [bookedResources, setBookedResources] = useState([])
@@ -38,10 +71,10 @@ function AppointmentForm({onCancel, edit, selected, selectedUser}) {
     const [actualStarttime, setActualStarttime] = useState(null)
     const [actualEndtime, setActualEndtime] = useState(null)
     const [description, setDescription] = useState(null )
-    const [status, setStatus] = useState("null") //string will be overwrite but necessary for first rendering
+    const [status, setStatus] = useState("null") //string will be overwritten but necessary for first rendering
     const [warnings, setWarnings] = useState([])
     const [customerIsWaiting, setCustomerIsWaiting] = useState(false)
-    const [responseOfEarlyStart, setResponseOfEarlyStart] = useState(false)
+    
 
     const handleCustomerIsWaitingChange = () => {
             if(customerIsWaiting) {
@@ -53,46 +86,49 @@ function AppointmentForm({onCancel, edit, selected, selectedUser}) {
     }
 
     useEffect(() => { 
-        loadAppointmentGroup()
         if(edit) {
             setProcedure(selected.bookedProcedure)
             setCustomer(selected.bookedCustomer)
             setPlannedStarttime(selected.plannedStarttime)
             setPlannedEndtime(selected.plannedEndtime)
             setActualStarttime(selected.actualStarttime)
-            setActualEndtime(selected.actualEndTime)
+            setActualEndtime(selected.actualEndtime)
             setDescription(selected.description)
             setStatus(selected.status)
             setWarnings(selected.warnings)   
             setBookedEmployees(selected.bookedEmployees)     
             setBookedResources(selected.bookedResources)
             setCustomerIsWaiting(selected.customerIsWaiting)
+            //TEST________________________________________________
+            //handleExceptionChange("Employee")
+            //handlePreferredAppointmentChange(1, "26.06.2020 19:00")
         } 
     }, [])
 
 
-    const loadAppointmentGroup = async () => {
-        var data
-        console.log("load group")
-        try{
-            const response = await getGroupOfAppointment(selected.id)
-            data = response.data
-        } catch (error){
-            console.log(Object.keys(error), error.message)
-        }
-        console.log("GROUP_ID:")
-        console.log(data)
-        setAppointmentGroupID(data.id)
-    }
-
-
     const handleSubmit = async () => {
         try{
-            const response = await updateCustomerIsWaiting(selected.id, customerIsWaiting);
-          } catch (error){
+            const res = await updateCustomerIsWaiting(selected.id, customerIsWaiting)
+            //.then(res => {
+                if (res.status = "200") {
+                    //updating successful
+                }
+                console.log("Antwort:")
+                console.log(res.headers)
+                if(res.headers.appointmentid != undefined && res.headers.starttime != undefined) {
+                    handlePreferredAppointmentChange(res.headers.appointmentid, res.headers.starttime)
+                }
+            //})
+            /* .catch((error) => {
+                console.log("Fehler")
+                console.log(error)
+            }) */
+        } catch (error){
+            console.log("Fehler")
             console.log(Object.keys(error), error.message)
-          }
-        onCancel()
+        }
+
+        handleOnCancel()
     }
 
     
@@ -109,61 +145,59 @@ function AppointmentForm({onCancel, edit, selected, selectedUser}) {
         if(!data){
             alert("Termin kann nicht vorzeitig gestartet werden")
         }
-
         setActualStarttime(moment(new Date).format("DD.MM.YYYY / HH:mm").toString()) //set the actual time 
+
+        //refresh Appointments
+        if(refreshData != null) {
+            refreshData(month, year) 
+        }
     }
 
     const handleEnd = async() =>{
         const newEndtime = moment(new Date).format("DD.MM.YYYY / HH:mm").toString()
-        const newStatus = AppointmentStatus.done
+        const newStatus = appointmentStatus.done
         var updateData = {actualEndTime: newEndtime, status: newStatus}
         
         try{
-            const response = await stopAppointment(selected.id);
-            console.log("RESPONSE OF stop:")
-            console.log(response.data)
-          } catch (error){
-            console.log(Object.keys(error), error.message)
-          }
-
+            await stopAppointment(selected.id)
+            .then(res => {
+                if (res.status = "200") {
+                    //stopping successful
+                }
+                console.log("ANTWORT:")
+                console.log(res.headers)
+                if(res.headers.appointmentid != undefined && res.headers.starttime != undefined) {
+                    handlePreferredAppointmentChange(res.headers.appointmentid, res.headers.starttime)
+                }
+            })
+        } catch (error){
+        console.log(Object.keys(error), error.message)
+        }
         setActualEndtime(newEndtime) 
         setStatus(newStatus)
+
+        //refresh Appointments
+        if(refreshData != null) {
+            refreshData(month, year) 
+        }
     }
 
-
-    const handleDelete = async () => {
-        const answer = confirm("Termin wirklich löschen? ")
-        if(answer) {
-            try{
-                await deleteAppointment(selected.id)
-              } catch (error){
-                console.log(Object.keys(error), error.message)
-              }
+    const handleOnCancel = () => {
+        //refresh Appointments
+        if(refreshData != null) {
+            refreshData(month, year) 
         }
-        refreshEvents()
         onCancel()
     }
 
-    async function refreshEvents(){
-        const response = await getAllAppointments()
-        const evts = response.data
-        calendarStore.setCalendarEvents(evts)
+    const handleDelete = () => {
+        handleDeleteAppointment(
+            selected.id, 
+            handleOnCancel, 
+            handleExceptionChange, 
+            handlePreferredAppointmentChange)
     }
 
-    const translateStatus = () => {
-        switch(status) {
-        case AppointmentStatus.planned:
-            return "Gebucht"
-        break;
-        case AppointmentStatus.done:
-            return "Erledigt"
-        break;
-        case AppointmentStatus.deleted:
-            return "Gelöscht"
-        break;
-        default: return "UNDIFINED"
-        }
-    }
 
     const getBookedElements = (type) => {
         var text = ""
@@ -200,18 +234,11 @@ function AppointmentForm({onCancel, edit, selected, selectedUser}) {
         return text
     }
 
-    const getWarningsAsString = () =>{
-        var warningString
-        if(warnings.length > 0){
-            warnings.map((singleWarning, index )=> {
-                if(index == 0) {
-                    warningString += singleWarning
-                }
-                warningString += "; " + singleWarning
-            })
-        }
-        return warningString
+
+    const getActualStarttime = () => {
+        return actualStarttime
     }
+
 
     const rendertest = () => {
         console.log("---------Render-FORM------")
@@ -248,17 +275,17 @@ function AppointmentForm({onCancel, edit, selected, selectedUser}) {
                         <Form.Label>Status:</Form.Label> <br/>
                                 <Form.Control
                                    readOnly
-                                   style={  status == AppointmentStatus.deleted ? {background: "white", color: "red"}:
-                                            status == AppointmentStatus.done ? {background: "white", color: "#009938"}: {background: "white"}}
+                                   style={  status == appointmentStatus.deleted ? {background: "white", color: "red"}:
+                                            status == appointmentStatus.done ? {background: "white", color: "#009938"}: {background: "white"}}
                                    name="status"
                                    type="text"
-                                   value={translateStatus()} 
+                                   value={translateStatus(status)} 
                                 />
                         </Form.Group>
                     </Form.Row>
                     <Form.Row>
                         <Form.Group as={Col} md="4"> 
-                        {status == AppointmentStatus.planned ? 
+                        {status == appointmentStatus.planned ? 
                             actualStarttime == null ?
                                 <Form.Check
                                     id="switchCustomerIsWaiting"
@@ -274,17 +301,19 @@ function AppointmentForm({onCancel, edit, selected, selectedUser}) {
                         }
                         </Form.Group>
                         <Form.Group as={Col} md="8">
+                            
                             <div style={{ textAlign: "right" }}>         
                                 {/* (actualStarttime != null && status == AppointmentStatus.planned) &&
                                     <Button variant="secondary" onClick={handleUndoStart} style={{ marginLeft: "4px" }}>Zurücksetzen</Button> */
                                 }
-                                {(actualStarttime != null && actualEndtime == null) && 
+                                {(getActualStarttime() != null && actualEndtime == null) && 
                                     (moment(plannedStarttime, "DD.MM.yyyy HH:mm").toDate().getTime() < moment().toDate().getTime() &&
                                     moment(actualStarttime, "DD.MM.yyyy HH:mm").toDate().getTime() < moment().toDate().getTime()) &&
                                         <Button variant="primary" onClick={handleEnd} style={{ marginLeft: "4px" }}>Termin beenden</Button>
                                 }
-                                {customerIsWaiting && status == AppointmentStatus.planned && actualStarttime == null &&
-                                moment(plannedStarttime, "DD.MM.yyyy HH:mm").toDate().getTime() < moment().toDate().getTime() &&
+                                {getActualStarttime() == null && customerIsWaiting && status == appointmentStatus.planned &&
+                                //panned start < now - (2 minutes = 120000)
+                                moment(plannedStarttime, "DD.MM.yyyy HH:mm").toDate().getTime() < (moment().toDate().getTime()-120000) &&
                                     <Button variant="primary" onClick={handleStart} style={{ marginLeft: "4px" }}>Termin starten</Button>
                                 }
                             </div>
@@ -300,13 +329,15 @@ function AppointmentForm({onCancel, edit, selected, selectedUser}) {
                                     style={{background: "white", color: "red", fontWeight: "bold"}}
                                     name="warnings"
                                     type="text"
-                                    value={getWarningsAsString()} 
+                                    value={getWarningsAsString(warnings)} 
                                 />
                             </Form.Group>  
                             <Form.Group as={Col} md="3">
                                 <div style={{textAlign: "bottom", marginTop: "32px"}}>
                                     <Button variant="primary" style={{ marginLeft: "0px" }}>Prüfen</Button>
-                                    <Button variant="success" style={{ marginLeft: "10px" }}>Beheben</Button>
+                                    <Link to={`/warning/${warnings[0]}`}>
+                                        <Button variant="success" style={{ marginLeft: "10px" }}>Beheben</Button>
+                                    </Link>
                                 </div>
                             </Form.Group>   
                         </Form.Row>
@@ -381,10 +412,6 @@ function AppointmentForm({onCancel, edit, selected, selectedUser}) {
                                 type="text"
                                 value={getBookedElements("resource")} 
                             />
-                            {/* <ObjectPicker
-                                initial={bookedResources}
-                                DbObject="resource"
-                                setState={handleBookedResourcesChange} /> */}
                         </Form.Group>
                     </Form.Row >
                     <hr />
@@ -392,13 +419,13 @@ function AppointmentForm({onCancel, edit, selected, selectedUser}) {
                         {(edited && actualStarttime == null) &&
                             <Button variant="secondary" onClick={onCancel}>Abbrechen</Button>
                         }
-                        {(status == AppointmentStatus.planned && actualStarttime == null) && 
+                        {(status == appointmentStatus.planned && actualStarttime == null) && 
                             <Button variant="danger" onClick={handleDelete} style={{marginLeft: "3px"}}>Termin löschen</Button> 
                         }
-                        {(status == AppointmentStatus.planned && actualStarttime == null) &&
-                          <Link to={`/booking/${selected.id}/${appointmentGroupID}`}>
-                            <Button variant="primary"style={{marginLeft: "3px"}}>Zur Bearbeitung</Button>
-                            </Link>   
+                        {(status == appointmentStatus.planned && actualStarttime == null) &&
+                            <Link to={`/booking/${selected.id}`}>
+                                <Button variant="primary"style={{marginLeft: "3px"}}>Zur Bearbeitung</Button>
+                            </Link> 
                         }
                         {(edited && actualStarttime == null) ?
                             <Button variant="success" onClick={handleSubmit} style={{ marginLeft: "4px" }}>Übernehmen</Button>:

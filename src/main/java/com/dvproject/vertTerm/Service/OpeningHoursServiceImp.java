@@ -36,26 +36,32 @@ public class OpeningHoursServiceImp implements OpeningHoursService {
 
 	@Override
 	public OpeningHours update(OpeningHours updatedInstance) {
+		List<Availability> updatedInstanceAvailability = updatedInstance.getAvailabilities();
+		updateInteral(updatedInstanceAvailability);
+		
 		OpeningHours openingHours = get();
 		List<Availability> openingHoursAvailabilities = openingHours.getAvailabilities();
-		List<Availability> updatedInstanceAvailability = updatedInstance.getAvailabilities();
+		Map<String, Availability> availabilitiesMap;
 
-		update(updatedInstanceAvailability);
+		// db-object: id -> Availability
+		availabilitiesMap = openingHoursAvailabilities != null
+				? openingHoursAvailabilities.stream()
+						.collect(Collectors.toMap(Availability::getId, availability -> availability))
+				: null;
 
-		// id -> Availability
-		Map<String, Availability> availabilitiesMap = openingHoursAvailabilities.stream()
-				.collect(Collectors.toMap(Availability::getId, availability -> availability));
-
-		// Load all availabilities from db
-		openingHoursAvailabilities.addAll(updatedInstanceAvailability.stream()
-				.filter(avail -> !availabilitiesMap.containsKey(avail.getId())).collect(Collectors.toList()));
+		// add all new Availabilities 
+		if (availabilitiesMap != null)
+			openingHoursAvailabilities.addAll(updatedInstanceAvailability.stream()
+					.filter(avail -> !availabilitiesMap.containsKey(avail.getId())).collect(Collectors.toList()));
+		else 
+			openingHours.setAvailabilities(updatedInstanceAvailability);
 
 		repo.save(openingHours);
 
-		return this.get();
+		return get();
 	}
 
-	public void update(List<Availability> availabilities) {
+	public void updateInteral(List<Availability> availabilities) {
 		Availability repoAvailability = null;
 
 		for (int i = 0; i < availabilities.size(); i++) {
@@ -69,9 +75,12 @@ public class OpeningHoursServiceImp implements OpeningHoursService {
 					if (repoAvailability.getEndOfSeries() == null && endOfSeries != null) {
 						repoAvailability.setEndOfSeries(endOfSeries);
 						availRepo.save(repoAvailability);
+						availabilities.set(i, repoAvailability);
 					}
-				} else // id != null && no entity in db
+				} else { // id != null && no entity in db
+					availability.setId(null);
 					repoAvailability = availRepo.save(availability);
+				}
 			} else // id == null
 				repoAvailability = availRepo.save(availability);
 		}
@@ -86,7 +95,7 @@ public class OpeningHoursServiceImp implements OpeningHoursService {
 		openingHours.setAvailabilities(openingHoursAvailabilities.stream()
 				.filter(avail -> avail.getEndOfSeries() == null || avail.getEndOfSeries().after(now))
 				.collect(Collectors.toList()));
-		
+
 		repo.save(openingHours);
 	}
 

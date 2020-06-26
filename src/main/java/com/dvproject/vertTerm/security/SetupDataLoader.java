@@ -24,9 +24,9 @@ import com.dvproject.vertTerm.Model.Right;
 import com.dvproject.vertTerm.Model.Role;
 import com.dvproject.vertTerm.Model.Status;
 import com.dvproject.vertTerm.Model.User;
+import com.dvproject.vertTerm.Service.EmployeeService;
 import com.dvproject.vertTerm.repository.AvailabilityRepository;
 import com.dvproject.vertTerm.repository.CustomerRepository;
-import com.dvproject.vertTerm.repository.EmployeeRepository;
 import com.dvproject.vertTerm.repository.OpeningHoursRepository;
 import com.dvproject.vertTerm.repository.OptionalAttributesRepository;
 import com.dvproject.vertTerm.repository.RightRepository;
@@ -42,7 +42,7 @@ public class SetupDataLoader implements ApplicationListener<ContextRefreshedEven
 	private UserRepository userRepository;
 
 	@Autowired
-	private EmployeeRepository employeeRepository;
+	private EmployeeService employeeService;
 
 	@Autowired
 	private CustomerRepository customerRepository;
@@ -170,7 +170,7 @@ public class SetupDataLoader implements ApplicationListener<ContextRefreshedEven
 
 	@Transactional
 	private Employee createEmployeeIfNotFound(String username, String password, List<Role> roles) {
-		Employee user = employeeRepository.findByUsername(username);
+		Employee user = employeeService.getByUsername(username);
 
 		if (user == null) {
 			user = new Employee();

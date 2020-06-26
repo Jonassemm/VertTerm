@@ -7,11 +7,15 @@ import {getAllPositions} from "./administrationComponents/positionComponents/Pos
 import {getAllResourceTypes} from "./administrationComponents/resourceTypeComponents/ResourceTypeRequests"
 import {getAllResources} from "./administrationComponents/resourceComponents/ResourceRequests"
 import {getAllRestrictions} from "./administrationComponents/restrictionComponents/RestrictionRequests"
-import {getAllWarnings} from "./administrationComponents/appointmentWarningComponents/AppointmentWarningRequests"
+
+export const getAppointment = (id) => axios.get(`${APIURL}/api/Appointments/${id}`)
 
 export const addAppointmentGroup = (data, userID) => axios.post(`${APIURL}/api/Appointmentgroups/${userID}`,data)
+export const addAppointmentGroupAny = (data) => axios.post(`${APIURL}/api/Appointmentgroups/`,data)
 export const addAppointmentGroupOverride = (data, userID) => axios.post(`${APIURL}/api/Appointmentgroups/override/${userID}`,data)
 export const getAppointmentGroup = (id) => axios.get(`${APIURL}/api/Appointmentgroups/${id}`)
+export const getAppointmentGroupByApt = (AptID) => axios.get(`${APIURL}/api/Appointmentgroups/appointment/${AptID}`)
+export const editAppointmentGroup = (data,userID) => axios.put(`${APIURL}/api/Appointmentgroups/${userID}`,data)
 
 export const getUsers = getAllUsers
 export const getActiveUsers = () => axios.get(`${APIURL}/api/Users?status=ACTIVE`)
@@ -28,5 +32,3 @@ export const getResourcesOfType = type => axios.get(`${APIURL}/api/Resources/res
 
 export {getProcedures}
 export const getRestrictions = getAllRestrictions
-
-export const getWarnings = getAllWarnings

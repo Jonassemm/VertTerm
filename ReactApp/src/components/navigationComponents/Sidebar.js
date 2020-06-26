@@ -19,6 +19,9 @@ const Side = ({closeFunction}) => {
                 </Nav.Item>
                 <hr />
                 <Nav.Item>
+                    <Nav.Link className="sidebarLink" as={Link} to="/admin/openingHours">Öffnungszeiten</Nav.Link>
+                </Nav.Item>
+                <Nav.Item>
                     <Nav.Link className="sidebarLink" as={Link} to="/admin/restriction">Einschränkungen</Nav.Link>
                 </Nav.Item>
                 <Nav.Item>

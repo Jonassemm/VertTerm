@@ -9,6 +9,8 @@ public interface ProcedureService extends BasicService <Procedure>{
 	//GET
 	List<Procedure> getAll(Status status);
 	
+	List<Procedure> getAll(Status status, boolean publicProcedure);
+	
 	List<Procedure> getByIds(String[] ids);
 
 	List<ProcedureRelation> getPrecedingProcedures(String id);

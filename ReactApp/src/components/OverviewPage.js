@@ -2,7 +2,7 @@ import React, { useState } from "react"
 import styled from "styled-components"
 import { Container, Row, Col, Button, Table, Modal } from "react-bootstrap"
 
-const Style = styled.div`
+export const Style = styled.div`
 
 .topRow {
     margin: 65px 0px 0px 0px
@@ -59,14 +59,15 @@ const Style = styled.div`
 
 function OverviewPage({
     pageTitle,        
-    newItemText,        //text of the new Item button 
+    newItemText,                //text of the new Item button 
     tableHeader,
     tableBody,
-    modal,              //input form
-    data,               //table data of the desired object
-    editModalText,      //optional prop for overwriting the title of the edit modal
-    modalSize,          //optional prop for customize modal size -> ["sm", "lg", "xl"]
-    withoutCreate = false,      //optional to remove the add button (boolean)          
+    modal,                      //input form
+    data,                       //table data of the desired object
+    editModalText,              //optional prop for overwriting the title of the edit modal
+    modalSize,                  //optional prop for customize modal size -> ["sm", "lg", "xl"]
+    withoutCreate = false,      //optional prop to remove the add button (boolean) 
+    noTopMargin = false,        //optional prop to reduce te space above the OverviewPage
     refreshData,
     scrollable
     }) {
@@ -114,7 +115,9 @@ function OverviewPage({
             </Modal>
 
             <Container>
-                <div className="topRow"></div>
+                {!noTopMargin &&
+                    <div className="topRow"></div>
+                }
                 <Row>
                     <Col ><h1>{pageTitle}</h1></Col>
                     {!withoutCreate && <Col className="colR"><Button onClick={handleNew}>{newItemText}</Button></Col>}

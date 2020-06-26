@@ -25,15 +25,15 @@ export function getOverlapSlot(Slot1, Slot2) {
 export function subtractTimeslots(minuend, subtrahend) {
     if ((subtrahend.startDate <= minuend.startDate) && (subtrahend.endDate < minuend.endDate))
         return [{ startDate: moment(subtrahend.endDate).toDate(), endDate: moment(minuend.endDate).toDate() }]
-    if ((subtrahend.startDate < minuend.startDate) && (subtrahend.endDate = minuend.endDate))
+    if ((subtrahend.startDate < minuend.startDate) && (subtrahend.endDate == minuend.endDate))
         return null
     if ((subtrahend.startDate > minuend.startDate) && (subtrahend.endDate < minuend.endDate))
         return [{ startDate: moment(minuend.startDate).toDate(), endDate: moment(subtrahend.startDate).toDate() }, { startDate: moment(subtrahend.endDate).toDate(), endDate: moment(minuend.endDate).toDate() }]
-    if ((subtrahend.startDate = minuend.startDate) && (subtrahend.endDate = minuend.endDate))
+    if ((subtrahend.startDate == minuend.startDate) && (subtrahend.endDate == minuend.endDate))
         return null
     if ((subtrahend.startDate > minuend.startDate) && (subtrahend.endDate >= minuend.endDate))
         return [{ startDate: moment(minuend.startDate).toDate(), endDate: moment(subtrahend.startDate).toDate() }]
-    if ((subtrahend.startDate = minuend.startDate) && (subtrahend.endDate > minuend.endDate))
+    if ((subtrahend.startDate == minuend.startDate) && (subtrahend.endDate > minuend.endDate))
         return null
     if ((subtrahend.startDate < minuend.startDate) && (subtrahend.endDate > minuend.endDate))
         return null

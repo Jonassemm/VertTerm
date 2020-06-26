@@ -14,6 +14,7 @@ import RolePage from "../administrationComponents/roleComponents/RolePage"
 import PositionPage from "../administrationComponents/positionComponents/PositionPage"
 import ResourceTypePage from "../administrationComponents/resourceTypeComponents/ResourceTypePage"
 import ResourcePage from "../administrationComponents/resourceComponents/ResourcePage"
+import OpeningHours from "../administrationComponents/openingHoursComponents/openingHoursPage"
 
 
 function openMenu() {
@@ -46,6 +47,7 @@ function AdminPage({userStore}) {
                 <Route exact path="/admin/role" component={() => (<RolePage userStore={userStore} />)} />
                 <Route exact path="/admin/position" component={PositionPage} />
                 <Route exact path="/admin/resourceType"component={ResourceTypePage} />
+                <Route exact path="/admin/openingHours"component={OpeningHours} />
             </div>
 
         </Container>
