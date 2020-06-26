@@ -122,7 +122,7 @@ import java.util.Collection;
     		return service.getAppointmentsInTimeIntervalAndStatus(starttime, endtime, status);
     	}
 		
-        @GetMapping("/ResEmp")
+    	@PostMapping("/ResEmp")
         public @ResponseBody Appointmentgroup getAvailableResourcesAndEmployees(@RequestBody Appointmentgroup group)
         {
         	return service.getAvailableResourcesAndEmployees(group);

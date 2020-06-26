@@ -3,6 +3,7 @@ package com.dvproject.vertTerm.Service;
 import com.dvproject.vertTerm.Model.*;
 import com.dvproject.vertTerm.exception.AppointmentTimeException;
 import com.dvproject.vertTerm.repository.AppointmentRepository;
+import com.dvproject.vertTerm.repository.AppointmentgroupRepository;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.rest.webmvc.ResourceNotFoundException;
@@ -18,6 +19,8 @@ public class AppointmentServiceImpl implements AppointmentService {
 
 	@Autowired
 	AppointmentRepository repo;
+	@Autowired
+	AppointmentgroupRepository appgrouprepo;
 	@Autowired
 	ResourceService ResSer;
 	@Autowired
@@ -269,6 +272,7 @@ public class AppointmentServiceImpl implements AppointmentService {
 			// set Resources and Employees to the appointment
 			appointment.setBookedResources(Resources);
 			appointment.setBookedEmployees(Employees);
+		
 			// throw exceptions if not all needed employees/resources could be found
 			if (Positions.size() != appointment.getBookedEmployees().size())
 				throw new AppointmentTimeException(
@@ -277,7 +281,7 @@ public class AppointmentServiceImpl implements AppointmentService {
 				throw new AppointmentTimeException(
 						"In the time interval not all needed resources for appointment could be found", appointment);
 		}
-
+		//appgrouprepo.save(group);
 		return group;
 	}
 
