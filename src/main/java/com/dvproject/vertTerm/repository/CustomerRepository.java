@@ -3,29 +3,30 @@ package com.dvproject.vertTerm.repository;
 import java.util.List;
 import java.util.Optional;
 
-import com.dvproject.vertTerm.Model.Employee;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.data.mongodb.repository.Query;
 
 import com.dvproject.vertTerm.Model.Customer;
 
 public interface CustomerRepository extends MongoRepository<Customer, String>{
+	static final String customerTest = "'_class' : 'com.dvproject.vertTerm.Model.Customer'";
+	
 	@Override
-	@Query("{'_class' : 'com.dvproject.vertTerm.Model.Customer'}")
+	@Query("{" + customerTest + "}")
 	List<Customer> findAll();
 
-    @Query("{'systemStatus' : 'ACTIVE', '_class' : 'com.dvproject.vertTerm.Model.Customer'}")
+    @Query("{'systemStatus' : 'ACTIVE', " + customerTest + "}")
     List<Customer> findAllActive();
 
-    @Query("{'systemStatus' : 'INACTIVE', '_class' : 'com.dvproject.vertTerm.Model.Customer'}")
+    @Query("{'systemStatus' : 'INACTIVE', " + customerTest + "}")
     List<Customer> findAllInactive();
 
-    @Query("{'systemStatus' : 'DELETED', '_class' : 'com.dvproject.vertTerm.Model.Customer'}")
+    @Query("{'systemStatus' : 'DELETED'," + customerTest + "}")
     List<Customer> findAllDeleted();
 	
-    @Query("{'_id' : ?0, '_class' : 'com.dvproject.vertTerm.Model.Customer'}")
+    @Query("{'_id' : ?0, " + customerTest + "}")
     Optional<Customer> findById (String id);
     
-    @Query("{'username' : ?0, '_class' : 'com.dvproject.vertTerm.Model.Customer'}")
+    @Query("{'username' : ?0, " + customerTest + "}")
     Customer findByUsername (String username);
 }
