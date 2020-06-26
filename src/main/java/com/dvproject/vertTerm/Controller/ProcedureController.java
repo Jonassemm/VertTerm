@@ -25,8 +25,10 @@ public class ProcedureController {
 	}
 	
 	@GetMapping("/Status/{status}")
-	public List<Procedure> getAllProceduresWithStatus (@PathVariable Status status) {
-		return procedureService.getAll(status);
+	public List<Procedure> getAllProceduresWithStatus (
+			@PathVariable Status status,
+			@RequestParam(required = false) Boolean publicProcedure) {
+		return publicProcedure != null ? procedureService.getAll(status, publicProcedure) : procedureService.getAll(status);
 	}
 
 	@GetMapping("/{id}/Recommendation/EarlyEnd")

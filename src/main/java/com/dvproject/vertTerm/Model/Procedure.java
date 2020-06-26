@@ -39,6 +39,8 @@ public class Procedure implements Serializable, Available {
 	private int pricePerHour;
 	@NotNull
 	private Status status;
+//	@NotNull
+	private boolean publicProcedure;
 
 	private List<ProcedureRelation> precedingRelations;
 	private List<ProcedureRelation> subsequentRelations;
@@ -102,6 +104,14 @@ public class Procedure implements Serializable, Available {
 
 	public void setStatus(Status status) {
 		this.status = status;
+	}
+
+	public boolean isPublicProcedure() {
+		return publicProcedure;
+	}
+
+	public void setPublicProcedure(boolean publicProcedure) {
+		this.publicProcedure = publicProcedure;
 	}
 
 	public List<ProcedureRelation> getPrecedingRelations() {

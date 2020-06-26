@@ -26,6 +26,10 @@ public class ProcedureServiceImp implements ProcedureService, AvailabilityServic
 	public List<Procedure> getAll(Status status) {
 		return procedureRepository.findByStatus(status);
 	}
+	
+	public List<Procedure> getAll(Status status, boolean publicProcedure){
+		return procedureRepository.findByStatusAndPublicProcedure(status, publicProcedure);
+	}
 
 	@Override
 	public List<Procedure> getByIds(String[] ids) {
