@@ -74,6 +74,12 @@ public class EmployeeServiceImp implements EmployeeService, AvailabilityService 
         return appointment.orElse(null);
     }
     
+    @Override
+    public Employee getByUsername(String username) {
+        Optional<Employee> appointment = repo.findByUsername(username);
+        return appointment.orElse(null);
+    }
+    
 	@Override
 	public List<Availability> getAllAvailabilities(String id) {
 		Employee employee = this.getById(id);

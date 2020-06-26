@@ -1,12 +1,12 @@
 package com.dvproject.vertTerm.Service;
 
+import java.security.Principal;
 import java.util.List;
 
 import com.dvproject.vertTerm.Model.Appointment;
 import com.dvproject.vertTerm.Model.Appointmentgroup;
 import com.dvproject.vertTerm.Model.Optimizationstrategy;
 import com.dvproject.vertTerm.Model.Status;
-import com.dvproject.vertTerm.Model.User;
 
 public interface AppointmentgroupService extends BasicService<Appointmentgroup> {
 	//GET
@@ -22,6 +22,8 @@ public interface AppointmentgroupService extends BasicService<Appointmentgroup> 
 	void setPullableAppointment();
 	
 	void testWarnings(String appointmentid);
+	
+	void canBookAppointments(Principal user, Appointmentgroup appointmentgroup);
 	
 	//PUT
 	String bookAppointmentgroup (String userid, Appointmentgroup appointmentgroup, boolean override);

@@ -1,5 +1,6 @@
 package com.dvproject.vertTerm.Service;
 
+import java.security.Principal;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -10,6 +11,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import java.util.TimeZone;
+import java.util.stream.Collectors;
 
 import javax.servlet.http.HttpServletResponse;
 
@@ -120,6 +122,23 @@ public class AppointmentgroupServiceImpl implements AppointmentgroupService {
 			appointments.forEach(appointment -> appointmentRepository
 					.save(tester.testAll(appointment, appointmentService, restrictionService)));
 		}
+	}
+
+	@Override
+	public void canBookAppointments(Principal user, Appointmentgroup appointmentgroup) {
+		// get all procedures from database
+		List<Procedure> procedures = appointmentgroup.getAppointments().stream()
+				.map(app -> procedureService.getById(app.getBookedProcedure().getId())).collect(Collectors.toList());
+		// tests whether or not the given principal is an employee
+		boolean isEmployee = user != null && employeeService.getByUsername(user.getName()) != null;
+		// if procedures contain at least one privateProcedure, get that
+		Procedure privateProcedure = procedures.stream().filter(procedure -> !procedure.isPublicProcedure()).findAny()
+				.orElse(null);
+
+		if (!isEmployee && privateProcedure != null)
+			throw new ProcedureException(
+					"At least one appointment contains a non-public procedure that a non-employee tries to book",
+					privateProcedure);
 	}
 
 	@Override
