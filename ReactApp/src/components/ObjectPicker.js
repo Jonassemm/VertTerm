@@ -10,7 +10,7 @@ import { getUsers, getEmployees, getCustomers, getProcedures, getRoles, getPosit
 // exclude: the element which is removed from the selection
 
 const ObjectPicker = forwardRef((props, ref) => {
-    let { DbObject, setState, initial, multiple, ident, selectedItem, filter } = props
+    let { DbObject, setState, initial, multiple, ident, selectedItem, filter,disabled } = props
     if (!selectedItem) selectedItem = { id: null }
     const [options, setOptions] = useState([])
     const [labelKey, setLabelKey] = useState("")
@@ -49,7 +49,8 @@ const ObjectPicker = forwardRef((props, ref) => {
 
     useEffect(() => {
         buildInitialValues()
-    }, [init])
+    }, [initial,init])
+
 
     useImperativeHandle(ref, () => ({
         resetSelected() {
@@ -86,7 +87,6 @@ const ObjectPicker = forwardRef((props, ref) => {
             }
             case 'activeUser': res = await getActiveUsers()
         }
-        console.log(res)
         const result = res.data.map(item => {
             return {
                 ...item,
@@ -232,6 +232,7 @@ const ObjectPicker = forwardRef((props, ref) => {
             <Typeahead
                 style={{ width: "100%" }}
                 clearButton
+                disabled={disabled}
                 placeholder={labels[DbObject] + " wählen"}
                 multiple={multiple || false}
                 options={options}

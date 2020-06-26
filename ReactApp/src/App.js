@@ -16,6 +16,8 @@ import BookingForm from "./components/calendarComponents/BookingForm"
 import AdminPage from "./components/navigationComponents/AdminPage"
 import AppointmentPage from "./components/appointmentComponents/AppointmentPage"
 import { TestComponent } from './components/TestComponent';
+import  AppointmentQR  from './components/calendarComponents/AppointmentQR';
+import  AnonymousLogin  from './components/navigationComponents/AnonymousLogin';
 
 export default observer(function App({ userStore, calendarStore }) {
   console.log(document.cookie)
@@ -30,8 +32,10 @@ export default observer(function App({ userStore, calendarStore }) {
             <Route exact path="/calendar" component={() => (<HomePage calendarStore={calendarStore} />)} />
             <Route path="/appointment" component={() => <AppointmentPage calendarStore={calendarStore} userStore={userStore} />} />
             <Route exact path="/booking" component={() => (<BookingForm/>)}/>
-            <Route exact path="/booking/:appointmentID/:appointmentGroupID" component={BookingForm}/>
+            <Route exact path="/booking/:appointmentID" component={BookingForm}/>
             <Route exact path="/test" component={TestComponent}/>
+            <Route exact path="/apts/:credString" component={(credString) => <AnonymousLogin userStore={userStore} credString={credString.match.params.credString}/>}/>
+            <Route exact path="/qr" component={AppointmentQR}/>
           </Switch>
         </div>
       </Suspense>

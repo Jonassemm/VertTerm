@@ -396,7 +396,7 @@ function AppointmentForm({onCancel, edit, selected, selectedUser}) {
                             <Button variant="danger" onClick={handleDelete} style={{marginLeft: "3px"}}>Termin löschen</Button> 
                         }
                         {(status == AppointmentStatus.planned && actualStarttime == null) &&
-                          <Link to={`/booking/${selected.id}/${appointmentGroupID}`}>
+                          <Link to={`/booking/${selected.id}`}>
                             <Button variant="primary"style={{marginLeft: "3px"}}>Zur Bearbeitung</Button>
                             </Link>   
                         }

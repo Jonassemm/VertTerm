@@ -49,7 +49,7 @@ function ProcedureForm({ onCancel, edit, selected }) {
             return (time / 60)
         }
     }
-
+    
     function buildInitialValues() {
         if (edit) {
             setName(selected.name)
@@ -316,7 +316,7 @@ function ProcedureForm({ onCancel, edit, selected }) {
                         </Form.Row>
                         <Form.Row>
                             <Form.Label style={LabelStyle}>
-                                Dauer
+                                Dauer (min)
                             </Form.Label>
                             <Form.Control
                                 type="number"
@@ -501,7 +501,7 @@ function ProcedureForm({ onCancel, edit, selected }) {
                     </Tab>
                     <Tab eventKey="resources" title="Ressourcen" style={TabStyle}>
                         <Form.Label style={{ marginTop: "5px" }}>Benötigte Ressourcentypen:</Form.Label>
-                        <ObjectPicker DbObject="resourceType" initial={edit ? resourceTypes : []} setState={setResourceTypesExt} multiple={true} />
+                        <ObjectPicker DbObject="resourceType" initial={edit && resourceTypes} setState={setResourceTypesExt} multiple={true} />
                         {resourceTypes.map((item, index) => {
                             return (
                                 <Row style={{ marginTop: "5px" }}>
@@ -529,7 +529,7 @@ function ProcedureForm({ onCancel, edit, selected }) {
                             )
                         })}
                         <Form.Label style={{ marginTop: "10px" }}>Benötigte Positionen:</Form.Label>
-                        <ObjectPicker DbObject="position" initial={edit ? positions : []} setState={setPositionsExt} multiple={true}></ObjectPicker>
+                        <ObjectPicker DbObject="position" initial={edit && positions} setState={setPositionsExt} multiple={true}></ObjectPicker>
                         {positions.map((item, index) => {
                             return (
                                 <Row style={{ marginTop: "5px" }}>

@@ -25,18 +25,17 @@ function LoginForm({ userStore }) {
         setInputError(false)
         event.preventDefault()
         if (!userStore.loggedIn) {
-            await getLogin(username, password)
-                .then(res => {
-                    if (res.status = "200") {
-                        userStore.setUserID(res.data)
-                        userStore.setLoggedIn(true)
-                    }
-                })
-                .catch(() => {
-                    setInputError(true)
-                    clearInputFields()
-                }
-                )
+            try {
+                const res = await getLogin(username, password)
+                        if (res.status = "200") {
+                            userStore.setUserID(res.data)
+                            userStore.setLoggedIn(true)
+                        }
+
+            }catch(error){
+                setInputError(true)
+                clearInputFields()
+            }   
         } else {
             await getLogout()
                 .then(res => {
