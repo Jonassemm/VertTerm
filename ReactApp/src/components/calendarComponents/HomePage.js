@@ -7,12 +7,10 @@ import Modal from "react-bootstrap/Modal"
 import CalendarForm from "./CalendarForm"
 import AppointmentForm from "../appointmentComponents/AppointmentForm"
 import { observer } from "mobx-react"
-import { getCalendar } from "./calendarRequests"
 import {getAppointmentOfUserInTimespace, getAllAppointmentInTimespace} from "../appointmentComponents/AppointmentRequests"
 import styled from "styled-components"
-import Axios from "axios"
 import "react-big-calendar/lib/css/react-big-calendar.css"
-import {loadMode} from "../appointmentComponents/AppointmentPage"
+import {appointmentStatus} from "../appointmentComponents/AppointmentStatus"
 
 const Style = styled.div`
 .loadview {
@@ -35,8 +33,13 @@ const localizer = momentLocalizer(moment)
 const views = {day: "day", week: "week", month: "month"};
 
 
-function HomePage({calendarStore, User} ){
-
+function HomePage({
+    calendarStore, 
+    UserID, 
+    loadAppointments = undefined,
+    handleExceptionChange,              //pass to AppointmentForm
+    handlePreferredAppointmentChange    //pass to AppointmentForm
+    }){
     const [showEditModal, setShowEditModal] = useState(false)
     const [calendarEvent, setCalendarEvent] = useState({})
     const [initialized, setInitialized] = useState(false)
@@ -44,6 +47,7 @@ function HomePage({calendarStore, User} ){
     const [currentTimeView, setCurrentTimeView] = useState(views.month) //inital view
     const [referenceDateOfView, setReferenceDateOfView] = useState(new Date) //actual date for view 
     const [newReferenceDateOfView, setNewReferenceDateOfView] = useState(new Date) //new picked date for view
+
 
     const handleCurrentTimeViewChange = (newView) =>{
         setCurrentTimeView(newView)
@@ -69,12 +73,29 @@ function HomePage({calendarStore, User} ){
             newReferenceDateOfView.getFullYear() != referenceDateOfView.getFullYear() ||
             newReferenceDateOfView.getMonth() != referenceDateOfView.getMonth()
         )
-        console.log()
         if(!initialized || loadDifferentMonth) {
-            loadCalendarEvents()
+            handleLoadAppointments()
         }
     },[referenceDateOfView])
     
+    const refreshCalendarAppointments = () => {
+        if(loadAppointments != undefined) {
+            loadAppointments(referenceDateOfView.getMonth(), referenceDateOfView.getFullYear(), UserID)  
+        }else
+        {
+            loadCalendarEvents()
+        }
+    }
+
+    const handleLoadAppointments = () => {
+        setInitialized(true)
+        if(loadAppointments != undefined) {
+            loadAppointments(referenceDateOfView.getMonth(), referenceDateOfView.getFullYear(), UserID)  
+        }else
+        {
+            loadCalendarEvents()
+        }
+    }
 
     const loadCalendarEvents = async () => { 
         setLoading(true)
@@ -89,7 +110,7 @@ function HomePage({calendarStore, User} ){
         endDate.setFullYear(year)
         const startDateString = moment(startDate).format("DD.MM.YYYY HH:mm").toString();
         const endDateString =  moment(endDate).format("DD.MM.YYYY HH:mm").toString();
-        if(User == null){//case all appointments
+        if(UserID == null){//case all appointments
             try{
                response = await getAllAppointmentInTimespace( 
                     startDateString, 
@@ -100,9 +121,9 @@ function HomePage({calendarStore, User} ){
             }
         }else {//case "own" and "foreign" appointments
             try {
-                if(User != null) {
+                if(UserID != null) {
                     response = await getAppointmentOfUserInTimespace(
-                        User.id, 
+                        UserID, 
                         startDateString, 
                         endDateString
                     )
@@ -111,8 +132,19 @@ function HomePage({calendarStore, User} ){
                 console.log(Object.keys(error), error.message)
             }
         }
+        console.log("original data:")
+        console.log(response.data)
+
+         //don't save object with status="deleted"
+         var reducedData = []
+         response.data.map((singleAppointment) => {
+             if(singleAppointment.status != appointmentStatus.deleted) {
+                 reducedData.push(singleAppointment)
+             }
+         })
+
         //prepare response for calendar
-        const evts = response.data.map(item => {
+        const evts = reducedData.map(item => {
             return {
                 ...item,
                 plannedStarttime: moment(item.plannedStarttime, "DD.MM.yyyy HH:mm").toDate(),
@@ -125,6 +157,7 @@ function HomePage({calendarStore, User} ){
         setLoading(false)
     }
 
+
     const renderfkt = () => {
         console.log("------Render-CALENDAR------")
     }
@@ -134,7 +167,7 @@ function HomePage({calendarStore, User} ){
         {renderfkt()}
         <div className="page">
             {loading ? <div className="loadview"><div>Loading</div></div> : null}
-            <Modal size="lg" show={showEditModal} onHide={hideModal}>
+            <Modal size="lg" show={showEditModal} onHide={hideModal} backdrop={"static"}>
                 <Modal.Header closeButton>
                     <Modal.Title>{calendarEvent.title}</Modal.Title>
                 </Modal.Header>
@@ -143,6 +176,11 @@ function HomePage({calendarStore, User} ){
                         selected={calendarEvent}
                         onCancel={hideModal}
                         edit={true}
+                        handleExceptionChange={handleExceptionChange}
+                        handlePreferredAppointmentChange={handlePreferredAppointmentChange}
+                        refreshData={refreshCalendarAppointments}
+                        month={referenceDateOfView.getMonth()}
+                        year={referenceDateOfView.getFullYear()}
                     />
                 </Modal.Body>
             </Modal>

@@ -15,6 +15,7 @@ import HomePage from './components/calendarComponents/HomePage'
 import BookingForm from "./components/calendarComponents/BookingForm"
 import AdminPage from "./components/navigationComponents/AdminPage"
 import AppointmentPage from "./components/appointmentComponents/AppointmentPage"
+import AppointmentWarningPage from "./components/administrationComponents/appointmentWarningComponents/AppointmentWarningPage"
 import { TestComponent } from './components/TestComponent';
 
 export default observer(function App({ userStore, calendarStore }) {
@@ -27,10 +28,12 @@ export default observer(function App({ userStore, calendarStore }) {
           <Switch>
             <Route path="/" exact component={() => <Home />} />
             <Route path="/admin" component={() => <AdminPage userStore={userStore}/>} />
-            <Route exact path="/calendar" component={() => (<HomePage calendarStore={calendarStore} />)} />
+            <Route exact path="/calendar" component={() => (<HomePage calendarStore={calendarStore} UserID={userStore.userID}/>)} />
             <Route path="/appointment" component={() => <AppointmentPage calendarStore={calendarStore} userStore={userStore} />} />
             <Route exact path="/booking" component={() => (<BookingForm/>)}/>
-            <Route exact path="/booking/:appointmentID/:appointmentGroupID" component={BookingForm}/>
+            <Route exact path="/booking/:appointmentID" component={BookingForm}/>
+            <Route exact path="/warning/" component={() => <AppointmentWarningPage/>}/>
+            <Route exact path="/warning/:initialWarning" component={AppointmentWarningPage}/>
             <Route exact path="/test" component={TestComponent}/>
           </Switch>
         </div>

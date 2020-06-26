@@ -1,6 +1,4 @@
 import React, {useState, useEffect} from 'react'
-//import CustomerForm from "./CustomerForm"
-//import EmployeeForm from "./EmployeeForm"
 import OverviewPage from "../../OverviewPage"
 import UserForm from "./UserForm"
 
