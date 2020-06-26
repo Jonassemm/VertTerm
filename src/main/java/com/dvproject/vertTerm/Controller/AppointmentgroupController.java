@@ -46,7 +46,7 @@ public class AppointmentgroupController {
 		return appointmentgroupService.getById(id);
 	}
 	
-	@GetMapping("/appointment/{id}")
+	@GetMapping("/Appointment/{id}")
 	public Appointmentgroup getAppointmentGroupByAppointmentId (@PathVariable String id) {
 		return appointmentgroupService.getAppointmentgroupContainingAppointmentID(id);
 	}
@@ -118,7 +118,7 @@ public class AppointmentgroupController {
 		return appointmentgroupService.delete(appointmentGroupId);
 	}
 	
-	@DeleteMapping("/appointment/{id}")
+	@DeleteMapping("/Appointment/{id}")
 	public boolean deleteAppointment (@PathVariable(name = "id") String appointmentId) {
 		return appointmentgroupService.deleteAppointment(appointmentId, false);
 	}

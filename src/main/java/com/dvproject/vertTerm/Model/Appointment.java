@@ -94,7 +94,7 @@ public class Appointment implements Serializable {
 		Calendar enddate = Calendar.getInstance(TimeZone.getDefault());
 		int proceduredDurationInMinutesInt = 0;
 		Duration duration = bookedProcedure.getDuration();
-		duration = duration == null ? Duration.between(this.plannedEndtime.toInstant(), this.plannedStarttime.toInstant())
+		duration = duration == null ? Duration.between(this.plannedStarttime.toInstant(), this.plannedEndtime.toInstant())
 				: duration;
 		long procedureDurationInMinutesLong = duration.toMinutes();
 
@@ -121,9 +121,9 @@ public class Appointment implements Serializable {
 	public void setPlannedStarttime(Date plannedStarttime) {
 		this.plannedStarttime = plannedStarttime;
 	}
-	
+
 	public void generateNewDatesFor(Date starttime) {
-		plannedEndtime = generatePlannedEndtime(starttime);
+		plannedEndtime   = generatePlannedEndtime(starttime);
 		plannedStarttime = starttime;
 	}
 
@@ -276,16 +276,16 @@ public class Appointment implements Serializable {
 			Position positionOfProcedure = procedurePositions.get(i);
 
 			List<Position> positionsOfEmployee = employee.getPositions();
-			
-			allResourceTypesNotDeleted = positionsOfEmployee.stream()
+
+			allResourceTypesNotDeleted   = positionsOfEmployee.stream()
 					.noneMatch(position -> position.getStatus() == Status.DELETED);
 
 			correctPositionsForEmployees = positionsOfEmployee.stream()
 					.anyMatch(position -> position.getId().equals(positionOfProcedure.getId()));
 
-			if(!allResourceTypesNotDeleted)
+			if (!allResourceTypesNotDeleted)
 				throw new PositionException("Position deleted", positionOfProcedure);
-			
+
 			if (!correctPositionsForEmployees)
 				throw new PositionException("Missing employee for position", positionOfProcedure);
 		}
@@ -307,16 +307,16 @@ public class Appointment implements Serializable {
 			ResourceType resourceTypeOfProcedure = procedureResourceTypes.get(i);
 
 			List<ResourceType> resourceTypesOfEmployee = resource.getResourceTypes();
-			
-			allResourceTypesNotDeleted = resourceTypesOfEmployee.stream()
+
+			allResourceTypesNotDeleted       = resourceTypesOfEmployee.stream()
 					.noneMatch(resourcetype -> resourcetype.getStatus() == Status.DELETED);
 
 			correctResourcesForResourceTypes = resourceTypesOfEmployee.stream()
 					.anyMatch(resourcetype -> resourcetype.getId().equals(resourceTypeOfProcedure.getId()));
 
-			if(!allResourceTypesNotDeleted)
+			if (!allResourceTypesNotDeleted)
 				throw new ResourceTypeException("ResourceType deleted", resourceTypeOfProcedure);
-			
+
 			if (!correctResourcesForResourceTypes)
 				throw new ResourceTypeException("Missing resource for position", resourceTypeOfProcedure);
 		}
@@ -374,7 +374,7 @@ public class Appointment implements Serializable {
 		if (bookedEmployees.stream().anyMatch(emp -> emp.getId().equals(bookedCustomerid)))
 			throw new EmployeeException("The bookedCustomer can not be a used employee at the same time", null);
 	}
-	
+
 	public void testBlockage(AppointmentServiceImpl appointmentService) {
 		List<Appointment> failedAppointments = new ArrayList<>();
 		String message = null;

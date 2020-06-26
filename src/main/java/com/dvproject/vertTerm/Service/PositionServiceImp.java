@@ -44,8 +44,10 @@ public class PositionServiceImp implements PositionService {
 
 	@Override
 	public boolean delete(String id) {
-		positionRepository.delete(this.getPositionsInternal(id));
-		return positionRepository.existsById(id);
+		Position position = this.getPositionsInternal(id);
+		position.setStatus(Status.DELETED);
+		positionRepository.save(position);
+		return this.getPositionsInternal(id).getStatus() == Status.DELETED;
 	}
 
 	@Override

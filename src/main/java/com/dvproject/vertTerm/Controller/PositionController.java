@@ -17,7 +17,7 @@ public class PositionController {
 	
 	@GetMapping
 	public List<Position> getAllPositions (@RequestParam(required = false) Status status) {
-		return status != null ? positionService.getAll() : positionService.getAll(status);
+		return status == null ? positionService.getAll() : positionService.getAll(status);
 	}
 	
 	@GetMapping("/{id}")
