@@ -3,6 +3,7 @@
 import { getResources, getEmployees, getProcedureAvailability, getResourceAppointments, getEmployeeAppointments } from "./SearchCalendarRequests"
 import { checkSlotOverlap, checkSlotTouch, getSlotCompression, subtractTimeslots, getOverlapSlot } from "./SlotFunctions"
 import moment from "moment"
+import { FormText } from "react-bootstrap"
 
 var resources = []
 var employees = []
@@ -18,6 +19,7 @@ export function setup(p, np, nr) {
     neededPositions = np
     neededResourceTypes = nr
     procedure = p
+    return getBounds(p)
 }
 
 function reset() {
@@ -27,14 +29,48 @@ function reset() {
     employees = neededPositions.map(item => {
         return []
     })
+    finalResourceTypeSlots = []
+    finalPositionSlots = []
+    finalSlots = []
+    finalSlotsInverse = []
+}
+
+function getBounds(procedure){
+    const pro = transformAvailabilities(moment().startOf("week"),moment().endOf("week"),procedure)
+    let min, max = null
+    if(pro.timeSlots.length > 0){
+        min = pro.timeSlots[0].startDate
+        max = pro.timeSlots[0].endDate
+        pro.timeSlots.forEach(item => {
+            if(min < item.startDate) min = item.startDate
+            if(max > item.endDate) max = item.end
+        })
+    }
+    return {min: min,max: max}
 }
 
 export async function calculateEvts(start, end) {
-    if(end && (new Date() > end)){
+    reset()
+    if (end && (new Date() > end)) {
         getInverse(start, end)
         return finalSlotsInverse
     }
-    reset()
+    if (!end) {
+        start = new Date()
+        end = moment(start).endOf('week').toDate()
+    }
+
+    if (neededPositions.length == 0 && neededResourceTypes.length == 0) {
+        if (start < new Date() < end) {
+            procedure = transformAvailabilities(new Date(), end, procedure)
+        }else{
+            procedure = transformAvailabilities(start, end, procedure)
+        }
+        finalSlots = finalSlots.concat(procedure.timeSlots)
+        getInverse(start, end)
+        return finalSlotsInverse
+    }
+
     //Get Objects
     // getting all Ressources that have one of the choosen resource type
     for (let i = 0; i < neededResourceTypes.length; i++) {
@@ -56,10 +92,6 @@ export async function calculateEvts(start, end) {
     }
 
     //getting availabilities
-    if (!end) {
-        start = new Date()
-        end = moment(start).endOf('week').toDate()
-    }
     resources.forEach(resourceList => {
         resourceList.forEach(singleResource => {
             singleResource = transformAvailabilities(new Date(), end, singleResource)
@@ -103,12 +135,11 @@ export async function calculateEvts(start, end) {
 
     // subtract appointments from available time slots
     subtractAptsFromSlots()
-
     //finding Slots that are available for all needed Objects
     compressTimeSlots()
 
     //build inverse Slots
-    getInverse(start,end)
+    getInverse(start, end)
     return finalSlotsInverse;
 }
 
@@ -138,18 +169,18 @@ function compressTimeSlotsObject(obj) {
     }
     return obj
 }
-function getInverse(start, end){
+function getInverse(start, end) {
     start = moment(start).startOf('week')
-    finalSlotsInverse = [{startDate: start.toDate(), endDate: end}]
+    finalSlotsInverse = [{ startDate: start.toDate(), endDate: end }]
     finalSlots.forEach(slot => {
-        finalSlotsInverse.forEach((inverseSlot,index) => {
-           if(checkSlotOverlap(slot,inverseSlot)){
-               const temp = subtractTimeslots(inverseSlot,slot)
-               finalSlotsInverse.splice(index, 1)
-               finalSlotsInverse = finalSlotsInverse.concat(temp)
-           }
+        finalSlotsInverse.forEach((inverseSlot, index) => {
+            if (checkSlotOverlap(slot, inverseSlot)) {
+                const temp = subtractTimeslots(inverseSlot, slot)
+                finalSlotsInverse.splice(index, 1)
+                finalSlotsInverse = finalSlotsInverse.concat(temp)
+            }
         })
-    })  
+    })
 }
 
 function compressTimeSlots() {
@@ -176,18 +207,21 @@ function compressTimeSlots() {
 
     const allObjects = finalPositionSlots.concat(finalResourceTypeSlots)
     finalSlots = []
+    if (allObjects.length == 1) {
+        finalSlots = finalSlots.concat(allObjects[0])
+    }
     for (let i = 0; i < allObjects.length - 1; i++) {
-        if((allObjects[i].length == 0) || (allObjects[i+1].length == 0)){
+        if ((allObjects[i].length == 0) || (allObjects[i + 1].length == 0)) {
             finalSlots = []
             return
         }
-        for(let x = 0;x<allObjects[i].length;x++){
-            for(let xx = 0;xx<allObjects[i+1].length;xx++)
-            if(checkSlotOverlap(allObjects[i][x],allObjects[i+1][xx])){
-                if(allObjects[i][x].id != allObjects[i+1][xx].id){
-                    finalSlots.push(getOverlapSlot(allObjects[i][x],allObjects[i+1][xx]))
+        for (let x = 0; x < allObjects[i].length; x++) {
+            for (let xx = 0; xx < allObjects[i + 1].length; xx++)
+                if (checkSlotOverlap(allObjects[i][x], allObjects[i + 1][xx])) {
+                    if (allObjects[i][x].id != allObjects[i + 1][xx].id) {
+                        finalSlots.push(getOverlapSlot(allObjects[i][x], allObjects[i + 1][xx]))
+                    }
                 }
-            }
         }
     }
     finalSlots = compressTimeSlotsObject(finalSlots)
@@ -216,9 +250,11 @@ function subtractAptsFromSlots() {
             let erg = []
             while (erg = findNextCollision(objectItem)) {
                 objectItem.timeSlots.splice(erg[0], 1)
-                erg[1].forEach(item => {
-                    objectItem.timeSlots.push(item)
-                })
+                if (erg[1]) {
+                    erg[1].forEach(item => {
+                        objectItem.timeSlots.push(item)
+                    })
+                }
             }
         })
         return temp

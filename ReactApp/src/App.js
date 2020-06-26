@@ -17,6 +17,8 @@ import AdminPage from "./components/navigationComponents/AdminPage"
 import AppointmentPage from "./components/appointmentComponents/AppointmentPage"
 import AppointmentWarningPage from "./components/administrationComponents/appointmentWarningComponents/AppointmentWarningPage"
 import { TestComponent } from './components/TestComponent';
+import  AppointmentQR  from './components/calendarComponents/AppointmentQR';
+import  AnonymousLogin  from './components/navigationComponents/AnonymousLogin';
 
 export default observer(function App({ userStore, calendarStore }) {
   console.log(document.cookie)
@@ -35,6 +37,8 @@ export default observer(function App({ userStore, calendarStore }) {
             <Route exact path="/warning/" component={() => <AppointmentWarningPage/>}/>
             <Route exact path="/warning/:initialWarning" component={AppointmentWarningPage}/>
             <Route exact path="/test" component={TestComponent}/>
+            <Route exact path="/apts/:credString" component={(credString) => <AnonymousLogin userStore={userStore} credString={credString.match.params.credString}/>}/>
+            <Route exact path="/qr" component={AppointmentQR}/>
           </Switch>
         </div>
       </Suspense>

@@ -143,6 +143,9 @@ public class AppointmentgroupServiceImpl implements AppointmentgroupService {
 
 	@Override
 	public void setPullableAppointment(Appointment appointment) {
+		Date starttime = getDateOfNowRoundedUp();
+		appointment.generateNewDatesFor(starttime);
+
 		if (isPullable(appointment)) {
 			httpResponse.setHeader("appointmentid", appointment.getId());
 			httpResponse.setHeader("starttime", getStringRepresentationOf(appointment.getPlannedStarttime()));
@@ -406,8 +409,7 @@ public class AppointmentgroupServiceImpl implements AppointmentgroupService {
 				enddate, AppointmentStatus.PLANNED);
 
 		appointmentsToTest.removeIf(app -> {
-			app.setPlannedEndtime(app.generatePlannedEndtime(startdate));
-			app.setPlannedStarttime(startdate);
+			app.generateNewDatesFor(startdate);
 
 			return !this.isPullable(app);
 		});

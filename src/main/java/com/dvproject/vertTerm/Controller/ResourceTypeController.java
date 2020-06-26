@@ -26,7 +26,7 @@ public class ResourceTypeController
     private ResourceTypeService restypService;  
 	
 	 @GetMapping
-     public  @ResponseBody  List<ResourceType> getAllResourceType(@RequestParam Status status) {
+     public  @ResponseBody  List<ResourceType> getAllResourceType(@RequestParam(required = false) Status status) {
 		 return status != null ? restypService.getAll() : restypService.getAll(status);
 	 }
 	

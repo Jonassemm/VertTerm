@@ -143,7 +143,7 @@ public class AppointmentServiceImpl implements AppointmentService {
 	@Override
 	public List<Appointment> getOverlappingAppointmentsInTimeInterval(Date starttime, Date endtime,
 			AppointmentStatus status) {
-		return repo.findAllOverlappingAppointmentsWithStatus(starttime, endtime, status);
+		return repo.findAllOverlappingAppointmentsWithStatus(status, starttime, endtime);
 	}
 
 	@Override

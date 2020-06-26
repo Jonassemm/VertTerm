@@ -121,6 +121,11 @@ public class Appointment implements Serializable {
 	public void setPlannedStarttime(Date plannedStarttime) {
 		this.plannedStarttime = plannedStarttime;
 	}
+	
+	public void generateNewDatesFor(Date starttime) {
+		plannedEndtime = generatePlannedEndtime(starttime);
+		plannedStarttime = starttime;
+	}
 
 	public Date getActualStarttime() {
 		return actualStarttime;

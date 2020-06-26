@@ -9,23 +9,25 @@ import org.springframework.data.mongodb.repository.Query;
 import com.dvproject.vertTerm.Model.Employee;
 
 public interface EmployeeRepository extends MongoRepository<Employee, String>{	
+	static final String employeeTest = "'_class' : 'com.dvproject.vertTerm.Model.Employee'";
+	
 	@Override
-	@Query("{'_class' : 'com.dvproject.vertTerm.Model.Employee'}")
+	@Query("{" + employeeTest + "}")
 	List<Employee> findAll();
 
-	@Query("{'systemStatus' : 'ACTIVE', '_class' : 'com.dvproject.vertTerm.Model.Employee'}")
+	@Query("{'systemStatus' : 'ACTIVE', " + employeeTest + "}")
     List<Employee> findAllActive();
 
-    @Query("{'systemStatus' : 'INACTIVE', '_class' : 'com.dvproject.vertTerm.Model.Employee'}")
+    @Query("{'systemStatus' : 'INACTIVE', " + employeeTest + "}")
     List<Employee> findAllInactive();
 
-    @Query("{'systemStatus' : 'DELETED', '_class' : 'com.dvproject.vertTerm.Model.Employee'}")
+    @Query("{'systemStatus' : 'DELETED', " + employeeTest + "}")
     List<Employee> findAllDeleted();
 	
-    @Query("{'_id' : ?0, '_class' : 'com.dvproject.vertTerm.Model.Employee'}")
+    @Query("{'_id' : ?0, " + employeeTest + "}")
     Optional<Employee> findById (String id);
     
-    @Query("{'username' : ?0, '_class' : 'com.dvproject.vertTerm.Model.Employee'}")
+    @Query("{'username' : ?0, " + employeeTest + "}")
     Optional<Employee> findByUsername (String username);
     
     List<Employee> findByPositionsId(String id);
