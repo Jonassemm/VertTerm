@@ -12,8 +12,9 @@ public class Position {
     private String name;
     private String description;
     
-    public Position () {
-    }
+    private Status status;
+    
+    public Position () {}
     
     public Position (String name, String description) {
     	this.setName(name);
@@ -43,5 +44,13 @@ public class Position {
     public void setDescription(String description) {
         this.description = description;
     }
+
+	public Status getStatus() {
+		return status;
+	}
+
+	public void setStatus(Status status) {
+		this.status = status;
+	}
 
 }

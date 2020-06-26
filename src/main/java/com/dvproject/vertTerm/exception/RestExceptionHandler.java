@@ -106,6 +106,8 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
 			builder.append(": resourcetype ");
 			builder.append(resourcetype.getName());
 		}
+		
+		System.out.println(builder.toString());
 
 		return handleExceptionInternal(exception, builder.toString(), headers, HttpStatus.UNPROCESSABLE_ENTITY,
 				request);

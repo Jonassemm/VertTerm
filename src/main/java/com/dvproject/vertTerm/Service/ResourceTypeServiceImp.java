@@ -11,7 +11,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.dvproject.vertTerm.Model.ResourceType;
-import com.dvproject.vertTerm.Service.ResourceTypeService;
+import com.dvproject.vertTerm.Model.Status;
 import com.dvproject.vertTerm.repository.ResourceTypeRepository;
 
 @Service
@@ -25,6 +25,11 @@ public class ResourceTypeServiceImp implements ResourceTypeService {
 	public List<ResourceType> getAll() {
 		// get all ResourceTypes from DB
 		return this.ResourceTypeRepo.findAll();
+	}
+	
+	@Override
+	public List<ResourceType> getAll(Status status) {
+		return ResourceTypeRepo.findByStatus(status);
 	}
 
 	// @PreAuthorize("hasAuthority('RESOURCE_TYPE_READ')")
@@ -44,6 +49,7 @@ public class ResourceTypeServiceImp implements ResourceTypeService {
 		// create new ResourceType if not exist
 		if (this.ResourceTypeRepo.findByName(restype.getName()) == null) {
 			restype.setName(capitalize(restype.getName()));
+			restype.setStatus(Status.ACTIVE);
 			return ResourceTypeRepo.save(restype);
 		}
 		if (ResourceTypeRepo.findById(restype.getId()).isPresent()) {
@@ -70,11 +76,14 @@ public class ResourceTypeServiceImp implements ResourceTypeService {
 		// delete a ResourceType from DB
 		Optional<ResourceType> ResTypDb = this.ResourceTypeRepo.findById(id);
 		if (ResTypDb.isPresent()) {
-			this.ResourceTypeRepo.delete(ResTypDb.get());
+			ResourceType resourcetype = getById(id);
+			resourcetype.setStatus(Status.DELETED);
+			ResourceTypeRepo.save(resourcetype);
 		} else {
 			throw new ResourceNotFoundException("ResourceType with the given id : " + id + " not found ");
 		}
-		return ResourceTypeRepo.existsById(id);
+		
+		return getById(id).getStatus() == Status.DELETED;
 	}
 
 	// @PreAuthorize("hasAuthority('RESOURCE_TYPE_READ')")

@@ -39,20 +39,26 @@ public class OpeningHoursServiceImp implements OpeningHoursService {
 		OpeningHours openingHours = get();
 		List<Availability> openingHoursAvailabilities = openingHours.getAvailabilities();
 		List<Availability> updatedInstanceAvailability = updatedInstance.getAvailabilities();
+		Map<String, Availability> availabilitiesMap;
 
 		update(updatedInstanceAvailability);
 
 		// id -> Availability
-		Map<String, Availability> availabilitiesMap = openingHoursAvailabilities.stream()
-				.collect(Collectors.toMap(Availability::getId, availability -> availability));
+		availabilitiesMap = openingHoursAvailabilities != null
+				? openingHoursAvailabilities.stream()
+						.collect(Collectors.toMap(Availability::getId, availability -> availability))
+				: null;
 
 		// Load all availabilities from db
-		openingHoursAvailabilities.addAll(updatedInstanceAvailability.stream()
-				.filter(avail -> !availabilitiesMap.containsKey(avail.getId())).collect(Collectors.toList()));
+		if (availabilitiesMap != null)
+			openingHoursAvailabilities.addAll(updatedInstanceAvailability.stream()
+					.filter(avail -> !availabilitiesMap.containsKey(avail.getId())).collect(Collectors.toList()));
+		else 
+			openingHours.setAvailabilities(updatedInstanceAvailability);
 
 		repo.save(openingHours);
 
-		return this.get();
+		return get();
 	}
 
 	public void update(List<Availability> availabilities) {
@@ -86,7 +92,7 @@ public class OpeningHoursServiceImp implements OpeningHoursService {
 		openingHours.setAvailabilities(openingHoursAvailabilities.stream()
 				.filter(avail -> avail.getEndOfSeries() == null || avail.getEndOfSeries().after(now))
 				.collect(Collectors.toList()));
-		
+
 		repo.save(openingHours);
 	}
 

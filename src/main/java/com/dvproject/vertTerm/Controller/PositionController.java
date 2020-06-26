@@ -1,6 +1,7 @@
 package com.dvproject.vertTerm.Controller;
 
 import com.dvproject.vertTerm.Model.Position;
+import com.dvproject.vertTerm.Model.Status;
 import com.dvproject.vertTerm.Service.PositionService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -15,8 +16,8 @@ public class PositionController {
 	private PositionService positionService;
 	
 	@GetMapping
-	public List<Position> getAllPositions () {
-		return positionService.getAll();
+	public List<Position> getAllPositions (@RequestParam(required = false) Status status) {
+		return status != null ? positionService.getAll() : positionService.getAll(status);
 	}
 	
 	@GetMapping("/{id}")

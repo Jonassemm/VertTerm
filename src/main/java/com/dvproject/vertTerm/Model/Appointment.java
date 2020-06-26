@@ -205,35 +205,6 @@ public class Appointment implements Serializable {
 		this.customerIsWaiting = customerIsWaiting;
 	}
 
-	public void testBlockage(AppointmentServiceImpl appointmentService) {
-		List<Appointment> failedAppointments = new ArrayList<>();
-		String message = null;
-
-		try {
-			testEmployeeAppointments(appointmentService);
-		} catch (AppointmentInternalException ex) {
-			failedAppointments.addAll(ex.getAppointments());
-			message = message != null ? message : ex.getMessage();
-		}
-
-		try {
-			testResourceAppointments(appointmentService);
-		} catch (AppointmentInternalException ex) {
-			failedAppointments.addAll(ex.getAppointments());
-			message = message != null ? message : ex.getMessage();
-		}
-
-		try {
-			testCustomerAppointments(appointmentService);
-		} catch (AppointmentInternalException ex) {
-			failedAppointments.addAll(ex.getAppointments());
-			message = message != null ? message : ex.getMessage();
-		}
-
-		if (failedAppointments.size() != 0)
-			throw new AppointmentInternalException(failedAppointments, message, this);
-	}
-
 	public void testOverlapping(List<TimeInterval> timeIntervallsOfAppointments) {
 		boolean errorOccured = timeIntervallsOfAppointments.stream()
 				.anyMatch(interval -> interval.isInTimeInterval(plannedStarttime, plannedEndtime));
@@ -294,16 +265,23 @@ public class Appointment implements Serializable {
 		List<Position> procedurePositions = bookedProcedure.getNeededEmployeePositions();
 
 		for (int i = 0; i < bookedEmployees.size(); i++) {
-			boolean testVal = false;
+			boolean correctPositionsForEmployees = false;
+			boolean allResourceTypesNotDeleted = false;
 			Employee employee = bookedEmployees.get(i);
 			Position positionOfProcedure = procedurePositions.get(i);
 
 			List<Position> positionsOfEmployee = employee.getPositions();
+			
+			allResourceTypesNotDeleted = positionsOfEmployee.stream()
+					.noneMatch(position -> position.getStatus() == Status.DELETED);
 
-			testVal = positionsOfEmployee.stream()
+			correctPositionsForEmployees = positionsOfEmployee.stream()
 					.anyMatch(position -> position.getId().equals(positionOfProcedure.getId()));
 
-			if (!testVal)
+			if(!allResourceTypesNotDeleted)
+				throw new PositionException("Position deleted", positionOfProcedure);
+			
+			if (!correctPositionsForEmployees)
 				throw new PositionException("Missing employee for position", positionOfProcedure);
 		}
 	}
@@ -318,24 +296,30 @@ public class Appointment implements Serializable {
 		List<ResourceType> procedureResourceTypes = bookedProcedure.getNeededResourceTypes();
 
 		for (int i = 0; i < bookedResources.size(); i++) {
-			boolean testVal = false;
+			boolean correctResourcesForResourceTypes = false;
+			boolean allResourceTypesNotDeleted = false;
 			Resource resource = bookedResources.get(i);
 			ResourceType resourceTypeOfProcedure = procedureResourceTypes.get(i);
 
 			List<ResourceType> resourceTypesOfEmployee = resource.getResourceTypes();
+			
+			allResourceTypesNotDeleted = resourceTypesOfEmployee.stream()
+					.noneMatch(resourcetype -> resourcetype.getStatus() == Status.DELETED);
 
-			testVal = resourceTypesOfEmployee.stream()
+			correctResourcesForResourceTypes = resourceTypesOfEmployee.stream()
 					.anyMatch(resourcetype -> resourcetype.getId().equals(resourceTypeOfProcedure.getId()));
 
-			if (!testVal)
+			if(!allResourceTypesNotDeleted)
+				throw new ResourceTypeException("ResourceType deleted", resourceTypeOfProcedure);
+			
+			if (!correctResourcesForResourceTypes)
 				throw new ResourceTypeException("Missing resource for position", resourceTypeOfProcedure);
 		}
 	}
 
 	public void testResourcesOfAppointment() {
-		if (bookedResources.size() != getBookedProcedure().getNeededResourceTypes().size()) {
+		if (bookedResources.size() != getBookedProcedure().getNeededResourceTypes().size())
 			throw new ResourceException("Missing resources", null);
-		}
 	}
 
 	public void testProcedureDuration() {
@@ -384,6 +368,35 @@ public class Appointment implements Serializable {
 		String bookedCustomerid = bookedCustomer.getId();
 		if (bookedEmployees.stream().anyMatch(emp -> emp.getId().equals(bookedCustomerid)))
 			throw new EmployeeException("The bookedCustomer can not be a used employee at the same time", null);
+	}
+	
+	public void testBlockage(AppointmentServiceImpl appointmentService) {
+		List<Appointment> failedAppointments = new ArrayList<>();
+		String message = null;
+
+		try {
+			testEmployeeAppointments(appointmentService);
+		} catch (AppointmentInternalException ex) {
+			failedAppointments.addAll(ex.getAppointments());
+			message = message != null ? message : ex.getMessage();
+		}
+
+		try {
+			testResourceAppointments(appointmentService);
+		} catch (AppointmentInternalException ex) {
+			failedAppointments.addAll(ex.getAppointments());
+			message = message != null ? message : ex.getMessage();
+		}
+
+		try {
+			testCustomerAppointments(appointmentService);
+		} catch (AppointmentInternalException ex) {
+			failedAppointments.addAll(ex.getAppointments());
+			message = message != null ? message : ex.getMessage();
+		}
+
+		if (failedAppointments.size() != 0)
+			throw new AppointmentInternalException(failedAppointments, message, this);
 	}
 
 	private void testEmployeeAppointments(AppointmentServiceImpl appointmentService) {
