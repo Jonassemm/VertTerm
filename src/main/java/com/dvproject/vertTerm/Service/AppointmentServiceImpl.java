@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class AppointmentServiceImpl implements AppointmentService {
@@ -77,7 +78,7 @@ public class AppointmentServiceImpl implements AppointmentService {
 			throw new IllegalArgumentException("Warnings are needed!");
 
 		boolean isUseridEmpty = userid == null || userid.equals("");
-		boolean hasOneWarning = warnings.size() > 1;
+		boolean hasOneWarning = warnings.size() == 1;
 
 		if (isUseridEmpty) {
 			return hasOneWarning ? getAppointmentsByWarning(warnings.get(0)) : getAppointmentsByWarnings(warnings);
