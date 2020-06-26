@@ -28,6 +28,7 @@ public class User extends Bookable implements Serializable
 	private Date creationDate;
 	@NotNull
 	private Status systemStatus;
+	private boolean anonymousUser;
 	
 	private List<OptionalAttributeWithValue> optionalAttributes;
 
@@ -149,8 +150,12 @@ public class User extends Bookable implements Serializable
 		this.creationDate = creationDate;
 	}
 	
+	public void setAnonymousUser(boolean anonymousUser) {
+		this.anonymousUser = anonymousUser;
+	}
+
 	public boolean isAnonymousUser() {
-		return username.contains("anonymousUser") && password.startsWith("{noop}");
+		return anonymousUser;
 	}
 	
 	public void obfuscate() {
