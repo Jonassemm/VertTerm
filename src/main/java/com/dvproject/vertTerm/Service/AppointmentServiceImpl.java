@@ -214,12 +214,17 @@ public class AppointmentServiceImpl implements AppointmentService {
 		List<Resource> Resources = new ArrayList<>();
 		// get all appointments from Appointmentgroup
 		List<Appointment> appointments = group.getAppointments();
+	
 		// Test
 		// Procedure Relations
 		// each Appointment
 		group.testProcedureRelations();
 		List<TimeInterval> timelist = new ArrayList<>();
-		group.getAppointments().forEach(app -> new NormalBookingTester().testAppointmentTimes(timelist));
+		try {
+			appointments.forEach(app -> new NormalBookingTester(app).testAppointmentTimes(timelist));
+		} catch (RuntimeException ex) {
+			
+		}
 		// for each appointment
 		// 1-get Booked Procedure
 		// 2-get Needed ResourceTypes

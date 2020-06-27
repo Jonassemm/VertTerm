@@ -39,7 +39,7 @@ public class ResourceTypeServiceImp implements ResourceTypeService {
 		if (ResTypDb.isPresent()) {
 			return ResTypDb.get();
 		} else {
-			throw new ResourceNotFoundException("Resource with the given id :" + id + " already exists");
+			throw new ResourceNotFoundException("ResourceType with the given id :" + id + " already exists");
 		}
 
 	}
@@ -47,16 +47,14 @@ public class ResourceTypeServiceImp implements ResourceTypeService {
 	// @PreAuthorize("hasAuthority('RESOURCE_TYPE_WRITE')")
 	public ResourceType create(ResourceType restype) {
 		// create new ResourceType if not exist
+		restype.setName(capitalize(restype.getName()));
 		if (this.ResourceTypeRepo.findByName(restype.getName()) == null) {
-			restype.setName(capitalize(restype.getName()));
 			restype.setStatus(Status.ACTIVE);
 			return ResourceTypeRepo.save(restype);
 		}
-		if (ResourceTypeRepo.findById(restype.getId()).isPresent()) {
-			throw new ResourceNotFoundException(
-					"ResourceType with the given id :" + restype.getId() + " already exists");
-		}
-		return null;
+		else	throw new ResourceNotFoundException(
+					"ResourceType with the given name :" + restype.getName() + " already exists");
+		
 
 	}
 

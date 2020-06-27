@@ -38,8 +38,8 @@ public class RestrictionServiceImp implements RestrictionService {
 	// @PreAuthorize("hasAuthority('')")
 	public Restriction create(Restriction Restriction) {
 		// create new restriction if not exist
+		Restriction.setName(capitalize(Restriction.getName()));
 		if (this.RestrictionRepo.findByName(Restriction.getName()) == null) {
-			Restriction.setName(capitalize(Restriction.getName()));
 			return RestrictionRepo.save(Restriction);
 		} else {
 			throw new ResourceNotFoundException(

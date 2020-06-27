@@ -40,13 +40,14 @@ public class BlockerServiceImp implements BlockerService {
 	//@PreAuthorize("hasAuthority('')")
 	public Blocker create(Blocker blocker) {
 		//create new blocker if not exist
-		if (this.blockerRepo.findByname(blocker.getName()) == null) {
-			blockerRepo.save(blocker);
-			blocker.setName(capitalize(blocker.getName()));
+		blocker.setName(capitalize(blocker.getName()));
+		if (this.blockerRepo.findByname(blocker.getName()) == null) {			
+			blockerRepo.save(blocker);	
 			SetOrRemoveWarningFlag(blocker.getId(), "SET");
-			return blocker;
+				return blocker;
+				
 		} else {
-			throw new ResourceNotFoundException("Blocker with the given id :" + blocker.getId() + "already exsist");
+			throw new ResourceNotFoundException("Blocker with the given name :" + blocker.getName() + " already exsist");
 		}
 
 	}
@@ -63,8 +64,8 @@ public class BlockerServiceImp implements BlockerService {
 			// get all appointments from the employee in the time interval of the blocker
 			// and add them to the appointments-List
 			for (Employee emp : blocker.getBookedEmployees()) {
-				List<Appointment> EmpApps = emp.getAppointmentsOfBookedEmployeeInTimeinterval(appointmentService, emp.getId(),
-						blocker.getPlannedStarttime(), blocker.getPlannedEndtime());
+				List<Appointment> EmpApps = emp.getAppointmentsOfBookedEmployeeInTimeinterval(appointmentService, 					emp.getId(),blocker.getPlannedStarttime(), blocker.getPlannedEndtime());
+				
 				appointments.addAll(EmpApps);
 			}
 			// for each resource in Blocker's BookedResources List
@@ -73,6 +74,7 @@ public class BlockerServiceImp implements BlockerService {
 			for (Resource res : blocker.getBookedResources()) {
 				List<Appointment> ResApps = res.getAppointmentsOfBookedResourceInTimeinterval(appointmentService, res.getId(),
 						blocker.getPlannedStarttime(), blocker.getPlannedEndtime());
+				
 				appointments.addAll(ResApps);
 			}
 			// if the appointments-List not empty
@@ -87,8 +89,8 @@ public class BlockerServiceImp implements BlockerService {
 
 		} else {
 			throw new ResourceNotFoundException("Blocker with the given id :" + id + " not found");
+			
 		}
-
 	}
 
 	public void SetWarning(List<Appointment> appointments) {
@@ -97,8 +99,8 @@ public class BlockerServiceImp implements BlockerService {
 			Appointment appDB = this.appointmentService.getById(app.getId());
 			if (appDB.addWarning(Warning.APPOINTMENT_WARNING))
 				appointmentRepo.save(appDB);
-			else
-				throw new AppointmentException("Appointment has already 'APPOINTMENT_WARNING' ", app);
+			//else
+			//	throw new AppointmentException("Appointment has already 'APPOINTMENT_WARNING' ", app);
 		}
 
 	}
@@ -106,7 +108,6 @@ public class BlockerServiceImp implements BlockerService {
 	public void RemoveWarning(List<Appointment> appointments) {
 		BookingTester tester = new NormalBookingTester();
 		//test every appointment remove "AppointmentWarning" from all appointments and save changed to DB
-		if (appointments != null && appointments.size() > 0) {
 			for (Appointment app : appointments) {
 				Appointment appDB = this.appointmentService.getById(app.getId());
 				if (appDB.removeWarning(Warning.APPOINTMENT_WARNING))
@@ -119,12 +120,10 @@ public class BlockerServiceImp implements BlockerService {
 	            	appDB.addWarning(Warning.APPOINTMENT_WARNING);
 				}
 				}
-				else
-					throw new AppointmentException("Appointment has no 'APPOINTMENT_WARNING' to remove it", app);
+			//	else
+			//		throw new AppointmentException("Appointment "+ app.getId()+" has no 'APPOINTMENT_WARNING' to 					remove it", app);
 			}
-		} else {
-			throw new ResourceNotFoundException("There are no Appointments");
-		}
+		
 	}
   
 	//@PreAuthorize("hasAuthority('')")

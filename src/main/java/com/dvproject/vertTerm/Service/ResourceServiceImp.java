@@ -40,12 +40,12 @@ public class ResourceServiceImp implements ResourceService, AvailabilityService 
 
 	// @PreAuthorize("hasAuthority('RESOURCE_WRITE')")
 	public Resource create(Resource res) {
+		res.setName(capitalize(res.getName()));
 		if (this.ResRepo.findByName(res.getName()) == null) {
 			availabilityService.update(res.getAvailabilities(), res);
-			res.setName(capitalize(res.getName()));
 			return ResRepo.save(res);
 		} else
-			throw new ResourceNotFoundException("Resource with the given id :" + res.getId() + " already exists");
+			throw new ResourceNotFoundException("Resource with the given name : " + res.getName() + " already exists");
 
 	}
 

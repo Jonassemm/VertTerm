@@ -30,8 +30,8 @@ public class RoleServiceImp implements RoleService {
 	// @PreAuthorize("hasAuthority('ROLE_WRITE')")
 	public Role create(Role role) {
 		//create new Role if not exist
+		role.setName(capitalize(role.getName()));
 		if (this.RoleRepo.findByName(role.getName()) == null) {
-			role.setName(capitalize(role.getName()));
 			return RoleRepo.save(role);
 		} else {
 			throw new ResourceNotFoundException("Role with the given id :" + role.getId() + "already exist");
