@@ -123,7 +123,7 @@ public class AppointmentgroupController {
 		return appointmentgroupService.deleteAppointment(appointmentId, false);
 	}
 	
-	@DeleteMapping("/override/appointment/{id}")
+	@DeleteMapping("/override/Appointment/{id}")
 	public boolean deleteAppointmentOverride (@PathVariable(name = "id") String appointmentId) {
 		return appointmentgroupService.deleteAppointment(appointmentId, true);
 	}

@@ -4,6 +4,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
+import org.bson.types.ObjectId;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.data.mongodb.repository.Query;
 
@@ -72,4 +73,8 @@ public interface AppointmentRepository extends MongoRepository<Appointment, Stri
 	@Query("{'bookedCustomer.$id': ObjectId(?0), " + overlapsWithOtherAppointment + ", 'status': ?3}")
 	List<Appointment> findAppointmentsByBookedCustomerInTimeinterval(String userid, Date starttime, Date endtime,
 			AppointmentStatus status);
+
+	@Query("{'$or': [{'bookedEmployees.$id': {'$in': ?0}}, {'bookedResources.$id': {'$in': ?1}}], 'plannedEndtime': {'$gt' : ?2}, 'status': ?3}")
+	List<Appointment> findAppointmentsWithCustomerEmployeeAndResourceAfterPlannedStarttime(List<ObjectId> employeeid,
+			List<ObjectId> resourceid, Date starttime, AppointmentStatus status);
 }

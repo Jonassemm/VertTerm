@@ -19,7 +19,7 @@ public interface AppointmentgroupService extends BasicService<Appointmentgroup> 
 
 	void setPullableAppointment(Appointment appointment);
 	
-	void setPullableAppointment();
+	void setPullableAppointments(Appointment appointment);
 	
 	void testWarnings(String appointmentid);
 	

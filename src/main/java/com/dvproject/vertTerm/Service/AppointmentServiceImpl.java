@@ -13,7 +13,8 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
+
+import org.bson.types.ObjectId;
 
 @Service
 public class AppointmentServiceImpl implements AppointmentService {
@@ -134,6 +135,12 @@ public class AppointmentServiceImpl implements AppointmentService {
 	@Override
 	public List<Appointment> getAppointmentsWithUseridAndTimeInterval(String userid, Date starttime, Date endtime) {
 		return repo.findAppointmentsByBookedUserAndTimeinterval(userid, starttime, endtime);
+	}
+
+	@Override
+	public List<Appointment> getAppointmentsWithCustomerEmployeeResourceAfterDate(List<ObjectId> employeeids,
+			List<ObjectId> resourceids, Date starttime, AppointmentStatus status) {
+		return repo.findAppointmentsWithCustomerEmployeeAndResourceAfterPlannedStarttime(employeeids, resourceids, starttime, status);
 	}
 
 	@Override
@@ -273,7 +280,7 @@ public class AppointmentServiceImpl implements AppointmentService {
 			// set Resources and Employees to the appointment
 			appointment.setBookedResources(Resources);
 			appointment.setBookedEmployees(Employees);
-		
+
 			// throw exceptions if not all needed employees/resources could be found
 			if (Positions.size() != appointment.getBookedEmployees().size())
 				throw new AppointmentTimeException(
@@ -282,7 +289,7 @@ public class AppointmentServiceImpl implements AppointmentService {
 				throw new AppointmentTimeException(
 						"In the time interval not all needed resources for appointment could be found", appointment);
 		}
-		//appgrouprepo.save(group);
+		// appgrouprepo.save(group);
 		return group;
 	}
 
