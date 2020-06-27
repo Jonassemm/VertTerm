@@ -22,6 +22,8 @@ import com.dvproject.vertTerm.Model.Appointment;
 import com.dvproject.vertTerm.Model.Appointmentgroup;
 import com.dvproject.vertTerm.Model.Optimizationstrategy;
 import com.dvproject.vertTerm.Model.Status;
+import com.dvproject.vertTerm.Model.Warning;
+import com.dvproject.vertTerm.Service.AppointmentService;
 import com.dvproject.vertTerm.Service.AppointmentgroupService;
 
 @RestController
@@ -30,6 +32,9 @@ import com.dvproject.vertTerm.Service.AppointmentgroupService;
 public class AppointmentgroupController {
 	@Autowired
 	private AppointmentgroupService appointmentgroupService;
+	
+	@Autowired
+	private AppointmentService appointmentService;
 	
 	@GetMapping("")
 	public List<Appointmentgroup> getAllAppointmentgroups () {
@@ -109,8 +114,9 @@ public class AppointmentgroupController {
 	}
 	
 	@PutMapping("/test/{appointmentid}")
-	public void testWarningsofAppointment (@PathVariable String appointmentid) {
+	public List<Warning> testWarningsofAppointment (@PathVariable String appointmentid) {
 		appointmentgroupService.testWarnings(appointmentid);
+		return appointmentService.getById(appointmentid).getWarnings();
 	}
 	
 	@DeleteMapping("/{id}")
@@ -123,7 +129,7 @@ public class AppointmentgroupController {
 		return appointmentgroupService.deleteAppointment(appointmentId, false);
 	}
 	
-	@DeleteMapping("/override/appointment/{id}")
+	@DeleteMapping("/override/Appointment/{id}")
 	public boolean deleteAppointmentOverride (@PathVariable(name = "id") String appointmentId) {
 		return appointmentgroupService.deleteAppointment(appointmentId, true);
 	}

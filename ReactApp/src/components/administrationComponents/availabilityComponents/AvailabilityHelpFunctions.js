@@ -57,25 +57,31 @@ function availabilityRhythmGE(rhythm) {
 
 //---------------------------------RENDERING---------------------------------
 export function renderAvailabilityTable(allAvailabilities, addedAvailabilitiesLength, availabilityRhythm, handleCancleAvailability) {
+    var startDate = null
+    var endDate = null
+    var endOfSeries = null
     if(allAvailabilities.length > 0)
     {
       return ( 
         allAvailabilities.map((SingleAvailability, index) => {
+            startDate =  moment(moment(SingleAvailability.startDate, "DD.MM.yyyy HH:mm").toDate()).format("dd DD.MM.YYYY HH:mm").toString();
+            endDate =  moment(moment(SingleAvailability.startDate, "DD.MM.yyyy HH:mm").toDate()).format("dd DD.MM.YYYY HH:mm").toString();
+            endOfSeries = moment(moment(SingleAvailability.endOfSeries, "DD.MM.yyyy HH:mm").toDate()).format("dd DD.MM.YYYY HH:mm").toString();
             if(moment(SingleAvailability.endOfSeries, "DD.MM.yyyy HH:mm").toDate() < new Date ){
                 
             } else {
                 return (
                     <tr key={index}>
                       <td ><Form.Control readOnly type="text" name={"availability"+ index} 
-                          value={SingleAvailability.startDate}/></td>
+                          value={startDate}/></td>
                       <td><Form.Control readOnly type="text" name={"availability"+ index} 
-                          value={SingleAvailability.endDate}/></td>
+                          value={endDate}/></td>
                       <td><Form.Control readOnly type="text" name={"availability"+ index} 
                           value={availabilityRhythmGE(SingleAvailability.rhythm)}/></td>
                       <td><Form.Control readOnly type="text" name={"availability"+ index}
                           value={SingleAvailability.rhythm == availabilityRhythm.oneTime ? "-" : SingleAvailability.frequency}/></td>
                       <td><Form.Control readOnly type="text" name={"availability"+ index} 
-                          value={ SingleAvailability.endOfSeries != null ? SingleAvailability.endOfSeries : 
+                          value={ SingleAvailability.endOfSeries != null ? endOfSeries : 
                                   SingleAvailability.rhythm == availabilityRhythm.oneTime ? "-" :
                                   "Ohne Ende"}/></td>
       

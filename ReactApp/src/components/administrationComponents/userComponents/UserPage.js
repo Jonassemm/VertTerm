@@ -1,6 +1,7 @@
 import React, {useState, useEffect} from 'react'
 import OverviewPage from "../../OverviewPage"
 import UserForm from "./UserForm"
+import {ExceptionModal} from "../../ExceptionModal"
 
 
 import {
@@ -27,7 +28,6 @@ export default function UserList(props) {
         setException(newException)
         setShowExceptionModal(true)
     }
-
 
 
     //---------------------------------USER---------------------------------
@@ -106,6 +106,7 @@ export default function UserList(props) {
                 edit={edit}
                 selected={selectedItem}
                 type={"employee"}
+                setException={handleExceptionChange}
             />
         )
     }
@@ -117,6 +118,7 @@ export default function UserList(props) {
                 edit={edit}
                 selected={selectedItem}
                 type={"customer"}
+                setException={handleExceptionChange}
             />
         )
     }
@@ -128,6 +130,7 @@ export default function UserList(props) {
                     showExceptionModal={showExceptionModal} 
                     setShowExceptionModal={setShowExceptionModal} 
                     exception={exception}
+                    warning={"AvailabilityWarning"}
                 />
             }
             {props.userType == "employee" ? 

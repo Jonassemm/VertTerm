@@ -5,7 +5,7 @@ import { addProcedure, deleteProcedure, editProcedure } from "./ProcedureRequest
 import Availability from "../availabilityComponents/Availability"
 import "./ProcedureStyles.css"
 
-function ProcedureForm({ onCancel, edit, selected }) {
+function ProcedureForm({ onCancel, edit, selected, setException = null }) {
     const [tabKey, setTabKey] = useState('general')
     const [edited, setEdited] = useState(false)
     const [enterPrice, setEnterPrice] = useState(false)
@@ -120,6 +120,11 @@ function ProcedureForm({ onCancel, edit, selected }) {
         }
         const data = { ...selected, status: status }
         const res = await editProcedure(selected.id, data)
+            .then(res => {
+                if (res.headers.exception) {
+                setException(res.headers.exception)
+                }
+            })
         onCancel()
     }
 
@@ -270,6 +275,11 @@ function ProcedureForm({ onCancel, edit, selected }) {
         } else {
             data.id = selected.id
             const res = await editProcedure(selected.id, data)
+                .then(res => {
+                    if (res.headers.exception) {
+                    setException(res.headers.exception)
+                    }
+                })
         }
         onCancel()
     }

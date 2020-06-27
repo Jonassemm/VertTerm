@@ -1,4 +1,4 @@
-import React ,{useState, useEffect} from 'react'
+import React , {useState, useEffect, forwardRef, useImperativeHandle} from 'react'
 import {Form, Table, Col, Container, Button} from 'react-bootstrap';
 import DatePicker from "react-datepicker"
 import "react-datepicker/dist/react-datepicker.css"
@@ -40,7 +40,7 @@ var moment = require('moment');
 
 ----------------------------------------------------------------------------------------------------------------------------*/
 
-const Availability = (props) => {
+const Availability = forwardRef((props, ref) => {
     //props.availabilities
     //props.addAvailability()
     //props.editedAvailabilities()
@@ -110,10 +110,28 @@ const Availability = (props) => {
 
     const handleEndDateStringChange = date => {
         const newDateString = moment(date).format("DD.MM.YYYY HH:mm").toString()
+        const startDate = moment(startDateString, "DD.MM.yyyy HH:mm").toDate()
         const endOfSeriesAsDate = moment(endOfSeriesDateString, "DD.MM.yyyy HH:mm").toDate()
 
-        setEndDateString(newDateString)
-        if(withSeriesEnd &&  endOfSeriesAsDate.getTime() < date.getTime()) {
+        var endDateTime = startDate
+        endDateTime.setHours(date.getHours())
+        endDateTime.setMinutes(date.getMinutes())
+
+        var valideDate = false
+        if(startDate.getFullYear() == date.getFullYear() &&
+            startDate.getMonth() == date.getMonth() &&
+            startDate.getDate() == date.getDate()) 
+        {
+            valideDate = true
+        }
+
+        if(valideDate) {
+            setEndDateString(newDateString)
+        }else {
+            setEndDateString(endDateTime)
+        }
+
+        if(withSeriesEnd &&  endOfSeriesAsDate.getTime() < date.getTime()){
             setEndOfSeriesDateString(newDateString)
         }
     }
@@ -224,8 +242,6 @@ const Availability = (props) => {
                 }else { //the submitted availabilities
                     const answer = confirm("Möchten Sie diese Verfügbarkeit wirklich deaktivieren? ")
                     if (answer) {
-                        console.log("CHECK-PAT")
-                        console.log(props.availabilities)
                         props.availabilities.map((singleAvailability, index) => {
                             if(index == data.target.value) {
                                 console.log("set endSeries")
@@ -234,7 +250,6 @@ const Availability = (props) => {
                         })
                         props.updateAvailabilities(props.availabilities)
                         props.editedAvailabilities(true)   
-                        console.log(props.availabilities)
                     }
                 }
             }
@@ -271,6 +286,13 @@ const Availability = (props) => {
         }
         props.editedAvailabilities(true)   
     }
+
+
+    useImperativeHandle(ref, () => ({
+        submitted()  {
+            setAddedAvailabilities([])
+        }
+    }))
 
 
     const render = () =>{
@@ -314,7 +336,7 @@ const Availability = (props) => {
                             timeFormat="HH:mm"
                             timeIntervals={5}
                             timeCaption="Uhrzeit"
-                            dateFormat="dd.M.yyyy / HH:mm"
+                            dateFormat="dd.MM.yyyy / HH:mm"
                         />
                     </Form.Group>
                     <Form.Group style={{display: "flex", flexWrap: "nowrap"}} as={Col} md="6">
@@ -328,7 +350,7 @@ const Availability = (props) => {
                             timeFormat="HH:mm"
                             timeIntervals={5}
                             timeCaption="Uhrzeit"
-                            dateFormat="dd.M.yyyy / HH:mm"
+                            dateFormat="dd.MM.yyyy / HH:mm"
                             onCalendarClose={e => handleEndDateFocusChange()}
                         />
                     </Form.Group>
@@ -466,5 +488,5 @@ const Availability = (props) => {
         </Container>
     </React.Fragment>
     )
-}
+})
 export default Availability

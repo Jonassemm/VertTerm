@@ -113,7 +113,7 @@ function HomePage({
         const endDateString =  moment(endDate).format("DD.MM.YYYY HH:mm").toString();
         if(UserID == null){//case all appointments
             try{
-               response = await getAllAppointmentInTimespace( 
+                response = await getAllAppointmentInTimespace( 
                     startDateString, 
                     endDateString
                )
@@ -122,13 +122,11 @@ function HomePage({
             }
         }else {//case "own" and "foreign" appointments
             try {
-                if(UserID != null) {
-                    response = await getAppointmentOfUserInTimespace(
-                        UserID, 
-                        startDateString, 
-                        endDateString
-                    )
-                } 
+                response = await getAppointmentOfUserInTimespace(
+                    UserID, 
+                    startDateString, 
+                    endDateString
+                )
             } catch (error) {
                 console.log(Object.keys(error), error.message)
             }
@@ -150,7 +148,7 @@ function HomePage({
                 ...item,
                 plannedStarttime: moment(item.plannedStarttime, "DD.MM.yyyy HH:mm").toDate(),
                 plannedEndtime: moment(item.plannedEndtime, "DD.MM.yyyy HH:mm").toDate(),
-                title: item.bookedProcedure.name
+                title: item.bookedProcedure.name + "() "
             }
         })
         calendarStore.setCalendarEvents(evts)
@@ -197,6 +195,8 @@ function HomePage({
                 view={currentTimeView}
                 onView={handleCurrentTimeViewChange}
                 onNavigate={handleNavigationChange}
+                step={5}
+                timeslots={3}
                 messages={{
                     previous: 'Zurück',
                     next: 'Weiter',

@@ -3,6 +3,8 @@ package com.dvproject.vertTerm.Service;
 import java.util.Date;
 import java.util.List;
 
+import org.bson.types.ObjectId;
+
 import com.dvproject.vertTerm.Model.Appointment;
 import com.dvproject.vertTerm.Model.AppointmentStatus;
 import com.dvproject.vertTerm.Model.Appointmentgroup;
@@ -18,10 +20,9 @@ public interface AppointmentService extends BasicService<Appointment> {
 	// GET
 	List<Appointment> getAll(Bookable bookable);
 
-	
-	//Buchungoption2 get available Resources and Employees 
+	// Buchungoption2 get available Resources and Employees
 	public Appointmentgroup getAvailableResourcesAndEmployees(Appointmentgroup group);
-	
+
 	// appointments with warning
 	List<Appointment> getAllAppointmentsByUseridAndWarnings(String userid, List<Warning> warnings);
 
@@ -29,7 +30,7 @@ public interface AppointmentService extends BasicService<Appointment> {
 	List<Appointment> getAppointmentsByUserIdAndAppointmentStatus(String userid, AppointmentStatus status);
 
 	List<Appointment> getAppointmentsByEmployeeIdAndAppointmentStatus(String employeeid, AppointmentStatus status);
-	
+
 	List<Appointment> getAppointmentsByResourceIdAndAppointmentStatus(String resourceid, AppointmentStatus status);
 
 	// appointments of an available-entity in a time interval
@@ -46,6 +47,9 @@ public interface AppointmentService extends BasicService<Appointment> {
 			AppointmentStatus status);
 
 	List<Appointment> getAppointmentsWithUseridAndTimeInterval(String userid, Date starttime, Date endtime);
+
+	List<Appointment> getAppointmentsWithCustomerEmployeeResourceAfterDate(List<ObjectId> employeeids,
+			List<ObjectId> resourceids, Date startdate, AppointmentStatus status);
 
 	// appointment in time interval
 	List<Appointment> getAppointmentsInTimeIntervalAndStatus(Date starttime, Date endtime, AppointmentStatus status);

@@ -35,7 +35,7 @@ export function ExceptionModal({
     }) {
 
     return (
-        <Modal size="lg" show={showExceptionModal} onHide={() => setShowExceptionModal(false)}>
+        <Modal size="xl" show={showExceptionModal} onHide={() => setShowExceptionModal(false)}>
             <Modal.Header>
                 <Modal.Title>
                     Dieser Vorgang verursachte einen Konflikt!
@@ -61,7 +61,7 @@ export function ExceptionModal({
                         <Button variant="danger" style={{marginLeft:"10px"}} onClick={overrideSubmit}>{overrideText}</Button>
                     }
                     {warning != null &&
-                        <Link to={`/warning/${exception}`}>
+                        <Link to={`/warning/${warning}`}>
                             <Button variant="success" style={{ marginLeft: "10px" }}>Konflikt beheben</Button>
                         </Link>
                     }

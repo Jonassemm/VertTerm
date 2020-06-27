@@ -15,10 +15,7 @@ export default function AppointmentWarningPage(props) {
 
     var initialSelectedWarning = []
     if(Object.keys(props).length != 0) {
-        //initialSelectedWarning = [getTranslatedWarning(props.match.params.initialWarning)]
         initialSelectedWarning = [props.match.params.initialWarning]
-        console.log("Erste Warnung:")
-        console.log(initialSelectedWarning)
     }
 
     const [selectedKindOfWarning, setSelectedKindOfWarning] = useState(initialSelectedWarning)
@@ -43,11 +40,10 @@ export default function AppointmentWarningPage(props) {
     const loadAppointmentsWithWarnings = async () => {
         var response = []
         var data = []
+
         try {
-            if((Object.keys(props).length != 0 && initialWarning) || selectedKindOfWarning.length == 0) {
+            if((Object.keys(props).length == 0 && initialWarning) || selectedKindOfWarning.length == 0) {
                 console.log("CALL -> Initial (all)")
-                //console.log([getTranslatedWarning(props.match.params.initialWarning)])
-                //response = await getAppointmentsWithWarning([props.match.params.initialWarning])
                 response = await getAllAppointmentsWithWarning()
             }else {
                 console.log("CALL -> Selected")
@@ -58,7 +54,7 @@ export default function AppointmentWarningPage(props) {
             setInitialWarning(false)
         } catch (error) {
             console.log(Object.keys(error), error.message)
-            const bookedProcedure = {name: "Prozess1"}
+            /* const bookedProcedure = {name: "Prozess1"}
             const plannedStarttime= "04.06.2020 19:30"
             const bookedCustomer= {firstName: "Angelina", lastName: "Jolie", username: "LaraCroft"}
 
@@ -70,7 +66,7 @@ export default function AppointmentWarningPage(props) {
                     bookedEmployees: [{firstName: "Bruce", lastName: "Willis"},{firstName: "Will", lastName: "Smith"}],
                     bookedResources: [{name: "Stift"}, {name: "Papier"}, {name: "Laptop"}],
                     warnings: ["AppointmenttimeWarning", "ProcedureRelationWarning"]
-                }]
+                }] */
         }
         console.log("original data:")
         console.log(data)
@@ -84,11 +80,6 @@ export default function AppointmentWarningPage(props) {
         })
         setAppointmentsWithWarnings(reducedData)
     }
-
-/*     const handleSelectAppointment = () => {
-        let x = (event.target.parentElement.firstChild.textContent) - 1
-        setSelectedAppointment(appointmentsWithWarnings[x])
-    } */
 
 
     const tableBody = 

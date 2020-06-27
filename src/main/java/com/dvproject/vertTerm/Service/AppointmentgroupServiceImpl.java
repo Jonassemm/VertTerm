@@ -15,6 +15,7 @@ import java.util.stream.Collectors;
 
 import javax.servlet.http.HttpServletResponse;
 
+import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.rest.webmvc.ResourceNotFoundException;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -153,13 +154,13 @@ public class AppointmentgroupServiceImpl implements AppointmentgroupService {
 	}
 
 	@Override
-	public void setPullableAppointment() {
+	public void setPullableAppointments(Appointment appointment) {
 		Date startdate = getDateOfNowRoundedUp();
-		List<Appointment> appointmentsToPull = getPullableAppointments(startdate);
+		List<Appointment> appointmentsToPull = getPullableAppointments(startdate, appointment);
 
 		if (appointmentsToPull != null && appointmentsToPull.size() > 0) {
 			httpResponse.addHeader("starttime", getStringRepresentationOf(startdate));
-			appointmentsToPull.forEach(appointment -> httpResponse.addHeader("appointmentid", appointment.getId()));
+			appointmentsToPull.forEach(app -> httpResponse.addHeader("appointmentid", app.getId()));
 		}
 	}
 
@@ -287,7 +288,7 @@ public class AppointmentgroupServiceImpl implements AppointmentgroupService {
 		appointment = appointmentService.getById(appointmentid);
 
 		if (appointment.getActualEndtime().before(appointment.getPlannedEndtime()))
-			setPullableAppointment();
+			setPullableAppointments(appointment);
 
 		return appointment.getActualEndtime() != null && appointment.getStatus() == AppointmentStatus.DONE;
 	}
@@ -331,7 +332,7 @@ public class AppointmentgroupServiceImpl implements AppointmentgroupService {
 
 		testWarningsForAppointments(appointmentsToTestWarningsFor);
 
-		setPullableAppointment();
+		setPullableAppointments(appointment);
 
 		return retVal;
 	}
@@ -403,16 +404,23 @@ public class AppointmentgroupServiceImpl implements AppointmentgroupService {
 		}
 	}
 
-	private List<Appointment> getPullableAppointments(Date startdate) {
-		Date enddate = getLatestTimeOfToday();
-		List<Appointment> appointmentsToTest = appointmentService.getAppointmentsInTimeIntervalAndStatus(startdate,
-				enddate, AppointmentStatus.PLANNED);
+	private List<Appointment> getPullableAppointments(Date startdate, Appointment appointment) {
+		List<Appointment> appointmentsToTest;
 
-		appointmentsToTest.removeIf(app -> {
-			app.generateNewDatesFor(startdate);
+		if (appointment == null)
+			appointmentsToTest = appointmentService.getAppointmentsInTimeIntervalAndStatus(startdate, getLatestTimeOfToday(),
+					AppointmentStatus.PLANNED);
+		else {
+			List<ObjectId> employeeids = appointment.getBookedEmployees().stream().map(emp -> new ObjectId(emp.getId()))
+					.collect(Collectors.toList());
+			List<ObjectId> resourceids = appointment.getBookedResources().stream().map(res -> new ObjectId(res.getId()))
+					.collect(Collectors.toList());
 
-			return !this.isPullable(app);
-		});
+			appointmentsToTest = appointmentService.getAppointmentsWithCustomerEmployeeResourceAfterDate(employeeids,
+					resourceids, startdate, AppointmentStatus.PLANNED);
+		}
+
+		appointmentsToTest.removeIf(app -> !this.isPullable(app.getAppointmentWithNewDatesFor(startdate)));
 
 		return appointmentsToTest;
 	}
