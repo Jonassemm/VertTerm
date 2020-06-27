@@ -215,16 +215,9 @@ function UserForm({onCancel, edit, selected, type, setException = null}) {
               updateData = {id, firstName, lastName, username, password: newPassword, systemStatus, roles, positions, availabilities, restrictions, 
                             optionalAttributes: optionalAttributesOfUser}
               await updateEmployee(id, updateData)
-              .then(res => {
-                  if (res.status == "200") {
-                      //everything alright
-                  }
-                })
-                .catch((error) => {
-                  console.log("[catch-1]: EXCEPTION while deleting an availability")
-                  console.log(error.response.headers)
-                  if(error.response.headers.exception != undefined && setException != null) {
-                    setException(error.response.headers.exception)
+                .then(res => {
+                  if (res.headers.exception) {
+                    setException(res.headers.exception)
                   }
                 })
           }else { //customer
@@ -234,11 +227,6 @@ function UserForm({onCancel, edit, selected, type, setException = null}) {
           }
         } catch (error) {
           console.log(Object.keys(error), error.message)
-          console.log("[catch-2]: EXCEPTION while deleting an availability")
-          console.log(error.response.headers)
-          if(error.response.headers.exception != undefined  && setException != null) {
-            setException(error.response.headers.exception)
-          }
         } 
 
       } else { //creation-mode

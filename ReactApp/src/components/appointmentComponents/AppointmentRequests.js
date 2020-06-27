@@ -37,3 +37,4 @@ export const startAppointment = appointmentId => axios.put(`${APIURL}/api/Appoin
 export const stopAppointment = appointmentId => axios.put(`${APIURL}/api/Appointmentgroups/stop/${appointmentId}`)  
 export const deleteAppointment = id => axios.delete(`${APIURL}/api/Appointmentgroups/Appointment/${id}`)
 export const deleteOverrideAppointment = id => axios.delete(`${APIURL}/api/Appointmentgroups/override/Appointment/${id}`)
+export const testAppointment = appointmentId => axios.put(`${APIURL}/api/Appointmentgroups/test/${appointmentId}`) 

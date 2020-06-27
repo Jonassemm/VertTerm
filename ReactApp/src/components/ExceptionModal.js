@@ -35,7 +35,7 @@ export function ExceptionModal({
     }) {
 
     return (
-        <Modal size="lg" show={showExceptionModal} onHide={() => setShowExceptionModal(false)}>
+        <Modal size="xl" show={showExceptionModal} onHide={() => setShowExceptionModal(false)}>
             <Modal.Header>
                 <Modal.Title>
                     Dieser Vorgang verursachte einen Konflikt!

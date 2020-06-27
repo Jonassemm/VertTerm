@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react"
 import OverviewPage from "../../OverviewPage"
 import ResourceForm from "./ResourceForm"
 import {getAllResources} from "./ResourceRequests"
+import {ExceptionModal} from "../../ExceptionModal"
 
 function ResourcePage() {
     const [resources, setResources] = useState([])

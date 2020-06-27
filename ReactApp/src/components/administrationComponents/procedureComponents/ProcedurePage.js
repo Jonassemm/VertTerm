@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react"
 import OverviewPage from "../../OverviewPage"
 import ProcedureForm from "./ProcedureForm"
 import { getProcedures } from "./ProcedureRequests"
+import {ExceptionModal} from "../../ExceptionModal"
 
 function ProcedurePage() {
     const [procedures, setProcedudres] = useState([])

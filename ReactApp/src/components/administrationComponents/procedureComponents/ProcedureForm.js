@@ -120,11 +120,11 @@ function ProcedureForm({ onCancel, edit, selected, setException = null }) {
         }
         const data = { ...selected, status: status }
         const res = await editProcedure(selected.id, data)
-          .catch((error) => {
-            if(error.response.headers.exception != undefined && setException != null) {
-              setException(error.response.headers.exception)
-            }
-          })
+            .then(res => {
+                if (res.headers.exception) {
+                setException(res.headers.exception)
+                }
+            })
         onCancel()
     }
 
@@ -275,9 +275,9 @@ function ProcedureForm({ onCancel, edit, selected, setException = null }) {
         } else {
             data.id = selected.id
             const res = await editProcedure(selected.id, data)
-                .catch((error) => {
-                    if(error.response.headers.exception != undefined && setException != null) {
-                    setException(error.response.headers.exception)
+                .then(res => {
+                    if (res.headers.exception) {
+                    setException(res.headers.exception)
                     }
                 })
         }

@@ -80,8 +80,6 @@ function HomePage({
     
     const refreshCalendarAppointments = () => {
         if(loadAppointments != undefined) {
-            console.log("Load Appointments of USER-ID:")
-            console.log(UserID)
             loadAppointments(referenceDateOfView.getMonth(), referenceDateOfView.getFullYear(), UserID)  
         }else
         {

@@ -9,6 +9,7 @@ import {
     deleteOverrideAppointment,
     getAllAppointments,
     getGroupOfAppointment,
+    testAppointment,
     updateCustomerIsWaiting,
     startAppointment,
     stopAppointment
@@ -29,6 +30,9 @@ export const handleDeleteAppointment = async (id, handleOnCancel = undefined, se
                 console.log(res.headers)
                 if(res.headers.appointmentid != undefined && res.headers.starttime != undefined) {
                     setPreferredAppointment(res.headers.appointmentid, res.headers.starttime)
+                }
+                if (res.headers.exception) {
+                    setException(res.headers.exception)
                 }
             })
             .catch((error) => {
@@ -99,9 +103,6 @@ function AppointmentForm({
             setBookedEmployees(selected.bookedEmployees)     
             setBookedResources(selected.bookedResources)
             setCustomerIsWaiting(selected.customerIsWaiting)
-            //TEST________________________________________________
-            //handleExceptionChange("Employee")
-            //handlePreferredAppointmentChange(1, "26.06.2020 19:00")
         } 
     }, [])
 
@@ -196,6 +197,23 @@ function AppointmentForm({
             handleOnCancel, 
             handleExceptionChange, 
             handlePreferredAppointmentChange)
+    }
+
+    const handleTest = async() => {
+        var data = []
+        try{
+            const response = await testAppointment(selected.id)
+            data = response.data
+        } catch (error){
+        console.log(Object.keys(error), error.message)
+        }
+
+        if(!JSON.stringify(data)==JSON.stringify(warnings)){
+            setWarnings(data)
+            if(refreshData != null) {
+                refreshData(month, year) 
+            }
+        }
     }
 
 
@@ -334,7 +352,7 @@ function AppointmentForm({
                             </Form.Group>  
                             <Form.Group as={Col} md="3">
                                 <div style={{textAlign: "bottom", marginTop: "32px"}}>
-                                    <Button variant="primary" style={{ marginLeft: "0px" }}>Prüfen</Button>
+                                    <Button variant="primary" onClick={handleTest} style={{ marginLeft: "0px" }}>Prüfen</Button>
                                     <Link to={`/warning/${warnings[0]}`}>
                                         <Button variant="success" style={{ marginLeft: "10px" }}>Beheben</Button>
                                     </Link>

@@ -110,10 +110,28 @@ const Availability = forwardRef((props, ref) => {
 
     const handleEndDateStringChange = date => {
         const newDateString = moment(date).format("DD.MM.YYYY HH:mm").toString()
+        const startDate = moment(startDateString, "DD.MM.yyyy HH:mm").toDate()
         const endOfSeriesAsDate = moment(endOfSeriesDateString, "DD.MM.yyyy HH:mm").toDate()
 
-        setEndDateString(newDateString)
-        if(withSeriesEnd &&  endOfSeriesAsDate.getTime() < date.getTime()) {
+        var endDateTime = startDate
+        endDateTime.setHours(date.getHours())
+        endDateTime.setMinutes(date.getMinutes())
+
+        var valideDate = false
+        if(startDate.getFullYear() == date.getFullYear() &&
+            startDate.getMonth() == date.getMonth() &&
+            startDate.getDate() == date.getDate()) 
+        {
+            valideDate = true
+        }
+
+        if(valideDate) {
+            setEndDateString(newDateString)
+        }else {
+            setEndDateString(endDateTime)
+        }
+
+        if(withSeriesEnd &&  endOfSeriesAsDate.getTime() < date.getTime()){
             setEndOfSeriesDateString(newDateString)
         }
     }
@@ -318,7 +336,7 @@ const Availability = forwardRef((props, ref) => {
                             timeFormat="HH:mm"
                             timeIntervals={5}
                             timeCaption="Uhrzeit"
-                            dateFormat="dd.M.yyyy / HH:mm"
+                            dateFormat="dd.MM.yyyy / HH:mm"
                         />
                     </Form.Group>
                     <Form.Group style={{display: "flex", flexWrap: "nowrap"}} as={Col} md="6">
@@ -332,7 +350,7 @@ const Availability = forwardRef((props, ref) => {
                             timeFormat="HH:mm"
                             timeIntervals={5}
                             timeCaption="Uhrzeit"
-                            dateFormat="dd.M.yyyy / HH:mm"
+                            dateFormat="dd.MM.yyyy / HH:mm"
                             onCalendarClose={e => handleEndDateFocusChange()}
                         />
                     </Form.Group>

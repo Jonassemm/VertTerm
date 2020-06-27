@@ -112,15 +112,8 @@ const RessourceForm = ({ onCancel, edit, selected, setException = null}) => {
             if(edit) {
               await editConsumable(selected.id, data)
               .then(res => {
-                if (res.status == "200") {
-                    //everything alright
-                }
-              })
-              .catch((error) => {
-                console.log("[catch-1]: EXCEPTION while deleting an availability")
-                console.log(error.response.headers)
-                if(error.response.headers.exception != undefined && setException != null) {
-                  setException(error.response.headers.exception)
+                if (res.headers.exception) {
+                  setException(res.headers.exception)
                 }
               })
             }else {
@@ -131,15 +124,8 @@ const RessourceForm = ({ onCancel, edit, selected, setException = null}) => {
             if (edit){
               await editResource(selected.id, data)
               .then(res => {
-                if (res.status == "200") {
-                    //everything alright
-                }
-              })
-              .catch((error) => {
-                console.log("[catch-1]: EXCEPTION while deleting an availability")
-                console.log(error.response.headers)
-                if(error.response.headers.exception != undefined && setException != null) {
-                  setException(error.response.headers.exception)
+                if (res.headers.exception) {
+                  setException(res.headers.exception)
                 }
               })
             }else{
