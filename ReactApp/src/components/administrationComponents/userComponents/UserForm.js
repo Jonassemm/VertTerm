@@ -18,7 +18,7 @@ import {
 } from "../optionalAttributesComponents/optionalAttributesRequests"
 
 
-function UserForm({onCancel, edit, selected, type}) {
+function UserForm({onCancel, edit, selected, type, setException = null}) {
   //Switch
   var initialTypeIsEmployee = false
   if(type == "employee") {
@@ -47,9 +47,7 @@ function UserForm({onCancel, edit, selected, type}) {
   const [requiredOptionalAttributCounter, setRequiredOptionalAttributCounter] = useState(0)
   //recognizing password change
   const [passwordChanged, setPasswordChanged] = useState(false)
-  //exception
-  const [showExceptionModal, setShowExceptionModal] = useState(false)
-  const [warning, setWarning] = useState([])
+
 
   //HANDEL CHANGE
   const handleFirstnameChange = event => {setFirstname(event.target.value); setEdited(true)}
@@ -96,6 +94,7 @@ function UserForm({onCancel, edit, selected, type}) {
     loadOptionalAttributes()
   }, [])
 
+  
   //---------------------------------LOAD---------------------------------
   const loadOptionalAttributes = async () => {
     var data = [];
@@ -134,6 +133,7 @@ function UserForm({onCancel, edit, selected, type}) {
   };
 
 
+  //---------------------------------VALIDATION---------------------------------
   function validation() {
     var result = true;
     var employeeFieldsAreSet = true
@@ -218,11 +218,14 @@ function UserForm({onCancel, edit, selected, type}) {
               .then(res => {
                   if (res.status == "200") {
                       //everything alright
-                  }else {
-                      setShowExceptionModal(true)
                   }
                 })
-                .catch(() => {
+                .catch((error) => {
+                  console.log("[catch-1]: EXCEPTION while deleting an availability")
+                  console.log(error.response.headers)
+                  if(error.response.headers.exception != undefined && setException != null) {
+                    setException(error.response.headers.exception)
+                  }
                 })
           }else { //customer
               updateData = {id, firstName, lastName, username, password: newPassword, systemStatus, roles, restrictions,
@@ -231,6 +234,11 @@ function UserForm({onCancel, edit, selected, type}) {
           }
         } catch (error) {
           console.log(Object.keys(error), error.message)
+          console.log("[catch-2]: EXCEPTION while deleting an availability")
+          console.log(error.response.headers)
+          if(error.response.headers.exception != undefined  && setException != null) {
+            setException(error.response.headers.exception)
+          }
         } 
 
       } else { //creation-mode
@@ -332,12 +340,6 @@ function UserForm({onCancel, edit, selected, type}) {
 
    return (
     <React.Fragment>
-      {/* <ExceptionModal 
-        showExceptionModal={showExceptionModal} 
-        setShowExceptionModal={setShowExceptionModal} 
-        exception={warning}
-        overrideText="Trotzdem löschen"
-      /> */}
       <Container>
         <Form id="employeeAdd" onSubmit={(e) => handleSubmit(e)}>
         <Form.Row style={{ alignItems: "baseline" }}>

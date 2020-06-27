@@ -29,7 +29,6 @@ export default function UserList(props) {
     }
 
 
-
     //---------------------------------USER---------------------------------
     //LOAD USERLIST
     const loadUserList = async () => {
@@ -106,6 +105,7 @@ export default function UserList(props) {
                 edit={edit}
                 selected={selectedItem}
                 type={"employee"}
+                setException={handleExceptionChange}
             />
         )
     }
@@ -117,6 +117,7 @@ export default function UserList(props) {
                 edit={edit}
                 selected={selectedItem}
                 type={"customer"}
+                setException={handleExceptionChange}
             />
         )
     }
@@ -128,6 +129,7 @@ export default function UserList(props) {
                     showExceptionModal={showExceptionModal} 
                     setShowExceptionModal={setShowExceptionModal} 
                     exception={exception}
+                    warning={"AvailabilityWarning"}
                 />
             }
             {props.userType == "employee" ? 

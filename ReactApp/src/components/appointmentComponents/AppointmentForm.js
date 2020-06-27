@@ -312,8 +312,8 @@ function AppointmentForm({
                                         <Button variant="primary" onClick={handleEnd} style={{ marginLeft: "4px" }}>Termin beenden</Button>
                                 }
                                 {getActualStarttime() == null && customerIsWaiting && status == appointmentStatus.planned &&
-                                //panned start < now - (2 minutes = 120000)
-                                moment(plannedStarttime, "DD.MM.yyyy HH:mm").toDate().getTime() < (moment().toDate().getTime()-120000) &&
+                                //panned start < now + (2 minutes = 120000)
+                                moment(plannedStarttime, "DD.MM.yyyy HH:mm").toDate().getTime() < (moment().toDate().getTime()+120000) &&
                                     <Button variant="primary" onClick={handleStart} style={{ marginLeft: "4px" }}>Termin starten</Button>
                                 }
                             </div>

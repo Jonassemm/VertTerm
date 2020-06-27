@@ -6,6 +6,10 @@ import { getProcedures } from "./ProcedureRequests"
 function ProcedurePage() {
     const [procedures, setProcedudres] = useState([])
 
+    //exception needs overriding (ExceptionModal)
+    const [exception, setException] = useState(null)
+    const [showExceptionModal, setShowExceptionModal] = useState(false)
+
     async function prepareProcedures() {
         const res = await getProcedures()
         const result = res.data.map(item => {
@@ -17,6 +21,12 @@ function ProcedurePage() {
     useEffect(() => {
         prepareProcedures()
     }, [])
+
+    //-------------------------------ExceptionModal--------------------------------
+    const handleExceptionChange = (newException) => {
+        setException(newException)
+        setShowExceptionModal(true)
+    }
 
     const tableBody =
         procedures.map((item,index) => {
@@ -34,12 +44,21 @@ function ProcedurePage() {
                 onCancel={onCancel}
                 edit={edit}
                 selected={selectedItem}
+                setException={handleExceptionChange}
             />
         )
     }
 
     return (
         <React.Fragment>
+            {exception != null && 
+                <ExceptionModal
+                    showExceptionModal={showExceptionModal} 
+                    setShowExceptionModal={setShowExceptionModal} 
+                    exception={exception}
+                    warning={"AvailabilityWarning"}
+                />
+            }
             <OverviewPage 
                 pageTitle="Prozeduren"
                 newItemText="Neue Prozedur"

@@ -1,4 +1,4 @@
-import React ,{useState, useEffect} from 'react'
+import React , {useState, useEffect, forwardRef, useImperativeHandle} from 'react'
 import {Form, Table, Col, Container, Button} from 'react-bootstrap';
 import DatePicker from "react-datepicker"
 import "react-datepicker/dist/react-datepicker.css"
@@ -40,7 +40,7 @@ var moment = require('moment');
 
 ----------------------------------------------------------------------------------------------------------------------------*/
 
-const Availability = (props) => {
+const Availability = forwardRef((props, ref) => {
     //props.availabilities
     //props.addAvailability()
     //props.editedAvailabilities()
@@ -224,8 +224,6 @@ const Availability = (props) => {
                 }else { //the submitted availabilities
                     const answer = confirm("Möchten Sie diese Verfügbarkeit wirklich deaktivieren? ")
                     if (answer) {
-                        console.log("CHECK-PAT")
-                        console.log(props.availabilities)
                         props.availabilities.map((singleAvailability, index) => {
                             if(index == data.target.value) {
                                 console.log("set endSeries")
@@ -234,7 +232,6 @@ const Availability = (props) => {
                         })
                         props.updateAvailabilities(props.availabilities)
                         props.editedAvailabilities(true)   
-                        console.log(props.availabilities)
                     }
                 }
             }
@@ -271,6 +268,13 @@ const Availability = (props) => {
         }
         props.editedAvailabilities(true)   
     }
+
+
+    useImperativeHandle(ref, () => ({
+        submitted()  {
+            setAddedAvailabilities([])
+        }
+    }))
 
 
     const render = () =>{
@@ -466,5 +470,5 @@ const Availability = (props) => {
         </Container>
     </React.Fragment>
     )
-}
+})
 export default Availability

@@ -5,7 +5,7 @@ import ObjectPicker from "../../ObjectPicker"
 import Availability from "../availabilityComponents/Availability"
 import { deleteResourceType } from "../resourceTypeComponents/ResourceTypeRequests"
 
-const RessourceForm = ({ onCancel, edit, selected }) => {
+const RessourceForm = ({ onCancel, edit, selected, setException = null}) => {
     const [valideForm, setValideForm] = useState(false)
   
     const [tabKey, setTabKey] = useState('general')  
@@ -111,13 +111,37 @@ const RessourceForm = ({ onCancel, edit, selected }) => {
                     pricePerUnit: pricePerUnitAsInt}
             if(edit) {
               await editConsumable(selected.id, data)
+              .then(res => {
+                if (res.status == "200") {
+                    //everything alright
+                }
+              })
+              .catch((error) => {
+                console.log("[catch-1]: EXCEPTION while deleting an availability")
+                console.log(error.response.headers)
+                if(error.response.headers.exception != undefined && setException != null) {
+                  setException(error.response.headers.exception)
+                }
+              })
             }else {
               await addConsumable(data)
             }
-          }else {
+          }else { //is not a Consumable
             data = {name, description, status, availabilities, restrictions, resourceTypes}
             if (edit){
               await editResource(selected.id, data)
+              .then(res => {
+                if (res.status == "200") {
+                    //everything alright
+                }
+              })
+              .catch((error) => {
+                console.log("[catch-1]: EXCEPTION while deleting an availability")
+                console.log(error.response.headers)
+                if(error.response.headers.exception != undefined && setException != null) {
+                  setException(error.response.headers.exception)
+                }
+              })
             }else{
               await addResource(data)
             }
@@ -126,31 +150,6 @@ const RessourceForm = ({ onCancel, edit, selected }) => {
         }
     }
 
-
-    //DELETE RESOURCE
-    /* const handleDeleteRessource = async () => {
-      const answer = confirm("Möchten Sie diese Ressource wirklich löschen? ")
-      if (answer) {
-        const deleteStatus = "deleted" // fix delteStatus
-        const amountInStockAsInt = parseInt(amountInStock)
-        const pricePerUnitAsInt = parseInt((parseFloat(pricePerUnit)*100).toFixed(1))
-        var data
-        try {
-          if(isConsumable) {
-            data = {id: selected.id, name, description, status, availabilities, restrictions, resourceTypes,
-              amountInStock: amountInStockAsInt,
-              pricePerUnit: pricePerUnitAsInt}
-            await editConsumable(selected.id, data)
-          } else {
-            data = {id: selected.id, name, description, status, availabilities, restrictions, resourceTypes}
-            await editResource(selected.id, data)
-          }
-        } catch (error) {
-          console.log(Object.keys(error), error.message)
-        } 
-      }
-      onCancel()
-    } */
 
     const handleDeleteRessource = async () => {
       const answer = confirm("Möchten Sie diese Ressource wirklich löschen? ")
@@ -171,8 +170,6 @@ const RessourceForm = ({ onCancel, edit, selected }) => {
       }
       onCancel()
     }
-
-
 
 
 

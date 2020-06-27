@@ -7,9 +7,9 @@ import HomePage from "../calendarComponents/HomePage"
 import ObjectPicker from "../ObjectPicker"
 import {appointmentStatus, translateStatus} from "./AppointmentStatus"
 import {ExceptionModal} from "../ExceptionModal"
+import styled from "styled-components"
 
 var moment = require('moment'); 
-
 import {
     getAllAppointments,
     getAppointmentsByID,
@@ -29,15 +29,35 @@ export const loadMode = {
     all: "all"
 }
 
+const Style = styled.div`
+.loadview {
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    right: 0;
+    left: 0;
+    background-color: black;
+    opacity: 0.6;
+    z-index: 300;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+`
+
 export default function AppointmentPage({calendarStore, userStore}) {
     
     const [loading, setLoading] = useState(false) //for loading appointments (could take some time)
+    const [calendarLoaded, setCalendarLoaded] = useState(false)
     //Tabs
     const [tabKey, setTabKey] = useState('calendar')
     //Modal
-    const [selectedUser, setSelectedUser] = useState([])
-    const [selectedUserInitialized, setSelectedUserInitialized] = useState(false)
-    const [loggedInUser, setLoggedInUser] = useState(null)
+
+    var initialUser = []
+    if(userStore.user != null && userStore.username != "admin" && userStore.username != "anonymousUser"){
+        initialUser = [userStore.user]
+    }
+    const [selectedUser, setSelectedUser] = useState(initialUser)
     //Data
     const [tableAppointments, setTableAppointments] = useState([])
     const [appointmentsOf, setAppointmentsOf] = useState(loadMode.own)
@@ -58,6 +78,7 @@ export default function AppointmentPage({calendarStore, userStore}) {
             setAppointmentsOf(loadMode.foreign)   
         }else {
             setAppointmentsOf(loadMode.foreignUnpicked)
+            setCalendarLoaded(false)
         }
         setSelectedUser(data)
     }
@@ -125,37 +146,15 @@ export default function AppointmentPage({calendarStore, userStore}) {
 
     //--------------------------LOAD-Appointments-------------------------
     const loadAppointments = async (selection) => {
+        setLoading(true)
         var data = []
         var response = null
-        var currentLoggedInUser
 
         //LOAD logged in user
         if(selection!= loadMode.all) { // when loading all users, loggedInUser is not necessary
-            try {
-                const response = await getUser(userStore.userID);
-                if(response.data != "") { //logged in user found? ("" means no user is logged in)
-                    if(response.data.username != "admin" && response.data.username != "anonymousUser") {
-                        //Initial LOAD
-                        if(!selectedUserInitialized){
-                            setLoggedInUser(response.data)
-                            currentLoggedInUser = response.data
-                            setSelectedUser([response.data])
-                            setSelectedUserInitialized(true)
-                        }
-                        if(selection == loadMode.own){ //Appointments for logged in user
-                            setSelectedUser([response.data]) 
-                        }
-                        setLoggedInUser(response.data)
-                        currentLoggedInUser = response.data
-                    } else {
-                        alert("Admin und AnonymousUser haben keine eigenen Termine!")
-                    }
-                }else{
-                    console.log("Bitte erst anmelden, diese Funktion steht normal nur angemeldeten Benutzer zur Verfügung!")
-                }
-            } catch (error) {
-                console.log(Object.keys(error), error.message)
-            }  
+            if(selection == loadMode.own && userStore.user != null){ //Appointments for logged in user
+                setSelectedUser([userStore.user]) 
+            }
         }
         //LAOD Appointments for table 
         var reducedData = []
@@ -170,8 +169,7 @@ export default function AppointmentPage({calendarStore, userStore}) {
                             response = await getAppointmentOfUser(selectedUser[0].id);  
                         }  
                         break;
-                    case loadMode.own:
-                        //response = await getOwnAppointments(currentLoggedInUser.id);  
+                    case loadMode.own: 
                         response = await getOwnAppointments();
                         break;
                 }
@@ -200,27 +198,32 @@ export default function AppointmentPage({calendarStore, userStore}) {
                 console.log(Object.keys(error), error.message)
             }
             setTableAppointments(reducedData)
-
+            setLoading(false)
         //LAOD Appointments for calendar  
         }else {
             var today = new Date
             if(selection == loadMode.own){ //own
-                if(currentLoggedInUser != undefined) {
-                    loadCalendarAppointments(today.getMonth(), today.getFullYear(), currentLoggedInUser.id)
+                if(userStore.user != null) {
+                    console.log("loadAppointments-own")
+                    loadCalendarAppointments(today.getMonth(), today.getFullYear(), userStore.userID)
+                }else{
+                    setLoading(false)
                 }
             }else if (selection == loadMode.foreign) { //foreign
                 if(selectedUser.length > 0) {
+                    console.log("loadAppointments-foreign")
                     loadCalendarAppointments(today.getMonth(), today.getFullYear(), selectedUser[0].id)
                 }
-            }else { //all
+            }else if(selection == loadMode.all){ //all
+                console.log("loadAppointments-all")
                 loadCalendarAppointments(today.getMonth(), today.getFullYear(), null)
+            }else {
+                setLoading(false)
             }
-
         }
     }
 
     const loadCalendarAppointments = async (month, year, UserID) => { 
-        setLoading(true)
         var response = []
         var startDate = new Date
         var endDate = new Date
@@ -276,6 +279,7 @@ export default function AppointmentPage({calendarStore, userStore}) {
         })
         calendarStore.setCalendarEvents(evts)
         setLoading(false)
+        setCalendarLoaded(true)
     }
 
     //--------------------------Overview-Components-------------------------
@@ -311,12 +315,13 @@ export default function AppointmentPage({calendarStore, userStore}) {
     }
 
     const renderfkt = () => {
-        console.log("---------Render-PAGE------")
+        console.log("---------Render-PAGE------")   
     }
 
 
     return (
         <React.Fragment>
+            {loading ? <div className="loadview"><div style={{fontSize:"48pt", color:"white"}}>Loading</div></div> : null}
             {renderfkt()}
             {exception != null && 
                 <ExceptionModal //modal for deleting appointments
@@ -416,30 +421,28 @@ export default function AppointmentPage({calendarStore, userStore}) {
                             type="text"
                             value={selectedUser[0].firstName + " " + selectedUser[0].lastName || ""}
                         />: (appointmentsOf == loadMode.foreign || appointmentsOf == loadMode.foreignUnpicked) ?
-                            loggedInUser != null ?
-                            <ObjectPicker 
-                                setState={handleSelectedUserChange}
-                                DbObject="user"
-                                initial={selectedUser} 
-                                multiple={false}
-                                selectedItem={loggedInUser}
-                            />:
-                        null:
-                        <Form.Control
-                            readOnly
-                            type="text"
-                            value={"Allen Benutzern"}
-                        />
+                            userStore.user != null &&
+                                <ObjectPicker 
+                                    setState={handleSelectedUserChange}
+                                    DbObject="user"
+                                    initial={selectedUser} 
+                                    multiple={false}
+                                    selectedItem={userStore.user}
+                                />:
+                            <Form.Control
+                                readOnly
+                                type="text"
+                                value={"Allen Benutzern"}
+                            />
                     }
                 </div> 
                 <div>
                     <Button style={{margin:"5px 0px 0px 10px"}} variant="primary" onClick={() => setAppointments(loadMode.own)}>Eigene</Button>
                     <Button style={{margin:"5px 0px 0px 10px"}} variant="primary" onClick={() => setAppointments(loadMode.foreignUnpicked)}>Fremde</Button>
                     <Button style={{margin:"5px 0px 0px 10px"}} variant="primary" onClick={() => setAppointments(loadMode.all)}>Alle</Button>
-                    {/* <Button style={{margin:"5px 0px 0px 10px"}} variant="success" onClick={() => loadAppointments(appointmentsOf)}>Aktualisieren</Button> */}
                 </div>
             </div>
-            {(selectedUser.length == 1 || appointmentsOf == loadMode.all) &&
+            {(selectedUser.length == 1 || (appointmentsOf == loadMode.all && selectedUser.length == 0)) && 
                 <Tabs
                     id="controlled-tab"
                     activekey={tabKey}
@@ -447,31 +450,15 @@ export default function AppointmentPage({calendarStore, userStore}) {
                     defaultActiveKey={tabKey}
                 >
                     <Tab eventKey="calendar" title="Kalender">
-                        {appointmentsOf == loadMode.all &&
+                    {calendarLoaded &&
                         <HomePage 
                             calendarStore={calendarStore} 
-                            UserID={selectedUser.length > 0 ? selectedUser[0].id: null}
+                            UserID={selectedUser.length > 0 ? appointmentsOf == loadMode.own ? userStore.userID : selectedUser[0].id: null}
                             loadAppointments={loadCalendarAppointments}
                             handleExceptionChange={handleExceptionChange}
                             handlePreferredAppointmentChange={handlePreferredAppointmentChange}
-                            />
-                        }
-                        {(appointmentsOf == loadMode.foreign || appointmentsOf == loadMode.foreignUnpicked) &&
-                        <HomePage 
-                            calendarStore={calendarStore} 
-                            UserID={selectedUser.length > 0 ? selectedUser[0].id: null}
-                            loadAppointments={loadCalendarAppointments}
-                            handleExceptionChange={handleExceptionChange}
-                            handlePreferredAppointmentChange={handlePreferredAppointmentChange}/>
-                        }
-                        {appointmentsOf == loadMode.own &&
-                        <HomePage 
-                            calendarStore={calendarStore} 
-                            UserID={loggedInUser.id}
-                            loadAppointments={loadCalendarAppointments}
-                            handleExceptionChange={handleExceptionChange}
-                            handlePreferredAppointmentChange={handlePreferredAppointmentChange}/>
-                        }
+                        />
+                    }
                     </Tab>
                     <Tab eventKey="table" title="Tabelle">
                     <OverviewPage

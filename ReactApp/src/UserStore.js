@@ -2,6 +2,11 @@ import { observable, action, decorate } from "mobx"
 import { getUserData } from "./components/navigationComponents/ActiveUserRequests"
 
 class UserStore {
+    user = null
+    setUser(user) {
+        this.user = user
+    }
+
     username = null
     setUsername(username) {
         this.username = username;
@@ -53,7 +58,7 @@ class UserStore {
                 }
             })
         })
-
+        this.setUser(res.data)
         this.setRights(allRights) //without multiple rights
         this.setUsername(res.data.username)
         this.setUserID(res.data.id)
@@ -68,11 +73,13 @@ class UserStore {
 }
 
 UserStore = decorate(UserStore, {
+    user: observable,
     username: observable,
     userID: observable,
     rights: observable,
     roles: observable,
     loggedIn: observable,
+    setUser: action,
     setRights: action,
     setRoles: action,
     setUsername: action,

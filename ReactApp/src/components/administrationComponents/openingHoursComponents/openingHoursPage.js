@@ -1,4 +1,4 @@
-import React ,{useState, useEffect} from 'react'
+import React ,{useState, useEffect, useRef} from 'react'
 import Availability from "../availabilityComponents/Availability"
 import { Form } from 'react-bootstrap'
 import styled from "styled-components"
@@ -15,9 +15,8 @@ export default function OpeningHoursPage () {
     const [edited, setEdited] = useState(false)
     //Availabilities
     const [availabilities, setAvailabilities] = useState([])
-
     const [openingHours, setOpeningHours] = useState(null)
-
+    const availabilityRef = useRef();
 
     useEffect( () => {
         loadOpeningHours()
@@ -58,11 +57,16 @@ export default function OpeningHoursPage () {
         }catch (error) {
             console.log(Object.keys(error), error.message)
         }
-
+        setEdited(false)
+        resetAvailabilitySettings()
     }
 
     const render = () => {
         console.log("render")
+    }
+
+    const resetAvailabilitySettings = () =>{
+        availabilityRef.current.submitted()
     }
     
     return (
@@ -76,6 +80,7 @@ export default function OpeningHoursPage () {
                 <hr/>
                 <Row>
                     <Availability
+                        ref = {availabilityRef}
                         availabilities={availabilities} 
                         addAvailability={addAvailability}
                         updateAvailabilities={updateAvailabilities} 
@@ -86,9 +91,7 @@ export default function OpeningHoursPage () {
                 <hr/>
                 <div style={{textAlign: "right"}}>
                     {edited ? 
-                        <Link to={`/`}>
-                            <Button variant="success" onClick={handleSubmit} type="submit" >Übernehmen</Button>
-                        </Link>:
+                        <Button variant="success" onClick={handleSubmit} type="submit" >Übernehmen</Button>:
                         null
                     }
                 </div>
@@ -96,3 +99,7 @@ export default function OpeningHoursPage () {
         </Style>
     )
 }
+
+{/* <Link to={`/`}>
+    <Button variant="success" onClick={handleSubmit} type="submit" >Übernehmen</Button>
+</Link>: */}
