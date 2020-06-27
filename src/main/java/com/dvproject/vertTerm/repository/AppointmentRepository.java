@@ -74,7 +74,7 @@ public interface AppointmentRepository extends MongoRepository<Appointment, Stri
 	List<Appointment> findAppointmentsByBookedCustomerInTimeinterval(String userid, Date starttime, Date endtime,
 			AppointmentStatus status);
 
-	@Query("{'$or': [{'bookedEmployees.$id': {'$in': ?0}}, {'bookedResources.$id': {'$in': ?1}}], 'plannedEndtime': {'$gt' : ?2}, 'status': ?3}")
+	@Query("{'$or': [{'bookedEmployees.$id': {'$in': ?0}}, {'bookedResources.$id': {'$in': ?1}}], 'plannedStarttime': {'$gt' : ?2}, 'status': ?3}")
 	List<Appointment> findAppointmentsWithCustomerEmployeeAndResourceAfterPlannedStarttime(List<ObjectId> employeeid,
 			List<ObjectId> resourceid, Date starttime, AppointmentStatus status);
 }

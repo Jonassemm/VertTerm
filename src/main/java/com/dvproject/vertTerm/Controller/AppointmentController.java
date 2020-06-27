@@ -102,7 +102,7 @@ import java.util.Collection;
     		return appointments;
     	}
 
-    	@GetMapping(path = { "/warnings" })
+    	@GetMapping("/warnings")
     	public List<Appointment> getAppointmentsWithWarnings(
     			@RequestParam(required = false) String userid,
     			@RequestParam(required = false, name = "warnings") List<String> warningStrings) {

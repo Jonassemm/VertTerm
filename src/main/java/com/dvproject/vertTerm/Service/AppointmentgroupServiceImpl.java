@@ -405,11 +405,10 @@ public class AppointmentgroupServiceImpl implements AppointmentgroupService {
 	}
 
 	private List<Appointment> getPullableAppointments(Date startdate, Appointment appointment) {
-		Date enddate = getLatestTimeOfToday();
 		List<Appointment> appointmentsToTest;
 
 		if (appointment == null)
-			appointmentsToTest = appointmentService.getAppointmentsInTimeIntervalAndStatus(startdate, enddate,
+			appointmentsToTest = appointmentService.getAppointmentsInTimeIntervalAndStatus(startdate, getLatestTimeOfToday(),
 					AppointmentStatus.PLANNED);
 		else {
 			List<ObjectId> employeeids = appointment.getBookedEmployees().stream().map(emp -> new ObjectId(emp.getId()))
@@ -421,11 +420,7 @@ public class AppointmentgroupServiceImpl implements AppointmentgroupService {
 					resourceids, startdate, AppointmentStatus.PLANNED);
 		}
 
-		appointmentsToTest.removeIf(app -> {
-			app.generateNewDatesFor(startdate);
-
-			return !this.isPullable(app);
-		});
+		appointmentsToTest.removeIf(app -> !this.isPullable(app.getAppointmentWithNewDatesFor(startdate)));
 
 		return appointmentsToTest;
 	}
