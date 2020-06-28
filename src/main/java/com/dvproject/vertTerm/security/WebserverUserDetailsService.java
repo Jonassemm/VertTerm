@@ -41,7 +41,7 @@ public class WebserverUserDetailsService implements UserDetailsService {
 				user.getSystemStatus() == Status.ACTIVE, true, true, true, getAuthorities(user.getRoles()));
 	}
 
-	private List<? extends GrantedAuthority> getAuthorities(List<Role> roles) {
+	public List<? extends GrantedAuthority> getAuthorities(List<Role> roles) {
 		return getGrantedAuthorities(getRights(roles));
 	}
 

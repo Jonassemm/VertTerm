@@ -1,10 +1,11 @@
 package com.dvproject.vertTerm.Controller;
 
+import javax.servlet.http.HttpServletRequest;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -19,27 +20,30 @@ import com.dvproject.vertTerm.security.WebserverUserDetailsService;
 public class HomeController {
 	@Autowired
 	private WebserverUserDetailsService manager;
-	
+
 	@Autowired
 	private UserRepository userService;
+	
+	@Autowired
+	private PasswordEncoder passwordEncoder;
 
 	@RequestMapping(value = "/")
 	public String index() {
 		return "index";
 	}
-	
+
 	@ResponseBody
 	@GetMapping("/")
-	public String login (@RequestParam String username, @RequestParam String password) {
-		UserDetails userDetails = manager.loadAnonymousUserByUsername(username);
+	public String login(HttpServletRequest request, @RequestParam String username, @RequestParam String password) {
 		User user = userService.findByUsername(username);
-		
-		if (!user.isAnonymousUser())
-			throw new IllegalArgumentException("User is not an anonymous User");
-		
-		Authentication auth = new UsernamePasswordAuthenticationToken (userDetails.getUsername(), userDetails.getPassword());
-		SecurityContextHolder.getContext().setAuthentication(auth);
-		
+
+		if (!user.isAnonymousUser() && !user.getPassword().equals(passwordEncoder.encode(password)))
+			throw new IllegalArgumentException("User can not be logged in");
+
+		UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(
+				username, null, manager.getAuthorities(user.getRoles()));
+		SecurityContextHolder.getContext().setAuthentication(authenticationToken);
+
 		return user.getId();
 	}
 }
