@@ -51,7 +51,7 @@ public class ResourceServiceImp implements ResourceService, AvailabilityService 
 
 	// @PreAuthorize("hasAuthority('RESOURCE_WRITE')")
 	public boolean delete(String id) {
-		//change resource_Status to 'DELETED'
+		// change resource_Status to 'DELETED'
 		Resource Res = getById(id);
 		Res.setStatus(Status.DELETED);
 		ResRepo.save(Res);
@@ -98,7 +98,7 @@ public class ResourceServiceImp implements ResourceService, AvailabilityService 
 
 	// @PreAuthorize("hasAuthority('RESOURCE_READ')")
 	public List<Availability> getAllAvailabilities(String id) {
-		//get resource availabilities
+		// get resource availabilities
 		Resource resource = this.getById(id);
 		if (resource == null) {
 			throw new IllegalArgumentException("No resource with the given id");
@@ -161,7 +161,7 @@ public class ResourceServiceImp implements ResourceService, AvailabilityService 
 
 	// @PreAuthorize("hasAuthority('RESOURCE_READ')")
 	public List<Resource> getResources(String ResTid) {
-		//get all resources from type 
+		// get all resources from type
 		List<Resource> Resources = new ArrayList<>();
 		List<Resource> AllResources = ResRepo.findAll();
 		for (Resource r : AllResources) {
@@ -172,6 +172,20 @@ public class ResourceServiceImp implements ResourceService, AvailabilityService 
 					if (!Resources.contains(r))
 						Resources.add(r);
 				}
+			}
+		}
+		return Resources;
+	}
+
+	// @PreAuthorize("hasAuthority('RESOURCE_READ')")
+	public List<Resource> getActiveResourcesbyResourceType(ResourceType type) {
+		// get all Active resources from type
+		List<Resource> Resources = new ArrayList<>();
+		List<Resource> AllResources = this.getAll(type);
+		for (Resource res : AllResources) {
+			if (res.getStatus().equals(Status.ACTIVE)) {
+				if (!Resources.contains(res))
+					Resources.add(res);
 			}
 		}
 		return Resources;
@@ -234,8 +248,5 @@ public class ResourceServiceImp implements ResourceService, AvailabilityService 
 		return str.substring(0, 1).toUpperCase() + str.substring(1).toLowerCase();
 
 	}
-
-
-	
 
 }

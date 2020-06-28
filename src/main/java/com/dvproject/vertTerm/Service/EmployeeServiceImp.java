@@ -4,6 +4,9 @@ import com.dvproject.vertTerm.Model.Appointment;
 import com.dvproject.vertTerm.Model.AppointmentStatus;
 import com.dvproject.vertTerm.Model.Availability;
 import com.dvproject.vertTerm.Model.Employee;
+import com.dvproject.vertTerm.Model.Position;
+import com.dvproject.vertTerm.Model.Resource;
+import com.dvproject.vertTerm.Model.ResourceType;
 import com.dvproject.vertTerm.Model.Status;
 import com.dvproject.vertTerm.Model.User;
 import com.dvproject.vertTerm.repository.EmployeeRepository;
@@ -13,6 +16,7 @@ import org.springframework.data.rest.webmvc.ResourceNotFoundException;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
@@ -54,6 +58,22 @@ public class EmployeeServiceImp implements EmployeeService, AvailabilityService 
         return (users);
     }
 
+	public List<Employee> getActiveEmployeesByPositionId(String positionId) {
+		//get all Active Employees from type 
+		List<Employee> employees = new ArrayList<>();
+		List<Employee> AllEmployees = this.getAll(positionId);
+		for (Employee emp : AllEmployees) {
+				if (emp.getSystemStatus().equals(Status.ACTIVE)) {
+					if (!employees.contains(emp))
+						employees.add(emp);
+			
+			}
+			
+		}
+
+		return employees;
+	}
+    
     public List<Employee> getAll(String positionId){
 //        List<Employee> result= new ArrayList<>();
 //        for(Employee employee : repo.findAll()){
