@@ -301,7 +301,7 @@ public class AppointmentServiceImpl implements AppointmentService {
 			if (Positions.size() != appointment.getBookedEmployees().size())
 				throw new AppointmentTimeException(
 						"In the time interval not all needed employees for appointment could be found", appointment);
-			if (Resources.size() != appointment.getBookedResources().size())
+			if (ResourceTypes.size() != appointment.getBookedResources().size())
 				throw new AppointmentTimeException(
 						"In the time interval not all needed resources for appointment could be found", appointment);
 		}
