@@ -224,8 +224,8 @@ public class AppointmentServiceImpl implements AppointmentService {
 		List<Appointment> appointments = group.getAppointments();
 	
 		// Test
-		// Procedure Relations
-		// each Appointment
+		// 1.Procedure Relations
+		// 2.Appointment Times for each Appointment in appointments-List 
 		group.testProcedureRelations();
 		List<TimeInterval> timelist = new ArrayList<>();
 		try {
@@ -264,9 +264,6 @@ public class AppointmentServiceImpl implements AppointmentService {
 					throw new AppointmentTimeException("No resource from type" + rt.getName() + " is available",
 							appointment);
 			}
-		    else
-				throw new AppointmentTimeException(
-								"no  resourcetype  could be found", appointment);
 			// for each position
 			// get all Employees who has this Position and for each one check if:
 			// Employee has any other appointment/s in the Timeinterval
@@ -289,9 +286,7 @@ public class AppointmentServiceImpl implements AppointmentService {
 					throw new AppointmentTimeException("no employee from position" + pos.getName() + " is available",
 							appointment);
 			}
-		    else
-				throw new AppointmentTimeException(
-						"no  employees position could be found", appointment);
+		    
 		
 			// set Resources and Employees to the appointment
 			appointment.setBookedResources(Resources);
