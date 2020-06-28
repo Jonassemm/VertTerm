@@ -10,6 +10,10 @@ import java.util.List;
 
 import javax.validation.constraints.NotNull;
 
+import com.dvproject.vertTerm.Service.EmployeeService;
+import com.dvproject.vertTerm.Service.ResourceService;
+import org.apache.catalina.User;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.DBRef;
 
@@ -26,6 +30,12 @@ import com.dvproject.vertTerm.exception.RestrictionException;
 
 public class Appointment implements Serializable {
 	private static final long serialVersionUID = 2862268218236152790L;
+
+
+	@Autowired
+	private ResourceService resourceService;
+	@Autowired
+	private EmployeeService employeeService;
 
 	@Id
 	private String id;
@@ -45,7 +55,7 @@ public class Appointment implements Serializable {
 	private Procedure bookedProcedure;
 	@DBRef
 	@NotNull
-	private User bookedCustomer;
+	private Customer bookedCustomer;
 	@DBRef
 	private List<Employee> bookedEmployees;
 	@DBRef
@@ -140,11 +150,11 @@ public class Appointment implements Serializable {
 		this.bookedProcedure = bookedProcedure;
 	}
 
-	public User getBookedCustomer() {
+	public Customer getBookedCustomer() {
 		return bookedCustomer;
 	}
 
-	public void setBookedCustomer(User bookedCustomers) {
+	public void setBookedCustomer(Customer bookedCustomers) {
 		this.bookedCustomer = bookedCustomers;
 	}
 
@@ -378,6 +388,34 @@ public class Appointment implements Serializable {
 		}
 	}
 
+	private boolean allNeededBookablesFound(){
+		for (Position needed : this.getBookedProcedure().getNeededEmployeePositions() ) {
+			boolean found = false;
+			for (Employee present : this.getBookedEmployees()){
+				for(Position presentPosition : present.getPositions()){
+					if(presentPosition.equals(needed))
+						found = true;
+				}
+			}
+			if(!found){
+				return false;
+			}
+		}
+		for (ResourceType needed : this.getBookedProcedure().getNeededResourceTypes() ) {
+			boolean found = false;
+			for (Resource present : this.getBookedResources()){
+				for(ResourceType presentType : present.getResourceTypes()){
+					if(presentType.equals(needed))
+						found = true;
+				}
+			}
+			if(!found){
+				return false;
+			}
+		}
+		return true;
+	}
+
 	private void testResourceAppointments(AppointmentServiceImpl appointmentService) {
 		for (Resource resource : bookedResources) {
 			List<Appointment> appointmentsOfResource = appointmentService.getAppointmentsOfBookedResourceInTimeinterval(
@@ -405,5 +443,267 @@ public class Appointment implements Serializable {
 
 	private boolean isNotEmptyAndDoesNotOnlyContainThisAppointment(List<Appointment> appointments) {
 		return !appointments.isEmpty() && (appointments.size() != 1 || !appointments.get(0).getId().equals(id));
+	}
+
+	public void optimizeAndPopulateForEarliestEnd(AppointmentServiceImpl appointmentService) {
+		if(this.getBookedProcedure() == null){
+			return;
+		}
+		this.setPlannedEndtime(new Date(this.plannedStarttime.getTime() + this.getBookedProcedure().getDuration().toMillis()));
+		// check if customer is available
+		this.getBookedCustomer().populateAppointments(appointmentService);
+		Date newDateToEvaluate = this.getBookedCustomer().getEarliestAvailableDate(this.getPlannedStarttime(), this.getBookedProcedure().getDuration());
+
+		List<Employee> oldEmployeeList = this.getBookedEmployees();
+		List<Resource> oldResourceList = this.getBookedResources();
+
+		this.setBookedEmployees(new ArrayList<>());
+		this.setBookedResources(new ArrayList<>());
+
+		// check for all resource types if there is one available. otherwise
+		// do everything again with the earliest detected available date
+		for (ResourceType resourceType : this.getBookedProcedure().getNeededResourceTypes()) {
+			Date newDateToEvaluateForRessources = null;
+			boolean resourceTypeFound = false;
+			for (Resource resource : oldResourceList) {
+				if(this.getBookedResources().contains(resource)){
+					continue;
+				}
+				resource.populateAppointments(appointmentService);
+				Date temp = resource.getEarliestAvailableDate(this.getPlannedStarttime(), this.getBookedProcedure().getDuration());
+				if (temp != null) {
+					if (newDateToEvaluateForRessources == null) {
+						newDateToEvaluateForRessources = temp;
+					}
+					if (temp.before(newDateToEvaluateForRessources)) {
+						newDateToEvaluateForRessources = temp;
+					}
+					if(!temp.after(this.getPlannedStarttime())){
+						this.getBookedResources().add(resource);
+						break;
+					}
+				}
+			}
+			if(resourceTypeFound){
+				break;
+			}
+			for (Resource resource : resourceService.getAll(resourceType)) {
+				if(this.getBookedResources().contains(resource)){
+					continue;
+				}
+				resource.populateAppointments(appointmentService);
+				Date temp = resource.getEarliestAvailableDate(this.getPlannedStarttime(), this.getBookedProcedure().getDuration());
+				if (temp != null) {
+					if (newDateToEvaluateForRessources == null) {
+						newDateToEvaluateForRessources = temp;
+					}
+					if (temp.before(newDateToEvaluateForRessources)) {
+						newDateToEvaluateForRessources = temp;
+					}
+					if(!temp.after(this.getPlannedStarttime())){
+						this.getBookedResources().add(resource);
+						break;
+					}
+				}
+			}
+			if(newDateToEvaluateForRessources == null){
+				// this ressource type has no possible ressource. I have to think about what to do in this case.
+			}
+			else if (newDateToEvaluateForRessources.after(newDateToEvaluate)) {
+				newDateToEvaluate = newDateToEvaluateForRessources;
+			}
+		}
+
+		// do the same for  roles
+		for (Position position : this.getBookedProcedure().getNeededEmployeePositions()) {
+			Date newDateToEvaluateForEmployees = null;
+			boolean employeeFound = false;
+			for (Employee employee : oldEmployeeList) {
+				if(this.getBookedEmployees().contains(employee)){
+					continue;
+				}
+				employee.populateAppointments(appointmentService);
+				Date temp = employee.getEarliestAvailableDate(this.getPlannedStarttime(), this.getBookedProcedure().getDuration());
+				if (temp != null) {
+					if (newDateToEvaluateForEmployees == null) {
+						newDateToEvaluateForEmployees = temp;
+					}
+					if (temp.before(newDateToEvaluateForEmployees)) {
+						newDateToEvaluateForEmployees = temp;
+					}
+					if(!temp.after(this.getPlannedStarttime())){
+						this.getBookedEmployees().add(employee);
+						employeeFound = true;
+						break;
+					}
+				}
+			}
+			if(employeeFound){
+				break;
+			}
+			for (Employee employee : employeeService.getAll(position.getId())) {
+				if(this.getBookedEmployees().contains(employee)){
+					continue;
+				}
+				employee.populateAppointments(appointmentService);
+				Date temp = employee.getEarliestAvailableDate(this.getPlannedStarttime(), this.getBookedProcedure().getDuration());
+				if (temp != null) {
+					if (newDateToEvaluateForEmployees == null) {
+						newDateToEvaluateForEmployees = temp;
+					}
+					if (temp.before(newDateToEvaluateForEmployees)) {
+						newDateToEvaluateForEmployees = temp;
+					}
+					if(!temp.after(this.getPlannedStarttime())){
+						this.getBookedEmployees().add(employee);
+						break;
+					}
+				}
+			}
+			if(newDateToEvaluateForEmployees == null){
+				// this position has no possible Employee. I have to think about what to do in this case.
+			}
+			else if (newDateToEvaluateForEmployees.after(newDateToEvaluate)) {
+				newDateToEvaluate = newDateToEvaluateForEmployees;
+			}
+		}
+
+		if(newDateToEvaluate.after(this.getPlannedStarttime())){
+			this.setBookedResources(oldResourceList);
+			this.setBookedEmployees(oldEmployeeList);
+			this.setPlannedStarttime(newDateToEvaluate);
+			this.optimizeAndPopulateForEarliestEnd(appointmentService);
+		}
+	}
+
+	public void optimizeAndPopulateForLatestBeginning(AppointmentServiceImpl appointmentService) {
+		if(this.getBookedProcedure() == null){
+			return;
+		}
+		this.setPlannedEndtime(new Date(this.plannedStarttime.getTime() + this.getBookedProcedure().getDuration().toMillis()));
+		// check if customer is available
+		this.getBookedCustomer().populateAppointments(appointmentService);
+		Date newDateToEvaluate = this.getBookedCustomer().getLatestAvailableDate(this.getPlannedStarttime(), this.getBookedProcedure().getDuration());
+
+		List<Employee> oldEmployeeList = this.getBookedEmployees();
+		List<Resource> oldResourceList = this.getBookedResources();
+
+		this.setBookedEmployees(new ArrayList<>());
+		this.setBookedResources(new ArrayList<>());
+
+		// check for all resource types if there is one available. otherwise
+		// do everything again with the earliest detected available date
+		for (ResourceType resourceType : this.getBookedProcedure().getNeededResourceTypes()) {
+			Date newDateToEvaluateForRessources = null;
+			boolean resourceTypeFound = false;
+			for (Resource resource : oldResourceList) {
+				if(this.getBookedResources().contains(resource)){
+					continue;
+				}
+				resource.populateAppointments(appointmentService);
+				Date temp = resource.getLatestAvailableDate(this.getPlannedStarttime(), this.getBookedProcedure().getDuration());
+				if (temp != null) {
+					if (newDateToEvaluateForRessources == null) {
+						newDateToEvaluateForRessources = temp;
+					}
+					if (temp.after(newDateToEvaluateForRessources)) {
+						newDateToEvaluateForRessources = temp;
+					}
+					if(!temp.before(this.getPlannedStarttime())){
+						this.getBookedResources().add(resource);
+						break;
+					}
+				}
+			}
+			if(resourceTypeFound){
+				break;
+			}
+			for (Resource resource : resourceService.getAll(resourceType)) {
+				if(this.getBookedResources().contains(resource)){
+					continue;
+				}
+				resource.populateAppointments(appointmentService);
+				Date temp = resource.getLatestAvailableDate(this.getPlannedStarttime(), this.getBookedProcedure().getDuration());
+				if (temp != null) {
+					if (newDateToEvaluateForRessources == null) {
+						newDateToEvaluateForRessources = temp;
+					}
+					if (temp.after(newDateToEvaluateForRessources)) {
+						newDateToEvaluateForRessources = temp;
+					}
+					if(!temp.before(this.getPlannedStarttime())){
+						this.getBookedResources().add(resource);
+						break;
+					}
+				}
+			}
+			if(newDateToEvaluateForRessources == null){
+				// this ressource type has no possible ressource. I have to think about what to do in this case.
+			}
+			else if (newDateToEvaluateForRessources.before(newDateToEvaluate)) {
+				newDateToEvaluate = newDateToEvaluateForRessources;
+			}
+		}
+
+		// do the same for  roles
+		for (Position position : this.getBookedProcedure().getNeededEmployeePositions()) {
+			Date newDateToEvaluateForEmployees = null;
+			boolean employeeFound = false;
+			for (Employee employee : oldEmployeeList) {
+				if(this.getBookedEmployees().contains(employee)){
+					continue;
+				}
+				employee.populateAppointments(appointmentService);
+				Date temp = employee.getLatestAvailableDate(this.getPlannedStarttime(), this.getBookedProcedure().getDuration());
+				if (temp != null) {
+					if (newDateToEvaluateForEmployees == null) {
+						newDateToEvaluateForEmployees = temp;
+					}
+					if (temp.after(newDateToEvaluateForEmployees)) {
+						newDateToEvaluateForEmployees = temp;
+					}
+					if(!temp.before(this.getPlannedStarttime())){
+						this.getBookedEmployees().add(employee);
+						employeeFound = true;
+						break;
+					}
+				}
+			}
+			if(employeeFound){
+				break;
+			}
+			for (Employee employee : employeeService.getAll(position.getId())) {
+				if(this.getBookedEmployees().contains(employee)){
+					continue;
+				}
+				employee.populateAppointments(appointmentService);
+				Date temp = employee.getLatestAvailableDate(this.getPlannedStarttime(), this.getBookedProcedure().getDuration());
+				if (temp != null) {
+					if (newDateToEvaluateForEmployees == null) {
+						newDateToEvaluateForEmployees = temp;
+					}
+					if (temp.after(newDateToEvaluateForEmployees)) {
+						newDateToEvaluateForEmployees = temp;
+					}
+					if(!temp.before(this.getPlannedStarttime())){
+						this.getBookedEmployees().add(employee);
+						break;
+					}
+				}
+			}
+			if(newDateToEvaluateForEmployees == null){
+				// this position has no possible Employee. I have to think about what to do in this case.
+			}
+			else if (newDateToEvaluateForEmployees.before(newDateToEvaluate)) {
+				newDateToEvaluate = newDateToEvaluateForEmployees;
+			}
+		}
+
+		if(newDateToEvaluate.before(this.getPlannedStarttime())){
+			this.setBookedResources(oldResourceList);
+			this.setBookedEmployees(oldEmployeeList);
+			this.setPlannedStarttime(newDateToEvaluate);
+			this.optimizeAndPopulateForEarliestEnd(appointmentService);
+		}
 	}
 }

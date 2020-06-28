@@ -135,7 +135,7 @@ public class SetupDataLoader implements ApplicationListener<ContextRefreshedEven
 		User user = userRepository.findByUsername(username);
 
 		if (user == null) {
-			user = new User();
+			user = new Customer();
 			user.setUsername(username);
 			user.setPassword(passwordEncoder.encode(password));
 			user.setRoles(roles);
@@ -185,7 +185,7 @@ public class SetupDataLoader implements ApplicationListener<ContextRefreshedEven
 			optionalAttributes = new OptionalAttributes();
 
 			optionalAttributes.setClassOfOptionalAttribut(User.class.getSimpleName());
-			optionalAttributes.setOptionalAttributes(new ArrayList<OptionalAttribute>());
+			optionalAttributes.setOptionalAttributes(new ArrayList<>());
 		}
 
 		optionalAttributesRepository.save(optionalAttributes);

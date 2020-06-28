@@ -2,6 +2,7 @@ package com.dvproject.vertTerm.Model;
 
 import java.io.Serializable;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.Calendar;
 import java.util.Date;
@@ -21,7 +22,7 @@ import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 @Document("user")
-public class User extends Bookable implements Serializable
+public abstract class User extends Bookable implements Serializable
 {
     private static final long serialVersionUID = -5252169753921361843L;
 
@@ -180,6 +181,6 @@ public class User extends Bookable implements Serializable
 	}
 	
 	private String getRandomString(byte [] array) {
-		return new String(array, Charset.forName("UTF-8"));
+		return new String(array, StandardCharsets.UTF_8);
 	}
 }

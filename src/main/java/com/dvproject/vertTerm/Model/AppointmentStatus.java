@@ -14,10 +14,16 @@ public enum AppointmentStatus {
 	 */
 	@JsonProperty("planned")
 	PLANNED,
+
+	/**
+	 * appointment planned times have been set
+	 */
+	@JsonProperty("planned")
+	RECOMMENDED,
 	
 	/**
 	 * appointment has been deleted and can no longer be used
 	 */
 	@JsonProperty("deleted")
-	DELETED;
+	DELETED
 }

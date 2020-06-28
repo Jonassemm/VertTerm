@@ -167,7 +167,7 @@ public class Procedure implements Serializable, Available {
 
 		// check if customer is available
 		customer.populateAppointments(appointmentService);
-		Date date = customer.getAvailableDate(earliestRequestedDate, this.getDuration());
+		Date date = customer.getEarliestAvailableDate(earliestRequestedDate, this.getDuration());
 		if (date.after(earliestRequestedDate)) {
 			return getAppointmentRecommendationByEarliestEnd(date, customer, appointmentService);
 		} else {
@@ -183,7 +183,7 @@ public class Procedure implements Serializable, Available {
 					continue;
 				}
 				ressource.populateAppointments(appointmentService);
-				Date temp = ressource.getAvailableDate(earliestRequestedDate, this.getDuration());
+				Date temp = ressource.getEarliestAvailableDate(earliestRequestedDate, this.getDuration());
 				if (temp != null) {
 					if (newEarliestDateFinal == null) {
 						newEarliestDateFinal = temp;
@@ -213,7 +213,7 @@ public class Procedure implements Serializable, Available {
 					continue;
 				}
 				employee.populateAppointments(appointmentService);
-				Date temp = employee.getAvailableDate(earliestRequestedDate, this.getDuration());
+				Date temp = employee.getEarliestAvailableDate(earliestRequestedDate, this.getDuration());
 				if (temp != null) {
 					if (newEarliestDateFinal == null) {
 						newEarliestDateFinal = temp;
@@ -253,8 +253,8 @@ public class Procedure implements Serializable, Available {
 	}
 	
 	public void isAvailable (Date startdate, Date enddate) {
-		if (!availabilities.stream()
-				.anyMatch(availability -> availability.isAvailableBetween(startdate, enddate)))
+		if (availabilities.stream()
+				.noneMatch(availability -> availability.isAvailableBetween(startdate, enddate)))
 			throw new AvailabilityException("No availability for the procedure " + name);
 	}
 	

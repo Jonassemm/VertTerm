@@ -6,6 +6,7 @@ import com.dvproject.vertTerm.Model.OptionalAttribute;
 import com.dvproject.vertTerm.Model.Status;
 import com.dvproject.vertTerm.Model.User;
 import com.dvproject.vertTerm.repository.CustomerRepository;
+import com.dvproject.vertTerm.repository.EmployeeRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.rest.webmvc.ResourceNotFoundException;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -14,6 +15,7 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 @Service
 public class CustomerServiceImp implements CustomerService {
@@ -94,6 +96,20 @@ public class CustomerServiceImp implements CustomerService {
     {
         if(str == null) return str;
         return str.toUpperCase();
-        
+    }
+
+    @Override
+    public Customer getAnonymousUser() {
+        String username = "anonymousUser";
+        Customer user = this.repo.findByUsername(username);
+        Customer newUser = new Customer();
+
+        //create unique username
+        newUser.setUsername(username + repo.count());
+        newUser.setPassword("{noop}" + UUID.randomUUID().toString());
+        newUser.setSystemStatus(Status.ACTIVE);
+        newUser.setRoles(user.getRoles());
+
+        return newUser;
     }
 }

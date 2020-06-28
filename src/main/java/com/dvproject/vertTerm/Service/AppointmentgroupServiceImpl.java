@@ -12,24 +12,11 @@ import java.util.Optional;
 
 import javax.servlet.http.HttpServletResponse;
 
+import com.dvproject.vertTerm.Model.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.rest.webmvc.ResourceNotFoundException;
 import org.springframework.stereotype.Service;
 
-import com.dvproject.vertTerm.Model.Appointment;
-import com.dvproject.vertTerm.Model.AppointmentStatus;
-import com.dvproject.vertTerm.Model.Appointmentgroup;
-import com.dvproject.vertTerm.Model.BookingTester;
-import com.dvproject.vertTerm.Model.Employee;
-import com.dvproject.vertTerm.Model.NormalBookingTester;
-import com.dvproject.vertTerm.Model.Optimizationstrategy;
-import com.dvproject.vertTerm.Model.OverrideBookingTester;
-import com.dvproject.vertTerm.Model.Procedure;
-import com.dvproject.vertTerm.Model.Resource;
-import com.dvproject.vertTerm.Model.Status;
-import com.dvproject.vertTerm.Model.TimeInterval;
-import com.dvproject.vertTerm.Model.User;
-import com.dvproject.vertTerm.Model.Warning;
 import com.dvproject.vertTerm.exception.ProcedureException;
 import com.dvproject.vertTerm.exception.ProcedureRelationException;
 import com.dvproject.vertTerm.repository.AppointmentRepository;
@@ -55,6 +42,9 @@ public class AppointmentgroupServiceImpl implements AppointmentgroupService {
 
 	@Autowired
 	private EmployeeService employeeService;
+
+	@Autowired
+	private CustomerService customerService;
 
 	@Autowired
 	private UserRepository userRepository;
@@ -125,7 +115,7 @@ public class AppointmentgroupServiceImpl implements AppointmentgroupService {
 			List<Appointment> appointments = newInstance.getAppointments();
 
 			for (Appointment appointment : appointments) {
-				if (appointment.getPlannedStarttime() != null || appointment.getPlannedStarttime() != null
+				if (appointment.getPlannedStarttime() != null || appointment.getPlannedEndtime() != null
 						|| appointment.getActualStarttime() != null || appointment.getActualEndtime() != null) {
 					throw new IllegalArgumentException(
 							"Appointments have already been booked, no new appointmentgroup can be created with them");
@@ -159,7 +149,7 @@ public class AppointmentgroupServiceImpl implements AppointmentgroupService {
 	public User bookAppointmentgroup(String userid, Appointmentgroup appointmentgroup, boolean override) {
 		List<Appointment> appointments = appointmentgroup.getAppointments();
 		boolean noUserAttached = userid == null || userid.equals("");
-		User user = noUserAttached ? userService.getAnonymousUser() : userService.getById(userid);
+		Customer user = noUserAttached ? customerService.getAnonymousUser() : customerService.getById(userid);
 
 		for (Appointment appointment : appointments) {
 			if (!noUserAttached && appointment.getBookedCustomer() != null

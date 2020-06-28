@@ -1,7 +1,6 @@
 package com.dvproject.vertTerm.Model;
 
 import com.dvproject.vertTerm.Service.AppointmentServiceImpl;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.Transient;
 import org.springframework.data.mongodb.core.mapping.DBRef;
@@ -25,13 +24,14 @@ public abstract class Bookable {
 
     @Id
     private String id;
+
     @DBRef
     private List<Availability> availabilities;
 
     @Transient
     private List<Appointment> appointments;
 
-    protected Date getAvailableDateByAvailability(Date date, Duration duration){
+    protected Date getEarliestAvailableDateByAvailability(Date date, Duration duration){
         Date earliestDate = null;
         for(Availability availability : this.getAvailabilities()){
             Date currentBestAvailability = availability.getEarliestAvailability(date, duration);
@@ -47,39 +47,90 @@ public abstract class Bookable {
         return earliestDate;
     }
 
-    protected Date getAvailableDateByAppointments(Date date, Duration duration) {
+    protected Date getEarliestAvailableDateByAppointments(Date date, Duration duration) {
         Date plannedEnd = new Date(date.getTime() + duration.toMillis());
         for (Appointment appointment : this.getAppointments()) {
             if (appointment.getPlannedStarttime().before(date)) {
                 if (appointment.getPlannedEndtime().after(date)) {
-                    return getAvailableDate(appointment.getPlannedEndtime(), duration);
+                    return getEarliestAvailableDate(appointment.getPlannedEndtime(), duration);
                 }
             }
             else{
                 if(appointment.getPlannedStarttime().before(plannedEnd))
-                    return getAvailableDate(appointment.getPlannedEndtime(), duration);
+                    return getEarliestAvailableDate(appointment.getPlannedEndtime(), duration);
             }
         }
         return date;
     }
 
-    public Date getAvailableDate(Date date, Duration duration) {
-        Date dateByAvailability = this.getAvailableDateByAvailability(date, duration);
-        Date dateByAppointment = this.getAvailableDateByAppointments(date, duration);
+    protected Date getLatestAvailableDateByAvailability(Date date, Duration duration){
+        Date latestDate = null;
+        for(Availability availability : this.getAvailabilities()){
+            Date currentBestAvailability = availability.getLatestAvailability(date, duration);
+            if(currentBestAvailability != null){
+                if(latestDate == null){
+                    latestDate = currentBestAvailability;
+                }
+                else if(latestDate.after(latestDate)){
+                    latestDate = currentBestAvailability;
+                }
+            }
+        }
+        return latestDate;
+    }
+
+    protected Date getLatestAvailableDateByAppointments(Date date, Duration duration) {
+        Date plannedEnd = new Date(date.getTime() + duration.toMillis());
+        for (Appointment appointment : this.getAppointments()) {
+            if (appointment.getPlannedStarttime().before(date)) {
+                if (appointment.getPlannedEndtime().after(date)) {
+                    Date startTimeWithoutDuration = new Date(appointment.getPlannedStarttime().getTime() - duration.toMillis());
+                    return getEarliestAvailableDate(startTimeWithoutDuration, duration);
+                }
+            }
+            else{
+                if(appointment.getPlannedStarttime().before(plannedEnd)) {
+                    Date startTimeWithoutDuration = new Date(appointment.getPlannedStarttime().getTime() - duration.toMillis());
+                    return getEarliestAvailableDate(startTimeWithoutDuration, duration);
+                }
+            }
+        }
+        return date;
+    }
+
+    public Date getEarliestAvailableDate(Date date, Duration duration) {
+        Date dateByAvailability = this.getEarliestAvailableDateByAvailability(date, duration);
+        Date dateByAppointment = this.getEarliestAvailableDateByAppointments(date, duration);
         if(dateByAvailability == null){
             return null;
         }
         if(dateByAvailability.after(date)){
-            return this.getAvailableDate(dateByAvailability, duration);
+            return this.getEarliestAvailableDate(dateByAvailability, duration);
         }
         if(dateByAppointment.after(date)){
-            return this.getAvailableDate(dateByAppointment, duration);
+            return this.getEarliestAvailableDate(dateByAppointment, duration);
+        }
+        return date;
+    }
+
+    public Date getLatestAvailableDate(Date date, Duration duration){
+
+        Date dateByAvailability = this.getLatestAvailableDateByAvailability(date, duration);
+        Date dateByAppointment = this.getLatestAvailableDateByAppointments(date, duration);
+        if(dateByAvailability == null){
+            return null;
+        }
+        if(dateByAvailability.before(date)){
+            return this.getLatestAvailableDate(dateByAvailability, duration);
+        }
+        if(dateByAppointment.before(date)){
+            return this.getLatestAvailableDate(dateByAppointment, duration);
         }
         return date;
     }
 
     public boolean isAvailable(Date date, Duration duration){
-        return date.equals(this.getAvailableDate(date, duration));
+        return date.equals(this.getEarliestAvailableDate(date, duration));
     }
 
     public void populateAppointments(AppointmentServiceImpl service){

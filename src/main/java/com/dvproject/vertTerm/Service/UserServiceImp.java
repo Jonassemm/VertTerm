@@ -184,21 +184,6 @@ public class UserServiceImp implements UserService {
     		user.setPassword(encodedPassword);
     	}
     }
-
-	@Override
-	public User getAnonymousUser() {
-		String username = "anonymousUser";
-		User user = this.getUsersWithUsernames(new String [] {username}).get(0);
-		User newUser = new User();
-		
-		//create unique username
-		newUser.setUsername(username + repo.count());
-		newUser.setPassword("{noop}" + UUID.randomUUID().toString());
-		newUser.setSystemStatus(Status.ACTIVE);
-		newUser.setRoles(user.getRoles());
-		
-		return newUser;
-	}
 	
 	public void testMandatoryFields(User user) {
 		List<OptionalAttribute> optionalAttributes = new ArrayList<>(user.getOptionalAttributes());

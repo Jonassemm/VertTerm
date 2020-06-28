@@ -1,9 +1,6 @@
 package com.dvproject.vertTerm.Service;
 
-import com.dvproject.vertTerm.Model.Right;
-import com.dvproject.vertTerm.Model.Role;
-import com.dvproject.vertTerm.Model.Status;
-import com.dvproject.vertTerm.Model.User;
+import com.dvproject.vertTerm.Model.*;
 
 import java.security.Principal;
 import java.util.List;
@@ -21,5 +18,4 @@ public interface UserService extends BasicService<User> {
     void testMandatoryFields(User user);
     void testAppointments(String userid);
     void obfuscateUser(User user);
-    User getAnonymousUser ();
 }

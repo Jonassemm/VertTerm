@@ -100,7 +100,68 @@ public class Availability {
 		}
 		return null;
 	}
-	
+
+	public Date getLatestAvailability(Date date, Duration duration){
+		if(this.getRhythm() == AvailabilityRhythm.ALWAYS){
+			return date;
+		}
+		if((endDate.getTime() - startDate.getTime()) < duration.toMillis()){
+			return null;
+		}
+
+		Date end = new Date(date.getTime() + duration.toMillis());
+		if(this.getRhythm() == AvailabilityRhythm.ONE_TIME){
+			return date.before(startDate) ? null : date;
+		}
+		if(date.before(startDate)){
+			return null;
+		}
+
+		Date tmpStartDate = startDate;
+		Date tmpEndDate = endDate;
+		Date IteratedEndDate = null;
+
+		while(!tmpStartDate.after(endDate) && tmpStartDate.before(endOfSeries)){
+			if(endOfSeries.before(endDate)) {
+				IteratedEndDate = endOfSeries;
+			}
+			else if(tmpEndDate.after(endDate)) {
+				IteratedEndDate = endDate;
+			}
+			else{
+				IteratedEndDate = tmpEndDate;
+			}
+				Calendar startCalendar = Calendar.getInstance();
+				Calendar endCalendar = Calendar.getInstance();
+
+				startCalendar.setTime(tmpStartDate);
+				endCalendar.setTime(tmpEndDate);
+
+				switch (this.getRhythm()){
+					case DAILY:
+						startCalendar.add(Calendar.HOUR, 24 * this.getFrequency());
+						endCalendar.add(Calendar.HOUR, 24 * this.getFrequency());
+						break;
+					case WEEKLY:
+						startCalendar.add(Calendar.HOUR, 7 * 24 * this.getFrequency());
+						endCalendar.add(Calendar.HOUR, 7 * 24 * this.getFrequency());
+						break;
+					case MONTHLY:
+						startCalendar.add(Calendar.MONTH, this.getFrequency());
+						endCalendar.add(Calendar.MONTH, this.getFrequency());
+						break;
+					case YEARLY:
+						startCalendar.add(Calendar.YEAR, this.getFrequency());
+						endCalendar.add(Calendar.YEAR, this.getFrequency());
+						break;
+				}
+				tmpStartDate = startCalendar.getTime();
+				tmpEndDate = endCalendar.getTime();
+
+		}
+		return IteratedEndDate;
+	}
+
 	public Availability (Date startDate, Date endDate, AvailabilityRhythm rythm) {
 		this(startDate, endDate, rythm, 1);
 	}
