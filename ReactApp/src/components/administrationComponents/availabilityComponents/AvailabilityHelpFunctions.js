@@ -65,7 +65,7 @@ export function renderAvailabilityTable(allAvailabilities, addedAvailabilitiesLe
       return ( 
         allAvailabilities.map((SingleAvailability, index) => {
             startDate =  moment(moment(SingleAvailability.startDate, "DD.MM.yyyy HH:mm").toDate()).format("dd DD.MM.YYYY HH:mm").toString();
-            endDate =  moment(moment(SingleAvailability.startDate, "DD.MM.yyyy HH:mm").toDate()).format("dd DD.MM.YYYY HH:mm").toString();
+            endDate =  moment(moment(SingleAvailability.endDate, "DD.MM.yyyy HH:mm").toDate()).format("dd DD.MM.YYYY HH:mm").toString();
             endOfSeries = moment(moment(SingleAvailability.endOfSeries, "DD.MM.yyyy HH:mm").toDate()).format("dd DD.MM.YYYY HH:mm").toString();
             if(moment(SingleAvailability.endOfSeries, "DD.MM.yyyy HH:mm").toDate() < new Date ){
                 

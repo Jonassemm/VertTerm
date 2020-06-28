@@ -116,6 +116,7 @@ const Availability = forwardRef((props, ref) => {
         var endDateTime = startDate
         endDateTime.setHours(date.getHours())
         endDateTime.setMinutes(date.getMinutes())
+        endDateTime.setSeconds(0)
 
         var valideDate = false
         if(startDate.getFullYear() == date.getFullYear() &&
@@ -215,8 +216,6 @@ const Availability = forwardRef((props, ref) => {
     const handleCancleAvailability = data => {
         const indexDifference = props.availabilities.length - addedAvailabilities.length
         var counter = countOfIncludedOpeningHours
-        console.log("delete:")
-        console.log(openingHoursIndex)
         var reducedIndex = 0
         props.availabilities.map((singleAvailability, index) => {
             if(index == data.target.value) {
@@ -224,15 +223,11 @@ const Availability = forwardRef((props, ref) => {
 
                     //reduce opening hours
                     if(index <= openingHoursIndex && index > openingHoursIndex - countOfIncludedOpeningHours){
-                        console.log("IN-Öffnungszeiten")
                         counter -= 1
-                        console.log("REDUCE: countOfIncludeded")
                         setCountOfIncludedOpeningHours(countOfIncludedOpeningHours - 1)
                         setOpeningHoursIndex(openingHoursIndex-1)
                     }else  //reduce before opening hours
                     if(index <= openingHoursIndex - counter){
-                        console.log("VOR-Öffnungszeiten")
-                        console.log("REDUCE: openingHoursIndex")
                         setOpeningHoursIndex(openingHoursIndex-1)
                     }
                     props.availabilities.splice((index),1) // remove  at "index" and just remove "1" 
@@ -244,7 +239,6 @@ const Availability = forwardRef((props, ref) => {
                     if (answer) {
                         props.availabilities.map((singleAvailability, index) => {
                             if(index == data.target.value) {
-                                console.log("set endSeries")
                                 singleAvailability.endOfSeries = moment().format("DD.MM.YYYY HH:mm").toString()
                             }
                         })
@@ -297,7 +291,6 @@ const Availability = forwardRef((props, ref) => {
 
     const render = () =>{
         console.log("____RENDER____")
-        console.log(props.availabilities)
     }
 
 
