@@ -33,7 +33,8 @@ public class AppointmentServiceImpl implements AppointmentService {
 	RestrictionService RestrictionSer;
 	@Autowired
 	private AppointmentgroupService appointmentgroupService;
-
+	@Autowired
+	private ProcedureService procedureServie;
 	@Override
 	public List<Appointment> getAll() {
 		return repo.findAll();
@@ -223,8 +224,8 @@ public class AppointmentServiceImpl implements AppointmentService {
 		List<Appointment> appointments = group.getAppointments();
 	
 		// Test
-		// Procedure Relations
-		// each Appointment
+		// 1.Procedure Relations
+		// 2.Appointment Times for each Appointment in appointments-List 
 		group.testProcedureRelations();
 		List<TimeInterval> timelist = new ArrayList<>();
 		try {
@@ -237,7 +238,8 @@ public class AppointmentServiceImpl implements AppointmentService {
 		// 2-get Needed ResourceTypes
 		// 3-get Needed Employee Positions
 		for (Appointment appointment : appointments) {
-			Procedure procedureOfAppointment = appointment.getBookedProcedure();
+			Procedure procedure = appointment.getBookedProcedure();
+			Procedure procedureOfAppointment = procedureServie.getById(procedure.getId());
 			List<ResourceType> ResourceTypes = procedureOfAppointment.getNeededResourceTypes();
 			List<Position> Positions = procedureOfAppointment.getNeededEmployeePositions();
 			// for each ResourceType
@@ -246,6 +248,7 @@ public class AppointmentServiceImpl implements AppointmentService {
 			// if no appointment/s could be found then add the resource to the "Resouces"
 			// List
 			// throw an Exception if no resource available
+		    if(ResourceTypes.size() > 0 )
 			for (ResourceType rt : ResourceTypes) {
 				boolean Resourcefound = false;
 				for (Resource resource : ResSer.getAll(rt)) {
@@ -267,6 +270,7 @@ public class AppointmentServiceImpl implements AppointmentService {
 			// if no appointment/s could be found then add the employee to the "Employees"
 			// List
 			// throw an Exception if no employee available
+		    if(Positions.size() > 0 )
 			for (Position pos : Positions) {
 				boolean Employeefound = false;
 				for (Employee employee : EmpSer.getAll(pos.getId())) {
@@ -282,6 +286,8 @@ public class AppointmentServiceImpl implements AppointmentService {
 					throw new AppointmentTimeException("no employee from position" + pos.getName() + " is available",
 							appointment);
 			}
+		    
+		
 			// set Resources and Employees to the appointment
 			appointment.setBookedResources(Resources);
 			appointment.setBookedEmployees(Employees);
