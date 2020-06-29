@@ -35,6 +35,7 @@ public class AppointmentServiceImpl implements AppointmentService {
 	private AppointmentgroupService appointmentgroupService;
 	@Autowired
 	private ProcedureService procedureServie;
+
 	@Override
 	public List<Appointment> getAll() {
 		return repo.findAll();
@@ -69,7 +70,9 @@ public class AppointmentServiceImpl implements AppointmentService {
 
 	@Override
 	public Appointment create(Appointment newInstance) {
-		if (newInstance.getId() == null) { return repo.save(newInstance); }
+		if (newInstance.getId() == null) {
+			return repo.save(newInstance);
+		}
 		if (repo.findById(newInstance.getId()).isPresent()) {
 			throw new ResourceNotFoundException("Instance with the given id (" + newInstance.getId()
 					+ ") exists on the database. Use the update method.");
@@ -101,12 +104,14 @@ public class AppointmentServiceImpl implements AppointmentService {
 	@Override
 	public List<Appointment> getAppointmentsByEmployeeIdAndAppointmentStatus(String employeeid,
 			AppointmentStatus status) {
-		return status == null ? getAppointmentsByEmployeeid(employeeid) : getAppointmentsByEmployeeid(employeeid, status);
+		return status == null ? getAppointmentsByEmployeeid(employeeid)
+				: getAppointmentsByEmployeeid(employeeid, status);
 	}
 
 	public List<Appointment> getAppointmentsByResourceIdAndAppointmentStatus(String resourceid,
 			AppointmentStatus status) {
-		return status == null ? getAppointmentsByResourceid(resourceid) : getAppointmentsByResourceid(resourceid, status);
+		return status == null ? getAppointmentsByResourceid(resourceid)
+				: getAppointmentsByResourceid(resourceid, status);
 	}
 
 	@Override
@@ -141,7 +146,8 @@ public class AppointmentServiceImpl implements AppointmentService {
 	@Override
 	public List<Appointment> getAppointmentsWithCustomerEmployeeResourceAfterDate(List<ObjectId> employeeids,
 			List<ObjectId> resourceids, Date starttime, AppointmentStatus status) {
-		return repo.findAppointmentsWithCustomerEmployeeAndResourceAfterPlannedStarttime(employeeids, resourceids, starttime, status);
+		return repo.findAppointmentsWithCustomerEmployeeAndResourceAfterPlannedStarttime(employeeids, resourceids,
+				starttime, status);
 	}
 
 	@Override
@@ -222,81 +228,88 @@ public class AppointmentServiceImpl implements AppointmentService {
 		List<Resource> Resources = new ArrayList<>();
 		// get all appointments from Appointmentgroup
 		List<Appointment> appointments = group.getAppointments();
-	
+
 		// Test
 		// 1.Procedure Relations
-		// 2.Appointment Times for each Appointment in appointments-List 
+		// 2.Appointment Times for each Appointment in appointments-List
 		group.testProcedureRelations();
 		List<TimeInterval> timelist = new ArrayList<>();
 		try {
 			appointments.forEach(app -> new NormalBookingTester(app).testAppointmentTimes(timelist));
 		} catch (RuntimeException ex) {
-			
+
 		}
 		// for each appointment
 		// 1-get Booked Procedure
 		// 2-get Needed ResourceTypes
 		// 3-get Needed Employee Positions
 		for (Appointment appointment : appointments) {
-			Procedure procedure = appointment.getBookedProcedure();
-			Procedure procedureOfAppointment = procedureServie.getById(procedure.getId());
-			appointment.setBookedProcedure(procedureOfAppointment);
+			Procedure procedureOfAppointment = procedureServie.getById(appointment.getBookedProcedure().getId());
 			List<ResourceType> ResourceTypes = procedureOfAppointment.getNeededResourceTypes();
 			List<Position> Positions = procedureOfAppointment.getNeededEmployeePositions();
 			// for each ResourceType
 			// get all resources from this Type and for each one check if:
 			// Resource has any other appointment/s in the Timeinterval
-			// if no appointment/s could be found then add the resource to the "Resouces"
-			// List
-			// throw an Exception if no resource available
-		    if(ResourceTypes.size() > 0 )
-			for (ResourceType rt : ResourceTypes) {
-				boolean Resourcefound = false;
-				for (Resource resource : ResSer.getActiveResourcesbyResourceType(rt)) {
-					List<Appointment> ResApps = this.getAppointmentsOfBookedResourceInTimeinterval(resource.getId(),
-							appointment.getPlannedStarttime(), appointment.getActualEndtime(), AppointmentStatus.PLANNED);
-					boolean containedinResources= Resources.stream().anyMatch(res-> res.getId().equals(resource.getId()));
-					if (ResApps.size() == 0 && !(containedinResources)) {
-						Resources.add(resource);
-						Resourcefound = true;
-						break;
+			// if no appointment/s could be found then add the resource to the
+			// "Resouces"-List
+		
+			if (ResourceTypes.size() > 0)
+				for (ResourceType rt : ResourceTypes) {
+					boolean Resourcefound = false;
+					for (Resource resource : ResSer.getActiveResourcesbyResourceType(rt)) {
+						List<Appointment> ResApps = this.getAppointmentsOfBookedResourceInTimeinterval(resource.getId(),
+								appointment.getPlannedStarttime(), appointment.getActualEndtime(),
+								AppointmentStatus.PLANNED);
+						boolean containedinResources = Resources.stream()
+								.anyMatch(res -> res.getId().equals(resource.getId()));
+						if (ResApps.size() == 0 && !(containedinResources) ) {
+							Resources.add(resource);
+							Resourcefound = true;
+							break;
+						}
 					}
-				}
 //				if (!(Resourcefound))
 //					throw new AppointmentTimeException("No resource from type" + rt.getName() + " is available for appointment with id: "+ appointment.getId(),
 //							appointment);
-			}
+				}
 			// for each position
 			// get all Employees who has this Position and for each one check if:
 			// Employee has any other appointment/s in the Timeinterval
-			// if no appointment/s could be found then add the employee to the "Employees"
-			// List
-			// throw an Exception if no employee available
-		    if(Positions.size() > 0 )
-			for (Position pos : Positions) {
-				boolean Employeefound = false;
-				for (Employee employee : EmpSer.getActiveEmployeesByPositionId(pos.getId())) {
-					List<Appointment> EmpApps = this.getAppointmentsOfBookedEmployeeInTimeinterval(employee.getId(),
-							appointment.getPlannedStarttime(), appointment.getActualEndtime(), AppointmentStatus.PLANNED);
-					boolean containedinEmployees= Employees.stream().anyMatch(emp-> emp.getId().equals(employee.getId()));
-					if (EmpApps.size() == 0 && !(containedinEmployees)) {
-						Employees.add(employee);
-						Employeefound = true;
-						break;
+			// if no appointment/s could be found then add the employee to the
+			// "Employees"-List
+			if (Positions.size() > 0)
+				for (Position pos : Positions) {
+					boolean Employeefound = false;
+					for (Employee employee : EmpSer.getActiveEmployeesByPositionId(pos.getId())) {
+						List<Appointment> EmpApps = this.getAppointmentsOfBookedEmployeeInTimeinterval(employee.getId(),
+								appointment.getPlannedStarttime(), appointment.getActualEndtime(),
+								AppointmentStatus.PLANNED);
+						boolean containedinEmployees = Employees.stream()
+								.anyMatch(emp -> emp.getId().equals(employee.getId()));
+						if (EmpApps.size() == 0 && !(containedinEmployees)) {
+							Employees.add(employee);
+							Employeefound = true;
+							break;
+						}
 					}
-				}
 //				if (!(Employeefound))
 //					throw new AppointmentTimeException("no employee from position" + pos.getName() + " is available for appointment with id: "+ appointment.getId(),
 //							appointment);
-			}
-		    
-		
+				}
+
 			// set Resources and Employees to the appointment
 			appointment.setBookedResources(Resources);
 			appointment.setBookedEmployees(Employees);
-
 			Employees = new ArrayList<>();
 			Resources = new ArrayList<>();
+			appointment.setBookedProcedure(procedureOfAppointment);
+			//test Availabilities Of (Procedur/Employees/Resources)
+			BookingTester tester = new NormalBookingTester();
+			try {
+				tester.testAvailabilities();
+			} 
+			catch (Exception ex) {
+			}
 			// throw exceptions if not all needed employees/resources could be found
 			if (Positions.size() != appointment.getBookedEmployees().size())
 				throw new AppointmentTimeException(

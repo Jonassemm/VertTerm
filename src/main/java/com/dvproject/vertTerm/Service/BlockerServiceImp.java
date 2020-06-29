@@ -36,18 +36,19 @@ public class BlockerServiceImp implements BlockerService {
 	private AppointmentService appointmentService;
 	@Autowired
 	private AppointmentServiceImpl appointmentServiceImp;
-	
-	//@PreAuthorize("hasAuthority('')")
+
+	// @PreAuthorize("hasAuthority('')")
 	public Blocker create(Blocker blocker) {
-		//create new blocker if not exist
+		// create new blocker if not exist
 		blocker.setName(capitalize(blocker.getName()));
-		if (this.blockerRepo.findByname(blocker.getName()) == null) {			
-			blockerRepo.save(blocker);	
+		if (this.blockerRepo.findByname(blocker.getName()) == null) {
+			blockerRepo.save(blocker);
 			SetOrRemoveWarningFlag(blocker.getId(), "SET");
-				return blocker;
-				
+			return blocker;
+
 		} else {
-			throw new ResourceNotFoundException("Blocker with the given name :" + blocker.getName() + " already exsist");
+			throw new ResourceNotFoundException(
+					"Blocker with the given name :" + blocker.getName() + " already exsist");
 		}
 
 	}
@@ -64,17 +65,18 @@ public class BlockerServiceImp implements BlockerService {
 			// get all appointments from the employee in the time interval of the blocker
 			// and add them to the appointments-List
 			for (Employee emp : blocker.getBookedEmployees()) {
-				List<Appointment> EmpApps = emp.getAppointmentsOfBookedEmployeeInTimeinterval(appointmentService, 					emp.getId(),blocker.getPlannedStarttime(), blocker.getPlannedEndtime());
-				
+				List<Appointment> EmpApps = emp.getAppointmentsOfBookedEmployeeInTimeinterval(appointmentService,
+						emp.getId(), blocker.getPlannedStarttime(), blocker.getPlannedEndtime());
+
 				appointments.addAll(EmpApps);
 			}
 			// for each resource in Blocker's BookedResources List
 			// get all appointments from the resource in the time interval of the blocker
 			// and add them to the appointments-List
 			for (Resource res : blocker.getBookedResources()) {
-				List<Appointment> ResApps = res.getAppointmentsOfBookedResourceInTimeinterval(appointmentService, res.getId(),
-						blocker.getPlannedStarttime(), blocker.getPlannedEndtime());
-				
+				List<Appointment> ResApps = res.getAppointmentsOfBookedResourceInTimeinterval(appointmentService,
+						res.getId(), blocker.getPlannedStarttime(), blocker.getPlannedEndtime());
+
 				appointments.addAll(ResApps);
 			}
 			// if the appointments-List not empty
@@ -89,7 +91,7 @@ public class BlockerServiceImp implements BlockerService {
 
 		} else {
 			throw new ResourceNotFoundException("Blocker with the given id :" + id + " not found");
-			
+
 		}
 	}
 
@@ -99,40 +101,39 @@ public class BlockerServiceImp implements BlockerService {
 			Appointment appDB = this.appointmentService.getById(app.getId());
 			if (appDB.addWarning(Warning.APPOINTMENT_WARNING))
 				appointmentRepo.save(appDB);
-			//else
-			//	throw new AppointmentException("Appointment has already 'APPOINTMENT_WARNING' ", app);
+			// else
+			// throw new AppointmentException("Appointment has already 'APPOINTMENT_WARNING'
+			// ", app);
 		}
 
 	}
 
 	public void RemoveWarning(List<Appointment> appointments) {
 		BookingTester tester = new NormalBookingTester();
-		//test every appointment remove "AppointmentWarning" from all appointments and save changed to DB
-			for (Appointment app : appointments) {
-				Appointment appDB = this.appointmentService.getById(app.getId());
-				if (appDB.removeWarning(Warning.APPOINTMENT_WARNING))
-				{	
-				  appointmentRepo.save(appDB);
-				 try {
-	                tester.testAppointment(appointmentServiceImp);
-	            } catch(Exception ex) {
-					// setze Warning
-	            	appDB.addWarning(Warning.APPOINTMENT_WARNING);
-				}
-				}
-			//	else
-			//		throw new AppointmentException("Appointment "+ app.getId()+" has no 'APPOINTMENT_WARNING' to 					remove it", app);
+		// test appointment , remove "AppointmentWarning" Flag and
+		// save changed to DB
+		for (Appointment app : appointments) {
+			Appointment appDB = this.appointmentService.getById(app.getId());
+			try {
+				tester.testAppointment(appointmentServiceImp);
+			} catch (Exception ex) {
+				// setze Warning
+				appDB.addWarning(Warning.APPOINTMENT_WARNING);
 			}
-		
+			if (!(appDB.removeWarning(Warning.APPOINTMENT_WARNING)))
+				appointmentRepo.save(appDB);
+
+		}
+
 	}
-  
-	//@PreAuthorize("hasAuthority('')")
-	//work on it 
+
+	// @PreAuthorize("hasAuthority('')")
+	// work on it
 	public Blocker update(Blocker blocker) {
-		//update a blocker if it's exist
+		// update a blocker if it's exist
+		blocker.setName(capitalize(blocker.getName()));
 		if (blockerRepo.findById(blocker.getId()).isPresent()) {
 			SetOrRemoveWarningFlag(blocker.getId(), "REMOVE");
-			blocker.setName(capitalize(blocker.getName()));
 			Blocker b = blockerRepo.save(blocker);
 			SetOrRemoveWarningFlag(blocker.getId(), "SET");
 			return b;
@@ -141,16 +142,16 @@ public class BlockerServiceImp implements BlockerService {
 		}
 	}
 
-	//@PreAuthorize("hasAuthority('')")
+	// @PreAuthorize("hasAuthority('')")
 	public List<Blocker> getAll() {
-		//get all blockers from DB
+		// get all blockers from DB
 		return this.blockerRepo.findAll();
 
 	}
 
-	//@PreAuthorize("hasAuthority('')")
+	// @PreAuthorize("hasAuthority('')")
 	public Blocker getById(String id) {
-		//get a blocker by the blocker-ID
+		// get a blocker by the blocker-ID
 		Optional<Blocker> BlockerDb = this.blockerRepo.findById(id);
 		if (BlockerDb.isPresent()) {
 			return BlockerDb.get();
@@ -159,9 +160,9 @@ public class BlockerServiceImp implements BlockerService {
 		}
 	}
 
-	//@PreAuthorize("hasAuthority('')")
+	// @PreAuthorize("hasAuthority('')")
 	public List<Blocker> getBlockers(String[] ids) {
-		//get all blockers if their ID exists in the given ids-list
+		// get all blockers if their ID exists in the given ids-list
 		List<Blocker> Blockers = new ArrayList<>();
 		for (String id : ids) {
 			Blockers.add(this.getById(id));
@@ -170,9 +171,9 @@ public class BlockerServiceImp implements BlockerService {
 		return Blockers;
 	}
 
-	//@PreAuthorize("hasAuthority('')")
+	// @PreAuthorize("hasAuthority('')")
 	public boolean delete(String id) {
-		//change blocker_Status to 'DELETED'
+		// change blocker_Status to 'DELETED'
 		if (blockerRepo.findById(id).isPresent()) {
 			Blocker blocker = getById(id);
 			SetOrRemoveWarningFlag(id, "REMOVE");
@@ -187,8 +188,8 @@ public class BlockerServiceImp implements BlockerService {
 		blockerRepo.save(blocker);
 		return blocker.getStatus() == AppointmentStatus.DELETED;
 	}
-	
-	//capitalize first letter of a string 
+
+	// capitalize first letter of a string
 	public static String capitalize(String str) {
 		if (str == null)
 			return str;

@@ -49,7 +49,7 @@ public class RoleServiceImp implements RoleService {
 		}
 	}
 
-	// @PreAuthorize("hasAuthority('ROLE_READ')")
+	//@PreAuthorize("hasAuthority('ROLE_READ')")
 	public List<Role> getAll() {
 		//get all role from DB
 		return this.RoleRepo.findAll();
