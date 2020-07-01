@@ -36,7 +36,6 @@ import com.dvproject.vertTerm.Model.TimeInterval;
 import com.dvproject.vertTerm.Model.User;
 import com.dvproject.vertTerm.Model.Warning;
 import com.dvproject.vertTerm.exception.ProcedureException;
-import com.dvproject.vertTerm.exception.ProcedureRelationException;
 import com.dvproject.vertTerm.repository.AppointmentRepository;
 import com.dvproject.vertTerm.repository.AppointmentgroupRepository;
 import com.dvproject.vertTerm.repository.UserRepository;
@@ -119,6 +118,8 @@ public class AppointmentgroupServiceImpl implements AppointmentgroupService {
 			BookingTester tester = new OverrideBookingTester(new ArrayList<>());
 
 			appointmentgroup.resetAllWarnings();
+			
+			appointmentgroup.testProcedureRelations(true);
 
 			appointments.forEach(appointment -> appointmentRepository
 					.save(tester.testAll(appointment, appointmentService, restrictionService)));
@@ -207,6 +208,8 @@ public class AppointmentgroupServiceImpl implements AppointmentgroupService {
 		boolean noUserAttached = userid == null || userid.equals("");
 		User user = noUserAttached ? userService.getAnonymousUser() : userService.getById(userid);
 		String link = null;
+		BookingTester tester = override ? new OverrideBookingTester(new ArrayList<>())
+				: new NormalBookingTester(new ArrayList<>());
 
 		for (Appointment appointment : appointments) {
 			if (!noUserAttached && appointment.getBookedCustomer() != null
@@ -219,9 +222,8 @@ public class AppointmentgroupServiceImpl implements AppointmentgroupService {
 							"User in the appointment for the procedure " + appointment.getBookedProcedure().getId()
 									+ " does not conform to the given user for all appointments");
 				}
-			} else {
+			} else
 				appointment.setBookedCustomer(user);
-			}
 
 			try {
 				loadAppointmentdataFromDatabase(appointment);
@@ -233,13 +235,11 @@ public class AppointmentgroupServiceImpl implements AppointmentgroupService {
 			}
 		}
 
-		if (override) {
-			testWarningsForAppointmentGroup(appointmentgroup);
-		} else {
-			appointmentgroup.testProcedureRelations();
-			appointmentgroup.testBookability(restrictionService, appointmentService,
-					new NormalBookingTester(new ArrayList<>()));
-		}
+		if (!appointmentgroup.hasDistinctProcedures())
+			throw new IllegalArgumentException("Appointments contain duplicate procedures or procedures with id == null");
+
+		appointmentgroup.testProcedureRelations(override);
+		appointmentgroup.testBookability(restrictionService, appointmentService, tester);
 
 		if (noUserAttached) {
 			link = user.generateLoginLink();
@@ -316,7 +316,7 @@ public class AppointmentgroupServiceImpl implements AppointmentgroupService {
 			appointment.setWarnings(new ArrayList<>());
 			appointmentsOfAppointmentgroup.forEach(app -> appointmentService.update(app));
 		} else {
-			appointmentgroupOfAppointment.testProcedureRelations();
+			appointmentgroupOfAppointment.testProcedureRelations(override);
 		}
 
 		retVal                        = appointmentService.delete(id);
@@ -344,7 +344,7 @@ public class AppointmentgroupServiceImpl implements AppointmentgroupService {
 		appointments.add(appointment);
 
 		try {
-			appointmentgroup.testProcedureRelations();
+			appointmentgroup.testProcedureRelations(false);
 			tester.setAppointment(appointment);
 
 			appointments.forEach(app -> new NormalBookingTester(app).testAppointmentTimes(timeIntervals));
@@ -488,17 +488,9 @@ public class AppointmentgroupServiceImpl implements AppointmentgroupService {
 	}
 
 	private void testWarningsForAppointmentGroup(Appointmentgroup appointmentgroup) {
-		List<Appointment> appointmentsOfAppointmentgroup = appointmentgroup.getAppointments();
 		appointmentgroup.resetAllWarnings();
 
-		try {
-			appointmentgroup.testProcedureRelations();
-		} catch (ProcedureException ex) {
-			appointmentsOfAppointmentgroup
-					.forEach(app -> app.addWarning(Warning.PROCEDURE_WARNING, Warning.PROCEDURE_RELATION_WARNING));
-		} catch (ProcedureRelationException ex) {
-			appointmentsOfAppointmentgroup.forEach(app -> app.addWarning(Warning.PROCEDURE_RELATION_WARNING));
-		}
+		appointmentgroup.testProcedureRelations(true);
 
 		appointmentgroup.testBookability(restrictionService, appointmentService,
 				new OverrideBookingTester(new ArrayList<>()));

@@ -232,7 +232,7 @@ public class AppointmentServiceImpl implements AppointmentService {
 		// Test
 		// 1.Procedure Relations
 		// 2.Appointment Times for each Appointment in appointments-List
-		group.testProcedureRelations();
+		group.testProcedureRelations(false);
 		List<TimeInterval> timelist = new ArrayList<>();
 		try {
 			appointments.forEach(app -> new NormalBookingTester(app).testAppointmentTimes(timelist));
