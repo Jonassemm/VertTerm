@@ -4,21 +4,23 @@ import java.util.List;
 
 import com.dvproject.vertTerm.Service.AppointmentServiceImpl;
 import com.dvproject.vertTerm.Service.RestrictionService;
+import com.dvproject.vertTerm.exception.AppointmentException;
+import com.dvproject.vertTerm.exception.AppointmentInternalException;
 
 public class NormalBookingTester extends BookingTester {
-	
+
 	public NormalBookingTester () {
 		super();
 	}
-	
-	public NormalBookingTester(List<TimeInterval> timeIntervallsOfAppointments) {
+
+	public NormalBookingTester (List<TimeInterval> timeIntervallsOfAppointments) {
 		super(null, timeIntervallsOfAppointments);
 	}
-	
+
 	public NormalBookingTester (Appointment appointment) {
 		super(appointment);
 	}
-	
+
 	@Override
 	public void testAppointmentTimes(List<TimeInterval> timeIntervallsOfAppointments) {
 		appointment.testPlannedTimes();
@@ -28,7 +30,6 @@ public class NormalBookingTester extends BookingTester {
 	@Override
 	public void testEmployees() {
 		appointment.testEmployeesOfAppointment();
-		
 	}
 
 	@Override
@@ -49,7 +50,7 @@ public class NormalBookingTester extends BookingTester {
 	@Override
 	public void testProcedure() {
 		appointment.testProcedureDuration();
-		
+
 	}
 
 	@Override
@@ -65,7 +66,11 @@ public class NormalBookingTester extends BookingTester {
 	@Override
 	public void testAppointment(AppointmentServiceImpl appointmentService) {
 		appointment.testDistinctBookedAttributes();
-		appointment.testBlockage(appointmentService);
+		try {
+			appointment.testBlockage(appointmentService);
+		} catch (AppointmentInternalException ex) {
+			throw new AppointmentException(ex.getMessage(), ex.getAppointmentOfException());
+		}
 	}
 
 }

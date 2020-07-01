@@ -9,12 +9,14 @@ const localizer = momentLocalizer(moment)
 function SearchAptCalendar({ procedure, neededResourceTypes, neededPositions, setLoading, setSelectedTime }) {
     const [events, setEvents] = useState([])
     const [filtering, setFiltering] = useState(false)
+    const [bounds, setBounds] = useState({})
 
     useEffect(() => {
-        setup(procedure, neededPositions, neededResourceTypes)
+        const bounds = setup(procedure, neededPositions, neededResourceTypes)
+        setBounds(bounds)
         setNewRange()
     }, [])
-    
+
     async function setNewRange(range) {
         setFiltering(true)
         setLoading(true)
@@ -31,27 +33,20 @@ function SearchAptCalendar({ procedure, neededResourceTypes, neededPositions, se
         setFiltering(false)
     }
 
-    async function calculate() {
-        setFiltering(true)
-        setLoading(true)
-        const temp = await calculateEvts()
-        setEvents(temp)
-        setLoading(false)
-        setFiltering(false)
-    }
-
     return (
         <React.Fragment>
             <div className={filtering ? 'filtering' : null}>
                 <Calendar
                     localizer={localizer}
                     views={{ week: true }}
+                    min={bounds.min}
+                    max={bounds.max}
                     showMultiDayTimes
                     events={events}
                     defaultView={"week"}
                     startAccessor="startDate"
                     selectable={true}
-                    onSelectSlot={slot => setSelectedTime(procedure,slot)}
+                    onSelectSlot={slot => setSelectedTime(procedure, slot)}
                     onRangeChange={setNewRange}
                     eventPropGetter={(event) => {
                         var style = {
@@ -88,7 +83,6 @@ function SearchAptCalendar({ procedure, neededResourceTypes, neededPositions, se
                     }}
                 />
             </div>
-
         </React.Fragment>
     )
 }

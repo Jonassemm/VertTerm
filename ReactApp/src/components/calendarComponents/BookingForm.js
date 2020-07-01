@@ -1,33 +1,37 @@
 import React, { useState, useEffect } from "react"
-import { Calendar, momentLocalizer } from "react-big-calendar"
+import {momentLocalizer } from "react-big-calendar"
 import moment from "moment"
 import { Container, Form, Col, Row, Button, Modal, Spinner } from "react-bootstrap"
-import { observer } from "mobx-react"
-import "react-big-calendar/lib/css/react-big-calendar.css"
 import ObjectPicker from "../ObjectPicker"
 import "./BookingForm.css"
 import DatePicker from "react-datepicker"
-import { addAppointmentGroup, getAppointmentGroup, addAppointmentGroupOverride } from "../requests"
+import { addAppointmentGroup, addAppointmentGroupOverride,getAppointmentGroupByApt,editAppointmentGroup, addAppointmentGroupAny, getAppointment } from "../requests"
 import { useHistory } from "react-router-dom"
 import { getErrorMessage } from "./bookingErrors"
 import SearchAptCalendar from "./SearchCalendar/SearchAptCalendar"
+import AppointmentQR from "./AppointmentQR"
 
 const localizer = momentLocalizer(moment)
 
 function BookingForm(props) {
     const [calendarEvents, setCalendarEvents] = useState([])
     const [selectedProcedures, setSelectedProcedures] = useState([])
-    const [selectedCustomer, setSelectedCustomer] = useState({})
+    const [selectedCustomer, setSelectedCustomer] = useState([])
     const [custom, setCustom] = useState(false)
     const [apts, setApts] = useState([])
     const [formComplete, setFormComplete] = useState(false)
     const [formEmpty, setFormEmpty] = useState(true)
     const [exception, setException] = useState("")
+    const [exceptionMessage, setExceptionMessage] = useState("")
     const [showExceptionModal, setShowExceptionModal] = useState(false)
     const [showSelectCalendarModal, setShowSelectCalendarModal] = useState(false)
     const [searchProcedureApt, setSearchProcedureApt] = useState({})
     const history = useHistory()
     const [loading, setLoading] = useState(false)
+    const [editMode, setEditMode] = useState(false)
+    const [showMode, setShowMode] = useState(false)
+    const [QRCred, setQRCred] = useState("")
+    const [editApt, setEditApt] = useState({})
 
     useEffect(() => {
         checkCompletion()
@@ -40,9 +44,22 @@ function BookingForm(props) {
 
     async function setupEdit() {
         if (!(Object.keys(props).length === 0 && props.constructor === Object)) {
-            const { appointmentID, appointmentGroupID } = props.match.params
-            const { data } = await getAppointmentGroup(appointmentGroupID)
-            setApts(data.appointments)
+            setEditMode(true)
+            const { appointmentID } = props.match.params
+            let {data} = await getAppointmentGroupByApt(appointmentID)
+            data = data.appointments.map(item => {
+                return {...item,
+                plannedStarttime: moment(item.plannedStarttime,  "DD.MM.YYYY HH:mm").toDate(),
+                plannedEndtime: moment(item.plannedEndtime,  "DD.MM.YYYY HH:mm").toDate()}
+            })
+            const tempProcedures = data.map(item => {
+                return item.bookedProcedure
+            })
+            const tempApt = await getAppointment(appointmentID)
+            setSelectedCustomer([data[0].bookedCustomer])
+            setEditApt(tempApt.data)
+            setSelectedProcedures(tempProcedures)
+            setApts(data)
         }
     }
 
@@ -218,10 +235,10 @@ function BookingForm(props) {
                 (item.plannedStarttime != null)) {
                 empty = true
                 for (let i = 0; i < item.bookedResources.length; i++) {
-                    if (item.bookedResources[i] != undefined) empty = false
+                    if (!(item.bookedResources[i] === undefined || Object.keys(item.bookedResources[i]).length === 0)) empty = false
                 }
                 for (let i = 0; i < item.bookedEmployees.length; i++) {
-                    if (item.bookedEmployees[i] != undefined) empty = false
+                    if (!(item.bookedEmployees[i] === undefined || Object.keys(item.bookedEmployees[i]).length === 0)) empty = false
                 }
             } else {
                 empty = false
@@ -252,10 +269,9 @@ function BookingForm(props) {
     }
 
     function buildFinalData() {
-        const finalData = apts.map(item => {
+        let finalData = apts.map(item => {
             return {
                 ...item,
-                bookedCustomer: { id: selectedCustomer[0].id, ref: "user" },
                 bookedProcedure: { id: item.bookedProcedure.id, ref: "procedure" },
                 bookedEmployees: item.bookedEmployees.map(item => {
                     return { id: item.id, ref: "user" }
@@ -267,6 +283,14 @@ function BookingForm(props) {
                 plannedStarttime: moment(item.plannedStarttime).format("DD.MM.YYYY HH:mm").toString(),
             }
         })
+        if(selectedCustomer.length != 0){
+            finalData = finalData.map(item => {
+                return {
+                    ...item,
+                    bookedCustomer: { id: selectedCustomer[0].id, ref: "user" },
+                }
+            })
+        }
         const aptGroup = { appointments: finalData, status: "active" }
         return aptGroup
     }
@@ -290,22 +314,35 @@ function BookingForm(props) {
 
     async function handleSubmit(event) {
         event.preventDefault()
-        if (selectedCustomer.length != 0 || selectedCustomer === {}) {
             const aptGroup = buildFinalData()
-            console.log(aptGroup)
             try {
-                const res = await addAppointmentGroup(aptGroup, selectedCustomer[0].id)
-                history.push("/appointment")
-            } catch (error) {
-                setException(error.response.headers.exception)
-                setShowExceptionModal(true)
+            if(editMode){
+                    await editAppointmentGroup(aptGroup, selectedCustomer[0].id)
+                    history.push("/appointment")
+              
+            }else{
+               
+                    if(selectedCustomer.length != 0){
+                        await addAppointmentGroup(aptGroup, selectedCustomer[0].id)
+                        history.push("/appointment")
+                    } else {
+                        console.log("anonym")
+                        const res = await addAppointmentGroupAny(aptGroup)
+                        // obscuring the link
+                        const data = btoa(res.data)
+                        console.log(data)
+                        setQRCred(data)
+                        setShowMode(true)
+                    }
             }
-
-        } else {
-            setException("customer")
+        } catch (error) {
+            setException(error.response.headers.exception)
+            setExceptionMessage(error.response.data)
             setShowExceptionModal(true)
         }
     }
+
+    const selectedAptStyle = {padding:"2px",backgroundColor:"#FFEEC7"}
 
     return (
         <div className="page">
@@ -313,8 +350,9 @@ function BookingForm(props) {
                 <Form onSubmit={handleSubmit}>
                     <Row style={{ alignItems: "baseline" }}>
                         <Col>
-                            <h1>Termin Buchen</h1>
+                            <h1>{editMode? "Termin ändern" : showMode ? "VertTerm Terminbestätigung" : "Termin Buchen"}</h1>
                         </Col>
+                        {!editMode && !showMode &&
                         <Col className="selectType">
                             <Form.Check
                                 type="switch"
@@ -325,26 +363,32 @@ function BookingForm(props) {
                                 checked={custom || false}
                             />
                         </Col>
-
+                        }
                     </Row>
                     <hr />
-                    <Form.Row>
-                        <Form.Group as={Col} style={{ textAlign: "bottom" }}>
-                            <Form.Label>Kunde:</Form.Label>
-                        </Form.Group>
-                        <Form.Group as={Col}>
-                            <ObjectPicker
-                                DbObject="activeUser"
-                                setState={setSelectedCustomer} />
-                        </Form.Group>
-                    </Form.Row>
+                    {!showMode &&
+                        <Form.Row>
+                            <Form.Group as={Col} style={{ textAlign: "bottom" }}>
+                                <Form.Label>Kunde:</Form.Label>
+                            </Form.Group>
+                            <Form.Group as={Col}>
+                                <ObjectPicker
+                                    DbObject="activeUser"
+                                    initial={editMode && selectedCustomer}
+                                    disabled={editMode}
+                                    setState={setSelectedCustomer} />
+                            </Form.Group>
+                        </Form.Row>
+                    }
                     <Form.Row>
                         <Form.Group as={Col} style={{ textAlign: "bottom" }}>
                             <Form.Label>Prozeduren:</Form.Label>
                         </Form.Group>
                         <Form.Group as={Col}>
                             <ObjectPicker
+                                initial={editMode && selectedProcedures}
                                 DbObject="procedure"
+                                disabled={editMode}
                                 setState={setProcedures}
                                 multiple={true} />
                         </Form.Group>
@@ -353,7 +397,7 @@ function BookingForm(props) {
                         return (
                             <React.Fragment>
                                 <hr />
-                                <div className="parent">
+                                <div className="parent" style={editMode ? (item.bookedProcedure.id == editApt.bookedProcedure.id) ? selectedAptStyle : null : null}>
                                     <div className="namebox">
                                         <h4>{item.bookedProcedure.name}</h4>
                                         {item.bookedProcedure.duration != null && <p>{secondsToMinutes(item.bookedProcedure.duration)} Minuten Dauer</p>}
@@ -370,7 +414,7 @@ function BookingForm(props) {
                                                     placeholder="Beschreibung"
                                                     onChange={e => {
                                                         setApts(apts.map(innerItem => {
-                                                            if (innerItem.bookedProcedure.id = e.target.parentElement.parentElement.id)
+                                                            if (innerItem.bookedProcedure.id == e.target.parentElement.parentElement.id)
                                                                 return {
                                                                     ...innerItem,
                                                                     description: e.target.value
@@ -395,6 +439,7 @@ function BookingForm(props) {
                                                         <ObjectPicker
                                                             className="input"
                                                             ident={{ "ident": item.bookedProcedure.name, "ix": index }}
+                                                            initial = {editMode && [item.bookedEmployees[index]]}
                                                             filter={innerItem.id}
                                                             DbObject="employee"
                                                             setState={handleChange} />
@@ -413,6 +458,7 @@ function BookingForm(props) {
                                                         <ObjectPicker
                                                             className="input"
                                                             filter={innerItem.id}
+                                                            initial={editMode && [item.bookedResources[index]]}
                                                             ident={{ "ident": item.bookedProcedure.name, "ix": index }}
                                                             DbObject="resource"
                                                             setState={handleChange} />
@@ -463,7 +509,7 @@ function BookingForm(props) {
                                             </div>
                                         </div>
                                         <div style={{ textAlign: "right" }}>
-                                            <Button style={{ marginTop: "10px", width: "40%", padding:"2px" }} onClick={e => handleSearchApt(item.bookedProcedure)}>Zeit suchen</Button>
+                                            {!showMode && <Button style={{ marginTop: "10px", width: "40%", padding:"2px" }} onClick={e => handleSearchApt(item.bookedProcedure)}>Zeit suchen</Button>}
                                         </div>
                                     </div>
                                 </div>
@@ -472,6 +518,7 @@ function BookingForm(props) {
                     })}
                     <hr />
                     <Row>
+                        {!editMode && !showMode && (selectedProcedures.length != 0) &&
                         <Col xs={8} style={{ textAlign: "left", display: "flex", alignItems: "baseline", justifyContent: "space-between" }}>
                             <Form.Control style={{ width: "50%" }} as="select">
                                 <option>Frühstes Ende</option>
@@ -486,14 +533,21 @@ function BookingForm(props) {
                             />
                             <Button onClick={optimizeAppointment}>Terminvorschlag</Button>
                         </Col>
+                        }
+                        {!showMode &&
                         <Col style={{ textAlign: "right" }}>
                             {selectedProcedures.length != 0 && (formComplete ?
-                                <Button variant="success" type="submit" style={{ marginLeft: "5px" }}>Buchen</Button> :
+                                <Button variant="success" type="submit" style={{ marginLeft: "5px" }}>{editMode ? "Speichern" : "Buchen"}</Button> :
                                 (formEmpty && <Button onClick={searchAppointment} style={{ marginLeft: "5px" }}>Suchen</Button>)
                             )}
                         </Col>
+                        }
+                        {showMode &&
+                            <Col>
+                                <AppointmentQR cred={QRCred}/>      
+                            </Col>
+                        }
                     </Row>
-
                     <hr />
                 </Form>
             </Container>
@@ -506,6 +560,8 @@ function BookingForm(props) {
                 </Modal.Header>
                 <Modal.Body>
                     {getErrorMessage(exception)}
+                    <hr/>
+                    <span>{exceptionMessage}</span>
                 </Modal.Body>
                 <Modal.Footer>
                     {exception != "customer" && <Button variant="danger" onClick={overrideSubmit}>Trotzdem buchen</Button>}

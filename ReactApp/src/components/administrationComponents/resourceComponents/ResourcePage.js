@@ -2,9 +2,25 @@ import React, { useState, useEffect } from "react"
 import OverviewPage from "../../OverviewPage"
 import ResourceForm from "./ResourceForm"
 import {getAllResources} from "./ResourceRequests"
+import {ExceptionModal} from "../../ExceptionModal"
 
 function ResourcePage() {
     const [resources, setResources] = useState([])
+    //exception needs overriding (ExceptionModal)
+    const [exception, setException] = useState(null)
+    const [showExceptionModal, setShowExceptionModal] = useState(false)
+
+
+    useEffect(() => {
+        loadResources()
+    }, [])
+
+
+    //-------------------------------ExceptionModal--------------------------------
+    const handleExceptionChange = (newException) => {
+        setException(newException)
+        setShowExceptionModal(true)
+    }
 
     const loadResources= async () => {
         var data = [];
@@ -27,9 +43,6 @@ function ResourcePage() {
         setResources(reducedData);
     }
 
-    useEffect(() => {
-        loadResources()
-    }, [])
 
     const tableBody =
         resources.map((item, index) => {
@@ -75,12 +88,21 @@ function ResourcePage() {
                 onCancel={onCancel}
                 edit={edit}
                 selected={selectedItem}
+                setException={handleExceptionChange}
             />
         )
     }
 
     return (
         <React.Fragment>
+            {exception != null && 
+                <ExceptionModal
+                    showExceptionModal={showExceptionModal} 
+                    setShowExceptionModal={setShowExceptionModal} 
+                    exception={exception}
+                    warning={"AvailabilityWarning"}
+                />
+            }
             <OverviewPage 
                 pageTitle="Ressourcen"
                 newItemText="Neue Ressource"

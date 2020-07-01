@@ -2,6 +2,7 @@ import React ,{useState, useEffect} from 'react'
 import {Form, Table, Col, Container, Button, InputGroup, Tabs, Tab } from 'react-bootstrap'
 import Availability from "../availabilityComponents/Availability"
 import ObjectPicker from "../../ObjectPicker"
+import {ExceptionModal} from "../../ExceptionModal"
 
 import {
   addEmployee,
@@ -17,7 +18,7 @@ import {
 } from "../optionalAttributesComponents/optionalAttributesRequests"
 
 
-function UserForm({onCancel, edit, selected, type}) {
+function UserForm({onCancel, edit, selected, type, setException = null}) {
   //Switch
   var initialTypeIsEmployee = false
   if(type == "employee") {
@@ -35,25 +36,18 @@ function UserForm({onCancel, edit, selected, type}) {
   const [username, setUsername] = useState("") 
   const [password, setPassword] = useState("")
   const [systemStatus, setSystemStatus] = useState("active")
-  //Availability
   const [availabilities, setAvailabilities] = useState([])
-  //Position
   const [positions, setPositions] = useState([])
-  //Role
   const [roles, setRoles] = useState([])
-  //Restrictions
   const [restrictions, setRestrictions] = useState([])
   //Optional Attributes (Employee)
   const [optionalAttributesOfUser, setOptionalAttributesOfUser] = useState([])
-  //Optional Attributes (Employee)
-  //const [optionalAttributesOfEmployees, setOptionalAttributesOfEmployees] = useState([])
-  //Optional Attributes (Customer)
-  //const [optionalAttributesOfCustomer, setOptionalAttributesOfCustomer] = useState([])
   //Attribute Input
   const [optionalAttributInput, setOptionalAttributeInput] = useState() //needed to render page when editing any optional attribute
   const [requiredOptionalAttributCounter, setRequiredOptionalAttributCounter] = useState(0)
-  //
+  //recognizing password change
   const [passwordChanged, setPasswordChanged] = useState(false)
+
 
   //HANDEL CHANGE
   const handleFirstnameChange = event => {setFirstname(event.target.value); setEdited(true)}
@@ -100,6 +94,7 @@ function UserForm({onCancel, edit, selected, type}) {
     loadOptionalAttributes()
   }, [])
 
+  
   //---------------------------------LOAD---------------------------------
   const loadOptionalAttributes = async () => {
     var data = [];
@@ -137,33 +132,8 @@ function UserForm({onCancel, edit, selected, type}) {
     }
   };
 
-  /* function validation() {
-    var result = true;
-    var errorMsg 
-    //check position
-    if(isEmployee){
-      if(positions.length == 0) { 
-        result = false
-        errorMsg = "noPosition"
-      }
-    }
-    //check roles
-    if(roles.length == 0) { 
-      result = false
-      errorMsg = "noRules"
-    }
-    //print error
-    switch(errorMsg) {
-      case "noRules": 
-        alert("Fehler: Bitte wählen Sie mindestens eine Rolle aus!")
-        break;
-      case "noPosition":
-        alert("Fehler: Bitte wählen Sie mindestens eine Position aus!")
-        break;
-    }
-    return result
-  } */
 
+  //---------------------------------VALIDATION---------------------------------
   function validation() {
     var result = true;
     var employeeFieldsAreSet = true
@@ -244,7 +214,12 @@ function UserForm({onCancel, edit, selected, type}) {
           if(isEmployee){ //employee
               updateData = {id, firstName, lastName, username, password: newPassword, systemStatus, roles, positions, availabilities, restrictions, 
                             optionalAttributes: optionalAttributesOfUser}
-              await updateEmployee(id, updateData);
+              await updateEmployee(id, updateData)
+                .then(res => {
+                  if (res.headers.exception) {
+                    setException(res.headers.exception)
+                  }
+                })
           }else { //customer
               updateData = {id, firstName, lastName, username, password: newPassword, systemStatus, roles, restrictions,
                             optionalAttributes: optionalAttributesOfUser}
@@ -274,6 +249,7 @@ function UserForm({onCancel, edit, selected, type}) {
     } 
   };
 
+
   const handleDeleteUser = async () => {
     if(isEmployee){
       const answer = confirm("Möchten Sie diesen Mitarbeiter wirklich löschen? ")
@@ -297,6 +273,7 @@ function UserForm({onCancel, edit, selected, type}) {
     onCancel()
   }
 
+
   //---------------------------------Optional Attributes---------------------------------
   const setOptionalAttributeValue = (name, value) => {   
     if(optionalAttributesOfUser.length > 0) {
@@ -315,11 +292,11 @@ function UserForm({onCancel, edit, selected, type}) {
     }
   }
 
-
   //---------------------------------Availability---------------------------------
   const addAvailability = (newAvailability) => {
     setAvailabilities(availabilities => [...availabilities, newAvailability]);
   }
+
 
   const updateAvailabilities = (newAvailabilities) => {
     setAvailabilities([])
@@ -327,6 +304,7 @@ function UserForm({onCancel, edit, selected, type}) {
       setAvailabilities(availabilities => [...availabilities, SingleAvailability]);
     })
   }
+
 
   //---------------------------------RENDER---------------------------------
   function renderOptionalAttributesTable() {
@@ -346,6 +324,7 @@ function UserForm({onCancel, edit, selected, type}) {
       );
     }
   };
+
 
    return (
     <React.Fragment>

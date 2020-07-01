@@ -5,7 +5,7 @@ import { addProcedure, deleteProcedure, editProcedure } from "./ProcedureRequest
 import Availability from "../availabilityComponents/Availability"
 import "./ProcedureStyles.css"
 
-function ProcedureForm({ onCancel, edit, selected }) {
+function ProcedureForm({ onCancel, edit, selected, setException = null }) {
     const [tabKey, setTabKey] = useState('general')
     const [edited, setEdited] = useState(false)
     const [enterPrice, setEnterPrice] = useState(false)
@@ -31,6 +31,7 @@ function ProcedureForm({ onCancel, edit, selected }) {
     const [restrictions, setRestrictions] = useState([])
     const [positionsCount, setPositionsCount] = useState([])
     const [resourceTypesCount, setResourceTypesCount] = useState([])
+    const [publicProcedure, setPublicProcedure] = useState(false)
 
     useEffect(() => {
         buildInitialValues()
@@ -40,7 +41,7 @@ function ProcedureForm({ onCancel, edit, selected }) {
         if (initialized.current >= 2) {
             setEdited(true)
         } else { initialized.current = initialized.current + 1 }
-    }, [name, description, duration, status, precedingRelations, subsequentRelations, positions, resourceTypes, availabilities, pricePerHour, pricePerInvocation, restrictions, resourceTypesCount, positionsCount])
+    }, [name, publicProcedure, description, duration, status, precedingRelations, subsequentRelations, positions, resourceTypes, availabilities, pricePerHour, pricePerInvocation, restrictions, resourceTypesCount, positionsCount])
 
     const secondsToMinutes = (time) => {
         if (time === null) {
@@ -63,6 +64,7 @@ function ProcedureForm({ onCancel, edit, selected }) {
             setPricePerHour(selected.pricePerHour)
             setPricePerInvocation(selected.pricePerInvocation)
             setRestrictions(selected.restrictions)
+            setPublicProcedure(selected.publicProcedure)
             if (selected.pricePerHour != 0 || selected.pricePerInvocation != 0) {
                 setEnterPrice(true)
             }
@@ -99,10 +101,10 @@ function ProcedureForm({ onCancel, edit, selected }) {
 
     const updateAvailabilities = (newAvailabilities) => {
         setAvailabilities([])
-        newAvailabilities.map((SingleAvailability)=> {
-          setAvailabilities(availabilities => [...availabilities, SingleAvailability]);
+        newAvailabilities.map((SingleAvailability) => {
+            setAvailabilities(availabilities => [...availabilities, SingleAvailability]);
         })
-      }
+    }
 
     const handleDelete = async () => {
         const res = await deleteProcedure(selected.id)
@@ -118,6 +120,11 @@ function ProcedureForm({ onCancel, edit, selected }) {
         }
         const data = { ...selected, status: status }
         const res = await editProcedure(selected.id, data)
+            .then(res => {
+                if (res.headers.exception) {
+                setException(res.headers.exception)
+                }
+            })
         onCancel()
     }
 
@@ -258,7 +265,8 @@ function ProcedureForm({ onCancel, edit, selected }) {
             neededResourceTypes: extendedResourceTypes,
             neededEmployeePositions: extendedPositions,
             restrictions: restrictionsRef,
-            availabilities: availabilities
+            availabilities: availabilities,
+            publicProcedure: publicProcedure
         }
         console.log(data)
 
@@ -267,11 +275,16 @@ function ProcedureForm({ onCancel, edit, selected }) {
         } else {
             data.id = selected.id
             const res = await editProcedure(selected.id, data)
+                .then(res => {
+                    if (res.headers.exception) {
+                    setException(res.headers.exception)
+                    }
+                })
         }
         onCancel()
     }
 
-    const LabelStyle = {marginTop: "10px"}
+    const LabelStyle = { marginTop: "10px" }
 
     const TabStyle = { paddingTop: "10px" }
     return (
@@ -283,20 +296,32 @@ function ProcedureForm({ onCancel, edit, selected }) {
                     onSelect={k => setTabKey(k)}
                 >
                     <Tab eventKey="general" title="Allgemein" style={TabStyle}>
-                        <Form.Row>
-                            <Form.Label>
-                                Name
-                            </Form.Label>
-                            <Form.Control
-                                type="text"
-                                name="name"
-                                placeholder="Prozedurnamen eingeben"
-                                value={name || ""}
-                                required
-                                onChange={e => setName(e.target.value)}
-                            />
+                        <Form.Row style={{ display: "flex" }}>
+                            <div style={{padding: "0px", marginBottom: "0px", width:"70%" }}>
+                                <Form.Label>
+                                    Name
+                                </Form.Label>
+                                <Form.Control
+                                    type="text"
+                                    name="name"
+                                    placeholder="Prozedurnamen eingeben"
+                                    value={name || ""}
+                                    required
+                                    onChange={e => setName(e.target.value)}
+                                />
+                            </div>
+                            <div style={{paddingTop: "40px", textAlign: "right", marginBottom: "0px", width:"30%" }}>
+                                <Form.Check
+                                    type="switch"
+                                    id="custom-switch"
+                                    label="Von Kunden buchbar"
+                                    value={publicProcedure || 0}
+                                    onChange={e => setPublicProcedure(!publicProcedure)}
+                                    checked={publicProcedure || false}
+                                />
+                            </div>
                         </Form.Row>
-                        <Form.Row>
+                        <Form.Row >
                             <Form.Label style={LabelStyle}>
                                 Beschreibung
                             </Form.Label>
@@ -312,11 +337,11 @@ function ProcedureForm({ onCancel, edit, selected }) {
                             <Form.Label style={LabelStyle}>
                                 Einschränkungen
                             </Form.Label>
-                            <ObjectPicker DbObject="restriction" setState={setRestrictions} multiple={true} initial={edit ? restrictions : []}/>
+                            <ObjectPicker DbObject="restriction" setState={setRestrictions} multiple={true} initial={edit ? restrictions : []} />
                         </Form.Row>
                         <Form.Row>
                             <Form.Label style={LabelStyle}>
-                                Dauer
+                                Dauer (min)
                             </Form.Label>
                             <Form.Control
                                 type="number"
@@ -325,7 +350,7 @@ function ProcedureForm({ onCancel, edit, selected }) {
                                 placeholder="Dauer in Minuten eingeben"
                                 value={duration || null}
                                 onChange={e => {
-                                    if(e.target.value === "") setDuration(null)
+                                    if (e.target.value === "") setDuration(null)
                                     else setDuration(event.target.value)
                                 }}
                             />
@@ -374,7 +399,7 @@ function ProcedureForm({ onCancel, edit, selected }) {
                             </Form.Row>
                         }
                     </Tab>
-                    <Tab eventKey="availability" title="Verfügbarkeit" style={TabStyle}>                                                            
+                    <Tab eventKey="availability" title="Verfügbarkeit" style={TabStyle}>
                         <Availability availabilities={availabilities} addAvailability={addAvailability} updateAvailabilities={updateAvailabilities} editedAvailabilities={setEdited} />
                     </Tab>
                     <Tab eventKey="dependencies" title="Abhängigkeiten" style={TabStyle}>
@@ -501,7 +526,7 @@ function ProcedureForm({ onCancel, edit, selected }) {
                     </Tab>
                     <Tab eventKey="resources" title="Ressourcen" style={TabStyle}>
                         <Form.Label style={{ marginTop: "5px" }}>Benötigte Ressourcentypen:</Form.Label>
-                        <ObjectPicker DbObject="resourceType" initial={edit ? resourceTypes : []} setState={setResourceTypesExt} multiple={true} />
+                        <ObjectPicker DbObject="resourceType" initial={edit && resourceTypes} setState={setResourceTypesExt} multiple={true} />
                         {resourceTypes.map((item, index) => {
                             return (
                                 <Row style={{ marginTop: "5px" }}>
@@ -529,7 +554,7 @@ function ProcedureForm({ onCancel, edit, selected }) {
                             )
                         })}
                         <Form.Label style={{ marginTop: "10px" }}>Benötigte Positionen:</Form.Label>
-                        <ObjectPicker DbObject="position" initial={edit ? positions : []} setState={setPositionsExt} multiple={true}></ObjectPicker>
+                        <ObjectPicker DbObject="position" initial={edit && positions} setState={setPositionsExt} multiple={true}></ObjectPicker>
                         {positions.map((item, index) => {
                             return (
                                 <Row style={{ marginTop: "5px" }}>

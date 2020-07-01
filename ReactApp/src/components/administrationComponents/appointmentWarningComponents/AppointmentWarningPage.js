@@ -4,66 +4,61 @@ import {Table, Form, Col, Row, Container, Tabs, Tab, Button, Modal} from "react-
 import OverviewPage from "../../OverviewPage"
 import ObjectPicker from "../../ObjectPicker"
 import AppointmentWarningForm from "./AppointmentWarningForm"
-
+import {appointmentStatus} from "../../appointmentComponents/AppointmentStatus"
+import {getTranslatedWarning, creatWarningList} from "../../Warnings"
 
 var moment = require('moment'); 
 
-import {getAppointmentsWithWarning} from "./AppointmentWarningRequests";
+import {getAppointmentsWithWarning, getAllAppointmentsWithWarning} from "./AppointmentWarningRequests";
 
-export default function AppointmentWarningPage() {
+export default function AppointmentWarningPage(props) {
 
-    const kindOfWarning = {
-        appointmenttime: "AppointmenttimeWarning",
-	    restriction: "RestrictionWarning",
-        procedureRelation: "ProcedureRelationWarning",
-        availability: "AvailabilityWarning",
-	    resourceType: "ResourceTypeWarning",
-	    position: "Position_Warning",
-	    resource: "ResourceWarning",
-	    employee: "EmplyeeWarning",
-	    procedure: "ProcedureWarning",
-	    user: "UserWarning",
-	    appointment: "AppointmentWarning"
+    var initialSelectedWarning = []
+    if(Object.keys(props).length != 0) {
+        initialSelectedWarning = [props.match.params.initialWarning]
     }
 
-    const translatedWarning = {
-        appointmenttime: "Terminzeit-Warnung",
-	    restriction: "Einschränkungs-Warnung",
-        procedureRelation: "ProcedureRelationWarning",
-        availability: "AvailabilityWarning",
-	    resourceType: "ResourceTypeWarning",
-	    position: "Position_Warning",
-	    resource: "ResourceWarning",
-	    employee: "EmplyeeWarning",
-	    procedure: "ProcedureWarning",
-	    user: "UserWarning",
-	    appointment: "AppointmentWarning"
-    }
-
-    const [slectedKindOfWarning, setSelectedKindOfWarning] = useState(null)
+    const [selectedKindOfWarning, setSelectedKindOfWarning] = useState(initialSelectedWarning)
     const [appointmentsWithWarnings, setAppointmentsWithWarnings] = useState([])
-    const [selectedAppointment, setSelectedAppointment] = useState(null)
+    
+    const [initialWarning, setInitialWarning] = useState(true)
 
     const handleSelectedKindOfWarningChange = (data) => {
-        setSelectedKindOfWarning(data)
+        //set to "en" translated warning
+        if(data.length > 0) {
+           setSelectedKindOfWarning([getTranslatedWarning(data[0])]) 
+        }else {
+          setSelectedKindOfWarning([])  
+        }   
     }
 
     useEffect( () => {
         loadAppointmentsWithWarnings()
-    },[])
+    },[selectedKindOfWarning])
 
 
     const loadAppointmentsWithWarnings = async () => {
         var response = []
+        var data = []
+
         try {
-            response = await XgetAppointmentsWithWarning(selectedKindOfWarning)
+            if((Object.keys(props).length == 0 && initialWarning) || selectedKindOfWarning.length == 0) {
+                console.log("CALL -> Initial (all)")
+                response = await getAllAppointmentsWithWarning()
+            }else {
+                console.log("CALL -> Selected")
+                console.log(selectedKindOfWarning)
+                response = await getAppointmentsWithWarning(creatWarningList(selectedKindOfWarning))
+            }
+            data = response.data
+            setInitialWarning(false)
         } catch (error) {
             console.log(Object.keys(error), error.message)
-            const bookedProcedure = {name: "Prozess1"}
+            /* const bookedProcedure = {name: "Prozess1"}
             const plannedStarttime= "04.06.2020 19:30"
             const bookedCustomer= {firstName: "Angelina", lastName: "Jolie", username: "LaraCroft"}
 
-            response = [{id: "1", description: "Dies ist eine längerer Text um zu verdeutlichen wie lang eine Beschreibung einer Prozedur sein kann. Damit wir auch in die zweite Zeile gelangenen steht hier noch etwas mehr ;)",
+            data = [{id: "1", description: "Dies ist eine längerer Text um zu verdeutlichen wie lang eine Beschreibung einer Prozedur sein kann. Damit wir auch in die zweite Zeile gelangenen steht hier noch etwas mehr ;)",
                     status: "planned", warning: "", 
                     plannedStarttime: plannedStarttime, plannedEndtime: "04.06.2020 20:30", actualStarttime: null, actualEndtime: null, 
                     bookedProcedure: bookedProcedure, 
@@ -71,39 +66,45 @@ export default function AppointmentWarningPage() {
                     bookedEmployees: [{firstName: "Bruce", lastName: "Willis"},{firstName: "Will", lastName: "Smith"}],
                     bookedResources: [{name: "Stift"}, {name: "Papier"}, {name: "Laptop"}],
                     warnings: ["AppointmenttimeWarning", "ProcedureRelationWarning"]
-                }]
+                }] */
         }
-        setAppointmentsWithWarnings(response)
+        console.log("original data:")
+        console.log(data)
+
+        //don't save object with status="deleted"
+        var reducedData = []
+        data.map((singleAppointment) => {
+            if(singleAppointment.status != appointmentStatus.deleted) {
+                reducedData.push(singleAppointment)
+            }
+        })
+        setAppointmentsWithWarnings(reducedData)
     }
 
-/*     const handleSelectAppointment = () => {
-        let x = (event.target.parentElement.firstChild.textContent) - 1
-        setSelectedAppointment(appointmentsWithWarnings[x])
-    } */
 
     const tableBody = 
-    appointmentsWithWarnings.map((item, index) => { 
-        var warningString = "" //translated status
-        if (item.warnings.length > 0){
-            item.warnings.map((singleWarning, index) => {
-            if(index == 0){
-                warningString += singleWarning
-            }else {
-                warningString += "; " + singleWarning
+        appointmentsWithWarnings.map((item, index) => { 
+            var warningString = ""
+            if (item.warnings.length > 0){
+                item.warnings.map((singleWarning, index) => {
+                    if(index == 0){
+                        warningString += getTranslatedWarning(singleWarning)
+                    }else {
+                        warningString += "; " + getTranslatedWarning(singleWarning)
+                    }
+                })
             }
-            })
-        }
-        return ([
-            index + 1,
-            moment(moment(item.plannedStarttime, "DD.MM.yyyy HH:mm").toDate()).format("DD.MM.YYYY / HH:mm").toString(),
-            moment(moment(item.plannedEndtime, "DD.MM.yyyy HH:mm").toDate()).format("DD.MM.YYYY / HH:mm").toString(),
-            item.bookedProcedure.name,
-            item.bookedCustomer.name,
-            warningString]
-        )
-    })
-
-
+            return ([
+                index + 1,
+                moment(moment(item.plannedStarttime, "DD.MM.yyyy HH:mm").toDate()).format("DD.MM.YYYY / HH:mm").toString(),
+                moment(moment(item.plannedEndtime, "DD.MM.yyyy HH:mm").toDate()).format("DD.MM.YYYY / HH:mm").toString(),
+                item.bookedProcedure.name,
+                item.bookedCustomer.firstName + ", " + item.bookedCustomer.lastName,
+                warningString]
+            )
+        })
+    
+    
     const modal = (onCancel,edit,selectedItem) => {
         return (
             <AppointmentWarningForm
@@ -128,10 +129,11 @@ export default function AppointmentWarningPage() {
                 <div style={{marginTop: "5px", width: "250px"}}>
                     <ObjectPicker 
                         setState={handleSelectedKindOfWarningChange}
-                        DbObject="warnings"
+                        DbObject="warning"
                         multiple={false}
+                        initial={[getTranslatedWarning(selectedKindOfWarning[0])]} 
                     />
-                </div> 
+                </div>
             </div>
             <OverviewPage
                 pageTitle={"Konfliktansicht"}
@@ -142,6 +144,7 @@ export default function AppointmentWarningPage() {
                 data={appointmentsWithWarnings}
                 refreshData={() => loadAppointmentsWithWarnings()}
                 withoutCreate={true}
+                modalSize="lg"
                 noTopMargin={true}
             /> 
         </React.Fragment>

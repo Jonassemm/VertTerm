@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.dvproject.vertTerm.Model.ResourceType;
+import com.dvproject.vertTerm.Model.Status;
 import com.dvproject.vertTerm.Service.ResourceTypeService;
 
 @RestController
@@ -25,8 +26,8 @@ public class ResourceTypeController
     private ResourceTypeService restypService;  
 	
 	 @GetMapping
-     public  @ResponseBody  List<ResourceType> getAllResourceType() {
-		 return restypService.getAll();
+     public  @ResponseBody  List<ResourceType> getAllResourceType(@RequestParam(required = false) Status status) {
+		 return status == null ? restypService.getAll() : restypService.getAll(status);
 	 }
 	
 	 @GetMapping("/{id}")

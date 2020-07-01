@@ -16,4 +16,6 @@ public interface ProcedureRepository extends MongoRepository<Procedure, String> 
 	List<Procedure> findByIds (String [] ids);
 
 	List<Procedure> findByStatus(Status status);
+	
+	List<Procedure> findByStatusAndPublicProcedure(Status status, boolean publicProcedure);
 }

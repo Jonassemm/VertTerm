@@ -21,7 +21,7 @@ export function setDate() {
    /*  TESTS
     var ds = "13.01.2003 13:45";
     var date = moment(ds, "DD.MM.yyyy HH:mm").toDate();
-    var dateString = moment(d).format("DD.MM.YYYY HH:mm").toString();
+    var dateString = moment(date).format("DD.MM.YYYY HH:mm").toString();
     */
 
     const resultDate = moment(date).format("DD.MM.YYYY HH:mm").toString()

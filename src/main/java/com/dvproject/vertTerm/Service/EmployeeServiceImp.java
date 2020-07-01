@@ -1,16 +1,17 @@
 package com.dvproject.vertTerm.Service;
 
+import com.dvproject.vertTerm.Model.Appointment;
+import com.dvproject.vertTerm.Model.AppointmentStatus;
 import com.dvproject.vertTerm.Model.Availability;
-import com.dvproject.vertTerm.Model.Customer;
 import com.dvproject.vertTerm.Model.Employee;
 import com.dvproject.vertTerm.Model.Position;
 import com.dvproject.vertTerm.Model.Resource;
+import com.dvproject.vertTerm.Model.ResourceType;
 import com.dvproject.vertTerm.Model.Status;
 import com.dvproject.vertTerm.Model.User;
 import com.dvproject.vertTerm.repository.EmployeeRepository;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Example;
 import org.springframework.data.rest.webmvc.ResourceNotFoundException;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
@@ -31,6 +32,9 @@ public class EmployeeServiceImp implements EmployeeService, AvailabilityService 
     
     @Autowired
     private AvailabilityServiceImpl availabilityService;
+    
+    @Autowired
+    private AppointmentService appointmentService;
 
     @Override
     public List<Employee> getAll() {
@@ -54,23 +58,35 @@ public class EmployeeServiceImp implements EmployeeService, AvailabilityService 
         return (users);
     }
 
-    public List<Employee> getAll(String positionId){
-//        List<Employee> result= new ArrayList<>();
-//        for(Employee employee : repo.findAll()){
-//            for (Position position : employee.getPositions())
-//            if(position.getId().equals(positionId)) {
-//                result.add(employee);
-//            }
-//        }
-//        return result;
-        
+	public List<Employee> getActiveEmployeesByPositionId(String positionId) {
+		//get all Active Employees from type 
+		List<Employee> employees = new ArrayList<>();
+		List<Employee> AllEmployees = this.getAll(positionId);
+		for (Employee emp : AllEmployees) {
+				if (emp.getSystemStatus().equals(Status.ACTIVE)) {
+					if (!employees.contains(emp))
+						employees.add(emp);
+			
+			}
+			
+		}
+
+		return employees;
+	}
+    
+    public List<Employee> getAll(String positionId){        
         return repo.findByPositionsId(positionId);
-        
     }
 
     @Override
     public Employee getById(String id) {
         Optional<Employee> appointment = repo.findById(id);
+        return appointment.orElse(null);
+    }
+    
+    @Override
+    public Employee getByUsername(String username) {
+        Optional<Employee> appointment = repo.findByUsername(username);
         return appointment.orElse(null);
     }
     
@@ -116,13 +132,16 @@ public class EmployeeServiceImp implements EmployeeService, AvailabilityService 
 
     @Override
     public boolean delete(String id) {
-    	userService.testAppointments(id);
+   	 Employee user = getById(id);
+   	 
+    	 userService.testAppointments(id);
+    	 testAppointments(id);
+    	 user.obfuscate();
+    	 
+    	user.setSystemStatus(Status.DELETED);
+    	repo.save(user);
     	
-    	User user = this.getById(id);
-    	userService.obfuscateUser(user);
-    	
-        repo.deleteById(id);
-        return repo.existsById(id);
+    	return getById(id).getSystemStatus() == Status.DELETED;
     }
 
     @Override
@@ -133,7 +152,15 @@ public class EmployeeServiceImp implements EmployeeService, AvailabilityService 
     public static String capitalize(String str)
     {
         if(str == null) return str;
-        return str.toUpperCase() ;
+        return  str.substring(0, 1).toUpperCase()+str.substring(1).toLowerCase();
         
+    }
+    
+    public void testAppointments(String id) {
+   	 List<Appointment> appointments = appointmentService.getAppointmentsByEmployeeIdAndAppointmentStatus(id, 
+   			 AppointmentStatus.PLANNED);
+   	 
+ 		if (appointments != null && appointments.size() > 0)
+			throw new IllegalArgumentException("Employee can not be deleted because he is used as a bookedEmployee");
     }
 }

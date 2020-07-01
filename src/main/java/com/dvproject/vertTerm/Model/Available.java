@@ -2,7 +2,6 @@ package com.dvproject.vertTerm.Model;
 
 import java.util.Date;
 import java.util.List;
-import com.dvproject.vertTerm.Model.Availability;
 
 import com.dvproject.vertTerm.Service.AppointmentService;
 

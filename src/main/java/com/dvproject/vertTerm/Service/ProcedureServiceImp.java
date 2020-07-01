@@ -26,6 +26,10 @@ public class ProcedureServiceImp implements ProcedureService, AvailabilityServic
 	public List<Procedure> getAll(Status status) {
 		return procedureRepository.findByStatus(status);
 	}
+	
+	public List<Procedure> getAll(Status status, boolean publicProcedure){
+		return procedureRepository.findByStatusAndPublicProcedure(status, publicProcedure);
+	}
 
 	@Override
 	public List<Procedure> getByIds(String[] ids) {
@@ -75,7 +79,7 @@ public class ProcedureServiceImp implements ProcedureService, AvailabilityServic
 	@Override
 	public Procedure create(Procedure procedure) {
 		if (procedure.getId() == null) {
-			procedure.testAllRelations();
+			procedure.testAllReferenceValues();
 			availabilityService.update(procedure.getAvailabilities(), procedure);
 			procedure.setName(capitalize(procedure.getName()));
 			return procedureRepository.save(procedure);
@@ -91,7 +95,7 @@ public class ProcedureServiceImp implements ProcedureService, AvailabilityServic
 	public Procedure update(Procedure procedure) {
 		Procedure oldProcedure = getProcedureFromDB(procedure.getId());
 		
-		procedure.testAllRelations();
+		procedure.testAllReferenceValues();
 		procedure.setName(capitalize(procedure.getName()));
 		availabilityService.loadAllAvailabilitiesOfEntity(procedure.getAvailabilities(), procedure, this);
 
@@ -106,6 +110,7 @@ public class ProcedureServiceImp implements ProcedureService, AvailabilityServic
 	public Procedure updateProceduredata(Procedure procedure) {
 		Procedure oldProcedure = getProcedureFromDB(procedure.getId());
 
+		procedure.testAllReferenceValues();
 		testUpdatebility(procedure.getStatus());
 
 		oldProcedure.setName(capitalize(procedure.getName()));
@@ -121,6 +126,7 @@ public class ProcedureServiceImp implements ProcedureService, AvailabilityServic
 	public List<ProcedureRelation> updatePrecedingProcedures(String id, List<ProcedureRelation> precedingProcedures) {
 		Procedure procedure = getProcedureFromDB(id);
 
+		procedure.testAllRelations();
 		testUpdatebility(procedure.getStatus());
 
 		procedure.setPrecedingRelations(precedingProcedures);
@@ -133,6 +139,7 @@ public class ProcedureServiceImp implements ProcedureService, AvailabilityServic
 	public List<ProcedureRelation> updateSubsequentProcedures(String id, List<ProcedureRelation> subsequentProcedures) {
 		Procedure procedure = getProcedureFromDB(id);
 
+		procedure.testAllRelations();
 		testUpdatebility(procedure.getStatus());
 
 		procedure.setSubsequentRelations(subsequentProcedures);
@@ -145,6 +152,7 @@ public class ProcedureServiceImp implements ProcedureService, AvailabilityServic
 	public List<ResourceType> updateNeededResourceTypes(String id, List<ResourceType> resourceTypes) {
 		Procedure procedure = getProcedureFromDB(id);
 
+		procedure.testResourceTypes();
 		testUpdatebility(procedure.getStatus());
        
 		procedure.setNeededResourceTypes(resourceTypes);
@@ -158,6 +166,7 @@ public class ProcedureServiceImp implements ProcedureService, AvailabilityServic
 	public List<Position> updateNeededPositions(String id, List<Position> positions) {
 		Procedure procedure = getProcedureFromDB(id);
 
+		procedure.testPositions();
 		testUpdatebility(procedure.getStatus());
 		 
 		procedure.setNeededEmployeePositions(positions);
@@ -223,14 +232,13 @@ public class ProcedureServiceImp implements ProcedureService, AvailabilityServic
 	}
 
 	private void testUpdatebility(Status status) {
-		if (!StatusService.isUpdateable(status)) {
+		if (!StatusService.isUpdateable(status))
 			throw new IllegalArgumentException("The given procedure is not updateable");
-		}
 	}
     public static String capitalize(String str)
     {
         if(str == null) return str;
-        return str.toUpperCase() ;
+        return  str.substring(0, 1).toUpperCase()+str.substring(1).toLowerCase();
         
     }
 }

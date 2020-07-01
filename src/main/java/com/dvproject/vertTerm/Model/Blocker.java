@@ -4,8 +4,7 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-@Document("Appointmentgroup")
-public class Blocker extends Appointmentgroup{
+public class Blocker extends Appointment{
 
     @Indexed(unique = true)
     private String name;

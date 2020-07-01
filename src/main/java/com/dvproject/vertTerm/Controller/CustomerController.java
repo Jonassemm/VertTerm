@@ -1,7 +1,6 @@
 package com.dvproject.vertTerm.Controller;
 
 import com.dvproject.vertTerm.Model.Customer;
-import com.dvproject.vertTerm.Model.Employee;
 import com.dvproject.vertTerm.Model.Status;
 import com.dvproject.vertTerm.Service.CustomerService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -49,8 +48,6 @@ public class CustomerController {
     @DeleteMapping("/{id}")
     public boolean DeleteCustomer(@PathVariable String id)
     {
-        Customer user = this.get(id);
-        user.setSystemStatus(Status.DELETED);
-        return this.UpdateCustomer(user).equals(user);
+   	 return service.delete(id);
     }
 }

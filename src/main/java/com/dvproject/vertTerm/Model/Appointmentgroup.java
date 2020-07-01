@@ -1,5 +1,6 @@
 package com.dvproject.vertTerm.Model;
 
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
@@ -61,6 +62,10 @@ public class Appointmentgroup {
 		this.appointments = appointments;
 	}
 
+	public void resetAllWarnings() {
+		appointments.forEach(app -> app.setWarnings(new ArrayList<Warning>()));
+	}
+
 	public void testBookability(RestrictionService restrictionService, AppointmentServiceImpl appointmentService,
 			BookingTester bookingTester) {
 		appointments.forEach(appointment -> bookingTester.testAll(appointment, appointmentService, restrictionService));
@@ -80,7 +85,7 @@ public class Appointmentgroup {
 			if (proceduresMap.containsKey(id))
 				throw new ProcedureException("Two different appointments of one procedure", procedureOfAppointment);
 
-			proceduresMap.put(id, appointment.getBookedProcedure());
+			proceduresMap.put(id, procedureOfAppointment);
 			appointmentsMap.put(id, appointment);
 		}
 

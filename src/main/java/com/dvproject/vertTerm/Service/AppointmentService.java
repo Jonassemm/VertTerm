@@ -3,36 +3,35 @@ package com.dvproject.vertTerm.Service;
 import java.util.Date;
 import java.util.List;
 
+import org.bson.types.ObjectId;
+
 import com.dvproject.vertTerm.Model.Appointment;
 import com.dvproject.vertTerm.Model.AppointmentStatus;
 import com.dvproject.vertTerm.Model.Appointmentgroup;
 import com.dvproject.vertTerm.Model.Available;
 import com.dvproject.vertTerm.Model.Bookable;
-import com.dvproject.vertTerm.Model.Res_Emp;
+
+import com.dvproject.vertTerm.Model.Employee;
+import com.dvproject.vertTerm.Model.Procedure;
+import com.dvproject.vertTerm.Model.Resource;
 import com.dvproject.vertTerm.Model.Warning;
 
 public interface AppointmentService extends BasicService<Appointment> {
 	// GET
 	List<Appointment> getAll(Bookable bookable);
-	//Available Resources and Employees
-	public Res_Emp getAvailableResourcesAndEmployees(Appointmentgroup group);
+
+	// Buchungoption2 get available Resources and Employees
+	public Appointmentgroup getAvailableResourcesAndEmployees(Appointmentgroup group);
+
 	// appointments with warning
-	List<Appointment> getAppointmentsByWarning(Warning warning);
-	
-	List<Appointment> getAppointmentsByWarnings(List<Warning> warnings);
-	
-	List<Appointment> getAppointmentsByWarningAndId(String userid, Warning warning);
-	
-	List<Appointment> getAppointmentsByWarningsAndId(String userid, List<Warning> warnings);
+	List<Appointment> getAllAppointmentsByUseridAndWarnings(String userid, List<Warning> warnings);
 
-	// appointments of user
-	List<Appointment> getAppointmentsByUserid(String userid);
+	// appointments of user/employee/resource
+	List<Appointment> getAppointmentsByUserIdAndAppointmentStatus(String userid, AppointmentStatus status);
 
-	List<Appointment> getAppointmentsByUserid(String userid, AppointmentStatus appointmentStatus);
-	
-	List<Appointment> getAppointmentsByEmployeeid(String employeeid);
-	
-	List<Appointment> getAppointmentsByResourceid(String resourceid);
+	List<Appointment> getAppointmentsByEmployeeIdAndAppointmentStatus(String employeeid, AppointmentStatus status);
+
+	List<Appointment> getAppointmentsByResourceIdAndAppointmentStatus(String resourceid, AppointmentStatus status);
 
 	// appointments of an available-entity in a time interval
 	List<Appointment> getAppointmentsOfBookedEmployeeInTimeinterval(String employeeid, Date starttime, Date endtime,
@@ -49,19 +48,22 @@ public interface AppointmentService extends BasicService<Appointment> {
 
 	List<Appointment> getAppointmentsWithUseridAndTimeInterval(String userid, Date starttime, Date endtime);
 
-	// appointment in time interval
-	List<Appointment> getAppointmentsInTimeIntervalWithStatus(Date starttime, Date endtime, AppointmentStatus status);
+	List<Appointment> getAppointmentsWithCustomerEmployeeResourceAfterDate(List<ObjectId> employeeids,
+			List<ObjectId> resourceids, Date startdate, AppointmentStatus status);
 
-	List<Appointment> getAppointmentsInTimeInterval(Date starttime, Date endtime);
+	// appointment in time interval
+	List<Appointment> getAppointmentsInTimeIntervalAndStatus(Date starttime, Date endtime, AppointmentStatus status);
+
+	List<Appointment> getOverlappingAppointmentsInTimeInterval(Date starttime, Date endtime, AppointmentStatus status);
 
 	// appointments of an available-entity
-	List<Appointment> getAppointments(Available available, Date endOfSeries);
+	List<Appointment> getAppointments(Available available, Date startdate);
 
-	List<Appointment> getAppointmentsOfEmployee(String employeeid, Date startdate);
+	List<Appointment> getAppointmentsOf(Employee employee, Date startdate);
 
-	List<Appointment> getAppointmentsOfProcedure(String procedureid, Date startdate);
+	List<Appointment> getAppointmentsOf(Procedure procedure, Date startdate);
 
-	List<Appointment> getAppointmentsOfResource(String resourceid, Date startdate);
+	List<Appointment> getAppointmentsOf(Resource resource, Date startdate);
 
 	// PUT
 	boolean setCustomerIsWaiting(String id, boolean customerIsWaiting);

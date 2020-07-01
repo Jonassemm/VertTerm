@@ -17,16 +17,17 @@ import com.dvproject.vertTerm.Model.Availability;
 import com.dvproject.vertTerm.Model.AvailabilityRhythm;
 import com.dvproject.vertTerm.Model.Customer;
 import com.dvproject.vertTerm.Model.Employee;
+import com.dvproject.vertTerm.Model.OpeningHours;
 import com.dvproject.vertTerm.Model.OptionalAttribute;
 import com.dvproject.vertTerm.Model.OptionalAttributes;
 import com.dvproject.vertTerm.Model.Right;
 import com.dvproject.vertTerm.Model.Role;
 import com.dvproject.vertTerm.Model.Status;
 import com.dvproject.vertTerm.Model.User;
-import com.dvproject.vertTerm.Service.AvailabilityServiceImpl;
+import com.dvproject.vertTerm.Service.EmployeeService;
 import com.dvproject.vertTerm.repository.AvailabilityRepository;
 import com.dvproject.vertTerm.repository.CustomerRepository;
-import com.dvproject.vertTerm.repository.EmployeeRepository;
+import com.dvproject.vertTerm.repository.OpeningHoursRepository;
 import com.dvproject.vertTerm.repository.OptionalAttributesRepository;
 import com.dvproject.vertTerm.repository.RightRepository;
 import com.dvproject.vertTerm.repository.RoleRepository;
@@ -35,14 +36,14 @@ import com.dvproject.vertTerm.repository.UserRepository;
 @Component
 public class SetupDataLoader implements ApplicationListener<ContextRefreshedEvent> {
 	private boolean alreadySetup = false;
-	private Map <String, Right> rights = new HashMap<>();
+	private Map<String, Right> rights = new HashMap<>();
 
 	@Autowired
 	private UserRepository userRepository;
 
 	@Autowired
-	private EmployeeRepository employeeRepository;
-	
+	private EmployeeService employeeService;
+
 	@Autowired
 	private CustomerRepository customerRepository;
 
@@ -54,9 +55,12 @@ public class SetupDataLoader implements ApplicationListener<ContextRefreshedEven
 
 	@Autowired
 	private OptionalAttributesRepository optionalAttributesRepository;
-	
+
 	@Autowired
 	private AvailabilityRepository availablityService;
+
+	@Autowired
+	private OpeningHoursRepository openingHoursRepository;
 
 	@Autowired
 	private PasswordEncoder passwordEncoder;
@@ -65,9 +69,9 @@ public class SetupDataLoader implements ApplicationListener<ContextRefreshedEven
 	public void onApplicationEvent(ContextRefreshedEvent event) {
 		if (alreadySetup)
 			return;
-		
+
 		setupRights();
-		
+
 		Role adminRole = createRoleIfNotFound("ADMIN_ROLE", setUpAdminRights());
 		Role userRole = createRoleIfNotFound("ANONYMOUS_ROLE", setUpAnonymusUserRights());
 
@@ -75,17 +79,19 @@ public class SetupDataLoader implements ApplicationListener<ContextRefreshedEven
 		createUserIfNotFound("anonymousUser", "password", Arrays.asList(userRole));
 
 		setupOptionalAttributes();
-		
+
 		availablityService.save(new Availability("1", null, null, AvailabilityRhythm.ALWAYS));
+
+		setupOpeningHours();
 
 		alreadySetup = true;
 	}
-	
-	private void setupRight (String name, String description) {
+
+	private void setupRight(String name, String description) {
 		Right right = createRightIfNotFound(name, description);
 		rights.put(right.getName(), right);
 	}
-	
+
 	@Transactional
 	private Right createRightIfNotFound(String name, String description) {
 		Right right = rightRepository.findByName(name);
@@ -100,9 +106,9 @@ public class SetupDataLoader implements ApplicationListener<ContextRefreshedEven
 		return right;
 	}
 
-	public List<Right> setUpAdminRights() {		
+	public List<Right> setUpAdminRights() {
 		List<Right> adminRights = new ArrayList<>();
-		
+
 		rights.forEach((name, right) -> adminRights.add(right));
 
 		return adminRights;
@@ -110,9 +116,9 @@ public class SetupDataLoader implements ApplicationListener<ContextRefreshedEven
 
 	public List<Right> setUpAnonymusUserRights() {
 		List<Right> anonymousRights = new ArrayList<>();
-		
+
 		anonymousRights.add(rights.get("OWN_USER_READ"));
-		
+
 		return anonymousRights;
 	}
 
@@ -145,7 +151,7 @@ public class SetupDataLoader implements ApplicationListener<ContextRefreshedEven
 
 		return user;
 	}
-	
+
 	@Transactional
 	private Customer createCustomerIfNotFound(String username, String password, List<Role> roles) {
 		Customer user = customerRepository.findByUsername(username);
@@ -164,7 +170,7 @@ public class SetupDataLoader implements ApplicationListener<ContextRefreshedEven
 
 	@Transactional
 	private Employee createEmployeeIfNotFound(String username, String password, List<Role> roles) {
-		Employee user = employeeRepository.findByUsername(username);
+		Employee user = employeeService.getByUsername(username);
 
 		if (user == null) {
 			user = new Employee();
@@ -191,53 +197,64 @@ public class SetupDataLoader implements ApplicationListener<ContextRefreshedEven
 		optionalAttributesRepository.save(optionalAttributes);
 	}
 
-	public void setupRights () {
+	private void setupOpeningHours() {
+		if (openingHoursRepository.count() == 1)
+			return;
+
+		openingHoursRepository.deleteAll();
+
+		OpeningHours openingHours = new OpeningHours();
+
+		openingHoursRepository.save(openingHours);
+	}
+
+	public void setupRights() {
 		// user
 		setupRight("OWN_USER_READ", "Lesen des eigenen Benutzers erlaubt");
 		setupRight("OWN_USER_WRITE", "Ändern des eigenen Benutzers erlaubt");
 		setupRight("USER_READ", "Lesen aller Benutzers erlaubt");
 		setupRight("USER_WRITE", "Ändern aller Benutzers erlaubt");
-		
+
 		// employee
 		setupRight("OWN_EMPLOYEE_READ", "Lesen des eigenen Angestellten erlaubt");
 		setupRight("OWN_EMPLOYEE_WRITE", "Ändern des eigenen Angestellten erlaubt");
 		setupRight("EMPLOYEE_READ", "Lesen aller Angestellter erlaubt");
 		setupRight("EMPLOYEE_WRITE", "Ändern aller Angestellter erlaubt");
-		
+
 		// position
 		setupRight("POSITION_READ", "Lesen aller Positionen erlaubt");
 		setupRight("POSITION_WRITE", "Ändern aller Positionen erlaubt");
-		
+
 		// customer
 		setupRight("OWN_CUSTOMER_READ", "Lesen des eigenen Kunden erlaubt");
 		setupRight("OWN_CUSTOMER_WRITE", "Ändern des eigenen Kunden erlaubt");
 		setupRight("CUSTOMER_READ", "Lesen aller Kunden erlaubt");
 		setupRight("CUSTOMER_WRITE", "Ändern aller Kunden erlaubt");
-		
+
 		// role
 		setupRight("ROLE_READ", "Lesen aller Kunden erlaubt");
 		setupRight("ROLE_WRITE", "Ändern aller Kunden erlaubt");
-		
+
 		// right
 		setupRight("RIGHT_READ", "Lesen aller Rechte erlaubt");
 
 		// resource
 		setupRight("RESOURCE_READ", "Lesen aller Ressourcen erlaubt");
 		setupRight("RESOURCE_WRITE", "Ändern aller Ressourcen erlaubt");
-		
+
 		// resourceType
 		setupRight("RESOURCE_TYPE_READ", "Lesen aller Ressourcentypen erlaubt");
 		setupRight("RESOURCE_TYPE_WRITE", "Ändern aller Ressourcentypen erlaubt");
-		
+
 		// procedure
 		setupRight("PROCEDURE_READ", "Lesen aller Prozeduren erlaubt");
 		setupRight("PROCEDURE_WRITE", "Ändern aller Prozeduren erlaubt");
 		setupRight("PROCEDURE_RELATION_WRITE", "Ändern aller Prozeduren erlaubt");
-		
+
 		// availability
-		setupRight("OWN_AVAILABILITY_WRITE", "Ändern der eigenen Verfügbarkeiten erlaubt");
-		setupRight("AVAILABILITY_WRITE", "Ändern aller Verfügbarkeiten erlaubt");
-		
+		setupRight("OWN_AVAILABILITY_WRITE", "Ändern der eigenen VerfÃ¼gbarkeiten erlaubt");
+		setupRight("AVAILABILITY_WRITE", "Ändern aller VerfÃ¼gbarkeiten erlaubt");
+
 		// appointment
 		setupRight("OWN_APPOINTMENT_READ", "Lesen der eigenen Termine erlaubt");
 		setupRight("OWN_APPOINTMENT_WRITE", "Ändern der eigenen Termine erlaubt");
@@ -245,5 +262,8 @@ public class SetupDataLoader implements ApplicationListener<ContextRefreshedEven
 		setupRight("APPOINTMENT_READ", "Lesen aller Termine erlaubt");
 		setupRight("APPOINTMENT_WRITE", "Ändern aller Termine erlaubt");
 		setupRight("APPOINTMENT_BOOK", "Buchen aller Termine erlaubt");
+
+		setupRight("OVERRIDE",
+				"Erlaubt das Durchführen einer Aktion, welche ansonsten aufgrund nicht eingehaltener Bedingungen nicht erlaubt wäre");
 	}
 }

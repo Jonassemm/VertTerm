@@ -12,27 +12,27 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.PersistenceConstructor;
 
 public class Availability {
-	
+
 	@Id
 	private String id;
-	
+
 	public static Availability Always = new Availability("1", null, null, AvailabilityRhythm.ALWAYS);
 	private Date startDate;
 	private Date endDate;
-	
+
 	/**
 	 * defines the type of rhythm (e.g. daily or weekly)
 	 */
 	@NotNull
 	private AvailabilityRhythm rhythm;
-	
+
 	/**
 	 * defines the frequency of the rhythm (e.g. 2 -> every two rhythms)
 	 */
 	@NotNull
 	private int frequency;
 	private Date endOfSeries;
-	
+
 	public String getId() {
 		return id;
 	}
@@ -41,34 +41,26 @@ public class Availability {
 		this.id = id;
 	}
 
-	public Date getEarliestAvailability(Date date, Duration duration){
-		if(this.getRhythm() == AvailabilityRhythm.ALWAYS){
-			return date;
-		}
-		if((endDate.getTime() - startDate.getTime()) < duration.toMillis()){
-			return null;
-		}
+	public Date getEarliestAvailability(Date date, Duration duration) {
+		if (this.getRhythm() == AvailabilityRhythm.ALWAYS) { return date; }
+		if ((endDate.getTime() - startDate.getTime()) < duration.toMillis()) { return null; }
 
 		Date end = new Date(date.getTime() + duration.toMillis());
-		if(this.getRhythm() == AvailabilityRhythm.ONE_TIME){
-			return end.after(endDate) ? null : date;
-		}
-		if(end.after(endOfSeries)){
-			return null;
-		}
+		if (this.getRhythm() == AvailabilityRhythm.ONE_TIME) { return end.after(endDate) ? null : date; }
+		if (end.after(endOfSeries)) { return null; }
 
 		Date tmpStartDate = startDate;
 		Date tmpEndDate = endDate;
 
-		while(endOfSeries == null || !tmpStartDate.after(endOfSeries)){
-			if(tmpEndDate.before(end)){
+		while (endOfSeries == null || !tmpStartDate.after(endOfSeries)) {
+			if (tmpEndDate.before(end)) {
 				Calendar startCalendar = Calendar.getInstance();
 				Calendar endCalendar = Calendar.getInstance();
 
 				startCalendar.setTime(tmpStartDate);
 				endCalendar.setTime(tmpEndDate);
 
-				switch (this.getRhythm()){
+				switch (this.getRhythm()) {
 					case DAILY:
 						startCalendar.add(Calendar.HOUR, 24 * this.getFrequency());
 						endCalendar.add(Calendar.HOUR, 24 * this.getFrequency());
@@ -87,13 +79,11 @@ public class Availability {
 						break;
 				}
 				tmpStartDate = startCalendar.getTime();
-				tmpEndDate = endCalendar.getTime();
-			}
-			else{
-				if(date.before(tmpStartDate)){
+				tmpEndDate   = endCalendar.getTime();
+			} else {
+				if (date.before(tmpStartDate)) {
 					return tmpStartDate;
-				}
-				else{
+				} else {
 					return date;
 				}
 			}
@@ -165,36 +155,36 @@ public class Availability {
 	public Availability (Date startDate, Date endDate, AvailabilityRhythm rythm) {
 		this(startDate, endDate, rythm, 1);
 	}
-	
+
 	public Availability (String id, Date startDate, Date endDate, AvailabilityRhythm rythm) {
 		this(startDate, endDate, rythm, 1);
 		this.id = id;
 	}
-	
+
 	public Availability (Date startDate, Date endDate, AvailabilityRhythm rhythm, int frequency) {
 		this.startDate = startDate;
-		this.endDate = endDate;
-		this.rhythm = rhythm;
+		this.endDate   = endDate;
+		this.rhythm    = rhythm;
 		this.frequency = frequency;
 	}
-	
+
 	public Availability (Date startDate, Date endDate, AvailabilityRhythm rhythm, Date endOfSeries, int frequency) {
-		this.startDate = startDate;
-		this.endDate = endDate;
+		this.startDate   = startDate;
+		this.endDate     = endDate;
 		this.endOfSeries = endOfSeries;
-		this.rhythm = rhythm;
-		this.frequency = frequency;
+		this.rhythm      = rhythm;
+		this.frequency   = frequency;
 	}
-	
+
 	@PersistenceConstructor
-	public Availability (String id, Date startDate, Date endDate, AvailabilityRhythm rhythm, Date endOfSeries, int frequency) {
+	public Availability (String id, Date startDate, Date endDate, AvailabilityRhythm rhythm, Date endOfSeries,
+			int frequency) {
 		this(startDate, endDate, rhythm, endOfSeries, frequency);
 		this.id = id;
 	}
-	
-	public Availability () {
-	}
-	
+
+	public Availability () {}
+
 	public Date getStartDate() {
 		return startDate;
 	}
@@ -202,19 +192,19 @@ public class Availability {
 	public Date getEndDate() {
 		return endDate;
 	}
-	
+
 	public AvailabilityRhythm getRhythm() {
 		return rhythm;
 	}
-	
+
 	public int getFrequency() {
 		return frequency;
 	}
-	
+
 	public Date getEndOfSeries() {
 		return endOfSeries;
 	}
-	
+
 	public void setEndOfSeries(Date endOfSeries) {
 		this.endOfSeries = endOfSeries;
 	}
@@ -234,81 +224,80 @@ public class Availability {
 	public void setFrequency(int frequency) {
 		this.frequency = frequency;
 	}
-	
-	public boolean isAvailableBetween (Date startdate, Date enddate) {
-		if (startDate.after(startdate)
-				|| (endOfSeries != null && enddate.after(endOfSeries))) {
-			return false;
-		}
-		
+
+	public boolean isAvailableBetween(Date startdate, Date enddate) {
+		if (startDate.after(startdate) || (endOfSeries != null && enddate.after(endOfSeries))) { return false; }
+
 		boolean retVal = true;
 		int availStartDays = 0, availEndDays = 0, startDays = 0, endDays = 0, difference = 0;
-		Calendar availStartCalendar = getCalendar(this.startDate);
-		Calendar availEndCalendar = getCalendar(this.endDate);
+		Calendar availStartCalendar = getCalendar(startDate);
+		Calendar availEndCalendar = getCalendar(endDate);
 		Calendar startCal = getCalendar(startdate);
 		Calendar endCal = getCalendar(enddate);
 
 		switch (rhythm) {
-		case ONE_TIME:
-		case DAILY:
-			difference = getDaysBetweenDates(startCal, availStartCalendar);
-			break;
-		case WEEKLY:
-			int availStartDaysMod = availStartCalendar.get(Calendar.DAY_OF_WEEK);
-			int availEndDaysMod = availEndCalendar.get(Calendar.DAY_OF_WEEK);
-			int startDaysMod = startCal.get(Calendar.DAY_OF_WEEK);
-			int endDaysMod = endCal.get(Calendar.DAY_OF_WEEK);
+			case ONE_TIME:
+			case DAILY:
+				difference = getDaysBetweenDates(startCal, availStartCalendar);
+				endDays = getDayDifference(startCal, endCal);
+				break;
+			case WEEKLY:
+				int availStartDaysMod = availStartCalendar.get(Calendar.DAY_OF_WEEK);
+				int availEndDaysMod = availEndCalendar.get(Calendar.DAY_OF_WEEK);
+				int startDaysMod = startCal.get(Calendar.DAY_OF_WEEK);
+				int endDaysMod = endCal.get(Calendar.DAY_OF_WEEK);
 
-			availEndDays = normalize(availEndDaysMod, availStartDaysMod, 7);
-			startDays = normalize(startDaysMod, availStartDaysMod, 7);
-			endDays = normalize(endDaysMod, availStartDaysMod, 7);
-			difference = getDaysBetweenDates(availStartCalendar, startCal);
+				availEndDays = normalize(availEndDaysMod, availStartDaysMod, 7);
+				startDays = normalize(startDaysMod, availStartDaysMod, 7);
+				endDays = normalize(endDaysMod, availStartDaysMod, 7);
+				difference = getDaysBetweenDates(availStartCalendar, startCal);
 
-			retVal = getDaysBetweenDates(startCal, endCal) < 7;
+				retVal = getDaysBetweenDates(startCal, endCal) < 7;
 
-			break;
-		case MONTHLY:
-			int daysInMonthOfAvailabilityStartdate = YearMonth
-					.of(availStartCalendar.get(Calendar.YEAR), availStartCalendar.get(Calendar.MONTH) + 1).lengthOfMonth();
+				break;
+			case MONTHLY:
+				int daysInMonthOfAvailabilityStartdate = YearMonth
+						.of(availStartCalendar.get(Calendar.YEAR), availStartCalendar.get(Calendar.MONTH) + 1)
+						.lengthOfMonth();
 
-			int availStartDaysOfMonth = availStartCalendar.get(Calendar.DAY_OF_MONTH);
-			int availEndDaysOfMonth = availEndCalendar.get(Calendar.DAY_OF_MONTH);
-			int startDaysOfMonth = startCal.get(Calendar.DAY_OF_MONTH);
-			int endDaysOfMonth = endCal.get(Calendar.DAY_OF_MONTH);
+				int availStartDaysOfMonth = availStartCalendar.get(Calendar.DAY_OF_MONTH);
+				int availEndDaysOfMonth = availEndCalendar.get(Calendar.DAY_OF_MONTH);
+				int startDaysOfMonth = startCal.get(Calendar.DAY_OF_MONTH);
+				int endDaysOfMonth = endCal.get(Calendar.DAY_OF_MONTH);
 
-			availEndDays = normalize(availEndDaysOfMonth, availStartDaysOfMonth, daysInMonthOfAvailabilityStartdate);
-			startDays = normalize(startDaysOfMonth, availStartDaysOfMonth, daysInMonthOfAvailabilityStartdate);
-			endDays = normalize(endDaysOfMonth, availStartDaysOfMonth, daysInMonthOfAvailabilityStartdate);
-			difference = startCal.get(Calendar.MONTH) - availStartCalendar.get(Calendar.MONTH)
-					+ getYearDifference(startCal, availStartCalendar) * 12;
+				availEndDays = normalize(availEndDaysOfMonth, availStartDaysOfMonth, daysInMonthOfAvailabilityStartdate);
+				startDays = normalize(startDaysOfMonth, availStartDaysOfMonth, daysInMonthOfAvailabilityStartdate);
+				endDays = normalize(endDaysOfMonth, availStartDaysOfMonth, daysInMonthOfAvailabilityStartdate);
+				difference = startCal.get(Calendar.MONTH) - availStartCalendar.get(Calendar.MONTH)
+						+ getYearDifference(startCal, availStartCalendar) * 12;
 
-			retVal = getDaysBetweenDates(startCal, endCal) < 31;
+				retVal = getDaysBetweenDates(startCal, endCal) < 31;
 
-			break;
-		case YEARLY:
-			int daysInYearOfAvailabilityStartdate = getAmoungOfDaysInYear(availStartCalendar);
+				break;
+			case YEARLY:
+				int daysInYearOfAvailabilityStartdate = getAmountOfDaysInYear(availStartCalendar);
 
-			int availStartDaysOfYear = availStartCalendar.get(Calendar.DAY_OF_YEAR);
-			int availEndDaysOfYear = availEndCalendar.get(Calendar.DAY_OF_YEAR);
-			int startDaysOfYear = startCal.get(Calendar.DAY_OF_YEAR);
-			int endDaysOfYear = endCal.get(Calendar.DAY_OF_YEAR);
+				int availStartDaysOfYear = availStartCalendar.get(Calendar.DAY_OF_YEAR);
+				int availEndDaysOfYear = availEndCalendar.get(Calendar.DAY_OF_YEAR);
+				int startDaysOfYear = startCal.get(Calendar.DAY_OF_YEAR);
+				int endDaysOfYear = endCal.get(Calendar.DAY_OF_YEAR);
 
-			availEndDays = normalize(availEndDaysOfYear, availStartDaysOfYear, daysInYearOfAvailabilityStartdate);
-			startDays = normalize(startDaysOfYear, availStartDaysOfYear, daysInYearOfAvailabilityStartdate);
-			endDays = normalize(endDaysOfYear, availStartDaysOfYear, daysInYearOfAvailabilityStartdate);
-			difference = startCal.get(Calendar.YEAR) - availStartCalendar.get(Calendar.YEAR);
+				availEndDays = normalize(availEndDaysOfYear, availStartDaysOfYear, daysInYearOfAvailabilityStartdate);
+				startDays = normalize(startDaysOfYear, availStartDaysOfYear, daysInYearOfAvailabilityStartdate);
+				endDays = normalize(endDaysOfYear, availStartDaysOfYear, daysInYearOfAvailabilityStartdate);
+				difference = startCal.get(Calendar.YEAR) - availStartCalendar.get(Calendar.YEAR);
 
-			retVal = getDaysBetweenDates(startCal, endCal) < 366;
+				retVal = getDaysBetweenDates(startCal, endCal) < 366;
 
-			break;
-		default:
-			retVal = false;
+				break;
+			default:
+				retVal = false;
 		}
 
-		return retVal && this.isInBetween(availStartCalendar, availEndCalendar, startCal, endCal, frequency, availStartDays,
-				availEndDays, startDays, endDays, difference);
+		return retVal && this.isInBetween(availStartCalendar, availEndCalendar, startCal, endCal, frequency,
+				availStartDays, availEndDays, startDays, endDays, difference);
 	}
-	
+
 	private boolean isInBetween(Calendar availStartdate, Calendar availEnddate, Calendar startdate, Calendar enddate,
 			int frequenzy, int availStartDays, int availEndDays, int startDays, int endDays, int frequenzyDiff) {
 		if (availStartDays <= startDays && startDays <= availEndDays && endDays <= availEndDays) {
@@ -333,7 +322,7 @@ public class Availability {
 		return false;
 	}
 
-	private int getAmoungOfDaysInYear(Calendar cal) {
+	private int getAmountOfDaysInYear(Calendar cal) {
 		return cal.getActualMaximum(Calendar.DAY_OF_YEAR);
 	}
 
@@ -341,11 +330,11 @@ public class Availability {
 		dateToNormalize -= dateNormalizer;
 		return dateToNormalize + (dateToNormalize < 0 ? additionValue : 0);
 	}
-	
+
 	private boolean date1IsAfterDate2UsingAFieldOfDates(Calendar date1, Calendar date2, int fieldOfDate) {
 		return date1.get(fieldOfDate) <= date2.get(fieldOfDate);
 	}
-	
+
 	private boolean date1EqualsDate2UsingAFieldOfDates(Calendar date1, Calendar date2, int fieldOfDate) {
 		return date1.get(fieldOfDate) == date2.get(fieldOfDate);
 	}
@@ -360,6 +349,31 @@ public class Availability {
 
 	private int getYearDifference(Calendar date1, Calendar date2) {
 		int diff = date1.get(Calendar.YEAR) - date2.get(Calendar.YEAR);
+
+		return Math.max(diff, 0);
+	}
+
+	private int getDayDifference(Calendar date1, Calendar date2) {
+		Calendar cal1 = getCalendar((Date) date1.getTime().clone());
+		int yeardiff = getYearDifference(date1, date2);
+		int diff = 0;
+
+		if (date1.after(date2))
+			throw new IllegalArgumentException("date1 must not be later than date2");
+		if (yeardiff == 0) {
+			diff = date2.get(Calendar.DAY_OF_YEAR) - date1.get(Calendar.DAY_OF_YEAR);
+		} else
+			if (yeardiff > 1) {
+				diff = date1.get(Calendar.DAY_OF_YEAR) - getAmountOfDaysInYear(date1);
+				cal1.add(Calendar.YEAR, 1);
+
+				while (cal1.get(Calendar.YEAR) < date2.get(Calendar.YEAR)) {
+					diff += getAmountOfDaysInYear(date1);
+					cal1.add(Calendar.YEAR, 1);
+				}
+
+				diff += date2.get(Calendar.DAY_OF_YEAR);
+			}
 
 		return Math.max(diff, 0);
 	}

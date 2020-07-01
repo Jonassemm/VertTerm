@@ -6,6 +6,7 @@ import java.util.List;
 
 import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.rest.webmvc.ResourceNotFoundException;
 
 import com.dvproject.vertTerm.Service.AppointmentService;
 import com.dvproject.vertTerm.exception.AvailabilityException;
@@ -26,14 +27,30 @@ public class Employee extends User implements Serializable, Available {
 	}
 
 	public void isAvailable(Date startdate, Date enddate) {
-		if (!getAvailabilities().stream().anyMatch(availability -> availability.isAvailableBetween(startdate, enddate))) {
+		if (!getAvailabilities().stream()
+				.anyMatch(availability -> availability.isAvailableBetween(startdate, enddate))) {
 			throw new AvailabilityException("No availability for the employee " + getFirstName() + " " + getLastName());
 		}
 	}
 
+	public List<Appointment> getAppointmentsOfBookedEmployeeInTimeinterval(AppointmentService AppoService, String id,
+			Date starttime, Date endtime) {
+
+		List<Appointment> EmpApps = AppoService.getAppointmentsOfBookedEmployeeInTimeinterval(id, starttime, endtime,
+				AppointmentStatus.PLANNED);
+
+		if (EmpApps.size() > 0 && (EmpApps != null)) {
+			return EmpApps;
+		} else {
+			throw new ResourceNotFoundException("No appointments from Employee with the id: " + id
+					+ " in the time interval of the blocker appointment could be found");
+		}
+
+	}
+
 	@Override
 	public List<Appointment> getAppointmentsAfterDate(AppointmentService appointmentService, Date startdate) {
-		List<Appointment> appointments = appointmentService.getAppointmentsOfEmployee(getId(), startdate);
+		List<Appointment> appointments = appointmentService.getAppointmentsOf(this, startdate);
 
 		for (Appointment appointment : appointments) {
 			List<Employee> employees = appointment.getBookedEmployees();

@@ -83,13 +83,15 @@ public class UserServiceImp implements UserService {
 
 	@Override
 	public boolean delete(String id) {
+		User user = getById(id);
+
 		testAppointments(id);
-		
-    	User user = this.getById(id);
-    	obfuscateUser(user);
-		
-		repo.deleteById(id);
-		return repo.existsById(id);
+    	user.obfuscate();
+
+    	user.setSystemStatus(Status.DELETED);
+    	repo.save(user);
+
+    	return getById(id).getSystemStatus() == Status.DELETED;
 	}
 
 //	@PreAuthorize("hasAuthority('OWN_USER_DATA_READ')")
@@ -174,16 +176,30 @@ public class UserServiceImp implements UserService {
     	if (password == null || password.equals("")) {
     		Optional<User> optUser = repo.findById(user.getId());
     		
-    		if (optUser.isEmpty()) {
+    		if (optUser.isEmpty())
     			throw new IllegalArgumentException("A user can not be created without a password!");
-    		}
     		
     		user.setPassword(optUser.get().getPassword());
     	} else {
-    		String encodedPassword = passwordEncoder.encode(password);
-    		user.setPassword(encodedPassword);
+    		user.setPassword(passwordEncoder.encode(password));
     	}
     }
+
+	@Override
+	public User getAnonymousUser() {
+		String username = "anonymousUser";
+		User user = this.getUsersWithUsernames(new String [] {username}).get(0);
+		User newUser = new User();
+		
+		//create unique username
+		newUser.setUsername(username + repo.count());
+		newUser.setPassword(UUID.randomUUID().toString());
+		newUser.setSystemStatus(Status.ACTIVE);
+		newUser.setAnonymousUser(true);
+		newUser.setRoles(user.getRoles());
+		
+		return newUser;
+	}
 	
 	public void testMandatoryFields(User user) {
 		List<OptionalAttribute> optionalAttributes = new ArrayList<>(user.getOptionalAttributes());
@@ -191,17 +207,11 @@ public class UserServiceImp implements UserService {
 	}
 	
 	public void testAppointments(String userid) {
-		List<Appointment> appointments = appointmentService.getAppointmentsByUserid(userid, AppointmentStatus.PLANNED);
+		List<Appointment> appointments = appointmentService.getAppointmentsByUserIdAndAppointmentStatus(userid,
+				AppointmentStatus.PLANNED);
 		
-		if (appointments != null && appointments.size() > 0) {
+		if (appointments != null && appointments.size() > 0)
 			throw new IllegalArgumentException("User can not be deleted because he has booked appointments");
-		}
-	}
-	
-	public void obfuscateUser(User user) {
-    	if (user != null) {
-    		user.obfuscate();
-    	}
 	}
 
 }

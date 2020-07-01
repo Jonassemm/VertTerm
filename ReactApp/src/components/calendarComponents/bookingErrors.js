@@ -1,8 +1,14 @@
 export function getErrorMessage(exceptionType) {
     switch (exceptionType) {
-        case 'customer': return "Kein Kunde ausgewählt!"; break;
-        case 'ProcedureRelation': return "Die Prozedurrelationen wurden nicht richtig umgesetzt!"; break;
-        case 'Ressource' : return "Eine/Mehrere der ausgewählten Ressourcen ist zu diesem Zeitpunkt nicht verfügbar!"; break;
-        case 'Employee' : return "Einer/Mehrere der ausgewählten Mitarbeiter ist zu diesem Zeitpunkt nicht verfübar!"; break;
+        case 'Resource': return "Zu wenige/viele Ressourcen für einen der Termine"; break;
+        case 'Employee': return "Zu wenige/viele Angestellte für einen der Termine"; break;
+        case 'Restriction': return "Die nötigen Prozedurrelationen wurden nicht richtig umgesetzt"; break;
+        case 'Appointment': return "Diese Zeit ist durch einen anderen Termin blockiert!"; break;
+        case 'Availability': return "Soll-Zeiten des Termins stimmen nicht mit den Verfügbarkeiten der Procedure/Angestellten/Ressourcen überein"; break;
+        case 'ResourceType': return "Ressourcen des Termins stimmen nicht mit den Ressourcentypen der Prozedur überein"; break;
+        case 'ProcedureRelation': return "Soll-Zeiten des Termins stimmen nicht mit den vorgegebenen Zeitabständen zwischen den Terminen überein"; break;
+        case 'Procedure': return "Die vorgebebene Dauer einer Prozedur wurde für einen Termin nicht eingehalten!"; break;
+        case 'Position': return "Angestellte des Termins stimmen nicht mit den Positionen der Prozedur überein"; break;
+        case 'AppointmentTime': return "Zeiten des Termins sind nicht valide"; break;
     }
 }

@@ -12,10 +12,6 @@ import java.util.TimeZone;
 
 import javax.validation.constraints.NotNull;
 
-import com.dvproject.vertTerm.Service.AppointmentServiceImpl;
-import com.dvproject.vertTerm.Service.BasicService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.PersistenceConstructor;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.DBRef;
@@ -34,7 +30,8 @@ public abstract class User extends Bookable implements Serializable
 	private Date creationDate;
 	@NotNull
 	private Status systemStatus;
-	
+	private boolean anonymousUser;
+
 	private List<OptionalAttributeWithValue> optionalAttributes;
 
 	@DBRef
@@ -155,11 +152,19 @@ public abstract class User extends Bookable implements Serializable
 		this.creationDate = creationDate;
 	}
 	
+	public void setAnonymousUser(boolean anonymousUser) {
+		this.anonymousUser = anonymousUser;
+	}
+
+	public boolean isAnonymousUser() {
+		return anonymousUser;
+	}
+
 	public void obfuscate() {
 	    byte[] array = new byte[15];
 	    Random random = new Random(System.currentTimeMillis());
 	    
-	    random.nextBytes(array);
+	   random.nextBytes(array);
 		username = getRandomString(array);
 		password = null;
 		random.nextBytes(array);
@@ -172,9 +177,9 @@ public abstract class User extends Bookable implements Serializable
 	public String generateLoginLink() {
 		String loginLink = null;
 		
-		if (username.contains("anonymousUser")) {
+		if (isAnonymousUser()) {
 			String password = this.password.substring(6);
-			loginLink = "/api/?username=" + username + "&password=" + password;
+			loginLink =  username + "," + password;
 		}
 		
 		return loginLink;

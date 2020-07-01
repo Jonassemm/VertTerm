@@ -83,33 +83,21 @@ public class CustomerServiceImp implements CustomerService {
 
     @Override
     public boolean delete(String id) {
+   	Customer user = getById(id);
+
     	userService.testAppointments(id);
+    	user.obfuscate();
+
+    	user.setSystemStatus(Status.DELETED);
     	
-    	User user = this.getById(id);
-    	userService.obfuscateUser(user);
-    	
-    	repo.deleteById(id);
-    	return repo.existsById(id);
+    	return getById(id).getSystemStatus() == Status.DELETED;
     }
     
     public static String capitalize(String str)
     {
-        if(str == null) return str;
-        return str.toUpperCase();
-    }
-
-    @Override
-    public Customer getAnonymousUser() {
-        String username = "anonymousUser";
-        Customer user = this.repo.findByUsername(username);
-        Customer newUser = new Customer();
-
-        //create unique username
-        newUser.setUsername(username + repo.count());
-        newUser.setPassword("{noop}" + UUID.randomUUID().toString());
-        newUser.setSystemStatus(Status.ACTIVE);
-        newUser.setRoles(user.getRoles());
-
-        return newUser;
+        if(str == null)
+        	return str;
+        return  str.substring(0, 1).toUpperCase()+str.substring(1).toLowerCase();
+        
     }
 }
