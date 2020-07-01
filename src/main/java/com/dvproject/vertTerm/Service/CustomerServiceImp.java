@@ -81,13 +81,14 @@ public class CustomerServiceImp implements CustomerService {
 
     @Override
     public boolean delete(String id) {
+   	Customer user = getById(id);
+   	 
     	userService.testAppointments(id);
+    	user.obfuscate();
     	
-    	User user = this.getById(id);
-    	userService.obfuscateUser(user);
+    	user.setSystemStatus(Status.DELETED);
     	
-    	repo.deleteById(id);
-    	return repo.existsById(id);
+    	return getById(id).getSystemStatus() == Status.DELETED;
     }
     
     public static String capitalize(String str)

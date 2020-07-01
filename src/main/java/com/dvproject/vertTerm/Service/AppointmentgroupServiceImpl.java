@@ -210,7 +210,7 @@ public class AppointmentgroupServiceImpl implements AppointmentgroupService {
 
 		for (Appointment appointment : appointments) {
 			if (!noUserAttached && appointment.getBookedCustomer() != null
-					&& !appointment.getBookedCustomer().getId().equals(userid)) {
+					&& !appointment.getBookedCustomer().getId().equals(userid) || user.getSystemStatus() == Status.DELETED) {
 
 				if (override) {
 					appointment.addWarning(Warning.USER_WARNING);
@@ -308,24 +308,18 @@ public class AppointmentgroupServiceImpl implements AppointmentgroupService {
 				.get();
 		List<Appointment> appointmentsToTestWarningsFor = null;
 		boolean retVal = false;
-		AppointmentStatus status = appointment.getStatus();
 
-		retVal = appointmentService.delete(id);
+		appointmentsOfAppointmentgroup.remove(appointment);
 
 		if (override) {
 			testWarningsForAppointmentGroup(appointmentgroupOfAppointment);
 			appointment.setWarnings(new ArrayList<>());
 			appointmentsOfAppointmentgroup.forEach(app -> appointmentService.update(app));
 		} else {
-			try {
-				appointmentgroupOfAppointment.testProcedureRelations();
-			} catch (ProcedureException | ProcedureRelationException ex) {
-				// set the appointment to the previous status
-				appointment = appointmentService.getById(id);
-				appointment.setStatus(status);
-				appointmentService.update(appointment);
-			}
+			appointmentgroupOfAppointment.testProcedureRelations();
 		}
+
+		retVal                        = appointmentService.delete(id);
 
 		appointmentsToTestWarningsFor = appointmentService.getOverlappingAppointmentsInTimeInterval(
 				appointment.getPlannedStarttime(), appointment.getPlannedEndtime(), AppointmentStatus.PLANNED);
@@ -408,8 +402,8 @@ public class AppointmentgroupServiceImpl implements AppointmentgroupService {
 		List<Appointment> appointmentsToTest;
 
 		if (appointment == null)
-			appointmentsToTest = appointmentService.getAppointmentsInTimeIntervalAndStatus(startdate, getLatestTimeOfToday(),
-					AppointmentStatus.PLANNED);
+			appointmentsToTest = appointmentService.getAppointmentsInTimeIntervalAndStatus(startdate,
+					getLatestTimeOfToday(), AppointmentStatus.PLANNED);
 		else {
 			List<ObjectId> employeeids = appointment.getBookedEmployees().stream().map(emp -> new ObjectId(emp.getId()))
 					.collect(Collectors.toList());

@@ -5,7 +5,6 @@ import com.dvproject.vertTerm.Model.Employee;
 import com.dvproject.vertTerm.Model.Status;
 import com.dvproject.vertTerm.Service.EmployeeService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -60,8 +59,6 @@ public class EmployeeController {
     @DeleteMapping("/{id}")
     public boolean DeleteEmployee(@PathVariable String id)
     {
-        Employee user = this.get(id);
-        user.setSystemStatus(Status.DELETED);
-        return this.UpdateEmployee(user).equals(user);
+   	 return service.delete(id);
     }
 }

@@ -159,6 +159,10 @@ public class BlockerServiceImp implements BlockerService {
 			throw new ResourceNotFoundException("Blocker with the given id :" + id + " not found");
 		}
 	}
+	
+	public boolean exists (String id) {
+		return blockerRepo.existsById(id);
+	}
 
 	// @PreAuthorize("hasAuthority('')")
 	public List<Blocker> getBlockers(String[] ids) {

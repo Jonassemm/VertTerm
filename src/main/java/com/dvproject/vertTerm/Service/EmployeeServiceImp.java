@@ -74,18 +74,8 @@ public class EmployeeServiceImp implements EmployeeService, AvailabilityService 
 		return employees;
 	}
     
-    public List<Employee> getAll(String positionId){
-//        List<Employee> result= new ArrayList<>();
-//        for(Employee employee : repo.findAll()){
-//            for (Position position : employee.getPositions())
-//            if(position.getId().equals(positionId)) {
-//                result.add(employee);
-//            }
-//        }
-//        return result;
-        
+    public List<Employee> getAll(String positionId){        
         return repo.findByPositionsId(positionId);
-        
     }
 
     @Override
@@ -142,14 +132,16 @@ public class EmployeeServiceImp implements EmployeeService, AvailabilityService 
 
     @Override
     public boolean delete(String id) {
-    	userService.testAppointments(id);
-    	this.testAppointments(id);
+   	 Employee user = getById(id);
+   	 
+    	 userService.testAppointments(id);
+    	 testAppointments(id);
+    	 user.obfuscate();
+    	 
+    	user.setSystemStatus(Status.DELETED);
+    	repo.save(user);
     	
-    	User user = this.getById(id);
-    	userService.obfuscateUser(user);
-    	
-        repo.deleteById(id);
-        return repo.existsById(id);
+    	return getById(id).getSystemStatus() == Status.DELETED;
     }
 
     @Override

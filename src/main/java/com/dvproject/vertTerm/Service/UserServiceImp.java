@@ -83,13 +83,15 @@ public class UserServiceImp implements UserService {
 
 	@Override
 	public boolean delete(String id) {
+		User user = getById(id);
+		
 		testAppointments(id);
-		
-    	User user = this.getById(id);
-    	obfuscateUser(user);
-		
-		repo.deleteById(id);
-		return repo.existsById(id);
+    	user.obfuscate();
+    	
+    	user.setSystemStatus(Status.DELETED);
+    	repo.save(user);
+    	
+    	return getById(id).getSystemStatus() == Status.DELETED;
 	}
 
 //	@PreAuthorize("hasAuthority('OWN_USER_DATA_READ')")
@@ -210,12 +212,6 @@ public class UserServiceImp implements UserService {
 		
 		if (appointments != null && appointments.size() > 0)
 			throw new IllegalArgumentException("User can not be deleted because he has booked appointments");
-	}
-	
-	public void obfuscateUser(User user) {
-    	if (user != null) {
-    		user.obfuscate();
-    	}
 	}
 
 }

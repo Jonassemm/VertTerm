@@ -71,6 +71,10 @@ public class AvailabilityServiceImpl {
 		Availability repoAvailability;
 		boolean availabilityHasChanged = false;
 		Date earliestDateChanged = null;
+		
+		// test, whether all availabilities.id are unique
+		if (availabilities.stream().map(avail -> avail.getId()).distinct().count() != availabilities.size())
+			throw new IllegalArgumentException("Non unique ids in the given availabilities");
 
 		for (int i = 0; i < availabilities.size(); i++) {
 			Availability availability = availabilities.get(i);

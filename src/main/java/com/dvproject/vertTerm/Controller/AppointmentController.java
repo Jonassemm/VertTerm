@@ -9,7 +9,8 @@ import com.dvproject.vertTerm.Model.Employee;
     import com.dvproject.vertTerm.Model.User;
     import com.dvproject.vertTerm.Model.Warning;
     import com.dvproject.vertTerm.Service.AppointmentService;
-    import com.dvproject.vertTerm.Service.UserService;
+import com.dvproject.vertTerm.Service.AppointmentgroupService;
+import com.dvproject.vertTerm.Service.UserService;
 
     import org.springframework.beans.factory.annotation.Autowired;
     import org.springframework.security.core.GrantedAuthority;
@@ -27,6 +28,9 @@ import java.util.Collection;
     public class AppointmentController {
     	@Autowired
     	AppointmentService service;
+    	
+    	@Autowired
+    	private AppointmentgroupService appointmentgroupService;
 
     	@Autowired
     	private UserService userService;
@@ -40,6 +44,12 @@ import java.util.Collection;
     	public @ResponseBody Appointment get(@PathVariable String id) {
     		return service.getById(id);
     	}
+    	
+   	@GetMapping("/pull/{id}")
+   	public void testPullability (@PathVariable String id) {
+   		Appointment appointment = service.getById(id);
+   		appointmentgroupService.setPullableAppointment(appointment);
+   	}
     	
     	@GetMapping("/Own")
     	public @ResponseBody List<Appointment> getOwnAppointments(Principal principal) {
