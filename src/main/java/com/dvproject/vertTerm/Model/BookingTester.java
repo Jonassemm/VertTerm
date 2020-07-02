@@ -42,7 +42,7 @@ public abstract class BookingTester {
 	public Appointment testAll(Appointment appointment, AppointmentServiceImpl appointmentService,
 			RestrictionService restrictionService) {
 		testAll(appointment, appointmentService, restrictionService, timeIntervallsOfAppointments);
-		return appointment;
+		return this.appointment;
 	}
 
 	public void setAppointment(Appointment appointment) {

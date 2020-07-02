@@ -20,4 +20,8 @@ public enum Status {
 	 */
 	@JsonProperty("deleted")
 	DELETED;
+	
+	public boolean isActive() {
+		return this == Status.ACTIVE;
+	}
 }

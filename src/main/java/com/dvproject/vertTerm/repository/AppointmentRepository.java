@@ -33,12 +33,16 @@ public interface AppointmentRepository extends MongoRepository<Appointment, Stri
 	List<Appointment> findByBookedEmployeesId(String id);
 
 	List<Appointment> findByBookedResourcesId(String id);
+	
+	List<Appointment> findByBookedProcedureId(String id);
 
 	List<Appointment> findByBookedCustomerIdAndStatus(String id, AppointmentStatus status);
 
 	List<Appointment> findByBookedEmployeesIdAndStatus(String id, AppointmentStatus status);
 
 	List<Appointment> findByBookedResourcesIdAndStatus(String id, AppointmentStatus status);
+	
+	List<Appointment> findByBookedProcedureIdAndStatus(String id, AppointmentStatus status);
 
 	List<Appointment> findByBookedProcedureIdAndPlannedStarttimeAfter(String id, Date plannedStarttime);
 
