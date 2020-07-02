@@ -10,13 +10,14 @@ import {getOpeningHours} from "../openingHoursComponents/OpeningHoursRequests"
 
 var moment = require('moment'); 
 
-/* ---------------------------------------------------------FOR USAGE---------------------------------------------------------
+/* ---------------------------------------------------------FOR USAGE-------------------------------------------------------
 -> Usage in your Form:
     <AvailabilityForm  
         availabilities={availabilities} 
         addAvailability={addAvailability}
         updateAvailabilities={updateAvailabilities} 
         editedAvailabilities={setEdited}
+        withOpeningHours={false}  //this prop is optional to reduces the functionality of adding opening hours (default value: true)
     />
 
 -> Make sure you have a state for your availabilities as an array like this: 
@@ -45,7 +46,7 @@ const Availability = forwardRef((props, ref) => {
     //props.addAvailability()
     //props.editedAvailabilities()
     //props.updateAvailabilities()
-    //props.withOpeningHours
+    //props.withOpeningHours -> optional porp
     
     if(props.withOpeningHours == undefined) {
         props.withOpeningHours = true //default value
@@ -65,10 +66,8 @@ const Availability = forwardRef((props, ref) => {
     const [frequency, setFrequency] = useState(1)
     const [endOfSeriesDateString, setEndOfSeriesDateString] = useState(null)
     const [withSeriesEnd, setWithSeriesEnd] = useState(false)
-
     //needed to separate new added availavilities with the submitted availabilities
     const [addedAvailabilities, setAddedAvailabilities] = useState([])
-
     const [openingHoursAvailabilities, setOpeningHoursAvailabilites] = useState([])
     const [openingHoursAdded, setOpeningHoursAdded] = useState(false)
     const [openingHoursIndex, setOpeningHoursIndex] = useState(null)
@@ -191,8 +190,8 @@ const Availability = forwardRef((props, ref) => {
         }
     }
 
-    //---------------------------------Load---------------------------------
-    const loadOpeningHoursAvailabilities = async () => {
+     //------------------------------------LOAD--------------------------------------
+     const loadOpeningHoursAvailabilities = async () => {
         var data = []
         try {
             const response = await getOpeningHours();
@@ -200,7 +199,26 @@ const Availability = forwardRef((props, ref) => {
         }catch (error) {
             console.log(Object.keys(error), error.message)
         }
-        setOpeningHoursAvailabilites(data)
+        var dataWithoutId = []
+        var singleAvailability = null
+        data.map(availability =>{
+            singleAvailability = {
+                startDate: availability.startDate, 
+                endDate: availability.endDate, 
+                frequency: availability.frequency,
+                rhythm: availability.rhythm,
+                endOfSeries: availability.endOfSeries}
+
+            if(availability.endOfSeries != null) {
+                //check if endOfSeries < actual time
+                if(moment(availability.endOfSeries, "DD.MM.yyyy HH:mm").toDate().getTime() > moment().toDate().getTime()) {
+                    dataWithoutId.push(singleAvailability)
+                }
+            }else {// endOfSeries == null
+                dataWithoutId.push(singleAvailability)
+            }
+        })
+        setOpeningHoursAvailabilites(dataWithoutId)
     }
 
 
@@ -216,40 +234,38 @@ const Availability = forwardRef((props, ref) => {
     const handleCancleAvailability = data => {
         const indexDifference = props.availabilities.length - addedAvailabilities.length
         var counter = countOfIncludedOpeningHours
-        var reducedIndex = 0
         props.availabilities.map((singleAvailability, index) => {
             if(index == data.target.value) {
                 if((index >= indexDifference)) { //the availabilities which are added, but not submitted   
-
                     //reduce opening hours
+                    const reducedIndex = 1
                     if(index <= openingHoursIndex && index > openingHoursIndex - countOfIncludedOpeningHours){
-                        counter -= 1
-                        setCountOfIncludedOpeningHours(countOfIncludedOpeningHours - 1)
-                        setOpeningHoursIndex(openingHoursIndex-1)
+                        counter -= reducedIndex
+                        setCountOfIncludedOpeningHours(countOfIncludedOpeningHours - reducedIndex)
+                        setOpeningHoursIndex(openingHoursIndex-reducedIndex)
                     }else  //reduce before opening hours
                     if(index <= openingHoursIndex - counter){
-                        setOpeningHoursIndex(openingHoursIndex-1)
+                        setOpeningHoursIndex(openingHoursIndex-reducedIndex)
                     }
                     props.availabilities.splice((index),1) // remove  at "index" and just remove "1" 
                     addedAvailabilities.splice((index-indexDifference),1)
                     props.updateAvailabilities(props.availabilities)
 
                 }else { //the submitted availabilities
-                    const answer = confirm("Möchten Sie diese Verfügbarkeit wirklich deaktivieren? ")
-                    if (answer) {
-                        props.availabilities.map((singleAvailability, index) => {
-                            if(index == data.target.value) {
-                                singleAvailability.endOfSeries = moment().format("DD.MM.YYYY HH:mm").toString()
-                            }
-                        })
-                        props.updateAvailabilities(props.availabilities)
-                        props.editedAvailabilities(true)   
-                    }
+                    props.availabilities.map((singleAvailability, index) => {
+                        if(index == data.target.value) {
+                            singleAvailability.endOfSeries = moment().format("DD.MM.YYYY HH:mm").toString()
+                        }
+                    })
+                    props.updateAvailabilities(props.availabilities)
+                    props.editedAvailabilities(true)   
                 }
             }
         })
     }
 
+
+    //-----------------------------------Help-Functions------------------------------------------
     const setOpeningHours = (asOpeningHours) => {
         setOpeningHoursAdded(asOpeningHours)
 
@@ -282,6 +298,7 @@ const Availability = forwardRef((props, ref) => {
     }
 
 
+    //needed to refresh the addesAvailabilities after submit
     useImperativeHandle(ref, () => ({
         submitted()  {
             setAddedAvailabilities([])

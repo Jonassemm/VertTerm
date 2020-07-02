@@ -139,7 +139,5 @@ export const creatWarningList = (list) => {
             }
         }
     }
-    console.log("WarningLIST")
-    console.log(warningList)
     return warningList  
 }

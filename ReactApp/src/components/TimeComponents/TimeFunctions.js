@@ -1,8 +1,15 @@
 var moment = require('moment'); 
 
+ /*--------------------String/Date - Translation-----------------------
+
+    var string = "13.01.2003 13:45";
+    var date = moment(string, "DD.MM.yyyy HH:mm").toDate();
+    var dateString = moment(date).format("DD.MM.YYYY HH:mm").toString();
+*/
+
+
 export function setDate() {
     const date = new Date();
-    var changeHours = false;
 
     date.setSeconds(0);
 
@@ -15,14 +22,7 @@ export function setDate() {
         date.setMinutes(45);
     } else if (minutes <= 59) {
         date.setMinutes(0);
-        //changeHours = true;
     }
-
-   /*  TESTS
-    var ds = "13.01.2003 13:45";
-    var date = moment(ds, "DD.MM.yyyy HH:mm").toDate();
-    var dateString = moment(date).format("DD.MM.YYYY HH:mm").toString();
-    */
 
     const resultDate = moment(date).format("DD.MM.YYYY HH:mm").toString()
     return resultDate;

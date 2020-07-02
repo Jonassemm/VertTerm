@@ -6,10 +6,13 @@ import OverviewPage from "../../OverviewPage"
 function ResourceTypePage() {
     const [resourceTypes, setResourceTypes] = useState([])
 
+
     useEffect(() => {
         loadResourceTypes()
     }, [])
 
+
+    //--------------------------------LOAD-----------------------------
     const loadResourceTypes = async () => {
         var data = [];
         try{ 
@@ -17,11 +20,12 @@ function ResourceTypePage() {
           data = response.data;
         }catch (error) {
           console.log(Object.keys(error), error.message)
-          alert("An error occoured while loading all resourceTypes")
         }
         setResourceTypes(data);
     };
 
+
+    //----------------------OverviewPage-Components---------------------
     const tableBody =
         resourceTypes.map((item, index) => {
             return ([

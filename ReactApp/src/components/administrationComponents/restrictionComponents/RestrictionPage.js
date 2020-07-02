@@ -6,10 +6,13 @@ import OverviewPage from "../../OverviewPage"
 function RestrictionPage() {
     const [restrictionsa, setRestrictions] = useState([])
 
+
     useEffect(() => {
         loadRestrictions()
     }, [])
 
+
+    //--------------------------------LOAD----------------------------------
     const loadRestrictions = async () => {
         var data = [];
         try{ 
@@ -21,7 +24,8 @@ function RestrictionPage() {
         setRestrictions(data);
     };
 
-    console.log(restrictionsa)
+
+    //----------------------OverviewPage-Components-------------------------
     const tableBody =
         restrictionsa.map((item, index) => {
             return ([
@@ -29,6 +33,7 @@ function RestrictionPage() {
                 item.name]
             )
         })
+
 
     const modal = (onCancel,edit,selectedItem) => {
         return (
@@ -39,6 +44,7 @@ function RestrictionPage() {
             />
         )
     }
+    
 
     return (
         <React.Fragment>

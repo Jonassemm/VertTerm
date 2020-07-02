@@ -44,18 +44,18 @@ export const Style = styled.div`
 
 `
 
-  // definition of the modal prop
-    /* 
-    const modal = (onCancel,edit,selectedItem) => {
-        return (
-            <CUSTOM_FORM                //your defined input form
-                onCancel={onCancel}
-                edit={edit}
-                selected={selectedItem}
-            />
-        )
-    }
-    */
+// definition of the modal prop
+/* 
+const modal = (onCancel,edit,selectedItem) => {
+    return (
+        <CUSTOM_FORM                //your defined input form
+            onCancel={onCancel}
+            edit={edit}
+            selected={selectedItem}
+        />
+    )
+}
+*/
 
 function OverviewPage({
     pageTitle,        

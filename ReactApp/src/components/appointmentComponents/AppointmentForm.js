@@ -1,21 +1,20 @@
 import React, { useState, useEffect } from "react"
-import { Container, Form, Col, Row, Modal, Button } from "react-bootstrap"
+import { Container, Form, Col, Button } from "react-bootstrap"
 import {Link} from 'react-router-dom';
 import {setDate} from "../TimeComponents/TimeFunctions"
-import {getWarningsAsString, getTranslatedWarning} from "../Warnings"
+import {getWarningsAsString} from "../Warnings"
 import {appointmentStatus, translateStatus} from "./AppointmentStatus"
 import {
     deleteAppointment,
-    deleteOverrideAppointment,
-    getAllAppointments,
-    getGroupOfAppointment,
     testAppointment,
     updateCustomerIsWaiting,
     startAppointment,
-    stopAppointment
+    stopAppointment,
+    testPreferredAppointment
 } from "./AppointmentRequests"
 
 var moment = require('moment'); 
+const twoMinutes = 120000
 
 
 export const handleDeleteAppointment = async (id, handleOnCancel = undefined, setException, setPreferredAppointment) => {
@@ -24,10 +23,6 @@ export const handleDeleteAppointment = async (id, handleOnCancel = undefined, se
         try{
             await deleteAppointment(id)
             .then(res => {
-                if (res.status = "200") {
-                    //deleting successful
-                }
-                console.log(res.headers)
                 if(res.headers.appointmentid != undefined && res.headers.starttime != undefined) {
                     setPreferredAppointment(res.headers.appointmentid, res.headers.starttime)
                 }
@@ -36,10 +31,8 @@ export const handleDeleteAppointment = async (id, handleOnCancel = undefined, se
                 }
             })
             .catch((error) => {
-                console.log("EXCEPTION while deleting appointment")
-                console.log(error.response.headers)
                 if(error.response.headers.exception != undefined) {
-                    setException(error.response.headers.exception)
+                    setException(error.response.headers.exception, id)
                 }
             })
         } catch (error){
@@ -80,15 +73,6 @@ function AppointmentForm({
     const [customerIsWaiting, setCustomerIsWaiting] = useState(false)
     
 
-    const handleCustomerIsWaitingChange = () => {
-            if(customerIsWaiting) {
-                setCustomerIsWaiting(false) 
-            } else {
-                setCustomerIsWaiting(true) 
-            }
-            setEdited(true)
-    }
-
     useEffect(() => { 
         if(edit) {
             setProcedure(selected.bookedProcedure)
@@ -107,25 +91,27 @@ function AppointmentForm({
     }, [])
 
 
+    const handleCustomerIsWaitingChange = () => {
+            if(customerIsWaiting) {
+                setCustomerIsWaiting(false) 
+            } else {
+                setCustomerIsWaiting(true) 
+            }
+            setEdited(true)
+    }
+
+
     const handleSubmit = async () => {
         try{
             const res = await updateCustomerIsWaiting(selected.id, customerIsWaiting)
-            //.then(res => {
-                if (res.status = "200") {
-                    //updating successful
+            if(res.headers.appointmentid != undefined && res.headers.starttime != undefined) {
+                //panned start > now + (2 minutes = 120000)
+                if(moment(plannedStarttime, "DD.MM.yyyy HH:mm").toDate().getTime() > (moment().toDate().getTime()+twoMinutes)) {
+                    handlePreferredAppointmentChange(res.headers.appointmentid, res.headers.starttime)  
                 }
-                console.log("Antwort:")
-                console.log(res.headers)
-                if(res.headers.appointmentid != undefined && res.headers.starttime != undefined) {
-                    handlePreferredAppointmentChange(res.headers.appointmentid, res.headers.starttime)
-                }
-            //})
-            /* .catch((error) => {
-                console.log("Fehler")
-                console.log(error)
-            }) */
+                
+            }
         } catch (error){
-            console.log("Fehler")
             console.log(Object.keys(error), error.message)
         }
 
@@ -138,8 +124,6 @@ function AppointmentForm({
         
         try{
             const response = await startAppointment(selected.id);
-            console.log("RESPONSE OF start:")
-            console.log(response.data)
           } catch (error){
             console.log(Object.keys(error), error.message)
           }
@@ -154,6 +138,7 @@ function AppointmentForm({
         }
     }
 
+
     const handleEnd = async() =>{
         const newEndtime = moment(new Date).format("DD.MM.YYYY / HH:mm").toString()
         const newStatus = appointmentStatus.done
@@ -162,11 +147,6 @@ function AppointmentForm({
         try{
             await stopAppointment(selected.id)
             .then(res => {
-                if (res.status = "200") {
-                    //stopping successful
-                }
-                console.log("ANTWORT:")
-                console.log(res.headers)
                 if(res.headers.appointmentid != undefined && res.headers.starttime != undefined) {
                     handlePreferredAppointmentChange(res.headers.appointmentid, res.headers.starttime)
                 }
@@ -183,6 +163,7 @@ function AppointmentForm({
         }
     }
 
+
     const handleOnCancel = () => {
         //refresh Appointments
         if(refreshData != null) {
@@ -191,6 +172,7 @@ function AppointmentForm({
         onCancel()
     }
 
+
     const handleDelete = () => {
         handleDeleteAppointment(
             selected.id, 
@@ -198,6 +180,7 @@ function AppointmentForm({
             handleExceptionChange, 
             handlePreferredAppointmentChange)
     }
+
 
     const handleTest = async() => {
         var data = []
@@ -208,11 +191,30 @@ function AppointmentForm({
         console.log(Object.keys(error), error.message)
         }
 
-        if(!JSON.stringify(data)==JSON.stringify(warnings)){
+        if(JSON.stringify(data)!=JSON.stringify(warnings)){
             setWarnings(data)
             if(refreshData != null) {
                 refreshData(month, year) 
             }
+        }
+    }
+
+
+    //----------------------------------Help-Functions----------------------------------
+    const preferAppointment = async () => {
+        var start = null
+        var id = null
+        try{
+            const response = await testPreferredAppointment(selected.id)
+            start = response.headers.starttime
+            id = response.headers.appointmentid
+        } catch (error){
+        console.log(Object.keys(error), error.message)
+        }
+        if(start != null && id != null) {
+            handlePreferredAppointmentChange(id, start)
+        }else{
+            alert("Termin kann leider nicht vorgezogen werden")
         }
     }
 
@@ -262,6 +264,7 @@ function AppointmentForm({
         console.log("---------Render-FORM------")
     }
    
+
     return (
         <div className="page">
             <Container>
@@ -318,7 +321,15 @@ function AppointmentForm({
                             null
                         }
                         </Form.Group>
-                        <Form.Group as={Col} md="8">
+                        <Form.Group as={Col} md="4">
+                            <div style={{ textAlign: "left" }}>     
+                            {selected.customerIsWaiting &&
+                               <Button variant="primary" onClick={preferAppointment} style={{ marginLeft: "4px" }}>Termin vorziehbar?</Button>  
+                            }    
+                                  
+                            </div>
+                        </Form.Group>
+                        <Form.Group as={Col} md="4">
                             
                             <div style={{ textAlign: "right" }}>         
                                 {/* (actualStarttime != null && status == AppointmentStatus.planned) &&
@@ -331,7 +342,7 @@ function AppointmentForm({
                                 }
                                 {getActualStarttime() == null && customerIsWaiting && status == appointmentStatus.planned &&
                                 //panned start < now + (2 minutes = 120000)
-                                moment(plannedStarttime, "DD.MM.yyyy HH:mm").toDate().getTime() < (moment().toDate().getTime()+120000) &&
+                                moment(plannedStarttime, "DD.MM.yyyy HH:mm").toDate().getTime() < (moment().toDate().getTime()+twoMinutes) &&
                                     <Button variant="primary" onClick={handleStart} style={{ marginLeft: "4px" }}>Termin starten</Button>
                                 }
                             </div>

@@ -39,9 +39,9 @@ function AdminPage({userStore}) {
             <div id="page-content-wrapper">
                 <Route exact path="/admin/procedure" component={ProcedurePage} />
                 <Route exact path="/admin/restriction" component={RestrictionPage} />
-                <Route exact path="/admin" component={() => <UserPage userType={"customer"} heading={"Kunden"} />} />
-                <Route exact path="/admin/customer" component={() => <UserPage userType={"customer"} heading={"Kunden"} />} />
-                <Route exact path="/admin/employee" component={() => <UserPage userType={"employee"} heading={"Mitarbeiter"} />} />
+                <Route exact path="/admin" component={() => <UserPage userStore={userStore} userType={"customer"} />} />
+                <Route exact path="/admin/customer" component={() => <UserPage userStore={userStore} userType={"customer"} />} />
+                <Route exact path="/admin/employee" component={() => <UserPage userStore={userStore} userType={"employee"} />} />
                 <Route exact path="/admin/optionalAttributes" component={OptionalAttributesPage} />
                 <Route exact path="/admin/resource" component={ResourcePage} />
                 <Route exact path="/admin/role" component={() => (<RolePage userStore={userStore} />)} />

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react"
-import { Form, Table } from "react-bootstrap"
+import {Form} from "react-bootstrap"
 import { Container, Button } from "react-bootstrap"
 import {addPosition, deletePosition, editPosition } from "./PositionRequests"
 
@@ -7,6 +7,7 @@ const PositionForm = ({ onCancel, edit, selected }) => {
     const [name, setName] = useState("")
     const [description, setDescription] = useState("")
     const [edited, setEdited] = useState(false)
+
 
     useEffect(() => {
         if (edit) {
@@ -26,6 +27,7 @@ const PositionForm = ({ onCancel, edit, selected }) => {
         setEdited(true)
     }
 
+
     const handleSubmit = async event => {
         event.preventDefault()
         let res = {}
@@ -37,22 +39,22 @@ const PositionForm = ({ onCancel, edit, selected }) => {
             const data = {id, name, description}
             res = await editPosition(id, data)
         }
-        console.log(res)
         onCancel()
     }
+
 
     const handleDeletePosition = async () => {
         const answer = confirm("Möchten Sie diese Position wirklich löschen? ")
         if (answer) {
             try {
                 const res = await deletePosition(selected.id)
-                console.log(res)
             } catch (error) {
                 console.log(Object.keys(error), error.message)
             }
         }
         onCancel()
     }
+
 
     return (
         <React.Fragment>
@@ -95,5 +97,4 @@ const PositionForm = ({ onCancel, edit, selected }) => {
         </React.Fragment>
     )
 }
-
 export default PositionForm

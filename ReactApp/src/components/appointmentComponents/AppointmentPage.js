@@ -1,9 +1,9 @@
 import React, {useState, useEffect} from 'react'
-import {Form, Col, Container, Tabs, Tab, Button, Modal} from "react-bootstrap"
+import {Form, Col, Tabs, Tab, Button, Modal} from "react-bootstrap"
 import OverviewPage from "../OverviewPage"
 import {Link} from 'react-router-dom';
 import AppointmentForm from "./AppointmentForm"
-import HomePage from "../calendarComponents/HomePage"
+import CalendarPage from "../calendarComponents/CalendarPage"
 import ObjectPicker from "../ObjectPicker"
 import {appointmentStatus, translateStatus} from "./AppointmentStatus"
 import {ExceptionModal} from "../ExceptionModal"
@@ -20,7 +20,6 @@ import {
     deleteOverrideAppointment
 } from "./AppointmentRequests";
 
-import {getUser} from "../administrationComponents/userComponents/UserRequests"
 
 export const loadMode = {
     own: "own",
@@ -49,28 +48,26 @@ export default function AppointmentPage({calendarStore, userStore}) {
     
     const [loading, setLoading] = useState(false) //for loading appointments (could take some time)
     const [calendarLoaded, setCalendarLoaded] = useState(false)
-    //Tabs
     const [tabKey, setTabKey] = useState('calendar')
-    //Modal
-
     var initialUser = []
     if(userStore.user != null && userStore.username != "admin" && userStore.username != "anonymousUser"){
         initialUser = [userStore.user]
     }
     const [selectedUser, setSelectedUser] = useState(initialUser)
-    //Data
     const [tableAppointments, setTableAppointments] = useState([])
     const [appointmentsOf, setAppointmentsOf] = useState(loadMode.own)
-
-    //exception needs overriding (ExceptionModal)
     const [exception, setException] = useState(null)
     const [showExceptionModal, setShowExceptionModal] = useState(false)
-    
-    //preferalbe appointment (preferredAppointmentModal)
     const [showPreferredAppointmentModal, setShowPreferredAppointmentModal] = useState(false)
     const [preferredAppointment, setPreferredAppointment] = useState(null)
-    //const [preferredAppointmentId, setPreferredAppointmentId] = useState(null)
     const [preferredAppointmentStarttime, setPreferredAppointmentStarttime] = useState(null)
+    const [overrideDeleteId, setOverrideDeleteId] = useState(null)
+
+
+    useEffect( () => {
+        loadAppointments(appointmentsOf)
+    },[appointmentsOf, tabKey])
+
 
     const handleSelectedUserChange = (data) => {
         if(data.length > 0){
@@ -84,49 +81,32 @@ export default function AppointmentPage({calendarStore, userStore}) {
     }
 
 
-    useEffect( () => {
-        loadAppointments(appointmentsOf)
-    },[appointmentsOf, tabKey])
-
-
-    const setAppointments = (selection) => {
-        setAppointmentsOf(selection)
-        switch(selection){
-            case loadMode.own:
-                break;
-            case loadMode.foreignUnpicked:
-            case loadMode.all:
-                setSelectedUser([]) // reset selected user
-                break;
-            default:
-        }
-        loadAppointments(selection)
-    }
-
-
     //-------------------------------ExceptionModal--------------------------------
-    const handleExceptionChange = (newException) => {
+    const handleExceptionChange = (newException, id) => {
         setException(newException)
+        setOverrideDeleteId(id)
         setShowExceptionModal(true)
     }
 
     const handleOverrideDelete = async () => {
         try{
-            await deleteOverrideAppointment(selected.id);
+            await deleteOverrideAppointment(overrideDeleteId);
         } catch (error){
             console.log(Object.keys(error), error.message)
         }
+        setShowExceptionModal(false)
+        loadAppointments(appointmentsOf)
     }
 
     //-------------------------PreferredAppointmentModal----------------------------
-    //set information of preferable appointment
     const handlePreferredAppointmentChange = (id, starttime) =>{
-        //setPreferredAppointmentId(id)
         setPreferredAppointmentStarttime(starttime)
         //load information to this appointment
         loadPreferredAppointment(id)
     }
 
+
+    //--------------------------------------LOAD--------------------------------------
     const loadPreferredAppointment = async (id) => {
         var data = null
         try {
@@ -144,7 +124,7 @@ export default function AppointmentPage({calendarStore, userStore}) {
         setShowPreferredAppointmentModal(true)
     }
 
-    //--------------------------LOAD-Appointments-------------------------
+
     const loadAppointments = async (selection) => {
         setLoading(true)
         var data = []
@@ -177,15 +157,13 @@ export default function AppointmentPage({calendarStore, userStore}) {
                 //create and add title to each appointment
                 if(response != null) {
                     data = response.data.map(singleAppointment => { 
-                        var title = singleAppointment.bookedProcedure.name + "-" + singleAppointment.bookedCustomer.username
+                        var title = singleAppointment.bookedProcedure.name + " (" + singleAppointment.bookedCustomer.username + ")"
                         return {
                             ...singleAppointment,
                             title: title
                         }
                     }) 
                 }
-                console.log("original data:")
-                console.log(data)
 
                 //don't save object with status="deleted"
                 data.map((singleAppointment) => {
@@ -204,18 +182,15 @@ export default function AppointmentPage({calendarStore, userStore}) {
             var today = new Date
             if(selection == loadMode.own){ //own
                 if(userStore.user != null) {
-                    console.log("loadAppointments-own")
                     loadCalendarAppointments(today.getMonth(), today.getFullYear(), userStore.userID)
                 }else{
                     setLoading(false)
                 }
             }else if (selection == loadMode.foreign) { //foreign
                 if(selectedUser.length > 0) {
-                    console.log("loadAppointments-foreign")
                     loadCalendarAppointments(today.getMonth(), today.getFullYear(), selectedUser[0].id)
                 }
             }else if(selection == loadMode.all){ //all
-                console.log("loadAppointments-all")
                 loadCalendarAppointments(today.getMonth(), today.getFullYear(), null)
             }else {
                 setLoading(false)
@@ -224,12 +199,14 @@ export default function AppointmentPage({calendarStore, userStore}) {
     }
 
     const loadCalendarAppointments = async (month, year, UserID) => { 
+        const numberOfMonthsBefore = 2
+        const numberOfMontsAfter = 2
         var response = []
         var startDate = new Date
         var endDate = new Date
-        startDate.setMonth(month - 1)
+        startDate.setMonth(month - numberOfMonthsBefore)
         startDate.setFullYear(year)
-        endDate.setMonth(month + 1)
+        endDate.setMonth(month + numberOfMontsAfter)
         endDate.setFullYear(year)
         const startDateString = moment(startDate).format("DD.MM.YYYY HH:mm").toString();
         const endDateString =  moment(endDate).format("DD.MM.YYYY HH:mm").toString();
@@ -255,8 +232,6 @@ export default function AppointmentPage({calendarStore, userStore}) {
                 console.log(Object.keys(error), error.message)
             }
         }
-        console.log("original data:")
-        console.log(response.data)
 
         //don't save object with status="deleted"
         var reducedData = []
@@ -274,7 +249,7 @@ export default function AppointmentPage({calendarStore, userStore}) {
                 ...item,
                 plannedStarttime: moment(item.plannedStarttime, "DD.MM.yyyy HH:mm").toDate(),
                 plannedEndtime: moment(item.plannedEndtime, "DD.MM.yyyy HH:mm").toDate(),
-                title: item.bookedProcedure.name
+                title: item.bookedProcedure.name + " (" + item.bookedCustomer.username + ")"
             }
         })
         calendarStore.setCalendarEvents(evts)
@@ -282,7 +257,22 @@ export default function AppointmentPage({calendarStore, userStore}) {
         setCalendarLoaded(true)
     }
 
-    //--------------------------Overview-Components-------------------------
+    //----------------------------------Help-Functions------------------------------------
+    const setAppointments = (selection) => {
+        setAppointmentsOf(selection)
+        switch(selection){
+            case loadMode.own:
+                break;
+            case loadMode.foreignUnpicked:
+            case loadMode.all:
+                setSelectedUser([]) // reset selected user
+                break;
+            default:
+        }
+        loadAppointments(selection)
+    }
+
+    //------------------------------------OverviewPage-Components----------------------------------
     var tableBody = []
     if(tableAppointments.length > 0) {
         tableBody = tableAppointments.map((item, index) => { 
@@ -403,9 +393,11 @@ export default function AppointmentPage({calendarStore, userStore}) {
                 <Modal.Footer>
                     <div style={{ textAlign: "right" }}>
                         <Button onClick={() => setShowPreferredAppointmentModal(false)} variant="secondary">Nicht vorziehen</Button>
+                        {preferredAppointment != null && preferredAppointmentStarttime != null &&
                         <Link to={`/buchung/${preferredAppointment.id}/${preferredAppointmentStarttime}`}>
                             <Button variant="success" style={{ marginLeft: "10px" }}>Terminumbuchung</Button>
                         </Link>
+                        }
                     </div>
                 </Modal.Footer>
             </Modal>
@@ -451,7 +443,7 @@ export default function AppointmentPage({calendarStore, userStore}) {
                 >
                     <Tab eventKey="calendar" title="Kalender">
                     {calendarLoaded &&
-                        <HomePage 
+                        <CalendarPage 
                             calendarStore={calendarStore} 
                             UserID={selectedUser.length > 0 ? appointmentsOf == loadMode.own ? userStore.userID : selectedUser[0].id: null}
                             loadAppointments={loadCalendarAppointments}

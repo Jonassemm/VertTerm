@@ -1,30 +1,46 @@
 import React, {useState, useEffect} from 'react'
-import {Link} from 'react-router-dom';
-import {Table, Form, Col, Row, Container, Tabs, Tab, Button, Modal} from "react-bootstrap"
 import OverviewPage from "../../OverviewPage"
 import ObjectPicker from "../../ObjectPicker"
+import {Form, Col, Modal, Button } from "react-bootstrap"
+import {Link} from 'react-router-dom';
 import AppointmentWarningForm from "./AppointmentWarningForm"
 import {appointmentStatus} from "../../appointmentComponents/AppointmentStatus"
 import {getTranslatedWarning, creatWarningList} from "../../Warnings"
+import {ExceptionModal} from "../../ExceptionModal"
+import {
+    getAppointmentsWithWarning, 
+    getAllAppointmentsWithWarning} from "./AppointmentWarningRequests";
+import {
+    deleteOverrideAppointment,
+    getAppointmentsByID} from "../../appointmentComponents/AppointmentRequests";
 
 var moment = require('moment'); 
 
-import {getAppointmentsWithWarning, getAllAppointmentsWithWarning} from "./AppointmentWarningRequests";
 
 export default function AppointmentWarningPage(props) {
-
     var initialSelectedWarning = []
     if(Object.keys(props).length != 0) {
         initialSelectedWarning = [props.match.params.initialWarning]
     }
-
     const [selectedKindOfWarning, setSelectedKindOfWarning] = useState(initialSelectedWarning)
     const [appointmentsWithWarnings, setAppointmentsWithWarnings] = useState([])
-    
     const [initialWarning, setInitialWarning] = useState(true)
 
+    const [exception, setException] = useState(null)
+    const [showExceptionModal, setShowExceptionModal] = useState(false)
+    const [showPreferredAppointmentModal, setShowPreferredAppointmentModal] = useState(false)
+    const [preferredAppointment, setPreferredAppointment] = useState(null)
+    const [preferredAppointmentStarttime, setPreferredAppointmentStarttime] = useState(null)
+    const [overrideDeleteId, setOverrideDeleteId] = useState(null)
+
+
+    useEffect( () => {
+        loadAppointmentsWithWarnings()
+    },[selectedKindOfWarning])
+
+
     const handleSelectedKindOfWarningChange = (data) => {
-        //set to "en" translated warning
+        //set to "en" (english) translated warning
         if(data.length > 0) {
            setSelectedKindOfWarning([getTranslatedWarning(data[0])]) 
         }else {
@@ -32,9 +48,49 @@ export default function AppointmentWarningPage(props) {
         }   
     }
 
-    useEffect( () => {
-        loadAppointmentsWithWarnings()
-    },[selectedKindOfWarning])
+
+    //-------------------------------ExceptionModal--------------------------------
+    const handleExceptionChange = (newException, id) => {
+        setException(newException)
+        setOverrideDeleteId(id)
+        setShowExceptionModal(true)
+    }
+
+    const handleOverrideDelete = async () => {
+        try{
+            await deleteOverrideAppointment(overrideDeleteId);
+        } catch (error){
+            console.log(Object.keys(error), error.message)
+        }
+        setShowExceptionModal(false)
+        loadAppointments(appointmentsOf)
+    }
+
+    //-------------------------PreferredAppointmentModal----------------------------
+    const handlePreferredAppointmentChange = (id, starttime) =>{
+        setPreferredAppointmentStarttime(starttime)
+        //load information to this appointment
+        loadPreferredAppointment(id)
+    }
+
+
+    //--------------------------------------LOAD--------------------------------------
+    const loadPreferredAppointment = async (id) => {
+        var data = null
+        try {
+            const response = await getAppointmentsByID(id);
+            data = response.data
+        } catch (error) {
+            console.log(Object.keys(error), error.message)
+        }  
+
+        if (data != null) {
+            setPreferredAppointment(data)
+        }
+
+        //show modal
+        setShowPreferredAppointmentModal(true)
+    }
 
 
     const loadAppointmentsWithWarnings = async () => {
@@ -43,33 +99,15 @@ export default function AppointmentWarningPage(props) {
 
         try {
             if((Object.keys(props).length == 0 && initialWarning) || selectedKindOfWarning.length == 0) {
-                console.log("CALL -> Initial (all)")
                 response = await getAllAppointmentsWithWarning()
             }else {
-                console.log("CALL -> Selected")
-                console.log(selectedKindOfWarning)
                 response = await getAppointmentsWithWarning(creatWarningList(selectedKindOfWarning))
             }
             data = response.data
             setInitialWarning(false)
         } catch (error) {
             console.log(Object.keys(error), error.message)
-            /* const bookedProcedure = {name: "Prozess1"}
-            const plannedStarttime= "04.06.2020 19:30"
-            const bookedCustomer= {firstName: "Angelina", lastName: "Jolie", username: "LaraCroft"}
-
-            data = [{id: "1", description: "Dies ist eine längerer Text um zu verdeutlichen wie lang eine Beschreibung einer Prozedur sein kann. Damit wir auch in die zweite Zeile gelangenen steht hier noch etwas mehr ;)",
-                    status: "planned", warning: "", 
-                    plannedStarttime: plannedStarttime, plannedEndtime: "04.06.2020 20:30", actualStarttime: null, actualEndtime: null, 
-                    bookedProcedure: bookedProcedure, 
-                    bookedCustomer: bookedCustomer,
-                    bookedEmployees: [{firstName: "Bruce", lastName: "Willis"},{firstName: "Will", lastName: "Smith"}],
-                    bookedResources: [{name: "Stift"}, {name: "Papier"}, {name: "Laptop"}],
-                    warnings: ["AppointmenttimeWarning", "ProcedureRelationWarning"]
-                }] */
         }
-        console.log("original data:")
-        console.log(data)
 
         //don't save object with status="deleted"
         var reducedData = []
@@ -82,6 +120,7 @@ export default function AppointmentWarningPage(props) {
     }
 
 
+    //------------------------------------Overview-Page-Components----------------------------------
     const tableBody = 
         appointmentsWithWarnings.map((item, index) => { 
             var warningString = ""
@@ -111,6 +150,8 @@ export default function AppointmentWarningPage(props) {
                 onCancel={onCancel}
                 edit={edit}
                 selected={selectedItem}
+                handleExceptionChange={handleExceptionChange}
+                handlePreferredAppointmentChange={handlePreferredAppointmentChange}
             />
         )
     }
@@ -118,12 +159,103 @@ export default function AppointmentWarningPage(props) {
 
     const renderfkt = () => {
         console.log("---------Render-PAGE------")
+        console.log(preferredAppointment)
+        console.log(preferredAppointment != null)
     }
 
 
     return (
         <React.Fragment>
             {renderfkt()}
+            {exception != null &&
+                <ExceptionModal //modal for deleting appointments
+                    showExceptionModal={showExceptionModal} 
+                    setShowExceptionModal={setShowExceptionModal} 
+                    overrideSubmit={handleOverrideDelete}
+                    exception={exception}
+                    overrideText="Trotzdem löschen"
+                />
+            }
+            {preferredAppointment != null &&
+                <Modal size="lg" show={showPreferredAppointmentModal} onHide={() => setShowPreferredAppointmentModal(false)}>
+                    <Modal.Header>
+                        <Modal.Title>
+                            Folgender Termin kann vorgezogen werden!
+                        </Modal.Title>
+                    </Modal.Header>
+                    <Modal.Body>
+                        <Form>
+                            <Form.Row>
+                                <Form.Group as={Col} md="4"  style={{ textAlign: "bottom" }}>
+                                    <Form.Label>Kunde:</Form.Label>
+                                </Form.Group>
+                                <Form.Group as={Col} md="8" >
+                                    <Form.Control
+                                        readOnly
+                                        style={{background: "white"}}
+                                        name="customer"
+                                        type="text"
+                                        value={preferredAppointment.bookedCustomer.firstName + ", " + preferredAppointment.bookedCustomer.lastName } 
+                                    />
+                                </Form.Group>
+                            </Form.Row>
+                            <Form.Row>
+                                <Form.Group as={Col} md="4"  style={{ textAlign: "bottom" }}>
+                                    <Form.Label>Prozedur:</Form.Label>
+                                </Form.Group>
+                                <Form.Group as={Col} md="8" >
+                                    <Form.Control
+                                        readOnly
+                                        style={{background: "white"}}
+                                        name="customer"
+                                        type="text"
+                                        value={preferredAppointment.bookedProcedure.name} 
+                                    />
+                                </Form.Group>
+                            </Form.Row>
+                            <Form.Row>
+                                <Form.Group as={Col} md="4"  style={{ textAlign: "bottom" }}>
+                                    <Form.Label>Datum:</Form.Label>
+                                </Form.Group>
+                                <Form.Group as={Col} md="8" >
+                                    <Form.Control
+                                        readOnly
+                                        style={{background: "white"}}
+                                        name="customer"
+                                        type="text"
+                                        value={preferredAppointment.plannedStarttime} 
+                                    />
+                                </Form.Group>
+                            </Form.Row>
+                            <hr/>
+                            <Form.Row>
+                                <Form.Group as={Col} md="4"  style={{ textAlign: "bottom" }}>
+                                    <Form.Label>Neues Datum:</Form.Label>
+                                </Form.Group>
+                                <Form.Group as={Col} md="8" >
+                                    <Form.Control
+                                        readOnly
+                                        style={{background: "white"}}
+                                        name="customer"
+                                        type="text"
+                                        value={preferredAppointmentStarttime} 
+                                    />
+                                </Form.Group>
+                            </Form.Row>
+                        </Form>
+                    </Modal.Body>
+                    <Modal.Footer>
+                        <div style={{ textAlign: "right" }}>
+                            <Button onClick={() => setShowPreferredAppointmentModal(false)} variant="secondary">Nicht vorziehen</Button>
+                            {preferredAppointment != null && preferredAppointmentStarttime != null &&
+                            <Link to={`/buchung/${preferredAppointment.id}/${preferredAppointmentStarttime}`}>
+                                <Button variant="success" style={{ marginLeft: "10px" }}>Terminumbuchung</Button>
+                            </Link>
+                            }
+                        </div>
+                    </Modal.Footer>
+                </Modal>
+            }
             <div style={{display: "flex",  justifyContent: "center"}}>
                 <div style={{margin: "10px 10px 0px 0px", fontWeight: "bold"}}>Konflikte filtern nach: </div>
                 <div style={{marginTop: "5px", width: "250px"}}>

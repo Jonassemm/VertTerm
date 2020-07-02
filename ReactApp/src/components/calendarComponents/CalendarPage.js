@@ -4,7 +4,6 @@ import React, {useState, useEffect} from "react"
 import { Calendar, momentLocalizer } from "react-big-calendar"
 import moment from "moment"
 import Modal from "react-bootstrap/Modal"
-import CalendarForm from "./CalendarForm"
 import AppointmentForm from "../appointmentComponents/AppointmentForm"
 import { observer } from "mobx-react"
 import {getAppointmentOfUserInTimespace, getAllAppointmentInTimespace} from "../appointmentComponents/AppointmentRequests"
@@ -33,10 +32,10 @@ const localizer = momentLocalizer(moment)
 const views = {day: "day", week: "week", month: "month"};
 
 
-function HomePage({
+function CalendarPage({
     calendarStore, 
     UserID, 
-    loadAppointments = undefined,
+    loadAppointments = undefined,       //optional extern loading of appointments
     handleExceptionChange,              //pass to AppointmentForm
     handlePreferredAppointmentChange    //pass to AppointmentForm
     }){
@@ -46,69 +45,50 @@ function HomePage({
     const [loading, setLoading] = useState(false) //for loading appointments (could take some time)
     const [currentTimeView, setCurrentTimeView] = useState(views.month) //inital view
     const [referenceDateOfView, setReferenceDateOfView] = useState(new Date) //actual date for view 
-    const [newReferenceDateOfView, setNewReferenceDateOfView] = useState(new Date) //new picked date for view
+
+
+    useEffect(() => {
+        console.log(referenceDateOfView)
+        if((!initialized && loadAppointments == undefined)) {
+            refreshCalendarAppointments()
+        }
+    },[referenceDateOfView])
 
 
     const handleCurrentTimeViewChange = (newView) =>{
         setCurrentTimeView(newView)
     }
 
+
     const handleNavigationChange = (newReferenceDate) => {
-        setReferenceDateOfView(newReferenceDateOfView)
-        setNewReferenceDateOfView(newReferenceDate)
+        setReferenceDateOfView(newReferenceDate)
+        if(loadAppointments != undefined) {
+            loadAppointments(newReferenceDate.getMonth(), newReferenceDate.getFullYear(), UserID)  
+        }else
+        {
+            loadCalendarEvents()
+        }
     }
 
-     const handleSelectEvent = (event, e) => {
+
+    const handleSelectEvent = (event, e) => {
         setCalendarEvent(event)
         setShowEditModal(true)
     }
 
-    const hideModal = () => {
-            setShowEditModal(false)
-        }
 
-
-    useEffect(() => {
-        const loadDifferentMonth = (
-            newReferenceDateOfView.getFullYear() != referenceDateOfView.getFullYear() ||
-            newReferenceDateOfView.getMonth() != referenceDateOfView.getMonth()
-        )
-        if(!initialized || loadDifferentMonth) {
-            refreshCalendarAppointments()
-        }
-    },[referenceDateOfView])
-    
-    const refreshCalendarAppointments = () => {
-        if(loadAppointments != undefined) {
-            loadAppointments(referenceDateOfView.getMonth(), referenceDateOfView.getFullYear(), UserID)  
-        }else
-        {
-            loadCalendarEvents()
-        }
-        setInitialized(true)
-    }
-
-    /* const handleLoadAppointments = () => {
-        setInitialized(true)
-        if(loadAppointments != undefined) {
-            loadAppointments(referenceDateOfView.getMonth(), referenceDateOfView.getFullYear(), UserID)  
-        }else
-        {
-            loadCalendarEvents()
-        }
-    } */
-
+    //--------------------------------------LOAD-------------------------------------
     const loadCalendarEvents = async () => { 
         setLoading(true)
+        const numberOfMonthsBefore = 2
+        const numberOfMontsAfter = 2
         var response = []
         var startDate = new Date
         var endDate = new Date
-        const month = referenceDateOfView.getMonth()
-        const year =  referenceDateOfView.getFullYear()
-        startDate.setMonth(month - 1)
-        startDate.setFullYear(year)
-        endDate.setMonth(month + 1)
-        endDate.setFullYear(year)
+        startDate.setMonth(referenceDateOfView.getMonth() - numberOfMonthsBefore)
+        startDate.setFullYear(referenceDateOfView.getFullYear())
+        endDate.setMonth(referenceDateOfView.getMonth() + numberOfMontsAfter)
+        endDate.setFullYear(referenceDateOfView.getFullYear())
         const startDateString = moment(startDate).format("DD.MM.YYYY HH:mm").toString();
         const endDateString =  moment(endDate).format("DD.MM.YYYY HH:mm").toString();
         if(UserID == null){//case all appointments
@@ -131,16 +111,16 @@ function HomePage({
                 console.log(Object.keys(error), error.message)
             }
         }
-        console.log("original data:")
-        console.log(response.data)
+        
 
-         //don't save object with status="deleted"
-         var reducedData = []
-         response.data.map((singleAppointment) => {
-             if(singleAppointment.status != appointmentStatus.deleted) {
-                 reducedData.push(singleAppointment)
-             }
-         })
+        //don't save object with status="deleted"
+        var reducedData = []
+        response.data.map((singleAppointment) => {
+            if(singleAppointment.status != appointmentStatus.deleted) {
+                reducedData.push(singleAppointment)
+            }
+        })
+
 
         //prepare response for calendar
         const evts = reducedData.map(item => {
@@ -148,11 +128,28 @@ function HomePage({
                 ...item,
                 plannedStarttime: moment(item.plannedStarttime, "DD.MM.yyyy HH:mm").toDate(),
                 plannedEndtime: moment(item.plannedEndtime, "DD.MM.yyyy HH:mm").toDate(),
-                title: item.bookedProcedure.name + "() "
+                title: item.bookedProcedure.name + " (" + item.bookedCustomer.username + ")"
             }
         })
         calendarStore.setCalendarEvents(evts)
         setLoading(false)
+    }
+
+
+    const refreshCalendarAppointments = () => {
+        if(loadAppointments != undefined) {
+            loadAppointments(referenceDateOfView.getMonth(), referenceDateOfView.getFullYear(), UserID)  
+        }else
+        {
+            loadCalendarEvents()
+        }
+        setInitialized(true)
+    }
+
+
+    //-------------------------------Help-Funcitons-----------------------------------
+    const hideModal = () => {
+        setShowEditModal(false)
     }
 
 
@@ -165,7 +162,7 @@ function HomePage({
         {renderfkt()}
         <div className="page">
             {loading ? <div className="loadview"><div>Loading</div></div> : null}
-            <Modal size="lg" show={showEditModal} onHide={hideModal} backdrop={"static"}>
+            <Modal size="lg" show={showEditModal} onHide={hideModal}>
                 <Modal.Header closeButton>
                     <Modal.Title>{calendarEvent.title}</Modal.Title>
                 </Modal.Header>
@@ -189,7 +186,6 @@ function HomePage({
                 endAccessor="plannedEndtime"
                 selectable={true}
                 style={{height:"80vh"}}
-                //onSelectSlot={handleSelect}
                 onSelectEvent={handleSelectEvent}
                 culture = 'ge'
                 view={currentTimeView}
@@ -215,7 +211,7 @@ function HomePage({
                     agenda: 'Agenda'
                   }}
                   eventPropGetter={
-                    (event, plannedStarttime, plannedEndtime, isSelected) => {
+                    (event) => {
                       let currentStyle = {
                         backgroundColor: "#5384cf",
                         color: 'white',
@@ -245,4 +241,4 @@ function HomePage({
 
 }
 
-export default observer(HomePage)
+export default observer(CalendarPage)

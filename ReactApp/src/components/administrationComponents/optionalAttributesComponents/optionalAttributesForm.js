@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react"
 import {Form, Table, Container, Col, Button } from "react-bootstrap"
 import {editOptionalAttributes} from "./optionalAttributesRequests"
-import ObjectPicker from "../../ObjectPicker"
+
 
 const optionalAttributesForm = ({ onCancel, edit, selected }) => {
     const [name, setName] = useState("")
@@ -9,33 +9,32 @@ const optionalAttributesForm = ({ onCancel, edit, selected }) => {
     const [edited, setEdited] = useState(false)
     const [optionalAttributes, setOptionalAttributes] = useState([])
     
-    
-    const handleNameChange = (event) => {setName(event.target.value); setEdited(true)}
-    const handleMandatoryFieldChange = () =>{setMandatoryField(!mandatoryField); setEdited(true)}
 
     useEffect(() => {
         if (edit) {
             setOptionalAttributes(selected.optionalAttributes)
-            console.log("set:")
-            console.log(selected.optionalAttributes)
         }
     }, [])
+    
+
+    const handleNameChange = (event) => {setName(event.target.value); setEdited(true)}
+    const handleMandatoryFieldChange = () =>{setMandatoryField(!mandatoryField); setEdited(true)}
+
 
     const handleSubmit = async event => {
         event.preventDefault()
         let res = {}
         const data = {id: selected.id, optionalAttributes, classOfOptionalAttribut: selected.classOfOptionalAttribut}
-        console.log("send attribute data:")
-        console.log(data)
         try{
             res = await editOptionalAttributes(data, selected.id)
         }catch (error) {
             console.log(Object.keys(error), error.message)
         }
-        console.log(res)
         onCancel() 
     }
 
+
+    //-----------------------------------Help-Functions----------------------------------
     const addAttribute = () => {
         var newAttribute = {name, mandatoryField}
         if(name != "") {
@@ -51,15 +50,15 @@ const optionalAttributesForm = ({ onCancel, edit, selected }) => {
         setName("")//reset inputfield
     };
 
-    //REMOVE Attribute from Table
+
     const removeAttribute = (index) => {
         optionalAttributes.splice((index),1) // remove attribute at "index" and just remove "1" attribute
         setOptionalAttributes([...optionalAttributes])
         setEdited(true)
     };
 
+
     //---------------------------------RENDER---------------------------------
-    // DYNAMIC Table
     function renderOptionalAttributesTable() {
         if(optionalAttributes.length > 0) {
             return ( 
@@ -138,5 +137,4 @@ const optionalAttributesForm = ({ onCancel, edit, selected }) => {
         </React.Fragment>
     )
 }
-
 export default optionalAttributesForm

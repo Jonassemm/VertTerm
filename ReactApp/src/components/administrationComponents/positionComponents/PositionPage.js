@@ -6,10 +6,13 @@ import OverviewPage from "../../OverviewPage"
 function PositionPage() {
     const [positions, setPositions] = useState([])
 
+
     useEffect(() => {
         loadPositions()
     }, [])
 
+
+    //----------------------------------LOAD-------------------------------
     const loadPositions = async () => {
         var data = [];
         try{ 
@@ -21,6 +24,8 @@ function PositionPage() {
         setPositions(data);
     };
 
+
+    //--------------------------OverviewPage-Components--------------------
     const tableBody =
         positions.map((item, index) => {
             return ([

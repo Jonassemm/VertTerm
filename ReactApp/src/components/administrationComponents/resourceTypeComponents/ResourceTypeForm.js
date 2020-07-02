@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react"
-import { Form, Table } from "react-bootstrap"
+import { Form } from "react-bootstrap"
 import { Container, Button } from "react-bootstrap"
 import {addResourceType, deleteResourceType, editResourceType } from "./ResourceTypeRequests"
 
@@ -7,6 +7,7 @@ const ResourceTypeForm = ({ onCancel, edit, selected }) => {
     const [name, setName] = useState("")
     const [description, setDescription] = useState("")
     const [edited, setEdited] = useState(false)
+
 
     useEffect(() => {
         if (edit) {
@@ -21,10 +22,12 @@ const ResourceTypeForm = ({ onCancel, edit, selected }) => {
         setEdited(true)
     }
 
+
     function handleDescriptionChange(event) {
         setDescription(event.target.value)
         setEdited(true)
     }
+
 
     const handleSubmit = async event => {
         event.preventDefault()
@@ -35,7 +38,6 @@ const ResourceTypeForm = ({ onCancel, edit, selected }) => {
         } else {
             res = await editResourceType(selected.id, data)
         }
-        console.log(res)
         onCancel()
     }
 
@@ -44,16 +46,13 @@ const ResourceTypeForm = ({ onCancel, edit, selected }) => {
         if (answer) {
             try {
                 const res = await deleteResourceType(selected.id)
-                console.log(res)
             } catch (error) {
                 console.log(Object.keys(error), error.message)
-                alert("An error occoured while deleting a resource type")
             }
         }
         onCancel()
-
-        
     }
+
 
     return (
         <React.Fragment>
@@ -96,5 +95,4 @@ const ResourceTypeForm = ({ onCancel, edit, selected }) => {
         </React.Fragment>
     )
 }
-
 export default ResourceTypeForm

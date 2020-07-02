@@ -11,7 +11,7 @@ import NavBar from './components/navigationComponents/NavBar'
 import Footer from './components/navigationComponents/Footer';
 // preloaded pages
 import Home from "./components/Home"
-import HomePage from './components/calendarComponents/HomePage'
+import CalendarPage from './components/calendarComponents/CalendarPage'
 import BookingForm from "./components/calendarComponents/BookingForm"
 import AdminPage from "./components/navigationComponents/AdminPage"
 import AppointmentPage from "./components/appointmentComponents/AppointmentPage"
@@ -30,7 +30,7 @@ export default observer(function App({ userStore, calendarStore }) {
           <Switch>
             <Route path="/" exact component={() => <Home />} />
             <Route path="/admin" component={() => <AdminPage userStore={userStore}/>} />
-            <Route exact path="/calendar" component={() => (<HomePage calendarStore={calendarStore} UserID={userStore.userID}/>)} />
+            <Route exact path="/calendar" component={() => (<CalendarPage calendarStore={calendarStore} UserID={userStore.userID}/>)} />
             <Route path="/appointment" component={() => <AppointmentPage calendarStore={calendarStore} userStore={userStore} />} />
             <Route exact path="/booking" component={() => (<BookingForm/>)}/>
             <Route exact path="/booking/:appointmentID" component={BookingForm}/>

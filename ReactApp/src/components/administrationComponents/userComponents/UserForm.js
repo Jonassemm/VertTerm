@@ -2,8 +2,6 @@ import React ,{useState, useEffect} from 'react'
 import {Form, Table, Col, Container, Button, InputGroup, Tabs, Tab } from 'react-bootstrap'
 import Availability from "../availabilityComponents/Availability"
 import ObjectPicker from "../../ObjectPicker"
-import {ExceptionModal} from "../../ExceptionModal"
-
 import {
   addEmployee,
   updateEmployee,
@@ -12,64 +10,37 @@ import {
   updateCustomer,
   deleteCustomer
 } from "./UserRequests";
-
 import {
   getAllOptionalAttributes
 } from "../optionalAttributesComponents/optionalAttributesRequests"
 
 
 function UserForm({onCancel, edit, selected, type, setException = null}) {
-  //Switch
   var initialTypeIsEmployee = false
   if(type == "employee") {
       initialTypeIsEmployee = true
   }
+
   const [isEmployee, setIsEmployee] = useState(initialTypeIsEmployee)
   const [valideForm, setValideForm] = useState(false)
-  //Editing
   const [edited, setEdited] = useState(false)
-  //Tabs
   const [tabKey, setTabKey] = useState('general')
-  //User
+
   const [firstName, setFirstname] = useState("")
   const [lastName, setLastname] = useState("")
   const [username, setUsername] = useState("") 
   const [password, setPassword] = useState("")
+  const [passwordChanged, setPasswordChanged] = useState(false)
   const [systemStatus, setSystemStatus] = useState("active")
   const [availabilities, setAvailabilities] = useState([])
   const [positions, setPositions] = useState([])
   const [roles, setRoles] = useState([])
   const [restrictions, setRestrictions] = useState([])
-  //Optional Attributes (Employee)
+
   const [optionalAttributesOfUser, setOptionalAttributesOfUser] = useState([])
-  //Attribute Input
   const [optionalAttributInput, setOptionalAttributeInput] = useState() //needed to render page when editing any optional attribute
   const [requiredOptionalAttributCounter, setRequiredOptionalAttributCounter] = useState(0)
-  //recognizing password change
-  const [passwordChanged, setPasswordChanged] = useState(false)
 
-
-  //HANDEL CHANGE
-  const handleFirstnameChange = event => {setFirstname(event.target.value); setEdited(true)}
-  const handleLastnameChange = event => {setLastname(event.target.value); setEdited(true)}
-  const handleUsernameChange = event => {setUsername(event.target.value); setEdited(true)}
-  const handlePasswordChange = event => {setPasswordChanged(true); setPassword(event.target.value); setEdited(true)}
-  const handleSystemStatusChange = event => {setSystemStatus(event.target.value); setEdited(true)}
-  const handlePositionsChange = data => {setPositions(data); setEdited(true)}
-  const handleRoleChange = data => {setRoles(data); setEdited(true)}
-  const handleRestrictionChange = data => {setRestrictions(data); setEdited(true)}
-  const handleOptionalAttributesChange = (e, name) => {
-    setOptionalAttributeValue(name, e.target.value); 
-    setOptionalAttributeInput([e.target.value, name]); //only for rendering
-    setEdited(true) 
-  };
-  const incrementRequiredCounter = () => {
-    setRequiredOptionalAttributCounter(requiredOptionalAttributCounter => requiredOptionalAttributCounter + 1)
-  }
-  const decrementRequiredCounter = () => {
-    setRequiredOptionalAttributCounter(requiredOptionalAttributCounter => requiredOptionalAttributCounter - 1)
-  }
-  
 
   useEffect(() => { 
     if(edit) {
@@ -94,112 +65,22 @@ function UserForm({onCancel, edit, selected, type, setException = null}) {
     loadOptionalAttributes()
   }, [])
 
-  
-  //---------------------------------LOAD---------------------------------
-  const loadOptionalAttributes = async () => {
-    var data = [];
-    try{ 
-      const response = await getAllOptionalAttributes();
-      data = response.data;
-    }catch (error) {
-      console.log(Object.keys(error), error.message)
-    }
-    //combine the loaded attributes list from user with the predefined attribute list for every user
-    if(data.length > 0) {
-      data.map((attributeList) => {
-        if(attributeList.classOfOptionalAttribut == "User" && attributeList.optionalAttributes.length > 0) {
-          attributeList.optionalAttributes.map(attribute => {
-            var initialValue = ""
-            //set values of user attributes into the predefined list (edit-mode)
-            if(edit && selected.optionalAttributes.length > 0) {
-              selected.optionalAttributes.map(loadedAttribute =>{
-                if(loadedAttribute.name == attribute.name) {
-                  initialValue = loadedAttribute.value //Change initialValue when loading attributes
-                }
-              })
-            }
-            //increase counter to the number of required predefined attributes
-            if(attribute.mandatoryField){
-              incrementRequiredCounter()
-            }
-            const {name, mandatoryField} = attribute
-            const initializedAttribute = {name, mandatoryField, value: initialValue}
-            //save the list with the new initialValue
-            setOptionalAttributesOfUser(optionalAttributesUserList => [...optionalAttributesUserList, initializedAttribute]);
-          })
-        }
-      })
-    }
+
+  const handleFirstnameChange = event => {setFirstname(event.target.value); setEdited(true)}
+  const handleLastnameChange = event => {setLastname(event.target.value); setEdited(true)}
+  const handleUsernameChange = event => {setUsername(event.target.value); setEdited(true)}
+  const handlePasswordChange = event => {setPasswordChanged(true); setPassword(event.target.value); setEdited(true)}
+  const handleSystemStatusChange = event => {setSystemStatus(event.target.value); setEdited(true)}
+  const handlePositionsChange = data => {setPositions(data); setEdited(true)}
+  const handleRoleChange = data => {setRoles(data); setEdited(true)}
+  const handleRestrictionChange = data => {setRestrictions(data); setEdited(true)}
+  const handleOptionalAttributesChange = (e, name) => {
+    setOptionalAttributeValue(name, e.target.value); 
+    setOptionalAttributeInput([e.target.value, name]); //for rendering
+    setEdited(true) 
   };
 
 
-  //---------------------------------VALIDATION---------------------------------
-  function validation() {
-    var result = true;
-    var employeeFieldsAreSet = true
-    if(isEmployee) {
-      employeeFieldsAreSet = (
-        positions.length != 0 &&
-        roles.length != 0
-      )
-    }
-    const generalFieldsAreSet = (
-      firstName != "" &&
-      lastName != "" &&
-      username != "" &&
-      password != "" &&
-      (systemStatus == "active" || systemStatus == "inactive") &&
-      requiredOptionalAttributCounter == 0 &&
-      employeeFieldsAreSet
-    )
-    
-    //--------------------------General-VIEW-------------------------
-    if(tabKey == "general"){
-      if(isEmployee){
-        if(roles.length == 0) { //check roles
-          result = false
-          alert("Bitte wählen Sie mindestens eine Rolle aus!")
-        }else if(positions.length == 0) { //check positions
-          result = false
-          alert("Bitte wählen Sie mindestens eine Position aus!")
-        }
-      }else {
-        if(roles.length == 0) { //check roles
-          result = false
-          alert("Bitte wählen Sie mindestens eine Rolle aus!")
-        }
-      }
-    }
-
-    //--------------------------Availability-VIEW-------------------------
-    if(tabKey == "availability" && !generalFieldsAreSet){
-      if(isEmployee){
-        if(requiredOptionalAttributCounter != 0){
-          alert("Bitte füllen Sie in der Allgemein-Ansicht die erforderlichen optionalen Attribute aus!")
-        } else if(roles.length == 0) { //check roles
-          alert("Bitte wählen Sie in der Allgemein-Ansicht mindestens eine Rolle aus!")
-        }else if(positions.length == 0) { //check positions
-          alert("Bitte wählen Sie in der Allgemein-Ansicht mindestens eine Position aus!")
-        }else {
-          alert("Bitte Felder auf der Allgemein-Ansicht überprüfen!")
-        }
-      }else {
-        if(requiredOptionalAttributCounter != 0){
-          alert("Bitte füllen Sie in der Allgemein-Ansicht die erforderlichen optionalen Attribute aus!")
-        } else if(roles.length == 0) { //check roles
-          alert("Bitte wählen Sie in der Allgemein-Ansicht mindestens eine Rolle aus!")
-        }else {
-          alert("Bitte Felder auf der Allgemein-Ansicht überprüfen!")
-        }
-      }
-      result = false
-    }
-    setValideForm(result)
-  }
-
-
-  //---------------------------------USER-SUBMIT---------------------------------
-  //ADD
   const handleSubmit = async event => {
     event.preventDefault();//reload the page after clicking "Enter"
     var newPassword = ""
@@ -274,7 +155,132 @@ function UserForm({onCancel, edit, selected, type, setException = null}) {
   }
 
 
-  //---------------------------------Optional Attributes---------------------------------
+  //---------------------------------LOAD---------------------------------
+  const loadOptionalAttributes = async () => {
+    var data = [];
+    try{ 
+      const response = await getAllOptionalAttributes();
+      data = response.data;
+    }catch (error) {
+      console.log(Object.keys(error), error.message)
+    }
+    //combine the loaded attributes list from user with the predefined attribute list for every user
+    if(data.length > 0) {
+      data.map((attributeList) => {
+        if(attributeList.classOfOptionalAttribut == "User" && attributeList.optionalAttributes.length > 0) {
+          attributeList.optionalAttributes.map(attribute => {
+            var initialValue = ""
+            //set values of user attributes into the predefined list (edit-mode)
+            if(edit && selected.optionalAttributes.length > 0) {
+              selected.optionalAttributes.map(loadedAttribute =>{
+                if(loadedAttribute.name == attribute.name) {
+                  initialValue = loadedAttribute.value //Change initialValue when loading attributes
+                }
+              })
+            }
+            //increase counter to the number of required predefined attributes
+            if(attribute.mandatoryField){
+              incrementRequiredCounter()
+            }
+            const {name, mandatoryField} = attribute
+            const initializedAttribute = {name, mandatoryField, value: initialValue}
+            //save the list with the new initialValue
+            setOptionalAttributesOfUser(optionalAttributesUserList => [...optionalAttributesUserList, initializedAttribute]);
+          })
+        }
+      })
+    }
+  };
+
+
+  //---------------------------------VALIDATION---------------------------------
+  function validation() {
+    var result = true;
+    var employeeFieldsAreSet = true
+    if(isEmployee) {
+      employeeFieldsAreSet = (
+        positions.length != 0 &&
+        roles.length != 0
+      )
+    }
+    const generalFieldsAreSet = (
+      firstName != "" &&
+      lastName != "" &&
+      username != "" &&
+      password != "" &&
+      (systemStatus == "active" || systemStatus == "inactive") &&
+      requiredOptionalAttributCounter == 0 &&
+      employeeFieldsAreSet
+    )
+    //--------------------------General-VIEW-------------------------
+    if(tabKey == "general"){
+      if(isEmployee){
+        if(roles.length == 0) { //check roles
+          result = false
+          alert("Bitte wählen Sie mindestens eine Rolle aus!")
+        }else if(positions.length == 0) { //check positions
+          result = false
+          alert("Bitte wählen Sie mindestens eine Position aus!")
+        }
+      }else {
+        if(roles.length == 0) { //check roles
+          result = false
+          alert("Bitte wählen Sie mindestens eine Rolle aus!")
+        }
+      }
+    }
+    //--------------------------Availability-VIEW---------------------
+    if(tabKey == "availability" && !generalFieldsAreSet){
+      if(isEmployee){
+        if(requiredOptionalAttributCounter != 0){
+          alert("Bitte füllen Sie in der Allgemein-Ansicht die erforderlichen optionalen Attribute aus!")
+        } else if(roles.length == 0) { //check roles
+          alert("Bitte wählen Sie in der Allgemein-Ansicht mindestens eine Rolle aus!")
+        }else if(positions.length == 0) { //check positions
+          alert("Bitte wählen Sie in der Allgemein-Ansicht mindestens eine Position aus!")
+        }else {
+          alert("Bitte Felder auf der Allgemein-Ansicht überprüfen!")
+        }
+      }else {
+        if(requiredOptionalAttributCounter != 0){
+          alert("Bitte füllen Sie in der Allgemein-Ansicht die erforderlichen optionalen Attribute aus!")
+        } else if(roles.length == 0) { //check roles
+          alert("Bitte wählen Sie in der Allgemein-Ansicht mindestens eine Rolle aus!")
+        }else {
+          alert("Bitte Felder auf der Allgemein-Ansicht überprüfen!")
+        }
+      }
+      result = false
+    }
+    setValideForm(result)
+  }
+
+
+  //---------------------------------Availability---------------------------------
+  const addAvailability = (newAvailability) => {
+    setAvailabilities(availabilities => [...availabilities, newAvailability]);
+  }
+
+
+  const updateAvailabilities = (newAvailabilities) => {
+    setAvailabilities([])
+    newAvailabilities.map((SingleAvailability)=> {
+      setAvailabilities(availabilities => [...availabilities, SingleAvailability]);
+    })
+  }
+
+
+  //-------------------------------Help-Functions--------------------------
+  const incrementRequiredCounter = () => {
+    setRequiredOptionalAttributCounter(requiredOptionalAttributCounter => requiredOptionalAttributCounter + 1)
+  }
+
+
+  const decrementRequiredCounter = () => {
+    setRequiredOptionalAttributCounter(requiredOptionalAttributCounter => requiredOptionalAttributCounter - 1)
+  }
+
+
   const setOptionalAttributeValue = (name, value) => {   
     if(optionalAttributesOfUser.length > 0) {
       optionalAttributesOfUser.map(attribute=> {
@@ -290,19 +296,6 @@ function UserForm({onCancel, edit, selected, type, setException = null}) {
         }
       })
     }
-  }
-
-  //---------------------------------Availability---------------------------------
-  const addAvailability = (newAvailability) => {
-    setAvailabilities(availabilities => [...availabilities, newAvailability]);
-  }
-
-
-  const updateAvailabilities = (newAvailabilities) => {
-    setAvailabilities([])
-    newAvailabilities.map((SingleAvailability)=> {
-      setAvailabilities(availabilities => [...availabilities, SingleAvailability]);
-    })
   }
 
 
@@ -326,7 +319,7 @@ function UserForm({onCancel, edit, selected, type, setException = null}) {
   };
 
 
-   return (
+  return (
     <React.Fragment>
       <Container>
         <Form id="employeeAdd" onSubmit={(e) => handleSubmit(e)}>
@@ -527,7 +520,6 @@ function UserForm({onCancel, edit, selected, type, setException = null}) {
     </React.Fragment>
   )
 }
-
 export default UserForm
 
 

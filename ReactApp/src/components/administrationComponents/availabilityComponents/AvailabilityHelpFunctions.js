@@ -3,12 +3,32 @@ import {Form, Button} from 'react-bootstrap';
 var moment = require('moment');
 
 
+function availabilityRhythmGE(rhythm) {
+    var translation
+    switch(rhythm) {
+        case "oneTime": translation = "Einmalig"
+        break;
+        case "daily": translation = "Täglich"
+        break;
+        case "weekly": translation = "Wöchentlich"
+        break;
+        case "monthly": translation = "Monatlich"
+        break;
+        case "yearly": translation = "Jährlich"
+        break;
+        default: translation = "Translation-Error"
+    }
+    return translation;
+}
+
+
 export function setValidEndDateString(startDateString) {
     var validEndDate = moment(startDateString, "DD.MM.yyyy HH:mm").toDate()
     var startEndDifference = 5
     validEndDate.setMinutes(validEndDate.getMinutes() + startEndDifference)
     return moment(validEndDate).format("DD.MM.YYYY HH:mm").toString()
 }
+
 
 export function validateDates(startDateString, endDateString, endOfSeriesString) {
     var validation = false
@@ -37,25 +57,8 @@ export function validateDates(startDateString, endDateString, endOfSeriesString)
     return validation;
 }
 
-function availabilityRhythmGE(rhythm) {
-    var translation
-    switch(rhythm) {
-        case "oneTime": translation = "Einmalig"
-        break;
-        case "daily": translation = "Täglich"
-        break;
-        case "weekly": translation = "Wöchentlich"
-        break;
-        case "monthly": translation = "Monatlich"
-        break;
-        case "yearly": translation = "Jährlich"
-        break;
-        default: translation = "Translation-Error"
-    }
-    return translation;
-}
 
-//---------------------------------RENDERING---------------------------------
+//-----------------------------------------------------------RENDERING---------------------------------------------------------------------
 export function renderAvailabilityTable(allAvailabilities, addedAvailabilitiesLength, availabilityRhythm, handleCancleAvailability) {
     var startDate = null
     var endDate = null
@@ -84,7 +87,6 @@ export function renderAvailabilityTable(allAvailabilities, addedAvailabilitiesLe
                           value={ SingleAvailability.endOfSeries != null ? endOfSeries : 
                                   SingleAvailability.rhythm == availabilityRhythm.oneTime ? "-" :
                                   "Ohne Ende"}/></td>
-      
                       <td>{((allAvailabilities.length - addedAvailabilitiesLength) > index) ? 
                             <Button style={{marginTop:"0px"}} variant="danger" value={index} onClick={handleCancleAvailability}>Deaktivieren</Button>:
                             <Button style={{marginTop:"0px"}} variant="secondary" value={index} onClick={handleCancleAvailability}>Entfernen</Button>
