@@ -57,6 +57,12 @@ public class ResourceServiceImp extends WarningServiceImpl implements ResourceSe
 		Resource Res = getById(id);
 		Res.setStatus(Status.DELETED);
 		ResRepo.save(Res);
+
+		getPlannedAppointmentsWithId(id).forEach(app -> {
+			app.addWarning(Warning.RESOURCE_WARNING);
+			appointmentService.update(app);
+		});
+
 		return Res.getStatus() == Status.DELETED;
 	}
 
@@ -64,18 +70,19 @@ public class ResourceServiceImp extends WarningServiceImpl implements ResourceSe
 	public Resource update(Resource res) {
 		String resId = res.getId();
 		Optional<Resource> resource = resId != null ? ResRepo.findById(resId) : null;
-		boolean resIsActive;
+		boolean changedStatusInactive;
 		Resource retVal = null;
 
 		if (resId != null && resource.isPresent()) {
 			testCorrectDependencies(res);
 			availabilityService.loadAllAvailabilitiesOfEntity(res.getAvailabilities(), res, this);
 			res.setName(capitalize(res.getName()));
-			retVal      = ResRepo.save(res);
 
-			resIsActive = res.getStatus().isActive();
-			if (!resIsActive || (resIsActive && !resource.get().getStatus().isActive()))
-				testWarningsFor(resId);
+			changedStatusInactive = changedStatusFromOrToInactive(resource.get(), res, Status.INACTIVE);
+
+			retVal                = ResRepo.save(res);
+
+			testWarningsFor(resId);
 
 			return retVal;
 		} else {
@@ -247,6 +254,12 @@ public class ResourceServiceImp extends WarningServiceImpl implements ResourceSe
 
 			resourcesToTest.remove(0);
 		}
+	}
+
+	private boolean changedStatusFromOrToInactive(Resource resource1, Resource resource2, Status status) {
+		Status oldStatus = resource1.getStatus();
+		Status newStatus = resource2.getStatus();
+		return (newStatus.isActive() && oldStatus == status) || (newStatus == status && oldStatus.isActive());
 	}
 
 	// capitalize first letter of a string

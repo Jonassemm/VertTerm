@@ -22,4 +22,7 @@ public interface ProcedureRepository extends MongoRepository<Procedure, String> 
 	
 	@Query("{'neededResourceTypes.$id' : {$in : ?0}}")
 	List<Procedure> findByNeededResourceTypesIdIn(List<ObjectId> ids);
+	
+	@Query("{'neededEmployeePositions.$id' : {$in : ?0}}")
+	List<Procedure> findByNeededEmployeePositionsIn(List<ObjectId> ids);
 }

@@ -5,6 +5,7 @@ import com.dvproject.vertTerm.Model.AppointmentStatus;
 import com.dvproject.vertTerm.Model.Availability;
 import com.dvproject.vertTerm.Model.Employee;
 import com.dvproject.vertTerm.Model.Status;
+import com.dvproject.vertTerm.Model.Warning;
 import com.dvproject.vertTerm.repository.EmployeeRepository;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -116,7 +117,6 @@ public class EmployeeServiceImp extends WarningServiceImpl implements EmployeeSe
 	public Employee update(Employee updatedInstance) {
 		String employeeId = updatedInstance.getId();
 		Optional<Employee> employee = employeeId != null ? repo.findById(employeeId) : null;
-		boolean employeeIsActive;
 		Employee retVal = null;
 
 		if (employeeId != null && employee.isPresent()) {
@@ -126,11 +126,9 @@ public class EmployeeServiceImp extends WarningServiceImpl implements EmployeeSe
 			updatedInstance.setLastName(capitalize(updatedInstance.getLastName()));
 			availabilityService.loadAllAvailabilitiesOfEntity(updatedInstance.getAvailabilities(), updatedInstance, this);
 
-			retVal           = repo.save(updatedInstance);
+			retVal = repo.save(updatedInstance);
 
-			employeeIsActive = updatedInstance.getSystemStatus().isActive();
-			if (!employeeIsActive || (employeeIsActive && !employee.get().getSystemStatus().isActive()))
-				testWarningsFor(employeeId);
+			testWarningsFor(employeeId);
 		}
 
 		return retVal;
@@ -146,6 +144,11 @@ public class EmployeeServiceImp extends WarningServiceImpl implements EmployeeSe
 
 		user.setSystemStatus(Status.DELETED);
 		repo.save(user);
+		
+		getPlannedAppointmentsWithId(id).forEach(app -> {
+			app.addWarning(Warning.EMPLOYEE_WARNING);
+			appointmentService.update(app);
+		});
 
 		return getById(id).getSystemStatus() == Status.DELETED;
 	}

@@ -95,7 +95,7 @@ public class AppointmentgroupController {
 		return updateAppointmentgroupInternal(principal, userid, appointmentgroup, false);
 	}
 	
-	@PutMapping("/override{userid}")
+	@PutMapping("/override/{userid}")
 	public String updateAppointmentsOverride (
 			@PathVariable String userid, 
 			@RequestBody Appointmentgroup appointmentgroup,

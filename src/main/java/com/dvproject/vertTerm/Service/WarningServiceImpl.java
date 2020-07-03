@@ -24,5 +24,15 @@ public abstract class WarningServiceImpl {
 		
 		appointmentgroupService.testWarningsForAppointments(appointments);
 	}
+	
+	<T> List<T> getListOfChanged(List<T> oldEntities, List<T> newEntities) {
+		List<T> changedEntities = new ArrayList<>();
+		changedEntities.addAll(oldEntities);
+		changedEntities.addAll(newEntities);
+
+		changedEntities.removeIf(entity -> oldEntities.contains(entity) && newEntities.contains(entity));
+
+		return changedEntities;
+	}
 
 }

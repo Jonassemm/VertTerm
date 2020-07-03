@@ -18,9 +18,6 @@ public class ProcedureServiceImp extends WarningServiceImpl implements Procedure
 	private ProcedureRepository procedureRepository;
 
 	@Autowired
-	private ResourceTypeServiceImp resourceTypeService;
-
-	@Autowired
 	private AvailabilityServiceImpl availabilityService;
 
 	@Autowired
@@ -199,6 +196,8 @@ public class ProcedureServiceImp extends WarningServiceImpl implements Procedure
 		procedure.setNeededEmployeePositions(positions);
 
 		procedureRepository.save(procedure);
+		
+		testWarningsForPosition(procedure, positions);
 
 		return getProcedureFromDB(id).getNeededEmployeePositions();
 	}
@@ -241,6 +240,8 @@ public class ProcedureServiceImp extends WarningServiceImpl implements Procedure
 		testWarningsForProcedureRelations(oldProcedure, newProcedure);
 
 		testWarningsForResourceType(oldProcedure, newProcedure);
+		
+		testWarningsForPositions(oldProcedure, newProcedure);
 	}
 
 	private Procedure getProcedureFromDB(String id) {
@@ -309,15 +310,19 @@ public class ProcedureServiceImp extends WarningServiceImpl implements Procedure
 
 		testWarningsFor(procedureIds);
 	}
+	
+	private void testWarningsForPositions(Procedure oldProcedure, Procedure newProcedure) {
+		testWarningsForPosition(oldProcedure, newProcedure.getNeededEmployeePositions());
+	}
+	
+	private void testWarningsForPosition(Procedure procedure, List<Position> positions) {
+		List<Position> changedPositions = getListOfChanged(procedure.getNeededEmployeePositions(), positions);
+		List<ObjectId> positionIds = changedPositions.stream().map(position -> new ObjectId(position.getId()))
+				.distinct().collect(Collectors.toList());
+		List<Procedure> procedures = procedureRepository.findByNeededEmployeePositionsIn(positionIds);
+		List<String> procedureIds = procedures.stream().map(proc -> proc.getId()).collect(Collectors.toList());
 
-	private <T> List<T> getListOfChanged(List<T> oldEntities, List<T> newEntities) {
-		List<T> changedEntities = new ArrayList<>();
-		changedEntities.addAll(oldEntities);
-		changedEntities.addAll(newEntities);
-
-		changedEntities.removeIf(entity -> oldEntities.contains(entity) && newEntities.contains(entity));
-
-		return changedEntities;
+		testWarningsFor(procedureIds);
 	}
 
 	public static String capitalize(String str) {

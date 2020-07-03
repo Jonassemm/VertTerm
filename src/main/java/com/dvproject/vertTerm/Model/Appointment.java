@@ -167,8 +167,9 @@ public class Appointment implements Serializable {
 		return bookedEmployees;
 	}
 
-	public List<Employee> getNotActiveEmployees() {
-		return bookedEmployees.stream().filter(employee -> !employee.getSystemStatus().isActive()).collect(Collectors.toList());
+	public List<Employee> retrieveNotActiveEmployees() {
+		return bookedEmployees.stream().filter(employee -> !employee.getSystemStatus().isActive())
+				.collect(Collectors.toList());
 	}
 
 	public void setBookedEmployees(List<Employee> bookedEmployees) {
@@ -179,7 +180,7 @@ public class Appointment implements Serializable {
 		return bookedResources;
 	}
 
-	public List<Resource> getNotActiveResources() {
+	public List<Resource> retrieveNotActiveResources() {
 		return bookedResources.stream().filter(resource -> !resource.getStatus().isActive()).collect(Collectors.toList());
 	}
 
@@ -307,7 +308,7 @@ public class Appointment implements Serializable {
 		if (bookedEmployees.size() != bookedProcedure.getNeededEmployeePositions().size())
 			throw new EmployeeException("Missing employees", null);
 
-		List<Employee> notActiveEmployees = getNotActiveEmployees();
+		List<Employee> notActiveEmployees = retrieveNotActiveEmployees();
 
 		if (notActiveEmployees.size() > 0)
 			throw new EmployeeException("Employee of the appointment is not active", notActiveEmployees.get(0));
@@ -342,7 +343,7 @@ public class Appointment implements Serializable {
 		if (bookedResources.size() != bookedProcedure.getNeededResourceTypes().size())
 			throw new ResourceException("Missing resources", null);
 
-		List<Resource> notActiveResource = getNotActiveResources();
+		List<Resource> notActiveResource = retrieveNotActiveResources();
 
 		if (notActiveResource.size() > 0)
 			throw new ResourceException("Resource of the appointment is not active", notActiveResource.get(0));
