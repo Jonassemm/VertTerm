@@ -34,6 +34,7 @@ export default observer(function App({ userStore, calendarStore }) {
             <Route path="/appointment" component={() => <AppointmentPage calendarStore={calendarStore} userStore={userStore} />} />
             <Route exact path="/booking" component={() => (<BookingForm/>)}/>
             <Route exact path="/booking/:appointmentID" component={BookingForm}/>
+            <Route exact path="/booking/:appointmentID/:startTime" component={BookingForm}/>
             <Route exact path="/warning/" component={() => <AppointmentWarningPage/>}/>
             <Route exact path="/warning/:initialWarning" component={AppointmentWarningPage}/>
             <Route exact path="/test" component={TestComponent}/>

@@ -46,7 +46,6 @@ public class Appointment implements Serializable {
 	@DBRef
 	private Procedure bookedProcedure;
 	@DBRef
-	@NotNull
 	private User bookedCustomer;
 	@DBRef
 	private List<Employee> bookedEmployees;
