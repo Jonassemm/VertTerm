@@ -21,5 +21,4 @@ public interface UserService extends BasicService<User> {
     void testMandatoryFields(User user);
     void testAppointments(String userid);
     User getAnonymousUser ();
-    void obfuscateUser(User user);
 }

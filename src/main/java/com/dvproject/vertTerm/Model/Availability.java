@@ -47,7 +47,7 @@ public class Availability {
 
 		Date end = new Date(date.getTime() + duration.toMillis());
 		if (this.getRhythm() == AvailabilityRhythm.ONE_TIME) { return end.after(endDate) ? null : date; }
-		if (end.after(endOfSeries)) { return null; }
+		if (endOfSeries != null && end.after(endOfSeries)) { return null; }
 
 		Date tmpStartDate = startDate;
 		Date tmpEndDate = endDate;
@@ -110,13 +110,16 @@ public class Availability {
 		Date tmpStartDate = startDate;
 		Date tmpEndDate = endDate;
 		Date IteratedEndDate = null;
+		if(endOfSeries != null && endDate.after(endOfSeries)){
+			end = endOfSeries;
+		}
 
-		while(!tmpStartDate.after(endDate) && tmpStartDate.before(endOfSeries)){
-			if(endOfSeries.before(endDate)) {
-				IteratedEndDate = endOfSeries;
+		while(tmpStartDate.before(end)){
+			if(end.before(tmpEndDate)) {
+				IteratedEndDate = end;
 			}
-			else if(tmpEndDate.after(endDate)) {
-				IteratedEndDate = endDate;
+			else if(tmpEndDate.after(end)) {
+				IteratedEndDate = end;
 			}
 			else{
 				IteratedEndDate = tmpEndDate;
@@ -147,9 +150,10 @@ public class Availability {
 				}
 				tmpStartDate = startCalendar.getTime();
 				tmpEndDate = endCalendar.getTime();
-
 		}
-		return IteratedEndDate;
+		if (IteratedEndDate == null)
+			return null;
+		return new Date(IteratedEndDate.getTime() - duration.toMillis());
 	}
 
 	public Availability (Date startDate, Date endDate, AvailabilityRhythm rythm) {

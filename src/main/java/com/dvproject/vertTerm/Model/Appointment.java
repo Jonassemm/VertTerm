@@ -12,15 +12,11 @@ import java.util.stream.Collectors;
 
 import javax.validation.constraints.NotNull;
 
-import com.dvproject.vertTerm.Service.EmployeeService;
-import com.dvproject.vertTerm.Service.ResourceService;
-import org.apache.catalina.User;
+import com.dvproject.vertTerm.Service.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.DBRef;
 
-import com.dvproject.vertTerm.Service.AppointmentServiceImpl;
-import com.dvproject.vertTerm.Service.RestrictionService;
 import com.dvproject.vertTerm.exception.AppointmentTimeException;
 import com.dvproject.vertTerm.exception.AppointmentInternalException;
 import com.dvproject.vertTerm.exception.EmployeeException;
@@ -32,12 +28,6 @@ import com.dvproject.vertTerm.exception.RestrictionException;
 
 public class Appointment implements Serializable {
 	private static final long serialVersionUID = 2862268218236152790L;
-
-
-	@Autowired
-	private ResourceService resourceService;
-	@Autowired
-	private EmployeeService employeeService;
 
 	@Id
 	private String id;
@@ -57,7 +47,7 @@ public class Appointment implements Serializable {
 	private Procedure bookedProcedure;
 	@DBRef
 	@NotNull
-	private Customer bookedCustomer;
+	private User bookedCustomer;
 	@DBRef
 	private List<Employee> bookedEmployees;
 	@DBRef
@@ -120,6 +110,10 @@ public class Appointment implements Serializable {
 		return enddate.getTime();
 	}
 
+	public boolean blocksBookedEntities(){
+		return this.getStatus() == AppointmentStatus.DONE || this.getStatus() == AppointmentStatus.PLANNED;
+	}
+
 	public void setPlannedEndtime(Date plannedEndtime) {
 		this.plannedEndtime = plannedEndtime;
 	}
@@ -166,11 +160,11 @@ public class Appointment implements Serializable {
 		this.bookedProcedure = bookedProcedure;
 	}
 
-	public Customer getBookedCustomer() {
+	public User getBookedCustomer() {
 		return bookedCustomer;
 	}
 
-	public void setBookedCustomer(Customer bookedCustomers) {
+	public void setBookedCustomer(User bookedCustomers) {
 		this.bookedCustomer = bookedCustomers;
 	}
 
@@ -507,10 +501,11 @@ public class Appointment implements Serializable {
 		return !appointments.isEmpty() && (appointments.size() != 1 || !appointments.get(0).getId().equals(id));
 	}
 
-	public void optimizeAndPopulateForEarliestEnd(AppointmentServiceImpl appointmentService) {
+	public void optimizeAndPopulateForEarliestEnd(AppointmentService appointmentService, ResourceService resourceService, EmployeeService employeeService) {
 		if(this.getBookedProcedure() == null){
 			return;
 		}
+		this.setStatus(AppointmentStatus.RECOMMENDED);
 		this.setPlannedEndtime(new Date(this.plannedStarttime.getTime() + this.getBookedProcedure().getDuration().toMillis()));
 		// check if customer is available
 		this.getBookedCustomer().populateAppointments(appointmentService);
@@ -634,19 +629,19 @@ public class Appointment implements Serializable {
 			this.setBookedResources(oldResourceList);
 			this.setBookedEmployees(oldEmployeeList);
 			this.setPlannedStarttime(newDateToEvaluate);
-			this.optimizeAndPopulateForEarliestEnd(appointmentService);
+			this.optimizeAndPopulateForEarliestEnd(appointmentService, resourceService, employeeService);
 		}
 	}
 
-	public void optimizeAndPopulateForLatestBeginning(AppointmentServiceImpl appointmentService) {
+	public void optimizeAndPopulateForLatestBeginning(AppointmentService appointmentService, ResourceService resourceService, EmployeeService employeeService) {
 		if(this.getBookedProcedure() == null){
 			return;
 		}
+		this.setStatus(AppointmentStatus.RECOMMENDED);
 		this.setPlannedEndtime(new Date(this.plannedStarttime.getTime() + this.getBookedProcedure().getDuration().toMillis()));
 		// check if customer is available
 		this.getBookedCustomer().populateAppointments(appointmentService);
 		Date newDateToEvaluate = this.getBookedCustomer().getLatestAvailableDate(this.getPlannedStarttime(), this.getBookedProcedure().getDuration());
-
 		List<Employee> oldEmployeeList = this.getBookedEmployees();
 		List<Resource> oldResourceList = this.getBookedResources();
 
@@ -706,7 +701,6 @@ public class Appointment implements Serializable {
 				newDateToEvaluate = newDateToEvaluateForRessources;
 			}
 		}
-
 		// do the same for  roles
 		for (Position position : this.getBookedProcedure().getNeededEmployeePositions()) {
 			Date newDateToEvaluateForEmployees = null;
@@ -765,7 +759,7 @@ public class Appointment implements Serializable {
 			this.setBookedResources(oldResourceList);
 			this.setBookedEmployees(oldEmployeeList);
 			this.setPlannedStarttime(newDateToEvaluate);
-			this.optimizeAndPopulateForEarliestEnd(appointmentService);
+			this.optimizeAndPopulateForLatestBeginning(appointmentService, resourceService, employeeService);
 		}
 	}
 }

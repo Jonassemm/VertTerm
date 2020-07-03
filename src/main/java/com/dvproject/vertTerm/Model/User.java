@@ -18,7 +18,7 @@ import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 @Document("user")
-public abstract class User extends Bookable implements Serializable
+public class User extends Bookable implements Serializable
 {
     private static final long serialVersionUID = -5252169753921361843L;
 

@@ -1,5 +1,6 @@
 package com.dvproject.vertTerm.Model;
 
+import com.dvproject.vertTerm.Service.AppointmentService;
 import com.dvproject.vertTerm.Service.AppointmentServiceImpl;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.Transient;
@@ -50,6 +51,9 @@ public abstract class Bookable {
     protected Date getEarliestAvailableDateByAppointments(Date date, Duration duration) {
         Date plannedEnd = new Date(date.getTime() + duration.toMillis());
         for (Appointment appointment : this.getAppointments()) {
+            if(!appointment.blocksBookedEntities()){
+                continue;
+            }
             if (appointment.getPlannedStarttime().before(date)) {
                 if (appointment.getPlannedEndtime().after(date)) {
                     return getEarliestAvailableDate(appointment.getPlannedEndtime(), duration);
@@ -82,6 +86,9 @@ public abstract class Bookable {
     protected Date getLatestAvailableDateByAppointments(Date date, Duration duration) {
         Date plannedEnd = new Date(date.getTime() + duration.toMillis());
         for (Appointment appointment : this.getAppointments()) {
+            if(!appointment.blocksBookedEntities()){
+                continue;
+            }
             if (appointment.getPlannedStarttime().before(date)) {
                 if (appointment.getPlannedEndtime().after(date)) {
                     Date startTimeWithoutDuration = new Date(appointment.getPlannedStarttime().getTime() - duration.toMillis());
@@ -133,9 +140,9 @@ public abstract class Bookable {
         return date.equals(this.getEarliestAvailableDate(date, duration));
     }
 
-    public void populateAppointments(AppointmentServiceImpl service){
-        this.getAppointments().clear();
-        this.getAppointments().addAll(service.getAll(this));
+    public void populateAppointments(AppointmentService service){
+        if(this.getAppointments().isEmpty())
+            this.setAppointments(service.getAll(this));
     }
 
     public List<Availability> getAvailabilities() {
@@ -144,6 +151,10 @@ public abstract class Bookable {
 
     public List<Appointment> getAppointments() {
         return appointments;
+    }
+
+    public void setAppointments(List<Appointment> appointments){
+        this.appointments = appointments;
     }
 
     public String getId() {

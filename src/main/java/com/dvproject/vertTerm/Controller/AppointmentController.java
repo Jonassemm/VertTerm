@@ -8,16 +8,15 @@ import com.dvproject.vertTerm.Model.Appointmentgroup;
 import com.dvproject.vertTerm.Model.Employee;
     import com.dvproject.vertTerm.Model.User;
     import com.dvproject.vertTerm.Model.Warning;
-    import com.dvproject.vertTerm.Service.AppointmentService;
-import com.dvproject.vertTerm.Service.AppointmentgroupService;
-import com.dvproject.vertTerm.Service.UserService;
+	import com.dvproject.vertTerm.Service.*;
 
-    import org.springframework.beans.factory.annotation.Autowired;
+	import org.springframework.beans.factory.annotation.Autowired;
     import org.springframework.security.core.GrantedAuthority;
     import org.springframework.security.core.context.SecurityContextHolder;
     import org.springframework.web.bind.annotation.*;
 
-    import java.security.Principal;
+	import java.io.Console;
+	import java.security.Principal;
 import java.util.Arrays;
 import java.util.Collection;
     import java.util.Date;
@@ -28,6 +27,12 @@ import java.util.Collection;
     public class AppointmentController {
     	@Autowired
     	AppointmentService service;
+
+    	@Autowired
+		EmployeeService employeeService;
+
+    	@Autowired
+		ResourceService resourceService;
     	
     	@Autowired
     	private AppointmentgroupService appointmentgroupService;
@@ -44,6 +49,18 @@ import java.util.Collection;
     	public @ResponseBody Appointment get(@PathVariable String id) {
     		return service.getById(id);
     	}
+
+		@GetMapping("/Recommend/EarlyEnd")
+		public @ResponseBody Appointment recommendByEarlyEnd(@RequestBody Appointment appointment) {
+			appointment.optimizeAndPopulateForEarliestEnd(service, resourceService, employeeService);
+			return appointment;
+		}
+
+		@GetMapping("/Recommend/LateBeginning")
+		public @ResponseBody Appointment recommendByLateBeginning(@RequestBody Appointment appointment) {
+			appointment.optimizeAndPopulateForLatestBeginning(service, resourceService, employeeService);
+			return appointment;
+		}
     	
    	@GetMapping("/pull/{id}")
    	public void testPullability (@PathVariable String id) {

@@ -22,11 +22,16 @@ public enum AppointmentStatus {
 	PLANNED ("planned"),
 
 	/**
-	 * appointment planned times have been set
+	 * appointment optimized
 	 */
-	@JsonProperty("planned")
+	@JsonProperty("recommended")
 	RECOMMENDED("recommended"),
 
+	/**
+	 * appointment open for optimization
+	 */
+	@JsonProperty("open")
+	OPEN("open"),
 	/**
 	 * appointment has been deleted and can no longer be used
 	 */

@@ -9,5 +9,4 @@ import java.util.List;
 
 public interface CustomerService extends BasicService<Customer> {
     List<Customer> getAll(Status status);
-    Customer getAnonymousUser ();
 }

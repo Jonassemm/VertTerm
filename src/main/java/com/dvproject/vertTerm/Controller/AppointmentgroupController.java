@@ -4,6 +4,8 @@ import java.security.Principal;
 import java.util.Collection;
 import java.util.List;
 
+import com.dvproject.vertTerm.Service.EmployeeService;
+import com.dvproject.vertTerm.Service.ResourceService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -35,7 +37,13 @@ public class AppointmentgroupController {
 	
 	@Autowired
 	private AppointmentService appointmentService;
-	
+
+	@Autowired
+	EmployeeService employeeService;
+
+	@Autowired
+	ResourceService resourceService;
+
 	@GetMapping("")
 	public List<Appointmentgroup> getAllAppointmentgroups () {
 		return appointmentgroupService.getAll();
@@ -157,5 +165,17 @@ public class AppointmentgroupController {
 		appointmentgroupService.canBookAppointments(principal, appointmentgroup);
 		
 		return appointmentgroupService.bookAppointmentgroup(userid, appointmentgroup, override);
+	}
+
+	@GetMapping("/Recommend/EarlyEnd")
+	public @ResponseBody Appointmentgroup recommendByEarlyEnd(@RequestBody Appointmentgroup appointment, @RequestParam int index) {
+		appointment.optimizeAppointmentsForEarliestEnd(appointmentService, resourceService, employeeService, appointment.getAppointments().get(index));
+		return appointment;
+	}
+
+	@GetMapping("/Recommend/LateBeginning")
+	public @ResponseBody Appointmentgroup recommendByLateBeginning(@RequestBody Appointmentgroup appointment, @RequestParam int index) {
+		appointment.optimizeAppointmentsForLatestBeginning(appointmentService, resourceService, employeeService, appointment.getAppointments().get(index));
+		return appointment;
 	}
 }
