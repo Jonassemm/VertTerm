@@ -147,6 +147,8 @@ public class AppointmentgroupController {
 		
 		appointmentgroup.setId(appointmentgroupService.getAppointmentgroupContainingAppointmentID(appointments.get(0).getId()).getId());
 		
+		appointmentgroup.resetAllWarnings();
+		
 		return appointmentgroupService.bookAppointmentgroup(userid, appointmentgroup, override);
 	}
 	

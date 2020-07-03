@@ -113,19 +113,25 @@ public class AppointmentgroupServiceImpl implements AppointmentgroupService {
 	@Override
 	public void testWarnings(String appointmentid) {
 		Appointmentgroup appointmentgroup = getUpdatableAppointmentgroupContainingAppointmentID(appointmentid);
-		if (appointmentid != null) {
-			List<Appointment> appointments = appointmentgroup.getAppointments();
-			BookingTester tester = new OverrideBookingTester(new ArrayList<>());
-
-			appointmentgroup.resetAllWarnings();
-
-			appointmentgroup.testProcedureRelations(true);
-
-			appointments.forEach(appointment -> appointmentRepository
-					.save(tester.testAll(appointment, appointmentService, restrictionService)));
-		}
+		if (appointmentid != null)
+			testWarningsForAppointmentgroup(appointmentgroup.getId());
 	}
-	
+
+	@Override
+	public void testWarningsForAppointmentgroup(String appointmentgroupid) {
+		Appointmentgroup appointmentgroup = getAppointmentgroupInternal(appointmentgroupid);
+		List<Appointment> appointments = appointmentgroup.getAppointments();
+		BookingTester tester = new OverrideBookingTester(new ArrayList<>());
+
+		appointmentgroup.resetAllWarnings();
+
+		appointmentgroup.testProcedureRelations(true);
+
+		appointments.forEach(appointment -> appointmentRepository
+				.save(tester.testAll(appointment, appointmentService, restrictionService)));
+	}
+
+	@Override
 	public void testWarningsForAppointments(List<Appointment> appointmentsToTest) {
 		List<String> appointmentIdsTested = new ArrayList<>();
 
@@ -235,7 +241,7 @@ public class AppointmentgroupServiceImpl implements AppointmentgroupService {
 		String link = null;
 		BookingTester tester = override ? new OverrideBookingTester(new ArrayList<>())
 				: new NormalBookingTester(new ArrayList<>());
-		
+
 		if (!noUserAttached && !user.getSystemStatus().isActive())
 			throw new IllegalArgumentException("User is not active");
 

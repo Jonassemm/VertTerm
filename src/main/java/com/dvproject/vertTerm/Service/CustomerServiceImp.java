@@ -69,14 +69,18 @@ public class CustomerServiceImp implements CustomerService {
 
     @Override
     public Customer update(Customer updatedInstance) {
+   	 Customer retVal = null;
+   	 
         if (updatedInstance.getId() != null && repo.findById(updatedInstance.getId()).isPresent()) {
         	userService.testMandatoryFields(updatedInstance);
         	userService.encodePassword(updatedInstance);
         	updatedInstance.setFirstName(capitalize(updatedInstance.getFirstName()));
         	updatedInstance.setLastName(capitalize(updatedInstance.getLastName()));
-            return repo.save(updatedInstance);
+        	retVal = repo.save(updatedInstance);
+        	
+        	userService.testWarningsFor(updatedInstance.getId());
         }
-        return null;
+        return retVal;
     }
 
     @Override

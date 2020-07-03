@@ -70,15 +70,12 @@ public class ResourceServiceImp extends WarningServiceImpl implements ResourceSe
 	public Resource update(Resource res) {
 		String resId = res.getId();
 		Optional<Resource> resource = resId != null ? ResRepo.findById(resId) : null;
-		boolean changedStatusInactive;
 		Resource retVal = null;
 
 		if (resId != null && resource.isPresent()) {
 			testCorrectDependencies(res);
 			availabilityService.loadAllAvailabilitiesOfEntity(res.getAvailabilities(), res, this);
 			res.setName(capitalize(res.getName()));
-
-			changedStatusInactive = changedStatusFromOrToInactive(resource.get(), res, Status.INACTIVE);
 
 			retVal                = ResRepo.save(res);
 

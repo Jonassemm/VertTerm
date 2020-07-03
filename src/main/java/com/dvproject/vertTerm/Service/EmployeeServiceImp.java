@@ -129,6 +129,7 @@ public class EmployeeServiceImp extends WarningServiceImpl implements EmployeeSe
 			retVal = repo.save(updatedInstance);
 
 			testWarningsFor(employeeId);
+			userService.testWarningsFor(updatedInstance.getId());
 		}
 
 		return retVal;
