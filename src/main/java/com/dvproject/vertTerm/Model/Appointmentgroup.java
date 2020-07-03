@@ -127,10 +127,10 @@ public class Appointmentgroup {
 				String procedureId = precedingProcedureRelation.getProcedure().getId();
 				if (proceduresMap.containsKey(procedureId)) {
 					Appointment appointmentToTest = appointmentsMap.get(procedureId);
+					Date plannedEndtime = appointmentToTest.getPlannedEndtime();
+					Date plannedStarttime = appointment.getPlannedStarttime();
 
-					// test the procedurerelation with time data from appointment
-					if (!precedingProcedureRelation.testConformatyOfDates(getCalendar(appointmentToTest.getPlannedEndtime()),
-							getCalendar(appointment.getPlannedStarttime())))
+					if (!hasCorrectPlannedTimeValue(precedingProcedureRelation, plannedEndtime, plannedStarttime))
 						throw new ProcedureRelationException("Time-condition of preceding procedurerelation failed",
 								precedingProcedureRelation);
 				} else
@@ -145,10 +145,10 @@ public class Appointmentgroup {
 				String procedureId = subsequentProcedureRelation.getProcedure().getId();
 				if (proceduresMap.containsKey(procedureId)) {
 					Appointment appointmentToTest = appointmentsMap.get(procedureId);
+					Date plannedEndtime = appointment.getPlannedEndtime();
+					Date plannedStarttime = appointmentToTest.getPlannedStarttime();
 
-					// test the procedurerelation with time data from appointment
-					if (!subsequentProcedureRelation.testConformatyOfDates(getCalendar(appointment.getPlannedEndtime()),
-							getCalendar(appointmentToTest.getPlannedStarttime())))
+					if (!hasCorrectPlannedTimeValue(subsequentProcedureRelation, plannedEndtime, plannedStarttime))
 						throw new ProcedureRelationException("Time-condition of subsequent procedurerelation failed",
 								subsequentProcedureRelation);
 				} else
@@ -156,6 +156,11 @@ public class Appointmentgroup {
 							subsequentProcedureRelation);
 			}
 		}
+	}
+
+	private boolean hasCorrectPlannedTimeValue(ProcedureRelation procedureRelation, Date endtime, Date starttime) {
+		return endtime.before(starttime)
+				&& procedureRelation.testConformatyOfDates(getCalendar(endtime), getCalendar(starttime));
 	}
 
 	private Calendar getCalendar(Date date) {
