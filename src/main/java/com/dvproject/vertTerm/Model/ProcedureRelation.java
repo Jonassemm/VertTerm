@@ -45,7 +45,8 @@ public class ProcedureRelation {
 		this.procedure = procedure;
 	}
 
-	public List<Appointment> getAppointmentRecommendationByEarliestEnd(Date date, Customer customer, AppointmentServiceImpl appointmentService) {
+	public List<Appointment> getAppointmentRecommendationByEarliestEnd(Date date, Customer customer,
+			AppointmentServiceImpl appointmentService) {
 		return this.getProcedure().getAppointmentRecommendationByEarliestEnd(
 				new Date(date.getTime() + this.getMinDifference().toMillis()), customer, appointmentService);
 	}
@@ -63,6 +64,39 @@ public class ProcedureRelation {
 
 	private boolean testMaxDifference(Duration duration) {
 		return maxDifference == null || duration.compareTo(maxDifference) <= 0;
+	}
+
+	private boolean hasSameDifferences(ProcedureRelation procedureRelation) {
+		return equalsMinDifference(procedureRelation.getMinDifference())
+				&& equalsMaxDifference(procedureRelation.getMaxDifference());
+	}
+
+	private boolean equalsMinDifference(Duration duration) {
+		return durationIsDifferent(minDifference, duration);
+	}
+
+	private boolean equalsMaxDifference(Duration duration) {
+		return durationIsDifferent(maxDifference, duration);
+	}
+
+	private boolean durationIsDifferent(Duration duration1, Duration duration2) {
+		if (duration1 == null && duration2 == null)
+			return false;
+		else
+			if (duration1 == null ^ duration2 == null)
+				return true;
+			else
+				return duration1.toMillis() != duration2.toMillis();
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (obj instanceof ProcedureRelation) {
+			ProcedureRelation other = (ProcedureRelation) obj;
+			return procedure.getId().equals(other.getProcedure().getId()) && hasSameDifferences(other);
+		}
+
+		return false;
 	}
 
 }

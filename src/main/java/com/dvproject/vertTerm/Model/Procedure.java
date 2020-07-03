@@ -41,7 +41,6 @@ public class Procedure implements Serializable, Available {
 	private int pricePerHour;
 	@NotNull
 	private Status status;
-//	@NotNull
 	private boolean publicProcedure;
 
 	private List<ProcedureRelation> precedingRelations;
@@ -166,6 +165,22 @@ public class Procedure implements Serializable, Available {
 
 	public void setAvailabilities(List<Availability> availabilities) {
 		this.availabilities = availabilities;
+	}
+
+	public boolean hasOnlyActiveEntities() {
+		boolean retVal = status == Status.ACTIVE;
+
+		retVal = retVal && neededResourceTypes.stream().allMatch(entity -> entity.getStatus() == Status.ACTIVE);
+
+		retVal = retVal && neededEmployeePositions.stream().allMatch(entity -> entity.getStatus() == Status.ACTIVE);
+
+		retVal = retVal
+				&& precedingRelations.stream().allMatch(entity -> entity.getProcedure().getStatus() == Status.ACTIVE);
+		
+		retVal = retVal
+				&& subsequentRelations.stream().allMatch(entity -> entity.getProcedure().getStatus() == Status.ACTIVE);
+
+		return retVal;
 	}
 
 	public List<Appointment> getAppointmentRecommendationByEarliestEnd(Date earliestRequestedDate, Customer customer,

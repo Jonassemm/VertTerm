@@ -17,6 +17,10 @@ import com.dvproject.vertTerm.Model.Status;
 import com.dvproject.vertTerm.Model.User;
 import com.dvproject.vertTerm.repository.UserRepository;
 
+/**
+ * @author Joshua Müller
+ */
+
 @Component
 public class WebserverUserDetailsService implements UserDetailsService {
 	@Autowired

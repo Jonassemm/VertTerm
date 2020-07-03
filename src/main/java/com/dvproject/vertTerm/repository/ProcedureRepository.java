@@ -3,6 +3,7 @@ package com.dvproject.vertTerm.repository;
 import java.util.List;
 import java.util.Optional;
 
+import org.bson.types.ObjectId;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.data.mongodb.repository.Query;
 
@@ -18,4 +19,7 @@ public interface ProcedureRepository extends MongoRepository<Procedure, String> 
 	List<Procedure> findByStatus(Status status);
 	
 	List<Procedure> findByStatusAndPublicProcedure(Status status, boolean publicProcedure);
+	
+	@Query("{'neededResourceTypes.$id' : {$in : ?0}}")
+	List<Procedure> findByNeededResourceTypesIdIn(List<ObjectId> ids);
 }

@@ -15,7 +15,7 @@ import com.dvproject.vertTerm.repository.RessourceRepository;
 import com.dvproject.vertTerm.repository.RestrictionRepository;
 
 @Service
-public class ResourceServiceImp implements ResourceService, AvailabilityService {
+public class ResourceServiceImp extends WarningServiceImpl implements ResourceService, AvailabilityService {
 
 	@Autowired
 	private RessourceRepository ResRepo;
@@ -23,6 +23,8 @@ public class ResourceServiceImp implements ResourceService, AvailabilityService 
 	private RestrictionRepository RestsRepo;
 	@Autowired
 	private AvailabilityServiceImpl availabilityService;
+	@Autowired
+	private AppointmentService appointmentService;
 
 	// @PreAuthorize("hasAuthority('RESOURCE_READ')")
 	public List<Resource> getAll() {
@@ -60,11 +62,22 @@ public class ResourceServiceImp implements ResourceService, AvailabilityService 
 
 	// @PreAuthorize("hasAuthority('RESOURCE_WRITE')")
 	public Resource update(Resource res) {
-		if (res.getId() != null && ResRepo.findById(res.getId()).isPresent()) {
+		String resId = res.getId();
+		Optional<Resource> resource = resId != null ? ResRepo.findById(resId) : null;
+		boolean resIsActive;
+		Resource retVal = null;
+
+		if (resId != null && resource.isPresent()) {
 			testCorrectDependencies(res);
 			availabilityService.loadAllAvailabilitiesOfEntity(res.getAvailabilities(), res, this);
 			res.setName(capitalize(res.getName()));
-			return ResRepo.save(res);
+			retVal      = ResRepo.save(res);
+
+			resIsActive = res.getStatus().isActive();
+			if (!resIsActive || (resIsActive && !resource.get().getStatus().isActive()))
+				testWarningsFor(resId);
+
+			return retVal;
 		} else {
 			throw new ResourceNotFoundException("Resource with the given id :" + res.getId() + "not found");
 		}
@@ -100,9 +113,7 @@ public class ResourceServiceImp implements ResourceService, AvailabilityService 
 	public List<Availability> getAllAvailabilities(String id) {
 		// get resource availabilities
 		Resource resource = this.getById(id);
-		if (resource == null) {
-			throw new IllegalArgumentException("No resource with the given id");
-		}
+		if (resource == null) { throw new IllegalArgumentException("No resource with the given id"); }
 
 		return resource.getAvailabilities();
 	}
@@ -207,9 +218,7 @@ public class ResourceServiceImp implements ResourceService, AvailabilityService 
 		List<Resource> oldInstanceChildResources;
 		List<Resource> resourcesToTest = new ArrayList<>();
 
-		if (newInstance.getChildResources() == null) {
-			return;
-		}
+		if (newInstance.getChildResources() == null) { return; }
 
 		try {
 			oldInstanceChildResources = this.getById(newInstance.getId()).getChildResources();
@@ -247,6 +256,11 @@ public class ResourceServiceImp implements ResourceService, AvailabilityService 
 
 		return str.substring(0, 1).toUpperCase() + str.substring(1).toLowerCase();
 
+	}
+
+	@Override
+	public List<Appointment> getPlannedAppointmentsWithId(String id) {
+		return appointmentService.getAppointmentsByResourceIdAndAppointmentStatus(id, AppointmentStatus.PLANNED);
 	}
 
 }
