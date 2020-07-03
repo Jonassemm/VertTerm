@@ -46,7 +46,6 @@ public class Appointment implements Serializable {
 	@DBRef
 	private Procedure bookedProcedure;
 	@DBRef
-	@NotNull
 	private User bookedCustomer;
 	@DBRef
 	private List<Employee> bookedEmployees;
@@ -130,7 +129,7 @@ public class Appointment implements Serializable {
 		plannedEndtime   = generatePlannedEndtime(starttime);
 		plannedStarttime = starttime;
 	}
-	
+
 	public Appointment getAppointmentWithNewDatesFor(Date starttime) {
 		generateNewDatesFor(starttime);
 		return this;
@@ -172,12 +171,21 @@ public class Appointment implements Serializable {
 		return bookedEmployees;
 	}
 
+	public List<Employee> retrieveNotActiveEmployees() {
+		return bookedEmployees.stream().filter(employee -> !employee.getSystemStatus().isActive())
+				.collect(Collectors.toList());
+	}
+
 	public void setBookedEmployees(List<Employee> bookedEmployees) {
 		this.bookedEmployees = bookedEmployees;
 	}
 
 	public List<Resource> getBookedResources() {
 		return bookedResources;
+	}
+
+	public List<Resource> retrieveNotActiveResources() {
+		return bookedResources.stream().filter(resource -> !resource.getStatus().isActive()).collect(Collectors.toList());
 	}
 
 	public void setBookedResources(List<Resource> bookedResources) {
@@ -301,9 +309,13 @@ public class Appointment implements Serializable {
 	}
 
 	public void testEmployeesOfAppointment() {
-		if (this.bookedEmployees.size() != this.getBookedProcedure().getNeededEmployeePositions().size()) {
+		if (bookedEmployees.size() != bookedProcedure.getNeededEmployeePositions().size())
 			throw new EmployeeException("Missing employees", null);
-		}
+
+		List<Employee> notActiveEmployees = retrieveNotActiveEmployees();
+
+		if (notActiveEmployees.size() > 0)
+			throw new EmployeeException("Employee of the appointment is not active", notActiveEmployees.get(0));
 	}
 
 	public void testBookedResourcesAgainstResourceTypesOfProcedure() {
@@ -332,8 +344,13 @@ public class Appointment implements Serializable {
 	}
 
 	public void testResourcesOfAppointment() {
-		if (bookedResources.size() != getBookedProcedure().getNeededResourceTypes().size())
+		if (bookedResources.size() != bookedProcedure.getNeededResourceTypes().size())
 			throw new ResourceException("Missing resources", null);
+
+		List<Resource> notActiveResource = retrieveNotActiveResources();
+
+		if (notActiveResource.size() > 0)
+			throw new ResourceException("Resource of the appointment is not active", notActiveResource.get(0));
 	}
 
 	public void testProcedureDuration() {
@@ -343,6 +360,9 @@ public class Appointment implements Serializable {
 		if (procedureDuration != null && appointmentDuration.toSeconds() != procedureDuration.toSeconds())
 			throw new ProcedureException("Duration of the appointment does not conform to the procedure ",
 					bookedProcedure);
+
+		if (!bookedProcedure.hasOnlyActiveEntities())
+			throw new ProcedureException("Procedure needs to only contain active entities", bookedProcedure);
 	}
 
 	public void testDistinctBookedAttributes() {

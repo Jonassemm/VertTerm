@@ -1,5 +1,8 @@
 package com.dvproject.vertTerm.Controller;
 
+import java.util.Base64;
+import java.util.Base64.Decoder;
+
 import javax.servlet.http.HttpServletRequest;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -8,9 +11,8 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.dvproject.vertTerm.Model.User;
 import com.dvproject.vertTerm.repository.UserRepository;
@@ -32,9 +34,13 @@ public class HomeController {
 		return "index";
 	}
 
-	@ResponseBody
-	@GetMapping("/")
-	public String login(HttpServletRequest request, @RequestParam String username, @RequestParam String password) {
+	@GetMapping("/{login}")
+	public String login(HttpServletRequest request, @PathVariable String login) {
+		LoginInformation loginInformation = new LoginInformation(login);
+		
+		String username = loginInformation.getUsername();
+		String password = loginInformation.getPassword();
+		
 		User user = userService.findByUsername(username);
 
 		if (!user.isAnonymousUser() && !user.getPassword().equals(passwordEncoder.encode(password)))
@@ -44,6 +50,32 @@ public class HomeController {
 				username, null, manager.getAuthorities(user.getRoles()));
 		SecurityContextHolder.getContext().setAuthentication(authenticationToken);
 
-		return user.getId();
+		return "index";
+	}
+	
+	private static class LoginInformation {
+		private String username;
+		private String password;
+		
+		public LoginInformation(String base64String) {
+			Decoder base64Decoder = Base64.getDecoder();
+			String loginString = base64Decoder.decode(base64String.getBytes()).toString();
+			
+			String [] loginInformation = loginString.split(",");
+			
+			if (loginInformation.length != 2)
+				throw new IllegalArgumentException("Logininformation is wrong");
+			
+			username = loginInformation [0];
+			password = loginInformation [1];
+		}
+		
+		public String getUsername() {
+			return username;
+		}
+		
+		public String getPassword() {
+			return password;
+		}
 	}
 }

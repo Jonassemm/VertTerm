@@ -15,7 +15,7 @@ import com.dvproject.vertTerm.repository.RessourceRepository;
 import com.dvproject.vertTerm.repository.RestrictionRepository;
 
 @Service
-public class ResourceServiceImp implements ResourceService, AvailabilityService {
+public class ResourceServiceImp extends WarningServiceImpl implements ResourceService, AvailabilityService {
 
 	@Autowired
 	private RessourceRepository ResRepo;
@@ -23,6 +23,8 @@ public class ResourceServiceImp implements ResourceService, AvailabilityService 
 	private RestrictionRepository RestsRepo;
 	@Autowired
 	private AvailabilityServiceImpl availabilityService;
+	@Autowired
+	private AppointmentService appointmentService;
 
 	// @PreAuthorize("hasAuthority('RESOURCE_READ')")
 	public List<Resource> getAll() {
@@ -55,16 +57,31 @@ public class ResourceServiceImp implements ResourceService, AvailabilityService 
 		Resource Res = getById(id);
 		Res.setStatus(Status.DELETED);
 		ResRepo.save(Res);
+
+		getPlannedAppointmentsWithId(id).forEach(app -> {
+			app.addWarning(Warning.RESOURCE_WARNING);
+			appointmentService.update(app);
+		});
+
 		return Res.getStatus() == Status.DELETED;
 	}
 
 	// @PreAuthorize("hasAuthority('RESOURCE_WRITE')")
 	public Resource update(Resource res) {
-		if (res.getId() != null && ResRepo.findById(res.getId()).isPresent()) {
+		String resId = res.getId();
+		Optional<Resource> resource = resId != null ? ResRepo.findById(resId) : null;
+		Resource retVal = null;
+
+		if (resId != null && resource.isPresent()) {
 			testCorrectDependencies(res);
 			availabilityService.loadAllAvailabilitiesOfEntity(res.getAvailabilities(), res, this);
 			res.setName(capitalize(res.getName()));
-			return ResRepo.save(res);
+
+			retVal                = ResRepo.save(res);
+
+			testWarningsFor(resId);
+
+			return retVal;
 		} else {
 			throw new ResourceNotFoundException("Resource with the given id :" + res.getId() + "not found");
 		}
@@ -100,9 +117,7 @@ public class ResourceServiceImp implements ResourceService, AvailabilityService 
 	public List<Availability> getAllAvailabilities(String id) {
 		// get resource availabilities
 		Resource resource = this.getById(id);
-		if (resource == null) {
-			throw new IllegalArgumentException("No resource with the given id");
-		}
+		if (resource == null) { throw new IllegalArgumentException("No resource with the given id"); }
 
 		return resource.getAvailabilities();
 	}
@@ -207,9 +222,7 @@ public class ResourceServiceImp implements ResourceService, AvailabilityService 
 		List<Resource> oldInstanceChildResources;
 		List<Resource> resourcesToTest = new ArrayList<>();
 
-		if (newInstance.getChildResources() == null) {
-			return;
-		}
+		if (newInstance.getChildResources() == null) { return; }
 
 		try {
 			oldInstanceChildResources = this.getById(newInstance.getId()).getChildResources();
@@ -240,6 +253,12 @@ public class ResourceServiceImp implements ResourceService, AvailabilityService 
 		}
 	}
 
+	private boolean changedStatusFromOrToInactive(Resource resource1, Resource resource2, Status status) {
+		Status oldStatus = resource1.getStatus();
+		Status newStatus = resource2.getStatus();
+		return (newStatus.isActive() && oldStatus == status) || (newStatus == status && oldStatus.isActive());
+	}
+
 	// capitalize first letter of a string
 	public static String capitalize(String str) {
 		if (str == null)
@@ -247,6 +266,11 @@ public class ResourceServiceImp implements ResourceService, AvailabilityService 
 
 		return str.substring(0, 1).toUpperCase() + str.substring(1).toLowerCase();
 
+	}
+
+	@Override
+	public List<Appointment> getPlannedAppointmentsWithId(String id) {
+		return appointmentService.getAppointmentsByResourceIdAndAppointmentStatus(id, AppointmentStatus.PLANNED);
 	}
 
 }

@@ -46,5 +46,9 @@ public class ResourceType {
 	public void setStatus(Status status) {
 		this.status = status;
 	}
-
+	
+	@Override
+	public boolean equals(Object obj) {
+		return obj instanceof ResourceType && id.equals(((ResourceType) obj).getId());
+	}
 }

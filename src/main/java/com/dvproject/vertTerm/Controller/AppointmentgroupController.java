@@ -103,7 +103,7 @@ public class AppointmentgroupController {
 		return updateAppointmentgroupInternal(principal, userid, appointmentgroup, false);
 	}
 	
-	@PutMapping("/override{userid}")
+	@PutMapping("/override/{userid}")
 	public String updateAppointmentsOverride (
 			@PathVariable String userid, 
 			@RequestBody Appointmentgroup appointmentgroup,
@@ -154,6 +154,8 @@ public class AppointmentgroupController {
 		appointmentgroupService.canBookAppointments(principal, appointmentgroup);
 		
 		appointmentgroup.setId(appointmentgroupService.getAppointmentgroupContainingAppointmentID(appointments.get(0).getId()).getId());
+		
+		appointmentgroup.resetAllWarnings();
 		
 		return appointmentgroupService.bookAppointmentgroup(userid, appointmentgroup, override);
 	}

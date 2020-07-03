@@ -7,6 +7,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TimeZone;
+import java.util.stream.Collectors;
 
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
@@ -16,6 +17,8 @@ import com.dvproject.vertTerm.Service.*;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.DBRef;
 
+import com.dvproject.vertTerm.Service.AppointmentServiceImpl;
+import com.dvproject.vertTerm.Service.RestrictionService;
 import com.dvproject.vertTerm.exception.ProcedureException;
 import com.dvproject.vertTerm.exception.ProcedureRelationException;
 
@@ -71,66 +74,96 @@ public class Appointmentgroup {
 		appointments.forEach(appointment -> bookingTester.testAll(appointment, appointmentService, restrictionService));
 	}
 
-	public void testProcedureRelations() {
+	public boolean hasDistinctProcedures() {
+		return appointments.stream().map(app -> app.getBookedProcedure().getId()).distinct().count() == appointments
+				.size();
+	}
+
+	public void testProcedureRelations(boolean override) {
 		// procedure.id -> appointment
 		Map<String, Appointment> appointmentsMap = new HashMap<>();
 		// procedure.id -> procedure
 		Map<String, Procedure> proceduresMap = new HashMap<>();
+
+		List<Appointment> appointments = this.appointments.stream()
+				.filter(app -> app.getStatus() != AppointmentStatus.DELETED).collect(Collectors.toList());
+
+		List<Appointment> appointmentsWithProblem = new ArrayList<>();
+		ProcedureRelationException pre = null;
 
 		// populate maps
 		for (Appointment appointment : appointments) {
 			Procedure procedureOfAppointment = appointment.getBookedProcedure();
 			String id = procedureOfAppointment.getId();
 
-			if (proceduresMap.containsKey(id))
-				throw new ProcedureException("Two different appointments of one procedure", procedureOfAppointment);
-
 			proceduresMap.put(id, procedureOfAppointment);
 			appointmentsMap.put(id, appointment);
 		}
 
 		for (Appointment appointment : appointments) {
-			Procedure procedure = proceduresMap.get(appointment.getBookedProcedure().getId());
-			List<ProcedureRelation> precedingprocedures = procedure.getPrecedingRelations();
-			List<ProcedureRelation> subsequentprocedures = procedure.getSubsequentRelations();
-
-			// test all precedingRelations
-			if (precedingprocedures != null) {
-				for (ProcedureRelation precedingProcedureRelation : precedingprocedures) {
-					String procedureId = precedingProcedureRelation.getProcedure().getId();
-					if (proceduresMap.containsKey(procedureId)) {
-						Appointment appointmentToTest = appointmentsMap.get(procedureId);
-
-						// test the procedurerelation with time data from appointment
-						if (!precedingProcedureRelation.testConformatyOfDates(
-								getCalendar(appointmentToTest.getPlannedEndtime()),
-								getCalendar(appointment.getPlannedStarttime())))
-							throw new ProcedureRelationException("Time-condition of preceding procedurerelation failed",
-									precedingProcedureRelation);
-					} else
-						throw new ProcedureRelationException("Missing appointment for procedure to complete booking",
-								precedingProcedureRelation);
-				}
-			}
-
-			// test all subsequentRelations
-			if (subsequentprocedures != null) {
-				for (ProcedureRelation subsequentProcedureRelation : subsequentprocedures) {
-					String procedureId = subsequentProcedureRelation.getProcedure().getId();
-					if (proceduresMap.containsKey(procedureId)) {
-						Appointment appointmentToTest = appointmentsMap.get(procedureId);
-
-						// test the procedurerelation with time data from appointment
-						if (!subsequentProcedureRelation.testConformatyOfDates(getCalendar(appointment.getPlannedEndtime()),
-								getCalendar(appointmentToTest.getPlannedStarttime())))
-							throw new ProcedureRelationException("Time-condition of subsequent procedurerelation failed",
-									subsequentProcedureRelation);
-					} else
-						throw new ProcedureRelationException("Missing appointment for procedure to complete booking",
-								subsequentProcedureRelation);
-				}
+			try {
+				testProcedureRelationOfAppointment(appointment, appointmentsMap, proceduresMap);
+			} catch (ProcedureRelationException ex) {
+				appointmentsWithProblem.add(appointment);
+				if (pre == null)
+					pre = ex;
 			}
 		}
+
+		if (override) {
+			appointmentsWithProblem.forEach(appointment -> appointment.addWarning(Warning.PROCEDURE_RELATION_WARNING));
+		} else {
+			if (pre != null)
+				throw pre;
+		}
+	}
+
+	public void testProcedureRelationOfAppointment(Appointment appointment, Map<String, Appointment> appointmentsMap,
+			Map<String, Procedure> proceduresMap) {
+		Procedure procedure = proceduresMap.get(appointment.getBookedProcedure().getId());
+		List<ProcedureRelation> precedingprocedures = procedure.getPrecedingRelations();
+		List<ProcedureRelation> subsequentprocedures = procedure.getSubsequentRelations();
+
+		// test all precedingRelations
+		if (precedingprocedures != null) {
+			for (ProcedureRelation precedingProcedureRelation : precedingprocedures) {
+				String procedureId = precedingProcedureRelation.getProcedure().getId();
+				if (proceduresMap.containsKey(procedureId)) {
+					Appointment appointmentToTest = appointmentsMap.get(procedureId);
+					Date plannedEndtime = appointmentToTest.getPlannedEndtime();
+					Date plannedStarttime = appointment.getPlannedStarttime();
+
+					if (!hasCorrectPlannedTimeValue(precedingProcedureRelation, plannedEndtime, plannedStarttime))
+						throw new ProcedureRelationException("Time-condition of preceding procedurerelation failed",
+								precedingProcedureRelation);
+				} else
+					throw new ProcedureRelationException("Missing appointment for procedure to complete booking",
+							precedingProcedureRelation);
+			}
+		}
+
+		// test all subsequentRelations
+		if (subsequentprocedures != null) {
+			for (ProcedureRelation subsequentProcedureRelation : subsequentprocedures) {
+				String procedureId = subsequentProcedureRelation.getProcedure().getId();
+				if (proceduresMap.containsKey(procedureId)) {
+					Appointment appointmentToTest = appointmentsMap.get(procedureId);
+					Date plannedEndtime = appointment.getPlannedEndtime();
+					Date plannedStarttime = appointmentToTest.getPlannedStarttime();
+
+					if (!hasCorrectPlannedTimeValue(subsequentProcedureRelation, plannedEndtime, plannedStarttime))
+						throw new ProcedureRelationException("Time-condition of subsequent procedurerelation failed",
+								subsequentProcedureRelation);
+				} else
+					throw new ProcedureRelationException("Missing appointment for procedure to complete booking",
+							subsequentProcedureRelation);
+			}
+		}
+	}
+
+	private boolean hasCorrectPlannedTimeValue(ProcedureRelation procedureRelation, Date endtime, Date starttime) {
+		return endtime.before(starttime)
+				&& procedureRelation.testConformatyOfDates(getCalendar(endtime), getCalendar(starttime));
 	}
 
 	private Calendar getCalendar(Date date) {
