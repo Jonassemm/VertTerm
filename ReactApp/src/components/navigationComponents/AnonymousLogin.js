@@ -15,7 +15,7 @@ function AnonymousLogin({credString,userStore}) {
             const res = await getAnonymousLogin(username,password)
             userStore.setUserID(res.data)
             userStore.setLoggedIn(true)
-            history.push("/appointments")
+           // history.push("/appointments")
         }catch(error){
             console.log(error)
         }

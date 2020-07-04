@@ -15,7 +15,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 @Service
-public class UserServiceImp implements UserService {
+public class UserServiceImp extends WarningServiceImpl implements UserService {
     @Autowired
     private UserRepository repo;
     
@@ -73,10 +73,14 @@ public class UserServiceImp implements UserService {
 
 	@Override
 	public User update(User updatedInstance) {
+		User retVal = null;
+		
 		if (updatedInstance.getId() != null && repo.findById(updatedInstance.getId()).isPresent()) {
 			this.testMandatoryFields(updatedInstance);
 			this.encodePassword(updatedInstance);
-			return repo.save(updatedInstance);
+			retVal = repo.save(updatedInstance);
+			
+			return retVal;
 		}
 		return null;
 	}
@@ -84,13 +88,13 @@ public class UserServiceImp implements UserService {
 	@Override
 	public boolean delete(String id) {
 		User user = getById(id);
-		
+
 		testAppointments(id);
     	user.obfuscate();
-    	
+
     	user.setSystemStatus(Status.DELETED);
     	repo.save(user);
-    	
+
     	return getById(id).getSystemStatus() == Status.DELETED;
 	}
 
@@ -207,11 +211,16 @@ public class UserServiceImp implements UserService {
 	}
 	
 	public void testAppointments(String userid) {
-		List<Appointment> appointments = appointmentService.getAppointmentsByUserIdAndAppointmentStatus(userid, 
+		List<Appointment> appointments = appointmentService.getAppointmentsByUserIdAndAppointmentStatus(userid,
 				AppointmentStatus.PLANNED);
 		
 		if (appointments != null && appointments.size() > 0)
 			throw new IllegalArgumentException("User can not be deleted because he has booked appointments");
+	}
+
+	@Override
+	List<Appointment> getPlannedAppointmentsWithId(String id) {
+		return appointmentService.getAppointmentsByUserIdAndAppointmentStatus(id, AppointmentStatus.PLANNED);
 	}
 
 }

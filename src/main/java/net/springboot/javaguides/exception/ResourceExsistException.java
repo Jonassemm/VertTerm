@@ -2,6 +2,7 @@ package net.springboot.javaguides.exception;
 
 import org.springframework.web.bind.annotation.ResponseStatus;
 
+//author Amar Alkhankan
 @ResponseStatus
 public class ResourceExsistException extends RuntimeException {
 

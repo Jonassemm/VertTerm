@@ -18,6 +18,7 @@ import com.dvproject.vertTerm.Model.ResourceType;
 import com.dvproject.vertTerm.Model.Status;
 import com.dvproject.vertTerm.Service.ResourceTypeService;
 
+//author Amar Alkhankan
 @RestController
 @RequestMapping(value= "/ResourceTypes")
 public class ResourceTypeController

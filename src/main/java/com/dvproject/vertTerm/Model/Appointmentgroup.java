@@ -12,11 +12,14 @@ import java.util.stream.Collectors;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 
+import com.dvproject.vertTerm.Controller.RessourceController;
+import com.dvproject.vertTerm.Service.*;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.DBRef;
 
 import com.dvproject.vertTerm.Service.AppointmentServiceImpl;
 import com.dvproject.vertTerm.Service.RestrictionService;
+import com.dvproject.vertTerm.exception.ProcedureException;
 import com.dvproject.vertTerm.exception.ProcedureRelationException;
 
 public class Appointmentgroup {
@@ -39,7 +42,7 @@ public class Appointmentgroup {
 	}
 
 	public boolean hasNoAppointmentIdSet() {
-		return !appointments.stream().anyMatch(Appointment::hasId);
+		return appointments.stream().noneMatch(Appointment::hasId);
 	}
 
 	public boolean hasAllAppointmentIdSet() {
@@ -127,10 +130,10 @@ public class Appointmentgroup {
 				String procedureId = precedingProcedureRelation.getProcedure().getId();
 				if (proceduresMap.containsKey(procedureId)) {
 					Appointment appointmentToTest = appointmentsMap.get(procedureId);
+					Date plannedEndtime = appointmentToTest.getPlannedEndtime();
+					Date plannedStarttime = appointment.getPlannedStarttime();
 
-					// test the procedurerelation with time data from appointment
-					if (!precedingProcedureRelation.testConformatyOfDates(getCalendar(appointmentToTest.getPlannedEndtime()),
-							getCalendar(appointment.getPlannedStarttime())))
+					if (!hasCorrectPlannedTimeValue(precedingProcedureRelation, plannedEndtime, plannedStarttime))
 						throw new ProcedureRelationException("Time-condition of preceding procedurerelation failed",
 								precedingProcedureRelation);
 				} else
@@ -145,10 +148,10 @@ public class Appointmentgroup {
 				String procedureId = subsequentProcedureRelation.getProcedure().getId();
 				if (proceduresMap.containsKey(procedureId)) {
 					Appointment appointmentToTest = appointmentsMap.get(procedureId);
+					Date plannedEndtime = appointment.getPlannedEndtime();
+					Date plannedStarttime = appointmentToTest.getPlannedStarttime();
 
-					// test the procedurerelation with time data from appointment
-					if (!subsequentProcedureRelation.testConformatyOfDates(getCalendar(appointment.getPlannedEndtime()),
-							getCalendar(appointmentToTest.getPlannedStarttime())))
+					if (!hasCorrectPlannedTimeValue(subsequentProcedureRelation, plannedEndtime, plannedStarttime))
 						throw new ProcedureRelationException("Time-condition of subsequent procedurerelation failed",
 								subsequentProcedureRelation);
 				} else
@@ -158,10 +161,121 @@ public class Appointmentgroup {
 		}
 	}
 
+	private boolean hasCorrectPlannedTimeValue(ProcedureRelation procedureRelation, Date endtime, Date starttime) {
+		return endtime.before(starttime)
+				&& procedureRelation.testConformatyOfDates(getCalendar(endtime), getCalendar(starttime));
+	}
+
 	private Calendar getCalendar(Date date) {
 		Calendar calendar = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
 		calendar.setTime(date);
 		return calendar;
 	}
 
+	private Appointment getOrCreateAppointmentWithProcedure(Procedure procedure, User customer){
+		for(Appointment appointment : this.getAppointments()){
+			if(appointment.getBookedProcedure().equals(procedure)){
+				return appointment;
+			}
+		}
+		Appointment appointment = new Appointment();
+		appointment.setBookedCustomer(customer);
+		appointment.setBookedProcedure(procedure);
+		appointment.setStatus(AppointmentStatus.OPEN);
+		this.getAppointments().add(appointment);
+		return appointment;
+	}
+
+	public void optimizeAppointmentsForEarliestEnd(AppointmentService appointmentService, ResourceService resourceService, EmployeeService employeeService, Appointment optimizationStart) {
+		optimizationStart.optimizeAndPopulateForEarliestEnd(appointmentService, resourceService, employeeService);
+		for (ProcedureRelation relation : optimizationStart.getBookedProcedure().getSubsequentRelations()) {
+			Appointment subsequentAppointment = this.getOrCreateAppointmentWithProcedure(relation.getProcedure(), optimizationStart.getBookedCustomer());
+			Date MinDate;
+			if (relation.getMinDifference() != null) {
+				MinDate = new Date(relation.getMinDifference().toMillis()
+						+ optimizationStart.getPlannedEndtime().getTime());
+			} else {
+				MinDate = optimizationStart.getPlannedEndtime();
+			}
+			if (subsequentAppointment.getStatus() != AppointmentStatus.RECOMMENDED
+					|| MinDate.before(subsequentAppointment.getPlannedStarttime())) {
+				subsequentAppointment.setPlannedStarttime(MinDate);
+				this.optimizeAppointmentsForEarliestEnd(appointmentService, resourceService, employeeService, subsequentAppointment);
+			}
+		}
+
+		for (ProcedureRelation relation : optimizationStart.getBookedProcedure().getPrecedingRelations()) {
+			Appointment precedingAppointment = this.getOrCreateAppointmentWithProcedure(relation.getProcedure(), optimizationStart.getBookedCustomer());
+			Date MinDate;
+			if (relation.getMinDifference() == null) {
+				MinDate = new Date(optimizationStart.getPlannedStarttime().getTime()
+						- precedingAppointment.getBookedProcedure().getDuration().toMillis());
+			} else {
+				MinDate = new Date(optimizationStart.getPlannedStarttime().getTime()
+						- relation.getMinDifference().toMillis()
+						- precedingAppointment.getBookedProcedure().getDuration().toMillis());
+			}
+			if(precedingAppointment.getStatus() != AppointmentStatus.RECOMMENDED){
+				precedingAppointment.setPlannedStarttime(MinDate);
+				this.optimizeAppointmentsForLatestBeginning(appointmentService, resourceService, employeeService, precedingAppointment);
+			}
+			if (relation.getMaxDifference() != null) {
+				Date MaxDate = new Date(optimizationStart.getPlannedStarttime().getTime()
+						- precedingAppointment.getBookedProcedure().getDuration().toMillis()
+						- relation.getMaxDifference().toMillis());
+				if (precedingAppointment.getPlannedStarttime() == null
+						|| precedingAppointment.getPlannedStarttime().before(MaxDate)) {
+					precedingAppointment.setPlannedStarttime(MaxDate);
+					this.optimizeAppointmentsForEarliestEnd(appointmentService, resourceService, employeeService, precedingAppointment);
+				}
+			}
+		}
+	}
+
+	public void optimizeAppointmentsForLatestBeginning(AppointmentService appointmentService, ResourceService resourceService, EmployeeService employeeService, Appointment optimizationStart){
+		optimizationStart.optimizeAndPopulateForLatestBeginning(appointmentService, resourceService, employeeService);
+		optimizationStart.setStatus(AppointmentStatus.RECOMMENDED);
+		for(ProcedureRelation relation : optimizationStart.getBookedProcedure().getPrecedingRelations()){
+			Appointment precedingAppointment = this.getOrCreateAppointmentWithProcedure(relation.getProcedure(), optimizationStart.getBookedCustomer());
+			Date MinDate;
+			if (relation.getMinDifference() == null) {
+				MinDate = new Date(optimizationStart.getPlannedStarttime().getTime()
+						- precedingAppointment.getBookedProcedure().getDuration().toMillis());
+			} else {
+				MinDate = new Date(optimizationStart.getPlannedStarttime().getTime()
+						- relation.getMinDifference().toMillis()
+						- precedingAppointment.getBookedProcedure().getDuration().toMillis());
+			}
+			if(precedingAppointment.getPlannedStarttime() == null
+					|| MinDate.before(precedingAppointment.getPlannedStarttime())){
+				precedingAppointment.setPlannedStarttime(MinDate);
+				this.optimizeAppointmentsForLatestBeginning(appointmentService, resourceService, employeeService, precedingAppointment);
+			}
+		}
+
+		for(ProcedureRelation relation : optimizationStart.getBookedProcedure().getSubsequentRelations()){
+			Appointment subsequentAppointment = this.getOrCreateAppointmentWithProcedure(relation.getProcedure(), optimizationStart.getBookedCustomer());
+
+			Date MinDate;
+			if (relation.getMinDifference() != null) {
+				MinDate = new Date(relation.getMinDifference().toMillis()
+						+ optimizationStart.getPlannedEndtime().getTime());
+			} else {
+				MinDate = optimizationStart.getPlannedEndtime();
+			}
+			if (subsequentAppointment.getStatus() != AppointmentStatus.RECOMMENDED) {
+				subsequentAppointment.setPlannedStarttime(MinDate);
+				this.optimizeAppointmentsForEarliestEnd(appointmentService, resourceService, employeeService, subsequentAppointment);
+			}
+
+			if (relation.getMaxDifference() != null) {
+				Date MaxDate = new Date(optimizationStart.getPlannedEndtime().getTime()
+						+ relation.getMaxDifference().toMillis());
+				if(subsequentAppointment.getPlannedStarttime().after(MaxDate)){
+					subsequentAppointment.setPlannedStarttime(MaxDate);
+					this.optimizeAppointmentsForLatestBeginning(appointmentService, resourceService, employeeService, subsequentAppointment);
+				}
+			}
+		}
+	}
 }

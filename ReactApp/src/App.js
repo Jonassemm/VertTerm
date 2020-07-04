@@ -37,6 +37,7 @@ export default observer(function App({ userStore, calendarStore }) {
             }
             <Route exact path="/booking" component={() => (<BookingForm/>)}/>
             <Route exact path="/booking/:appointmentID" component={BookingForm}/>
+            <Route exact path="/booking/:appointmentID/:startTime" component={BookingForm}/>
             {hasRight(userStore, ownAppointmentRights.concat(appointmentRights)) && 
               <Route exact path="/warning/" component={() => <AppointmentWarningPage userStore={userStore}/>}/>
             }

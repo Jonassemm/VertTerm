@@ -19,8 +19,8 @@ function NavBar({ userStore }) {
     console.log(document.cookie)
     return (
         <Styles>
-            <Navbar  variant="dark" bg="dark" expand="lg" justify-content="end" fixed="top">
-                <Navbar.Brand as={Link} to="/" >VertTerm</Navbar.Brand>
+            <Navbar variant="dark" bg="dark" expand="lg" justify-content="end" fixed="top">
+                <Navbar.Brand as={Link} to="/" >betabook.me</Navbar.Brand>
                 <Navbar.Toggle aria-controls="basic-navbar-nav" />
                 <Navbar.Collapse id="basic-navbar-nav" className="mr-auto">
                     <Nav className="mr-auto">

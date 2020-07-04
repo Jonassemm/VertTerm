@@ -5,11 +5,12 @@ import { Container, Form, Col, Row, Button, Modal, Spinner } from "react-bootstr
 import ObjectPicker from "../ObjectPicker"
 import "./BookingForm.css"
 import DatePicker from "react-datepicker"
-import { addAppointmentGroup, addAppointmentGroupOverride,getAppointmentGroupByApt,editAppointmentGroup, addAppointmentGroupAny, getAppointment } from "../requests"
+import { addAppointmentGroup, addAppointmentGroupOverride,getAppointmentGroupByApt,editAppointmentGroup, addAppointmentGroupAny, getAppointment, searchAppointmentGroup, addBlocker } from "../requests"
 import { useHistory } from "react-router-dom"
 import { getErrorMessage } from "./bookingErrors"
 import SearchAptCalendar from "./SearchCalendar/SearchAptCalendar"
 import AppointmentQR from "./AppointmentQR"
+import BlockerForm from "./BlockerForm"
 
 const localizer = momentLocalizer(moment)
 
@@ -19,6 +20,7 @@ function BookingForm(props) {
     const [selectedCustomer, setSelectedCustomer] = useState([])
     const [custom, setCustom] = useState(false)
     const [apts, setApts] = useState([])
+    const [customApt, setCustomApt] = useState({bookedCustomer: []})
     const [formComplete, setFormComplete] = useState(false)
     const [formEmpty, setFormEmpty] = useState(true)
     const [exception, setException] = useState("")
@@ -207,23 +209,27 @@ function BookingForm(props) {
     //checking if all necessary field are filled --> for booking function
     function checkCompletion() {
         let complete = false
-        apts.forEach((item) => {
-            if ((item.bookedEmployees.length != item.bookedProcedure.neededEmployeePositions.length) ||
-                (item.bookedResources.length != item.bookedProcedure.neededResourceTypes.length) ||
-                (item.plannedEndtime === null) ||
-                (item.plannedStarttime === null) ||
-                (item.bookedCustomer === null)) {
-                complete = false
-            } else {
-                complete = true
-                for (let i = 0; i < item.bookedResources.length; i++) {
-                    if (item.bookedResources[i] === undefined) complete = false
+        if(!custom){
+            apts.forEach((item) => {
+                if ((item.bookedEmployees.length != item.bookedProcedure.neededEmployeePositions.length) ||
+                    (item.bookedResources.length != item.bookedProcedure.neededResourceTypes.length) ||
+                    (item.plannedEndtime === null) ||
+                    (item.plannedStarttime === null) ||
+                    (item.bookedCustomer === null)) {
+                    complete = false
+                } else {
+                    complete = true
+                    for (let i = 0; i < item.bookedResources.length; i++) {
+                        if (item.bookedResources[i] === undefined) complete = false
+                    }
+                    for (let i = 0; i < item.bookedEmployees.length; i++) {
+                        if (item.bookedEmployees[i] === undefined) complete = false
+                    }
                 }
-                for (let i = 0; i < item.bookedEmployees.length; i++) {
-                    if (item.bookedEmployees[i] === undefined) complete = false
-                }
-            }
-        })
+            })
+        }else {
+            if((customApt.bookedCustomer.length != 0) && (customApt.plannedStarttime != null) && (customApt.plannedEndtime != null)) complete = true
+        }
         setFormComplete(complete)
     }
 
@@ -264,20 +270,36 @@ function BookingForm(props) {
         //TODO missing API
     }
 
-    function searchAppointment() {
-        //TODO missing API
+    async function searchAppointment() {
+        const aptGroup = buildFinalData()
+        let {data} = await searchAppointmentGroup(aptGroup)
+        data = data.appointments
+        console.log(data)
+        const temp = apts.map((apt,index) => {
+            return {
+                ...apt,
+                bookedEmployees: data[index].bookedEmployees,
+                bookedResources: data[index].bookedResources
+            }
+        })
+        console.log(temp)
+        setApts(temp)
     }
 
     function buildFinalData() {
+        let aptGroup = null
+        if(!custom){
         let finalData = apts.map(item => {
             return {
                 ...item,
-                bookedProcedure: { id: item.bookedProcedure.id, ref: "procedure" },
+                bookedProcedure: item.bookedProcedure,
                 bookedEmployees: item.bookedEmployees.map(item => {
-                    return { id: item.id, ref: "user" }
+                    if(item) return { id: item.id, ref: "user" }
+                    else return {...item}
                 }),
                 bookedResources: item.bookedResources.map(item => {
-                    return { id: item.id, ref: "resource" }
+                    if(item) return { id: item.id, ref: "resource" }
+                    else return {...item}
                 }),
                 plannedEndtime: moment(item.plannedEndtime).format("DD.MM.YYYY HH:mm").toString(),
                 plannedStarttime: moment(item.plannedStarttime).format("DD.MM.YYYY HH:mm").toString(),
@@ -291,7 +313,21 @@ function BookingForm(props) {
                 }
             })
         }
-        const aptGroup = { appointments: finalData, status: "active" }
+        aptGroup = { appointments: finalData, status: "active" }
+    }else{
+        aptGroup = {bookedCustomer: {id: customApt.bookedCustomer[0].id, ref:"user"},
+                        name: customApt.name,
+                        bookedResources: customApt.bookedResources.map(item => {
+                            return {id: item.id, ref:"resource"}
+                        }),
+                        bookedEmployees: customApt.bookedEmployees.map(item => {
+                            return {id: item.id, ref:"user"}
+                        }),
+                        plannedEndtime: moment(customApt.plannedEndtime).format("DD.MM.YYYY HH:mm").toString(),
+                        plannedStarttime: moment(customApt.plannedStarttime).format("DD.MM.YYYY HH:mm").toString(),
+                        status: "planned"
+                        }
+    }
         return aptGroup
     }
 
@@ -315,25 +351,26 @@ function BookingForm(props) {
     async function handleSubmit(event) {
         event.preventDefault()
             const aptGroup = buildFinalData()
+            console.log(aptGroup)
             try {
             if(editMode){
-                    await editAppointmentGroup(aptGroup, selectedCustomer[0].id)
+                await editAppointmentGroup(aptGroup, selectedCustomer[0].id)
+                history.push("/appointment")
+            }else if(custom){
+                await addBlocker(aptGroup)
+                history.push("/appointment")
+            }else {
+                if(selectedCustomer.length != 0){
+                    await addAppointmentGroup(aptGroup, selectedCustomer[0].id)
                     history.push("/appointment")
-              
-            }else{
-               
-                    if(selectedCustomer.length != 0){
-                        await addAppointmentGroup(aptGroup, selectedCustomer[0].id)
-                        history.push("/appointment")
-                    } else {
-                        console.log("anonym")
-                        const res = await addAppointmentGroupAny(aptGroup)
-                        // obscuring the link
-                        const data = btoa(res.data)
-                        console.log(data)
-                        setQRCred(data)
-                        setShowMode(true)
-                    }
+                } else {
+                    console.log("anonym")
+                    const res = await addAppointmentGroupAny(aptGroup)
+                    // obscuring the link
+                    const data = btoa(res.data)
+                    setQRCred(data)
+                    setShowMode(true)
+                }
             }
         } catch (error) {
             setException(error.response.headers.exception)
@@ -350,7 +387,7 @@ function BookingForm(props) {
                 <Form onSubmit={handleSubmit}>
                     <Row style={{ alignItems: "baseline" }}>
                         <Col>
-                            <h1>{editMode? "Termin ändern" : showMode ? "VertTerm Terminbestätigung" : "Termin Buchen"}</h1>
+                            <h1>{editMode? "Termin ändern" : showMode ? "βooking Terminbestätigung" : "Termin Buchen"}</h1>
                         </Col>
                         {!editMode && !showMode &&
                         <Col className="selectType">
@@ -366,7 +403,7 @@ function BookingForm(props) {
                         }
                     </Row>
                     <hr />
-                    {!showMode &&
+                    {!showMode && !editMode &&
                         <Form.Row>
                             <Form.Group as={Col} style={{ textAlign: "bottom" }}>
                                 <Form.Label>Kunde:</Form.Label>
@@ -380,6 +417,22 @@ function BookingForm(props) {
                             </Form.Group>
                         </Form.Row>
                     }
+                    {editMode &&
+                        <Form.Row>
+                        <Form.Group as={Col} style={{ textAlign: "bottom" }}>
+                            <Form.Label>Kunde:</Form.Label>
+                        </Form.Group>
+                        <Form.Group as={Col}>
+                            <Form.Control
+                                type="text"
+                                value={`${selectedCustomer.firstname} ${selectedCustomer.lastname}`}
+                            />
+                        </Form.Group>
+                    </Form.Row>
+                    }
+                    {custom && <BlockerForm apt={customApt} setApt={setCustomApt} edit={editMode} customer={selectedCustomer}/>}
+                    {!custom && 
+                    <React.Fragment>
                     <Form.Row>
                         <Form.Group as={Col} style={{ textAlign: "bottom" }}>
                             <Form.Label>Prozeduren:</Form.Label>
@@ -393,24 +446,24 @@ function BookingForm(props) {
                                 multiple={true} />
                         </Form.Group>
                     </Form.Row>
-                    {!custom && apts.map(item => {
+                    {apts.map(apt => {
                         return (
                             <React.Fragment>
                                 <hr />
-                                <div className="parent" style={editMode ? (item.bookedProcedure.id == editApt.bookedProcedure.id) ? selectedAptStyle : null : null}>
+                                <div className="parent" style={editMode ? (apt.bookedProcedure.id == editApt.bookedProcedure.id) ? selectedAptStyle : null : null}>
                                     <div className="namebox">
-                                        <h4>{item.bookedProcedure.name}</h4>
-                                        {item.bookedProcedure.duration != null && <p>{secondsToMinutes(item.bookedProcedure.duration)} Minuten Dauer</p>}
+                                        <h4>{apt.bookedProcedure.name}</h4>
+                                        {apt.bookedProcedure.duration != null && <p>{secondsToMinutes(apt.bookedProcedure.duration)} Minuten Dauer</p>}
                                     </div>
                                     <div className="box wrap">
-                                        <div className="middleBox" id={item.bookedProcedure.id}>
+                                        <div className="middleBox" id={apt.bookedProcedure.id}>
                                             <div className="middleBoxLeft">
                                                 <span>Beschreibung</span>
                                             </div>
                                             <div className="middleBoxRight">
                                                 <Form.Control
                                                     type="text"
-                                                    value={item.description || ""}
+                                                    value={apt.description || ""}
                                                     placeholder="Beschreibung"
                                                     onChange={e => {
                                                         setApts(apts.map(innerItem => {
@@ -429,7 +482,7 @@ function BookingForm(props) {
                                             </div>
                                         </div>
                                         {/* all ObjectPickers for needed Employees */}
-                                        {item.bookedProcedure.neededEmployeePositions && item.bookedProcedure.neededEmployeePositions.map((innerItem, index) => {
+                                        {apt.bookedProcedure.neededEmployeePositions && apt.bookedProcedure.neededEmployeePositions.map((innerItem, index) => {
                                             return (
                                                 <div className="middleBox">
                                                     <div className="middleBoxLeft">
@@ -438,8 +491,8 @@ function BookingForm(props) {
                                                     <div className="middleBoxRight">
                                                         <ObjectPicker
                                                             className="input"
-                                                            ident={{ "ident": item.bookedProcedure.name, "ix": index }}
-                                                            initial = {editMode && [item.bookedEmployees[index]]}
+                                                            ident={{ "ident": apt.bookedProcedure.name, "ix": index }}
+                                                            initial = {[apt.bookedEmployees[index]]}
                                                             filter={innerItem.id}
                                                             DbObject="employee"
                                                             setState={handleChange} />
@@ -448,7 +501,7 @@ function BookingForm(props) {
                                             )
                                         })}
                                         {/* all ObjectPickers for needed resources */}
-                                        {item.bookedProcedure.neededResourceTypes && item.bookedProcedure.neededResourceTypes.map((innerItem, index) => {
+                                        {apt.bookedProcedure.neededResourceTypes && apt.bookedProcedure.neededResourceTypes.map((innerItem, index) => {
                                             return (
                                                 <div className="middleBox">
                                                     <div className="middleBoxLeft">
@@ -458,8 +511,8 @@ function BookingForm(props) {
                                                         <ObjectPicker
                                                             className="input"
                                                             filter={innerItem.id}
-                                                            initial={editMode && [item.bookedResources[index]]}
-                                                            ident={{ "ident": item.bookedProcedure.name, "ix": index }}
+                                                            initial={[apt.bookedResources[index]]}
+                                                            ident={{ "ident": apt.bookedProcedure.name, "ix": index }}
                                                             DbObject="resource"
                                                             setState={handleChange} />
                                                     </div>
@@ -477,8 +530,8 @@ function BookingForm(props) {
                                                     required
                                                     popperPlacement="left"
                                                     className="input"
-                                                    selected={item.plannedStarttime}
-                                                    onChange={date => validateTime({ date: date, ident: "start", ref: item })}
+                                                    selected={apt.plannedStarttime}
+                                                    onChange={date => validateTime({ date: date, ident: "start", ref: apt })}
                                                     showTimeSelect
                                                     timeFormat="HH:mm"
                                                     timeIntervals={5}
@@ -496,9 +549,9 @@ function BookingForm(props) {
                                                     required
                                                     className="input"
                                                     popperPlacement="left"
-                                                    selected={item.plannedEndtime}
+                                                    selected={apt.plannedEndtime}
                                                     onChange={date => {
-                                                        validateTime({ date: date, ident: "end", ref: item })
+                                                        validateTime({ date: date, ident: "end", ref: apt })
                                                     }}
                                                     showTimeSelect
                                                     timeFormat="HH:mm"
@@ -509,16 +562,18 @@ function BookingForm(props) {
                                             </div>
                                         </div>
                                         <div style={{ textAlign: "right" }}>
-                                            {!showMode && <Button style={{ marginTop: "10px", width: "40%", padding:"2px" }} onClick={e => handleSearchApt(item.bookedProcedure)}>Zeit suchen</Button>}
+                                            {!showMode && <Button style={{ marginTop: "10px", width: "40%", padding:"2px" }} onClick={e => handleSearchApt(apt.bookedProcedure)}>Zeit suchen</Button>}
                                         </div>
                                     </div>
                                 </div>
                             </React.Fragment>
                         )
                     })}
+                    </React.Fragment>
+                    }
                     <hr />
                     <Row>
-                        {!editMode && !showMode && (selectedProcedures.length != 0) &&
+                        {!editMode && !showMode && !custom && (selectedProcedures.length != 0) &&
                         <Col xs={8} style={{ textAlign: "left", display: "flex", alignItems: "baseline", justifyContent: "space-between" }}>
                             <Form.Control style={{ width: "50%" }} as="select">
                                 <option>Frühstes Ende</option>
@@ -533,12 +588,13 @@ function BookingForm(props) {
                             />
                             <Button onClick={optimizeAppointment}>Terminvorschlag</Button>
                         </Col>
-                        }
+                        }     
+                    
                         {!showMode &&
                         <Col style={{ textAlign: "right" }}>
-                            {selectedProcedures.length != 0 && (formComplete ?
+                            {(custom || selectedProcedures.length != 0) && (formComplete ?
                                 <Button variant="success" type="submit" style={{ marginLeft: "5px" }}>{editMode ? "Speichern" : "Buchen"}</Button> :
-                                (formEmpty && <Button onClick={searchAppointment} style={{ marginLeft: "5px" }}>Suchen</Button>)
+                                (formEmpty && !custom && <Button onClick={searchAppointment} style={{ marginLeft: "5px" }}>Suchen</Button>)
                             )}
                         </Col>
                         }

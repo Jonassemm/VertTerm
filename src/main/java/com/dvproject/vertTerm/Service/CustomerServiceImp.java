@@ -6,6 +6,7 @@ import com.dvproject.vertTerm.Model.OptionalAttribute;
 import com.dvproject.vertTerm.Model.Status;
 import com.dvproject.vertTerm.Model.User;
 import com.dvproject.vertTerm.repository.CustomerRepository;
+import com.dvproject.vertTerm.repository.EmployeeRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.rest.webmvc.ResourceNotFoundException;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -14,6 +15,7 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 @Service
 public class CustomerServiceImp implements CustomerService {
@@ -69,23 +71,27 @@ public class CustomerServiceImp implements CustomerService {
 
     @Override
     public Customer update(Customer updatedInstance) {
+   	 Customer retVal = null;
+   	 
         if (updatedInstance.getId() != null && repo.findById(updatedInstance.getId()).isPresent()) {
         	userService.testMandatoryFields(updatedInstance);
         	userService.encodePassword(updatedInstance);
         	updatedInstance.setFirstName(capitalize(updatedInstance.getFirstName()));
         	updatedInstance.setLastName(capitalize(updatedInstance.getLastName()));
-            return repo.save(updatedInstance);
+        	retVal = repo.save(updatedInstance);
+        	
+        	userService.testWarningsFor(updatedInstance.getId());
         }
-        return null;
+        return retVal;
     }
 
     @Override
     public boolean delete(String id) {
    	Customer user = getById(id);
-   	 
+
     	userService.testAppointments(id);
     	user.obfuscate();
-    	
+
     	user.setSystemStatus(Status.DELETED);
     	
     	return getById(id).getSystemStatus() == Status.DELETED;
@@ -93,7 +99,7 @@ public class CustomerServiceImp implements CustomerService {
     
     public static String capitalize(String str)
     {
-        if(str == null) 
+        if(str == null)
         	return str;
         return  str.substring(0, 1).toUpperCase()+str.substring(1).toLowerCase();
         

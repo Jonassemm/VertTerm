@@ -15,6 +15,7 @@ import java.util.stream.Collectors;
 
 import javax.servlet.http.HttpServletResponse;
 
+import com.dvproject.vertTerm.Model.*;
 import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.rest.webmvc.ResourceNotFoundException;
@@ -113,16 +114,47 @@ public class AppointmentgroupServiceImpl implements AppointmentgroupService {
 	@Override
 	public void testWarnings(String appointmentid) {
 		Appointmentgroup appointmentgroup = getUpdatableAppointmentgroupContainingAppointmentID(appointmentid);
-		if (appointmentid != null) {
-			List<Appointment> appointments = appointmentgroup.getAppointments();
-			BookingTester tester = new OverrideBookingTester(new ArrayList<>());
+		if (appointmentid != null)
+			testWarningsForAppointmentgroup(appointmentgroup.getId());
+	}
 
-			appointmentgroup.resetAllWarnings();
-			
-			appointmentgroup.testProcedureRelations(true);
+	@Override
+	public void testWarningsForAppointmentgroup(String appointmentgroupid) {
+		Appointmentgroup appointmentgroup = getAppointmentgroupInternal(appointmentgroupid);
+		List<Appointment> appointments = appointmentgroup.getAppointments();
+		BookingTester tester = new OverrideBookingTester(new ArrayList<>());
 
-			appointments.forEach(appointment -> appointmentRepository
-					.save(tester.testAll(appointment, appointmentService, restrictionService)));
+		appointmentgroup.resetAllWarnings();
+
+		appointmentgroup.testProcedureRelations(true);
+
+		appointments.forEach(appointment -> appointmentRepository
+				.save(tester.testAll(appointment, appointmentService, restrictionService)));
+	}
+
+	@Override
+	public void testWarningsForAppointments(List<Appointment> appointmentsToTest) {
+		List<String> appointmentIdsTested = new ArrayList<>();
+
+		for (Appointment appointmentToTest : appointmentsToTest) {
+			String appointmentIdToTest = appointmentToTest.getId();
+			Appointmentgroup appointmentgroupToTest = null;
+			List<Appointment> appointmentsOfAppointmentgroupToTest = null;
+
+			if (appointmentIdsTested.contains(appointmentIdToTest))
+				continue;
+
+			appointmentgroupToTest               = getAppointmentgroupContainingAppointmentID(appointmentIdToTest);
+			appointmentsOfAppointmentgroupToTest = appointmentgroupToTest.getAppointments();
+
+			appointmentgroupToTest.resetAllWarnings();
+
+			testWarningsForAppointmentGroup(appointmentgroupToTest);
+
+			appointmentsOfAppointmentgroupToTest.forEach(app -> appointmentService.update(app));
+
+			// set ids of the tested appointments
+			appointmentsOfAppointmentgroupToTest.forEach(app -> appointmentIdsTested.add(app.getId()));
 		}
 	}
 
@@ -210,6 +242,9 @@ public class AppointmentgroupServiceImpl implements AppointmentgroupService {
 		String link = null;
 		BookingTester tester = override ? new OverrideBookingTester(new ArrayList<>())
 				: new NormalBookingTester(new ArrayList<>());
+
+		if (!noUserAttached && !user.getSystemStatus().isActive())
+			throw new IllegalArgumentException("User is not active");
 
 		for (Appointment appointment : appointments) {
 			if (!noUserAttached && appointment.getBookedCustomer() != null
@@ -460,31 +495,6 @@ public class AppointmentgroupServiceImpl implements AppointmentgroupService {
 		LocalDateTime ldt = date.toInstant().atZone(ZoneId.of("UTC")).toLocalDateTime();
 
 		return formatter.format(ldt);
-	}
-
-	private void testWarningsForAppointments(List<Appointment> appointmentsToTest) {
-		List<String> appointmentIdsTested = new ArrayList<>();
-
-		for (Appointment appointmentToTest : appointmentsToTest) {
-			String appointmentIdToTest = appointmentToTest.getId();
-			Appointmentgroup appointmentgroupToTest = null;
-			List<Appointment> appointmentsOfAppointmentgroupToTest = null;
-
-			if (appointmentIdsTested.contains(appointmentIdToTest))
-				continue;
-
-			appointmentgroupToTest               = getAppointmentgroupContainingAppointmentID(appointmentIdToTest);
-			appointmentsOfAppointmentgroupToTest = appointmentgroupToTest.getAppointments();
-
-			appointmentgroupToTest.resetAllWarnings();
-
-			testWarningsForAppointmentGroup(appointmentgroupToTest);
-
-			appointmentsOfAppointmentgroupToTest.forEach(app -> appointmentService.update(app));
-
-			// set ids of the tested appointments
-			appointmentsOfAppointmentgroupToTest.forEach(app -> appointmentIdsTested.add(app.getId()));
-		}
 	}
 
 	private void testWarningsForAppointmentGroup(Appointmentgroup appointmentgroup) {

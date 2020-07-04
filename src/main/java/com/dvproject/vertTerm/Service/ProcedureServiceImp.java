@@ -10,12 +10,15 @@ import org.springframework.stereotype.Service;
 import java.util.*;
 
 @Service
-public class ProcedureServiceImp implements ProcedureService, AvailabilityService {
+public class ProcedureServiceImp extends WarningServiceImpl implements ProcedureService, AvailabilityService {
 	@Autowired
 	private ProcedureRepository procedureRepository;
 
 	@Autowired
 	private AvailabilityServiceImpl availabilityService;
+
+	@Autowired
+	private AppointmentService appointmentService;
 
 	@Override
 	public List<Procedure> getAll() {
@@ -26,8 +29,8 @@ public class ProcedureServiceImp implements ProcedureService, AvailabilityServic
 	public List<Procedure> getAll(Status status) {
 		return procedureRepository.findByStatus(status);
 	}
-	
-	public List<Procedure> getAll(Status status, boolean publicProcedure){
+
+	public List<Procedure> getAll(Status status, boolean publicProcedure) {
 		return procedureRepository.findByStatusAndPublicProcedure(status, publicProcedure);
 	}
 
@@ -93,8 +96,9 @@ public class ProcedureServiceImp implements ProcedureService, AvailabilityServic
 
 	@Override
 	public Procedure update(Procedure procedure) {
-		Procedure oldProcedure = getProcedureFromDB(procedure.getId());
-		
+		String procedureId = procedure.getId();
+		Procedure oldProcedure = getProcedureFromDB(procedureId);
+
 		procedure.testAllReferenceValues();
 		procedure.setName(capitalize(procedure.getName()));
 		availabilityService.loadAllAvailabilitiesOfEntity(procedure.getAvailabilities(), procedure, this);
@@ -102,13 +106,17 @@ public class ProcedureServiceImp implements ProcedureService, AvailabilityServic
 		testUpdatebility(oldProcedure.getStatus());
 
 		procedureRepository.save(procedure);
-		
+
+		testWarningsFor(procedureId);
+
 		return getProcedureFromDB(procedure.getId());
 	}
 
 	@Override
 	public Procedure updateProceduredata(Procedure procedure) {
-		Procedure oldProcedure = getProcedureFromDB(procedure.getId());
+		String procedureId = procedure.getId();
+		Procedure oldProcedure = getProcedureFromDB(procedureId);
+		Procedure retVal = null;
 
 		procedure.testAllReferenceValues();
 		testUpdatebility(procedure.getStatus());
@@ -119,7 +127,11 @@ public class ProcedureServiceImp implements ProcedureService, AvailabilityServic
 		oldProcedure.setPricePerInvocation(procedure.getPricePerInvocation());
 		oldProcedure.setDuration(procedure.getDuration());
 
-		return procedureRepository.save(oldProcedure);
+		retVal = procedureRepository.save(oldProcedure);
+
+		testWarningsFor(procedureId);
+
+		return retVal;
 	}
 
 	@Override
@@ -132,18 +144,22 @@ public class ProcedureServiceImp implements ProcedureService, AvailabilityServic
 		procedure.setPrecedingRelations(precedingProcedures);
 		procedureRepository.save(procedure);
 
+		testWarningsFor(id);
+
 		return getProcedureFromDB(id).getPrecedingRelations();
 	}
 
 	@Override
-	public List<ProcedureRelation> updateSubsequentProcedures(String id, List<ProcedureRelation> subsequentProcedures) {
+	public List<ProcedureRelation> updateSubsequentProcedures(String id, List<ProcedureRelation> subsequentRelations) {
 		Procedure procedure = getProcedureFromDB(id);
 
 		procedure.testAllRelations();
 		testUpdatebility(procedure.getStatus());
 
-		procedure.setSubsequentRelations(subsequentProcedures);
+		procedure.setSubsequentRelations(subsequentRelations);
 		procedureRepository.save(procedure);
+
+		testWarningsFor(id);
 
 		return getProcedureFromDB(id).getSubsequentRelations();
 	}
@@ -154,10 +170,12 @@ public class ProcedureServiceImp implements ProcedureService, AvailabilityServic
 
 		procedure.testResourceTypes();
 		testUpdatebility(procedure.getStatus());
-       
+
 		procedure.setNeededResourceTypes(resourceTypes);
 
 		procedureRepository.save(procedure);
+
+		testWarningsFor(id);
 
 		return getProcedureFromDB(id).getNeededResourceTypes();
 	}
@@ -168,10 +186,12 @@ public class ProcedureServiceImp implements ProcedureService, AvailabilityServic
 
 		procedure.testPositions();
 		testUpdatebility(procedure.getStatus());
-		 
+
 		procedure.setNeededEmployeePositions(positions);
-		
+
 		procedureRepository.save(procedure);
+
+		testWarningsFor(id);
 
 		return getProcedureFromDB(id).getNeededEmployeePositions();
 	}
@@ -192,10 +212,9 @@ public class ProcedureServiceImp implements ProcedureService, AvailabilityServic
 		Procedure procedure = getProcedureFromDB(id);
 
 		testUpdatebility(procedure.getStatus());
-		 for(Restriction restr: restrictions)
-	        {
-			 restr.setName(capitalize(restr.getName()));
-	        }
+		for (Restriction restr : restrictions) {
+			restr.setName(capitalize(restr.getName()));
+		}
 		procedure.setRestrictions(restrictions);
 		procedureRepository.save(procedure);
 
@@ -210,9 +229,7 @@ public class ProcedureServiceImp implements ProcedureService, AvailabilityServic
 	}
 
 	private Procedure getProcedureFromDB(String id) {
-		if (id == null) {
-			throw new NullPointerException("The id of the given procedure is null");
-		}
+		if (id == null) { throw new NullPointerException("The id of the given procedure is null"); }
 
 		Optional<Procedure> procedureDB = procedureRepository.findById(id);
 
@@ -235,10 +252,15 @@ public class ProcedureServiceImp implements ProcedureService, AvailabilityServic
 		if (!StatusService.isUpdateable(status))
 			throw new IllegalArgumentException("The given procedure is not updateable");
 	}
-    public static String capitalize(String str)
-    {
-        if(str == null) return str;
-        return  str.substring(0, 1).toUpperCase()+str.substring(1).toLowerCase();
-        
-    }
+
+	public static String capitalize(String str) {
+		if (str == null)
+			return str;
+		return str.substring(0, 1).toUpperCase() + str.substring(1).toLowerCase();
+	}
+
+	@Override
+	List<Appointment> getPlannedAppointmentsWithId(String id) {
+		return appointmentService.getAppointmentsByProcedureIdAndAppointmentStatus(id, AppointmentStatus.PLANNED);
+	}
 }

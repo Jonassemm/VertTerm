@@ -2,6 +2,8 @@ package com.dvproject.vertTerm.Model;
 
 import java.io.Serializable;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
+import java.time.Duration;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
@@ -29,7 +31,7 @@ public class User extends Bookable implements Serializable
 	@NotNull
 	private Status systemStatus;
 	private boolean anonymousUser;
-	
+
 	private List<OptionalAttributeWithValue> optionalAttributes;
 
 	@DBRef
@@ -157,7 +159,7 @@ public class User extends Bookable implements Serializable
 	public boolean isAnonymousUser() {
 		return anonymousUser;
 	}
-	
+
 	public void obfuscate() {
 	    byte[] array = new byte[15];
 	    Random random = new Random(System.currentTimeMillis());
@@ -184,6 +186,6 @@ public class User extends Bookable implements Serializable
 	}
 	
 	private String getRandomString(byte [] array) {
-		return new String(array, Charset.forName("UTF-8"));
+		return new String(array, StandardCharsets.UTF_8);
 	}
 }

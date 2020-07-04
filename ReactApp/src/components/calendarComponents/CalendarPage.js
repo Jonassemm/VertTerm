@@ -221,8 +221,8 @@ function CalendarPage({
                       let currentStyle = {
                         backgroundColor: "#5384cf",
                         color: 'white',
-                        borderRadius: "0.5px",
-                        border: "white",
+                        borderRadius: "5px",
+                        border: "#bbb 1px",
                         borderStyle: "solid"
                       };    
                 

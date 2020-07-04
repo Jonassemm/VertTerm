@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+//author Amar Alkhankan
 @RestController
 @RequestMapping(value= "/Rights")
 public class RightController

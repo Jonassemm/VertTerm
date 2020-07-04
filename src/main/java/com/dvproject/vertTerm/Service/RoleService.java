@@ -10,7 +10,7 @@ import com.dvproject.vertTerm.Model.User;
 
 import java.util.List;
 
-
+//author Amar Alkhankan
 public interface RoleService extends BasicService<Role> {
 
 	List<Role> getRoles(String[] ids);

@@ -113,6 +113,12 @@ public class AppointmentServiceImpl implements AppointmentService {
 		return status == null ? getAppointmentsByResourceid(resourceid)
 				: getAppointmentsByResourceid(resourceid, status);
 	}
+	
+	@Override
+	public List<Appointment> getAppointmentsByProcedureIdAndAppointmentStatus(String procedureid,
+			AppointmentStatus status) {
+		return repo.findByBookedProcedureIdAndStatus(procedureid, status);
+	}
 
 	@Override
 	public List<Appointment> getAppointmentsOfBookedEmployeeInTimeinterval(String employeeid, Date starttime,

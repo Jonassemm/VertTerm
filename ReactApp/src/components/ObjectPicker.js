@@ -1,7 +1,7 @@
 import React, { useState, useEffect, forwardRef, useImperativeHandle } from "react"
 import { Typeahead } from "react-bootstrap-typeahead"
 import { getUsers, getEmployees, getCustomers, getProcedures, getRoles, getPositions, getResourcetypes, getResources, getRestrictions, getActiveUsers, getResourcesOfType, getEmployeesOfPosition, getWarnings } from "./requests"
-import {getTranslatedWarning, kindOfWarningList} from "./Warnings"
+import { getTranslatedWarning, kindOfWarningList } from "./Warnings"
 
 // when using this Object you have to give 4 props:
 // DbObject: defining what Object you want to pick (select out of predefined list below)
@@ -11,7 +11,7 @@ import {getTranslatedWarning, kindOfWarningList} from "./Warnings"
 // exclude: the element which is removed from the selection
 
 const ObjectPicker = forwardRef((props, ref) => {
-    let { DbObject, setState, initial, multiple, ident, selectedItem, filter,disabled } = props
+    let { DbObject, setState, initial, multiple, ident, selectedItem, filter, disabled } = props
     if (!selectedItem) selectedItem = { id: null }
     const [options, setOptions] = useState([])
     const [labelKey, setLabelKey] = useState("")
@@ -52,7 +52,7 @@ const ObjectPicker = forwardRef((props, ref) => {
 
     useEffect(() => {
         buildInitialValues()
-    }, [initial,init])
+    }, [initial, init])
 
 
     useImperativeHandle(ref, () => ({
@@ -65,17 +65,19 @@ const ObjectPicker = forwardRef((props, ref) => {
         if (initial) {
             let init = []
             initial.some(item => {
-                for (let i = 0; i < options.length; i++) {
-                    if(item.id != undefined) { //array contains objects with ids
-                        if(item.id == options[i].id) {
-                            init.push(options[i])
-                        } 
-                    }else { //array containts strings
-                        if(item == options[i]){
-                            init.push(options[i])
+                if (item) {
+                    for (let i = 0; i < options.length; i++) {
+                        if (item.id != undefined) { //array contains objects with ids
+                            if (item.id == options[i].id) {
+                                init.push(options[i])
+                            }
+                        } else { //array containts strings
+                            if (item == options[i]) {
+                                init.push(options[i])
+                            }
                         }
+
                     }
-                    
                 }
             })
             setSelected(init)
@@ -206,7 +208,7 @@ const ObjectPicker = forwardRef((props, ref) => {
 
     async function getWarningData() {
         var allTranslatedWarnings = []
-        kindOfWarningList.map(singleWarning =>{
+        kindOfWarningList.map(singleWarning => {
             allTranslatedWarnings.push(getTranslatedWarning(singleWarning))
         })
         setOptions(allTranslatedWarnings)
