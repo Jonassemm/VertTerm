@@ -33,6 +33,9 @@ import com.dvproject.vertTerm.repository.RightRepository;
 import com.dvproject.vertTerm.repository.RoleRepository;
 import com.dvproject.vertTerm.repository.UserRepository;
 
+/**
+ * @author Joshua Müller
+ */
 @Component
 public class SetupDataLoader implements ApplicationListener<ContextRefreshedEvent> {
 	private boolean alreadySetup = false;
@@ -141,7 +144,7 @@ public class SetupDataLoader implements ApplicationListener<ContextRefreshedEven
 		User user = userRepository.findByUsername(username);
 
 		if (user == null) {
-			user = new User();
+			user = new Customer();
 			user.setUsername(username);
 			user.setPassword(passwordEncoder.encode(password));
 			user.setRoles(roles);
@@ -191,7 +194,7 @@ public class SetupDataLoader implements ApplicationListener<ContextRefreshedEven
 			optionalAttributes = new OptionalAttributes();
 
 			optionalAttributes.setClassOfOptionalAttribut(User.class.getSimpleName());
-			optionalAttributes.setOptionalAttributes(new ArrayList<OptionalAttribute>());
+			optionalAttributes.setOptionalAttributes(new ArrayList<>());
 		}
 
 		optionalAttributesRepository.save(optionalAttributes);
@@ -216,8 +219,6 @@ public class SetupDataLoader implements ApplicationListener<ContextRefreshedEven
 		setupRight("USER_WRITE", "Ändern aller Benutzers erlaubt");
 
 		// employee
-		setupRight("OWN_EMPLOYEE_READ", "Lesen des eigenen Angestellten erlaubt");
-		setupRight("OWN_EMPLOYEE_WRITE", "Ändern des eigenen Angestellten erlaubt");
 		setupRight("EMPLOYEE_READ", "Lesen aller Angestellter erlaubt");
 		setupRight("EMPLOYEE_WRITE", "Ändern aller Angestellter erlaubt");
 
@@ -226,8 +227,6 @@ public class SetupDataLoader implements ApplicationListener<ContextRefreshedEven
 		setupRight("POSITION_WRITE", "Ändern aller Positionen erlaubt");
 
 		// customer
-		setupRight("OWN_CUSTOMER_READ", "Lesen des eigenen Kunden erlaubt");
-		setupRight("OWN_CUSTOMER_WRITE", "Ändern des eigenen Kunden erlaubt");
 		setupRight("CUSTOMER_READ", "Lesen aller Kunden erlaubt");
 		setupRight("CUSTOMER_WRITE", "Ändern aller Kunden erlaubt");
 
@@ -249,10 +248,9 @@ public class SetupDataLoader implements ApplicationListener<ContextRefreshedEven
 		// procedure
 		setupRight("PROCEDURE_READ", "Lesen aller Prozeduren erlaubt");
 		setupRight("PROCEDURE_WRITE", "Ändern aller Prozeduren erlaubt");
-		setupRight("PROCEDURE_RELATION_WRITE", "Ändern aller Prozeduren erlaubt");
 
 		// availability
-		setupRight("OWN_AVAILABILITY_WRITE", "Ändern der eigenen VerfÃ¼gbarkeiten erlaubt");
+		setupRight("OWN_AVAILABILITY_WRITE", "Ändern der eigenen Verfügbarkeiten erlaubt");
 		setupRight("AVAILABILITY_WRITE", "Ändern aller VerfÃ¼gbarkeiten erlaubt");
 
 		// appointment

@@ -20,19 +20,30 @@ public enum AppointmentStatus {
 	 */
 	@JsonProperty("planned")
 	PLANNED ("planned"),
-	
+
+	/**
+	 * appointment optimized
+	 */
+	@JsonProperty("recommended")
+	RECOMMENDED("recommended"),
+
+	/**
+	 * appointment open for optimization
+	 */
+	@JsonProperty("open")
+	OPEN("open"),
 	/**
 	 * appointment has been deleted and can no longer be used
 	 */
 	@JsonProperty("deleted")
 	DELETED ("deleted");
-	
+
 	private String name;
-	
+
 	private AppointmentStatus (String name) {
 		this.name = name;
 	}
-	
+
 	private static Map<String, AppointmentStatus> lookup = new HashMap<>();
 
 	static {
@@ -44,11 +55,11 @@ public enum AppointmentStatus {
 	public static AppointmentStatus enumOf(String value) {
 		return lookup.get(value);
 	}
-	
+
 	public static List<AppointmentStatus> enumOf(List<String> values) {
 		return values.stream().map(value -> enumOf(value)).collect(Collectors.toList());
 	}
-	
+
 	public static List<AppointmentStatus> getAll() {
 		return new ArrayList<>(lookup.values());
 	}

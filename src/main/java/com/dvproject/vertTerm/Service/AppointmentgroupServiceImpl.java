@@ -15,6 +15,7 @@ import java.util.stream.Collectors;
 
 import javax.servlet.http.HttpServletResponse;
 
+import com.dvproject.vertTerm.Model.*;
 import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.rest.webmvc.ResourceNotFoundException;
@@ -36,7 +37,6 @@ import com.dvproject.vertTerm.Model.TimeInterval;
 import com.dvproject.vertTerm.Model.User;
 import com.dvproject.vertTerm.Model.Warning;
 import com.dvproject.vertTerm.exception.ProcedureException;
-import com.dvproject.vertTerm.exception.ProcedureRelationException;
 import com.dvproject.vertTerm.repository.AppointmentRepository;
 import com.dvproject.vertTerm.repository.AppointmentgroupRepository;
 import com.dvproject.vertTerm.repository.UserRepository;
@@ -114,14 +114,47 @@ public class AppointmentgroupServiceImpl implements AppointmentgroupService {
 	@Override
 	public void testWarnings(String appointmentid) {
 		Appointmentgroup appointmentgroup = getUpdatableAppointmentgroupContainingAppointmentID(appointmentid);
-		if (appointmentid != null) {
-			List<Appointment> appointments = appointmentgroup.getAppointments();
-			BookingTester tester = new OverrideBookingTester(new ArrayList<>());
+		if (appointmentid != null)
+			testWarningsForAppointmentgroup(appointmentgroup.getId());
+	}
 
-			appointmentgroup.resetAllWarnings();
+	@Override
+	public void testWarningsForAppointmentgroup(String appointmentgroupid) {
+		Appointmentgroup appointmentgroup = getAppointmentgroupInternal(appointmentgroupid);
+		List<Appointment> appointments = appointmentgroup.getAppointments();
+		BookingTester tester = new OverrideBookingTester(new ArrayList<>());
 
-			appointments.forEach(appointment -> appointmentRepository
-					.save(tester.testAll(appointment, appointmentService, restrictionService)));
+		appointmentgroup.resetAllWarnings();
+
+		appointmentgroup.testProcedureRelations(true);
+
+		appointments.forEach(appointment -> appointmentRepository
+				.save(tester.testAll(appointment, appointmentService, restrictionService)));
+	}
+
+	@Override
+	public void testWarningsForAppointments(List<Appointment> appointmentsToTest) {
+		List<String> appointmentIdsTested = new ArrayList<>();
+
+		for (Appointment appointmentToTest : appointmentsToTest) {
+			String appointmentIdToTest = appointmentToTest.getId();
+			Appointmentgroup appointmentgroupToTest = null;
+			List<Appointment> appointmentsOfAppointmentgroupToTest = null;
+
+			if (appointmentIdsTested.contains(appointmentIdToTest))
+				continue;
+
+			appointmentgroupToTest               = getAppointmentgroupContainingAppointmentID(appointmentIdToTest);
+			appointmentsOfAppointmentgroupToTest = appointmentgroupToTest.getAppointments();
+
+			appointmentgroupToTest.resetAllWarnings();
+
+			testWarningsForAppointmentGroup(appointmentgroupToTest);
+
+			appointmentsOfAppointmentgroupToTest.forEach(app -> appointmentService.update(app));
+
+			// set ids of the tested appointments
+			appointmentsOfAppointmentgroupToTest.forEach(app -> appointmentIdsTested.add(app.getId()));
 		}
 	}
 
@@ -207,10 +240,15 @@ public class AppointmentgroupServiceImpl implements AppointmentgroupService {
 		boolean noUserAttached = userid == null || userid.equals("");
 		User user = noUserAttached ? userService.getAnonymousUser() : userService.getById(userid);
 		String link = null;
+		BookingTester tester = override ? new OverrideBookingTester(new ArrayList<>())
+				: new NormalBookingTester(new ArrayList<>());
+
+		if (!noUserAttached && !user.getSystemStatus().isActive())
+			throw new IllegalArgumentException("User is not active");
 
 		for (Appointment appointment : appointments) {
 			if (!noUserAttached && appointment.getBookedCustomer() != null
-					&& !appointment.getBookedCustomer().getId().equals(userid)) {
+					&& !appointment.getBookedCustomer().getId().equals(userid) || user.getSystemStatus() == Status.DELETED) {
 
 				if (override) {
 					appointment.addWarning(Warning.USER_WARNING);
@@ -219,9 +257,8 @@ public class AppointmentgroupServiceImpl implements AppointmentgroupService {
 							"User in the appointment for the procedure " + appointment.getBookedProcedure().getId()
 									+ " does not conform to the given user for all appointments");
 				}
-			} else {
+			} else
 				appointment.setBookedCustomer(user);
-			}
 
 			try {
 				loadAppointmentdataFromDatabase(appointment);
@@ -233,13 +270,11 @@ public class AppointmentgroupServiceImpl implements AppointmentgroupService {
 			}
 		}
 
-		if (override) {
-			testWarningsForAppointmentGroup(appointmentgroup);
-		} else {
-			appointmentgroup.testProcedureRelations();
-			appointmentgroup.testBookability(restrictionService, appointmentService,
-					new NormalBookingTester(new ArrayList<>()));
-		}
+		if (!appointmentgroup.hasDistinctProcedures())
+			throw new IllegalArgumentException("Appointments contain duplicate procedures or procedures with id == null");
+
+		appointmentgroup.testProcedureRelations(override);
+		appointmentgroup.testBookability(restrictionService, appointmentService, tester);
 
 		if (noUserAttached) {
 			link = user.generateLoginLink();
@@ -308,24 +343,18 @@ public class AppointmentgroupServiceImpl implements AppointmentgroupService {
 				.get();
 		List<Appointment> appointmentsToTestWarningsFor = null;
 		boolean retVal = false;
-		AppointmentStatus status = appointment.getStatus();
 
-		retVal = appointmentService.delete(id);
+		appointmentsOfAppointmentgroup.remove(appointment);
 
 		if (override) {
 			testWarningsForAppointmentGroup(appointmentgroupOfAppointment);
 			appointment.setWarnings(new ArrayList<>());
 			appointmentsOfAppointmentgroup.forEach(app -> appointmentService.update(app));
 		} else {
-			try {
-				appointmentgroupOfAppointment.testProcedureRelations();
-			} catch (ProcedureException | ProcedureRelationException ex) {
-				// set the appointment to the previous status
-				appointment = appointmentService.getById(id);
-				appointment.setStatus(status);
-				appointmentService.update(appointment);
-			}
+			appointmentgroupOfAppointment.testProcedureRelations(override);
 		}
+
+		retVal                        = appointmentService.delete(id);
 
 		appointmentsToTestWarningsFor = appointmentService.getOverlappingAppointmentsInTimeInterval(
 				appointment.getPlannedStarttime(), appointment.getPlannedEndtime(), AppointmentStatus.PLANNED);
@@ -350,7 +379,7 @@ public class AppointmentgroupServiceImpl implements AppointmentgroupService {
 		appointments.add(appointment);
 
 		try {
-			appointmentgroup.testProcedureRelations();
+			appointmentgroup.testProcedureRelations(false);
 			tester.setAppointment(appointment);
 
 			appointments.forEach(app -> new NormalBookingTester(app).testAppointmentTimes(timeIntervals));
@@ -408,8 +437,8 @@ public class AppointmentgroupServiceImpl implements AppointmentgroupService {
 		List<Appointment> appointmentsToTest;
 
 		if (appointment == null)
-			appointmentsToTest = appointmentService.getAppointmentsInTimeIntervalAndStatus(startdate, getLatestTimeOfToday(),
-					AppointmentStatus.PLANNED);
+			appointmentsToTest = appointmentService.getAppointmentsInTimeIntervalAndStatus(startdate,
+					getLatestTimeOfToday(), AppointmentStatus.PLANNED);
 		else {
 			List<ObjectId> employeeids = appointment.getBookedEmployees().stream().map(emp -> new ObjectId(emp.getId()))
 					.collect(Collectors.toList());
@@ -468,43 +497,10 @@ public class AppointmentgroupServiceImpl implements AppointmentgroupService {
 		return formatter.format(ldt);
 	}
 
-	private void testWarningsForAppointments(List<Appointment> appointmentsToTest) {
-		List<String> appointmentIdsTested = new ArrayList<>();
-
-		for (Appointment appointmentToTest : appointmentsToTest) {
-			String appointmentIdToTest = appointmentToTest.getId();
-			Appointmentgroup appointmentgroupToTest = null;
-			List<Appointment> appointmentsOfAppointmentgroupToTest = null;
-
-			if (appointmentIdsTested.contains(appointmentIdToTest))
-				continue;
-
-			appointmentgroupToTest               = getAppointmentgroupContainingAppointmentID(appointmentIdToTest);
-			appointmentsOfAppointmentgroupToTest = appointmentgroupToTest.getAppointments();
-
-			appointmentgroupToTest.resetAllWarnings();
-
-			testWarningsForAppointmentGroup(appointmentgroupToTest);
-
-			appointmentsOfAppointmentgroupToTest.forEach(app -> appointmentService.update(app));
-
-			// set ids of the tested appointments
-			appointmentsOfAppointmentgroupToTest.forEach(app -> appointmentIdsTested.add(app.getId()));
-		}
-	}
-
 	private void testWarningsForAppointmentGroup(Appointmentgroup appointmentgroup) {
-		List<Appointment> appointmentsOfAppointmentgroup = appointmentgroup.getAppointments();
 		appointmentgroup.resetAllWarnings();
 
-		try {
-			appointmentgroup.testProcedureRelations();
-		} catch (ProcedureException ex) {
-			appointmentsOfAppointmentgroup
-					.forEach(app -> app.addWarning(Warning.PROCEDURE_WARNING, Warning.PROCEDURE_RELATION_WARNING));
-		} catch (ProcedureRelationException ex) {
-			appointmentsOfAppointmentgroup.forEach(app -> app.addWarning(Warning.PROCEDURE_RELATION_WARNING));
-		}
+		appointmentgroup.testProcedureRelations(true);
 
 		appointmentgroup.testBookability(restrictionService, appointmentService,
 				new OverrideBookingTester(new ArrayList<>()));

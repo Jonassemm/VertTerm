@@ -1,5 +1,6 @@
 package com.dvproject.vertTerm.Service;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -71,6 +72,10 @@ public class AvailabilityServiceImpl {
 		Availability repoAvailability;
 		boolean availabilityHasChanged = false;
 		Date earliestDateChanged = null;
+
+		// test, whether all availabilities.id are unique
+		if (hasNotUniqueIds(availabilities))
+			throw new IllegalArgumentException("Non unique ids in the given availabilities");
 
 		for (int i = 0; i < availabilities.size(); i++) {
 			Availability availability = availabilities.get(i);
@@ -157,7 +162,7 @@ public class AvailabilityServiceImpl {
 					entity.isAvailable(startdate, enddate);
 				}
 			} catch (AvailabilityException ex) {
-				hasChanged    = appointment.addWarning(Warning.AVAILABILITY_WARNING);
+				hasChanged    = appointment.addWarnings(Warning.AVAILABILITY_WARNING);
 				hasNewWarning = true;
 			} finally {
 				if (hasChanged)
@@ -167,5 +172,23 @@ public class AvailabilityServiceImpl {
 
 		if (hasNewWarning)
 			response.addHeader("exception", Availability.class.getSimpleName());
+	}
+
+	private boolean hasNotUniqueIds(List<Availability> availabilities) {
+		List<String> availIds = new ArrayList<>();
+		
+		for (Availability availability : availabilities) {
+			String id = availability.getId();
+			
+			if (id == null)
+				continue;
+			
+			if (availIds.contains(id))
+				return true;
+			
+			availIds.add(id);
+		}
+		
+		return false;
 	}
 }

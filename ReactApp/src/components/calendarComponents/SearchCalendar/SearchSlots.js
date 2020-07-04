@@ -3,7 +3,6 @@
 import { getResources, getEmployees, getProcedureAvailability, getResourceAppointments, getEmployeeAppointments } from "./SearchCalendarRequests"
 import { checkSlotOverlap, checkSlotTouch, getSlotCompression, subtractTimeslots, getOverlapSlot } from "./SlotFunctions"
 import moment from "moment"
-import { FormText } from "react-bootstrap"
 
 var resources = []
 var employees = []
@@ -45,8 +44,12 @@ function getBounds(procedure){
             if(min < item.startDate) min = item.startDate
             if(max > item.endDate) max = item.end
         })
-    }
-    return {min: min,max: max}
+    }else return null
+    min = moment(min)
+    max = moment(max)
+    if(min.hour() >= 2) min = min.hour(min.hour()-1)
+    if(max.hour() <= 22) max = max.hour(max.hour() +1)
+    return {min: min.toDate(),max: max.toDate()}
 }
 
 export async function calculateEvts(start, end) {

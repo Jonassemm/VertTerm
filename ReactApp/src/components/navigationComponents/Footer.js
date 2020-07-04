@@ -8,7 +8,7 @@ export default function Footer() {
         <Navbar fixed="bottom" bg="dark" variant="dark">
             <Container>
                 <Col lg={12} className="text-center text-muted">
-                    <div> All Rights Reserved</div>
+                    <div>@betabook.me All Rights Reserved</div>
                 </Col>
             </Container>
         </Navbar>

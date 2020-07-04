@@ -113,6 +113,12 @@ public class AppointmentServiceImpl implements AppointmentService {
 		return status == null ? getAppointmentsByResourceid(resourceid)
 				: getAppointmentsByResourceid(resourceid, status);
 	}
+	
+	@Override
+	public List<Appointment> getAppointmentsByProcedureIdAndAppointmentStatus(String procedureid,
+			AppointmentStatus status) {
+		return repo.findByBookedProcedureIdAndStatus(procedureid, status);
+	}
 
 	@Override
 	public List<Appointment> getAppointmentsOfBookedEmployeeInTimeinterval(String employeeid, Date starttime,
@@ -232,7 +238,7 @@ public class AppointmentServiceImpl implements AppointmentService {
 		// Test
 		// 1.Procedure Relations
 		// 2.Appointment Times for each Appointment in appointments-List
-		group.testProcedureRelations();
+		group.testProcedureRelations(false);
 		List<TimeInterval> timelist = new ArrayList<>();
 		try {
 			appointments.forEach(app -> new NormalBookingTester(app).testAppointmentTimes(timelist));

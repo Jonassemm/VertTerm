@@ -13,7 +13,8 @@ function SearchAptCalendar({ procedure, neededResourceTypes, neededPositions, se
 
     useEffect(() => {
         const bounds = setup(procedure, neededPositions, neededResourceTypes)
-        setBounds(bounds)
+        console.log(bounds)
+        if(bounds) setBounds(bounds)
         setNewRange()
     }, [])
 
@@ -27,6 +28,7 @@ function SearchAptCalendar({ procedure, neededResourceTypes, neededPositions, se
             temp = await calculateEvts(start, end.toDate())
         } else {
             temp = await calculateEvts()
+            console.log(temp)
         }
         setEvents(temp)
         setLoading(false)

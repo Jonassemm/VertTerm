@@ -41,7 +41,6 @@ public class Procedure implements Serializable, Available {
 	private int pricePerHour;
 	@NotNull
 	private Status status;
-//	@NotNull
 	private boolean publicProcedure;
 
 	private List<ProcedureRelation> precedingRelations;
@@ -168,6 +167,22 @@ public class Procedure implements Serializable, Available {
 		this.availabilities = availabilities;
 	}
 
+	public boolean hasOnlyActiveEntities() {
+		boolean retVal = status == Status.ACTIVE;
+
+		retVal = retVal && neededResourceTypes.stream().allMatch(entity -> entity.getStatus() == Status.ACTIVE);
+
+		retVal = retVal && neededEmployeePositions.stream().allMatch(entity -> entity.getStatus() == Status.ACTIVE);
+
+		retVal = retVal
+				&& precedingRelations.stream().allMatch(entity -> entity.getProcedure().getStatus() == Status.ACTIVE);
+		
+		retVal = retVal
+				&& subsequentRelations.stream().allMatch(entity -> entity.getProcedure().getStatus() == Status.ACTIVE);
+
+		return retVal;
+	}
+
 	public List<Appointment> getAppointmentRecommendationByEarliestEnd(Date earliestRequestedDate, Customer customer,
 			AppointmentServiceImpl appointmentService) {
 		List<Appointment> appointments = new ArrayList<>();
@@ -180,7 +195,7 @@ public class Procedure implements Serializable, Available {
 
 		// check if customer is available
 		customer.populateAppointments(appointmentService);
-		Date date = customer.getAvailableDate(earliestRequestedDate, this.getDuration());
+		Date date = customer.getEarliestAvailableDate(earliestRequestedDate, this.getDuration());
 		if (date.after(earliestRequestedDate)) {
 			return getAppointmentRecommendationByEarliestEnd(date, customer, appointmentService);
 		} else {
@@ -196,7 +211,7 @@ public class Procedure implements Serializable, Available {
 					continue;
 				}
 				ressource.populateAppointments(appointmentService);
-				Date temp = ressource.getAvailableDate(earliestRequestedDate, this.getDuration());
+				Date temp = ressource.getEarliestAvailableDate(earliestRequestedDate, this.getDuration());
 				if (temp != null) {
 					if (newEarliestDateFinal == null) {
 						newEarliestDateFinal = temp;
@@ -224,7 +239,7 @@ public class Procedure implements Serializable, Available {
 					continue;
 				}
 				employee.populateAppointments(appointmentService);
-				Date temp = employee.getAvailableDate(earliestRequestedDate, this.getDuration());
+				Date temp = employee.getEarliestAvailableDate(earliestRequestedDate, this.getDuration());
 				if (temp != null) {
 					if (newEarliestDateFinal == null) {
 						newEarliestDateFinal = temp;

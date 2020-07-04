@@ -4,7 +4,6 @@ package com.dvproject.vertTerm.Controller;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -16,14 +15,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.dvproject.vertTerm.Model.Appointment;
 import com.dvproject.vertTerm.Model.Blocker;
-import com.dvproject.vertTerm.Model.User;
 import com.dvproject.vertTerm.Service.BlockerService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 //author Amar Alkhankan
 @RestController
@@ -36,6 +29,11 @@ public class BlockerController
 	 @GetMapping
      public  @ResponseBody  List<Blocker> getAllBlocker() {
 		 return blockerService.getAll();
+	 }
+	 
+	 @GetMapping("/exists/{id}")
+	 public @ResponseBody boolean isBlocker(@PathVariable String id) {
+		 return blockerService.exists(id);
 	 }
 	
 	 @GetMapping("/{id}")

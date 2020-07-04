@@ -21,7 +21,11 @@ public interface AppointmentgroupService extends BasicService<Appointmentgroup> 
 	
 	void setPullableAppointments(Appointment appointment);
 	
+	void testWarningsForAppointmentgroup(String appointmentgroupid);
+	
 	void testWarnings(String appointmentid);
+	
+	void testWarningsForAppointments(List<Appointment> appointmentsToTest);
 	
 	void canBookAppointments(Principal user, Appointmentgroup appointmentgroup);
 	

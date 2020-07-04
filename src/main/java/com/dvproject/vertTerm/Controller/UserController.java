@@ -1,13 +1,11 @@
 package com.dvproject.vertTerm.Controller;
 
-import com.dvproject.vertTerm.Model.Employee;
 import com.dvproject.vertTerm.Model.Status;
 import com.dvproject.vertTerm.Model.User;
 import com.dvproject.vertTerm.Service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
-import javax.validation.constraints.Null;
 import java.util.List;
 
 
@@ -45,8 +43,6 @@ public class UserController
 	@DeleteMapping("/{id}")
 	public boolean DeleteUser(@PathVariable String id)
 	{
-		User user = this.getUser(id);
-		user.setSystemStatus(Status.DELETED);
-		return this.UpdateUser(user).equals(user);
+		return service.delete(id);
 	}
 }
