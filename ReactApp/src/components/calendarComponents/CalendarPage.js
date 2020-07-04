@@ -227,7 +227,7 @@ function CalendarPage({
                       };    
                 
                       if(event.status == "done"){ //appointment is done
-                        currentStyle.backgroundColor = "#17c250"
+                        currentStyle.backgroundColor = "#0ba12c"
                       }else if(event.actualStarttime != null && event.actualEndtime == null) { //appointment was started but not completed 
                         currentStyle.backgroundColor = "#00b0b3"
                       }else if(event.warnings.length > 0){ //with warnings!!!

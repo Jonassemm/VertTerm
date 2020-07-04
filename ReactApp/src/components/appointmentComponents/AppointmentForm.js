@@ -341,8 +341,13 @@ function AppointmentForm({
 
     const rendertest = () => {
         console.log("---------Render-FORM------")
-        test()
+        /* console.log(getActualStarttime() != null)
+        console.log(actualEndtime == null)
+        console.log(moment(plannedStarttime, "DD.MM.yyyy HH:mm").toDate().getTime() < moment().toDate().getTime())
+        console.log(moment(actualStarttime, "DD.MM.yyyy HH:mm").toDate().getTime() < moment().toDate().getTime())
+        console.log(checkRights()) */
     }
+    
    
 
     return (
