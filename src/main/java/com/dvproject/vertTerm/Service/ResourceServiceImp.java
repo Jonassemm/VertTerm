@@ -14,6 +14,8 @@ import org.springframework.stereotype.Service;
 import com.dvproject.vertTerm.repository.RessourceRepository;
 import com.dvproject.vertTerm.repository.RestrictionRepository;
 
+//author Amar Alkhankan 
+//testCorrectDependencies Methode ?
 @Service
 public class ResourceServiceImp implements ResourceService, AvailabilityService {
 
@@ -159,9 +161,10 @@ public class ResourceServiceImp implements ResourceService, AvailabilityService 
 		return Resource.getResourceTypes();
 	}
 
+	
 	// @PreAuthorize("hasAuthority('RESOURCE_READ')")
 	public List<Resource> getResources(String ResTid) {
-		// get all resources from type
+		// get all resources from resource-type using id
 		List<Resource> Resources = new ArrayList<>();
 		List<Resource> AllResources = ResRepo.findAll();
 		for (Resource r : AllResources) {

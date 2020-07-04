@@ -59,7 +59,7 @@ public class EmployeeServiceImp implements EmployeeService, AvailabilityService 
     }
 
 	public List<Employee> getActiveEmployeesByPositionId(String positionId) {
-		//get all Active Employees from type 
+		//get all Active Employees from position 
 		List<Employee> employees = new ArrayList<>();
 		List<Employee> AllEmployees = this.getAll(positionId);
 		for (Employee emp : AllEmployees) {

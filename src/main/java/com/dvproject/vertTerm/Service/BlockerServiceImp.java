@@ -23,6 +23,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+
+//author Amar Alkhankan
 @Service
 @Transactional
 public class BlockerServiceImp implements BlockerService {
@@ -60,27 +62,33 @@ public class BlockerServiceImp implements BlockerService {
 		if (BlockerDb.isPresent()) {
 			Blocker blocker = BlockerDb.get();
 			List<Appointment> appointments = new ArrayList<>();
-
 			// for each employee in Blocker's BookedEmployees List
 			// get all appointments from the employee in the time interval of the blocker
 			// and add them to the appointments-List
-			for (Employee emp : blocker.getBookedEmployees()) {
-				List<Appointment> EmpApps = emp.getAppointmentsOfBookedEmployeeInTimeinterval(appointmentService,
-						emp.getId(), blocker.getPlannedStarttime(), blocker.getPlannedEndtime());
+			if (blocker.getBookedEmployees() != null)
+				for (Employee emp : blocker.getBookedEmployees()) {
+					List<Appointment> EmpApps = emp.getAppointmentsOfBookedEmployeeInTimeinterval(appointmentService,
+							emp.getId(), blocker.getPlannedStarttime(), blocker.getPlannedEndtime());
 
-				appointments.addAll(EmpApps);
-			}
+					appointments.addAll(EmpApps);
+				}
 			// for each resource in Blocker's BookedResources List
 			// get all appointments from the resource in the time interval of the blocker
 			// and add them to the appointments-List
-			for (Resource res : blocker.getBookedResources()) {
-				List<Appointment> ResApps = res.getAppointmentsOfBookedResourceInTimeinterval(appointmentService,
-						res.getId(), blocker.getPlannedStarttime(), blocker.getPlannedEndtime());
+			if (blocker.getBookedResources() != null)
+				for (Resource res : blocker.getBookedResources()) {
+					List<Appointment> ResApps = res.getAppointmentsOfBookedResourceInTimeinterval(appointmentService,
+							res.getId(), blocker.getPlannedStarttime(), blocker.getPlannedEndtime());
 
-				appointments.addAll(ResApps);
-			}
+					appointments.addAll(ResApps);
+				}
+			
+			// get all appointments from DB in the time interval of the blocker
+			if(appointments.size() == 0 )
+				appointments= appointmentService.getAppointmentsInTimeIntervalAndStatus(blocker.getPlannedStarttime(), blocker.getPlannedEndtime(), AppointmentStatus.PLANNED);
+			
 			// if the appointments-List not empty
-			// for each appointment in appointments-List SET/REMOVE a warning flag
+			// for each appointment in appointments-List SET/REMOVE (APPOINTMENT_WARNING)-flag
 			if (appointments != null && appointments.size() > 0) {
 				if (SetorRemove.equals("SET"))
 					SetWarning(appointments);
@@ -96,16 +104,15 @@ public class BlockerServiceImp implements BlockerService {
 	}
 
 	public void SetWarning(List<Appointment> appointments) {
-		// set "AppointmentWarning" in all appointments and save changed to DB
+		// set "APPOINTMENT_WARNING"  in all appointments and save changed to DB
 		for (Appointment app : appointments) {
-			Appointment appDB = this.appointmentService.getById(app.getId());
-			if (appDB.addWarning(Warning.APPOINTMENT_WARNING))
-				appointmentRepo.save(appDB);
+			// Appointment appDB = this.appointmentService.getById(app.getId());
+			if (app.addWarning(Warning.APPOINTMENT_WARNING))
+				appointmentRepo.save(app);
 			// else
 			// throw new AppointmentException("Appointment has already 'APPOINTMENT_WARNING'
 			// ", app);
 		}
-
 	}
 
 	public void RemoveWarning(List<Appointment> appointments) {
@@ -113,30 +120,30 @@ public class BlockerServiceImp implements BlockerService {
 		// test appointment , remove "AppointmentWarning" Flag and
 		// save changed to DB
 		for (Appointment app : appointments) {
-			Appointment appDB = this.appointmentService.getById(app.getId());
+			// Appointment appDB = this.appointmentService.getById(app.getId());
+			app.removeWarning(Warning.APPOINTMENT_WARNING);
 			try {
 				tester.testAppointment(appointmentServiceImp);
 			} catch (Exception ex) {
-				// setze Warning
-				appDB.addWarning(Warning.APPOINTMENT_WARNING);
+				// add Warning
+			     app.addWarning(Warning.APPOINTMENT_WARNING);
 			}
-			if (!(appDB.removeWarning(Warning.APPOINTMENT_WARNING)))
-				appointmentRepo.save(appDB);
-
+			appointmentRepo.save(app);
 		}
 
 	}
 
 	// @PreAuthorize("hasAuthority('')")
-	// work on it
 	public Blocker update(Blocker blocker) {
 		// update a blocker if it's exist
 		blocker.setName(capitalize(blocker.getName()));
 		if (blockerRepo.findById(blocker.getId()).isPresent()) {
+			// remove "APPOINTMENT_WARNING" from all appointments in the old blocker
 			SetOrRemoveWarningFlag(blocker.getId(), "REMOVE");
-			Blocker b = blockerRepo.save(blocker);
-			SetOrRemoveWarningFlag(blocker.getId(), "SET");
-			return b;
+			// add "APPOINTMENT_WARNING" to all appointments in the new blocker
+			Blocker NewBlocker = blockerRepo.save(blocker);
+			SetOrRemoveWarningFlag(NewBlocker.getId(), "SET");
+			return NewBlocker;
 		} else {
 			throw new ResourceNotFoundException("Blocker with the given id :" + blocker.getId() + "not found");
 		}
@@ -174,18 +181,16 @@ public class BlockerServiceImp implements BlockerService {
 	// @PreAuthorize("hasAuthority('')")
 	public boolean delete(String id) {
 		// change blocker_Status to 'DELETED'
+		Blocker blocker;
 		if (blockerRepo.findById(id).isPresent()) {
-			Blocker blocker = getById(id);
-			SetOrRemoveWarningFlag(id, "REMOVE");
+			blocker = getById(id);
 			blocker.setStatus(AppointmentStatus.DELETED);
 			blockerRepo.save(blocker);
+			SetOrRemoveWarningFlag(id, "REMOVE");
 
 		} else {
 			throw new ResourceNotFoundException("Blocker with the given id : " + id + " not found ");
 		}
-		Blocker blocker = getById(id);
-		blocker.setStatus(AppointmentStatus.DELETED);
-		blockerRepo.save(blocker);
 		return blocker.getStatus() == AppointmentStatus.DELETED;
 	}
 
