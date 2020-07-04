@@ -3,14 +3,11 @@ package com.dvproject.vertTerm.Service;
 import com.dvproject.vertTerm.Model.*;
 import com.dvproject.vertTerm.repository.ProcedureRepository;
 
-import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.rest.webmvc.ResourceNotFoundException;
 import org.springframework.stereotype.Service;
 
-import java.time.Duration;
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Service
 public class ProcedureServiceImp extends WarningServiceImpl implements ProcedureService, AvailabilityService {
@@ -110,7 +107,7 @@ public class ProcedureServiceImp extends WarningServiceImpl implements Procedure
 
 		procedureRepository.save(procedure);
 
-		testWarningsForAppointments(oldProcedure, procedure);
+		testWarningsFor(procedureId);
 
 		return getProcedureFromDB(procedure.getId());
 	}
@@ -132,8 +129,7 @@ public class ProcedureServiceImp extends WarningServiceImpl implements Procedure
 
 		retVal = procedureRepository.save(oldProcedure);
 
-		if (durationIsDifferent(procedure, oldProcedure))
-			testWarningsFor(procedureId);
+		testWarningsFor(procedureId);
 
 		return retVal;
 	}
@@ -148,7 +144,6 @@ public class ProcedureServiceImp extends WarningServiceImpl implements Procedure
 		procedure.setPrecedingRelations(precedingProcedures);
 		procedureRepository.save(procedure);
 
-		testWarningsForRelations(procedure.getPrecedingRelations(), precedingProcedures);
 		testWarningsFor(id);
 
 		return getProcedureFromDB(id).getPrecedingRelations();
@@ -164,7 +159,6 @@ public class ProcedureServiceImp extends WarningServiceImpl implements Procedure
 		procedure.setSubsequentRelations(subsequentRelations);
 		procedureRepository.save(procedure);
 
-		testWarningsForRelations(procedure.getSubsequentRelations(), subsequentRelations);
 		testWarningsFor(id);
 
 		return getProcedureFromDB(id).getSubsequentRelations();
@@ -181,7 +175,7 @@ public class ProcedureServiceImp extends WarningServiceImpl implements Procedure
 
 		procedureRepository.save(procedure);
 
-		testWarningsForResourceType(procedure, resourceTypes);
+		testWarningsFor(id);
 
 		return getProcedureFromDB(id).getNeededResourceTypes();
 	}
@@ -196,8 +190,8 @@ public class ProcedureServiceImp extends WarningServiceImpl implements Procedure
 		procedure.setNeededEmployeePositions(positions);
 
 		procedureRepository.save(procedure);
-		
-		testWarningsForPosition(procedure, positions);
+
+		testWarningsFor(id);
 
 		return getProcedureFromDB(id).getNeededEmployeePositions();
 	}
@@ -234,16 +228,6 @@ public class ProcedureServiceImp extends WarningServiceImpl implements Procedure
 		return getProcedureFromDB(id).getStatus() == Status.DELETED;
 	}
 
-	public void testWarningsForAppointments(Procedure oldProcedure, Procedure newProcedure) {
-		testWarningsFor(oldProcedure.getId());
-
-		testWarningsForProcedureRelations(oldProcedure, newProcedure);
-
-		testWarningsForResourceType(oldProcedure, newProcedure);
-		
-		testWarningsForPositions(oldProcedure, newProcedure);
-	}
-
 	private Procedure getProcedureFromDB(String id) {
 		if (id == null) { throw new NullPointerException("The id of the given procedure is null"); }
 
@@ -269,67 +253,10 @@ public class ProcedureServiceImp extends WarningServiceImpl implements Procedure
 			throw new IllegalArgumentException("The given procedure is not updateable");
 	}
 
-	private boolean durationIsDifferent(Procedure procedure1, Procedure procedure2) {
-		Duration duration1 = procedure1.getDuration();
-		Duration duration2 = procedure2.getDuration();
-
-		if (duration1 == null && duration2 == null)
-			return false;
-		else
-			if (duration1 == null ^ duration2 == null)
-				return true;
-			else
-				return duration1.toMillis() != duration2.toMillis();
-	}
-
-	private void testWarningsForProcedureRelations(Procedure oldProcedure, Procedure newProcedure) {
-		testWarningsForRelations(oldProcedure.getPrecedingRelations(), newProcedure.getPrecedingRelations());
-		testWarningsForRelations(oldProcedure.getSubsequentRelations(), newProcedure.getSubsequentRelations());
-	}
-
-	private void testWarningsForRelations(List<ProcedureRelation> oldRelations, List<ProcedureRelation> newRelations) {
-		List<ProcedureRelation> procedureRelations = getListOfChanged(oldRelations, newRelations);
-		List<String> procedureIds = new ArrayList<>();
-
-		procedureIds = procedureRelations.stream().map(relation -> relation.getProcedure().getId()).distinct()
-				.collect(Collectors.toList());
-
-		testWarningsFor(procedureIds);
-	}
-
-	private void testWarningsForResourceType(Procedure oldProcedure, Procedure newProcedure) {
-		testWarningsForResourceType(oldProcedure, newProcedure.getNeededResourceTypes());
-	}
-
-	private void testWarningsForResourceType(Procedure procedure, List<ResourceType> resourceTypes) {
-		List<ResourceType> changedResourceTypes = getListOfChanged(procedure.getNeededResourceTypes(), resourceTypes);
-		List<ObjectId> resourceTypeIds = changedResourceTypes.stream().map(resType -> new ObjectId(resType.getId()))
-				.distinct().collect(Collectors.toList());
-		List<Procedure> procedures = procedureRepository.findByNeededResourceTypesIdIn(resourceTypeIds);
-		List<String> procedureIds = procedures.stream().map(proc -> proc.getId()).collect(Collectors.toList());
-
-		testWarningsFor(procedureIds);
-	}
-	
-	private void testWarningsForPositions(Procedure oldProcedure, Procedure newProcedure) {
-		testWarningsForPosition(oldProcedure, newProcedure.getNeededEmployeePositions());
-	}
-	
-	private void testWarningsForPosition(Procedure procedure, List<Position> positions) {
-		List<Position> changedPositions = getListOfChanged(procedure.getNeededEmployeePositions(), positions);
-		List<ObjectId> positionIds = changedPositions.stream().map(position -> new ObjectId(position.getId()))
-				.distinct().collect(Collectors.toList());
-		List<Procedure> procedures = procedureRepository.findByNeededEmployeePositionsIn(positionIds);
-		List<String> procedureIds = procedures.stream().map(proc -> proc.getId()).collect(Collectors.toList());
-
-		testWarningsFor(procedureIds);
-	}
-
 	public static String capitalize(String str) {
 		if (str == null)
 			return str;
 		return str.substring(0, 1).toUpperCase() + str.substring(1).toLowerCase();
-
 	}
 
 	@Override

@@ -109,7 +109,7 @@ public class Appointment implements Serializable {
 		return enddate.getTime();
 	}
 
-	public boolean blocksBookedEntities(){
+	public boolean blocksBookedEntities() {
 		return this.getStatus() == AppointmentStatus.DONE || this.getStatus() == AppointmentStatus.PLANNED;
 	}
 
@@ -200,17 +200,20 @@ public class Appointment implements Serializable {
 		this.warnings = warnings;
 	}
 
-	public boolean addWarning(Warning... warnings) {
-		boolean warningHasBeenAdded = false;
+	public boolean addWarnings(Warning... warnings) {
+		boolean noWarningAdded = false;
 
 		for (Warning warning : warnings) {
-			if (!this.warnings.contains(warning)) {
-				this.warnings.add(warning);
-				warningHasBeenAdded = true;
-			}
+			noWarningAdded |= addWarning(warning);
 		}
 
-		return warningHasBeenAdded;
+		return !noWarningAdded;
+	}
+
+	public boolean addWarning(Warning warning) {
+		if (!warnings.contains(warning)) { return warnings.add(warning); }
+
+		return false;
 	}
 
 	public boolean removeWarning(Warning warning) {
@@ -286,6 +289,11 @@ public class Appointment implements Serializable {
 	public void testBookedEmployeesAgainstPositionsOfProcedure() {
 		List<Position> procedurePositions = bookedProcedure.getNeededEmployeePositions();
 
+		if (procedurePositions.size() != bookedEmployees.size()) {
+			addWarnings(Warning.EMPLOYEE_WARNING);
+			return;
+		}
+
 		for (int i = 0; i < bookedEmployees.size(); i++) {
 			boolean correctPositionsForEmployees = false;
 			boolean allResourceTypesNotDeleted = false;
@@ -320,6 +328,11 @@ public class Appointment implements Serializable {
 
 	public void testBookedResourcesAgainstResourceTypesOfProcedure() {
 		List<ResourceType> procedureResourceTypes = bookedProcedure.getNeededResourceTypes();
+		
+		if (procedureResourceTypes.size() != bookedResources.size()) {
+			addWarnings(Warning.RESOURCE_WARNING);
+			return;
+		}
 
 		for (int i = 0; i < bookedResources.size(); i++) {
 			boolean correctResourcesForResourceTypes = false;
@@ -456,30 +469,26 @@ public class Appointment implements Serializable {
 					"An employee already has an appointment in the given time interval", this);
 	}
 
-	private boolean allNeededBookablesFound(){
-		for (Position needed : this.getBookedProcedure().getNeededEmployeePositions() ) {
+	private boolean allNeededBookablesFound() {
+		for (Position needed : this.getBookedProcedure().getNeededEmployeePositions()) {
 			boolean found = false;
-			for (Employee present : this.getBookedEmployees()){
-				for(Position presentPosition : present.getPositions()){
-					if(presentPosition.equals(needed))
+			for (Employee present : this.getBookedEmployees()) {
+				for (Position presentPosition : present.getPositions()) {
+					if (presentPosition.equals(needed))
 						found = true;
 				}
 			}
-			if(!found){
-				return false;
-			}
+			if (!found) { return false; }
 		}
-		for (ResourceType needed : this.getBookedProcedure().getNeededResourceTypes() ) {
+		for (ResourceType needed : this.getBookedProcedure().getNeededResourceTypes()) {
 			boolean found = false;
-			for (Resource present : this.getBookedResources()){
-				for(ResourceType presentType : present.getResourceTypes()){
-					if(presentType.equals(needed))
+			for (Resource present : this.getBookedResources()) {
+				for (ResourceType presentType : present.getResourceTypes()) {
+					if (presentType.equals(needed))
 						found = true;
 				}
 			}
-			if(!found){
-				return false;
-			}
+			if (!found) { return false; }
 		}
 		return true;
 	}
@@ -521,15 +530,16 @@ public class Appointment implements Serializable {
 		return !appointments.isEmpty() && (appointments.size() != 1 || !appointments.get(0).getId().equals(id));
 	}
 
-	public void optimizeAndPopulateForEarliestEnd(AppointmentService appointmentService, ResourceService resourceService, EmployeeService employeeService) {
-		if(this.getBookedProcedure() == null){
-			return;
-		}
+	public void optimizeAndPopulateForEarliestEnd(AppointmentService appointmentService, ResourceService resourceService,
+			EmployeeService employeeService) {
+		if (this.getBookedProcedure() == null) { return; }
 		this.setStatus(AppointmentStatus.RECOMMENDED);
-		this.setPlannedEndtime(new Date(this.plannedStarttime.getTime() + this.getBookedProcedure().getDuration().toMillis()));
+		this.setPlannedEndtime(
+				new Date(this.plannedStarttime.getTime() + this.getBookedProcedure().getDuration().toMillis()));
 		// check if customer is available
 		this.getBookedCustomer().populateAppointments(appointmentService);
-		Date newDateToEvaluate = this.getBookedCustomer().getEarliestAvailableDate(this.getPlannedStarttime(), this.getBookedProcedure().getDuration());
+		Date newDateToEvaluate = this.getBookedCustomer().getEarliestAvailableDate(this.getPlannedStarttime(),
+				this.getBookedProcedure().getDuration());
 
 		List<Employee> oldEmployeeList = this.getBookedEmployees();
 		List<Resource> oldResourceList = this.getBookedResources();
@@ -543,11 +553,12 @@ public class Appointment implements Serializable {
 			Date newDateToEvaluateForRessources = null;
 			boolean resourceTypeFound = false;
 			for (Resource resource : oldResourceList) {
-				if(this.getBookedResources().contains(resource)){
+				if (this.getBookedResources().contains(resource)) {
 					continue;
 				}
 				resource.populateAppointments(appointmentService);
-				Date temp = resource.getEarliestAvailableDate(this.getPlannedStarttime(), this.getBookedProcedure().getDuration());
+				Date temp = resource.getEarliestAvailableDate(this.getPlannedStarttime(),
+						this.getBookedProcedure().getDuration());
 				if (temp != null) {
 					if (newDateToEvaluateForRessources == null) {
 						newDateToEvaluateForRessources = temp;
@@ -555,21 +566,22 @@ public class Appointment implements Serializable {
 					if (temp.before(newDateToEvaluateForRessources)) {
 						newDateToEvaluateForRessources = temp;
 					}
-					if(!temp.after(this.getPlannedStarttime())){
+					if (!temp.after(this.getPlannedStarttime())) {
 						this.getBookedResources().add(resource);
 						break;
 					}
 				}
 			}
-			if(resourceTypeFound){
+			if (resourceTypeFound) {
 				break;
 			}
 			for (Resource resource : resourceService.getAll(resourceType)) {
-				if(this.getBookedResources().contains(resource)){
+				if (this.getBookedResources().contains(resource)) {
 					continue;
 				}
 				resource.populateAppointments(appointmentService);
-				Date temp = resource.getEarliestAvailableDate(this.getPlannedStarttime(), this.getBookedProcedure().getDuration());
+				Date temp = resource.getEarliestAvailableDate(this.getPlannedStarttime(),
+						this.getBookedProcedure().getDuration());
 				if (temp != null) {
 					if (newDateToEvaluateForRessources == null) {
 						newDateToEvaluateForRessources = temp;
@@ -577,30 +589,32 @@ public class Appointment implements Serializable {
 					if (temp.before(newDateToEvaluateForRessources)) {
 						newDateToEvaluateForRessources = temp;
 					}
-					if(!temp.after(this.getPlannedStarttime())){
+					if (!temp.after(this.getPlannedStarttime())) {
 						this.getBookedResources().add(resource);
 						break;
 					}
 				}
 			}
-			if(newDateToEvaluateForRessources == null){
-				// this ressource type has no possible ressource. I have to think about what to do in this case.
-			}
-			else if (newDateToEvaluateForRessources.after(newDateToEvaluate)) {
-				newDateToEvaluate = newDateToEvaluateForRessources;
-			}
+			if (newDateToEvaluateForRessources == null) {
+				// this ressource type has no possible ressource. I have to think about what to
+				// do in this case.
+			} else
+				if (newDateToEvaluateForRessources.after(newDateToEvaluate)) {
+					newDateToEvaluate = newDateToEvaluateForRessources;
+				}
 		}
 
-		// do the same for  roles
+		// do the same for roles
 		for (Position position : this.getBookedProcedure().getNeededEmployeePositions()) {
 			Date newDateToEvaluateForEmployees = null;
 			boolean employeeFound = false;
 			for (Employee employee : oldEmployeeList) {
-				if(this.getBookedEmployees().contains(employee)){
+				if (this.getBookedEmployees().contains(employee)) {
 					continue;
 				}
 				employee.populateAppointments(appointmentService);
-				Date temp = employee.getEarliestAvailableDate(this.getPlannedStarttime(), this.getBookedProcedure().getDuration());
+				Date temp = employee.getEarliestAvailableDate(this.getPlannedStarttime(),
+						this.getBookedProcedure().getDuration());
 				if (temp != null) {
 					if (newDateToEvaluateForEmployees == null) {
 						newDateToEvaluateForEmployees = temp;
@@ -608,22 +622,23 @@ public class Appointment implements Serializable {
 					if (temp.before(newDateToEvaluateForEmployees)) {
 						newDateToEvaluateForEmployees = temp;
 					}
-					if(!temp.after(this.getPlannedStarttime())){
+					if (!temp.after(this.getPlannedStarttime())) {
 						this.getBookedEmployees().add(employee);
 						employeeFound = true;
 						break;
 					}
 				}
 			}
-			if(employeeFound){
+			if (employeeFound) {
 				break;
 			}
 			for (Employee employee : employeeService.getAll(position.getId())) {
-				if(this.getBookedEmployees().contains(employee)){
+				if (this.getBookedEmployees().contains(employee)) {
 					continue;
 				}
 				employee.populateAppointments(appointmentService);
-				Date temp = employee.getEarliestAvailableDate(this.getPlannedStarttime(), this.getBookedProcedure().getDuration());
+				Date temp = employee.getEarliestAvailableDate(this.getPlannedStarttime(),
+						this.getBookedProcedure().getDuration());
 				if (temp != null) {
 					if (newDateToEvaluateForEmployees == null) {
 						newDateToEvaluateForEmployees = temp;
@@ -631,21 +646,22 @@ public class Appointment implements Serializable {
 					if (temp.before(newDateToEvaluateForEmployees)) {
 						newDateToEvaluateForEmployees = temp;
 					}
-					if(!temp.after(this.getPlannedStarttime())){
+					if (!temp.after(this.getPlannedStarttime())) {
 						this.getBookedEmployees().add(employee);
 						break;
 					}
 				}
 			}
-			if(newDateToEvaluateForEmployees == null){
-				// this position has no possible Employee. I have to think about what to do in this case.
-			}
-			else if (newDateToEvaluateForEmployees.after(newDateToEvaluate)) {
-				newDateToEvaluate = newDateToEvaluateForEmployees;
-			}
+			if (newDateToEvaluateForEmployees == null) {
+				// this position has no possible Employee. I have to think about what to do in
+				// this case.
+			} else
+				if (newDateToEvaluateForEmployees.after(newDateToEvaluate)) {
+					newDateToEvaluate = newDateToEvaluateForEmployees;
+				}
 		}
 
-		if(newDateToEvaluate.after(this.getPlannedStarttime())){
+		if (newDateToEvaluate.after(this.getPlannedStarttime())) {
 			this.setBookedResources(oldResourceList);
 			this.setBookedEmployees(oldEmployeeList);
 			this.setPlannedStarttime(newDateToEvaluate);
@@ -653,15 +669,16 @@ public class Appointment implements Serializable {
 		}
 	}
 
-	public void optimizeAndPopulateForLatestBeginning(AppointmentService appointmentService, ResourceService resourceService, EmployeeService employeeService) {
-		if(this.getBookedProcedure() == null){
-			return;
-		}
+	public void optimizeAndPopulateForLatestBeginning(AppointmentService appointmentService,
+			ResourceService resourceService, EmployeeService employeeService) {
+		if (this.getBookedProcedure() == null) { return; }
 		this.setStatus(AppointmentStatus.RECOMMENDED);
-		this.setPlannedEndtime(new Date(this.plannedStarttime.getTime() + this.getBookedProcedure().getDuration().toMillis()));
+		this.setPlannedEndtime(
+				new Date(this.plannedStarttime.getTime() + this.getBookedProcedure().getDuration().toMillis()));
 		// check if customer is available
 		this.getBookedCustomer().populateAppointments(appointmentService);
-		Date newDateToEvaluate = this.getBookedCustomer().getLatestAvailableDate(this.getPlannedStarttime(), this.getBookedProcedure().getDuration());
+		Date newDateToEvaluate = this.getBookedCustomer().getLatestAvailableDate(this.getPlannedStarttime(),
+				this.getBookedProcedure().getDuration());
 		List<Employee> oldEmployeeList = this.getBookedEmployees();
 		List<Resource> oldResourceList = this.getBookedResources();
 
@@ -674,11 +691,12 @@ public class Appointment implements Serializable {
 			Date newDateToEvaluateForRessources = null;
 			boolean resourceTypeFound = false;
 			for (Resource resource : oldResourceList) {
-				if(this.getBookedResources().contains(resource)){
+				if (this.getBookedResources().contains(resource)) {
 					continue;
 				}
 				resource.populateAppointments(appointmentService);
-				Date temp = resource.getLatestAvailableDate(this.getPlannedStarttime(), this.getBookedProcedure().getDuration());
+				Date temp = resource.getLatestAvailableDate(this.getPlannedStarttime(),
+						this.getBookedProcedure().getDuration());
 				if (temp != null) {
 					if (newDateToEvaluateForRessources == null) {
 						newDateToEvaluateForRessources = temp;
@@ -686,21 +704,22 @@ public class Appointment implements Serializable {
 					if (temp.after(newDateToEvaluateForRessources)) {
 						newDateToEvaluateForRessources = temp;
 					}
-					if(!temp.before(this.getPlannedStarttime())){
+					if (!temp.before(this.getPlannedStarttime())) {
 						this.getBookedResources().add(resource);
 						break;
 					}
 				}
 			}
-			if(resourceTypeFound){
+			if (resourceTypeFound) {
 				break;
 			}
 			for (Resource resource : resourceService.getAll(resourceType)) {
-				if(this.getBookedResources().contains(resource)){
+				if (this.getBookedResources().contains(resource)) {
 					continue;
 				}
 				resource.populateAppointments(appointmentService);
-				Date temp = resource.getLatestAvailableDate(this.getPlannedStarttime(), this.getBookedProcedure().getDuration());
+				Date temp = resource.getLatestAvailableDate(this.getPlannedStarttime(),
+						this.getBookedProcedure().getDuration());
 				if (temp != null) {
 					if (newDateToEvaluateForRessources == null) {
 						newDateToEvaluateForRessources = temp;
@@ -708,29 +727,31 @@ public class Appointment implements Serializable {
 					if (temp.after(newDateToEvaluateForRessources)) {
 						newDateToEvaluateForRessources = temp;
 					}
-					if(!temp.before(this.getPlannedStarttime())){
+					if (!temp.before(this.getPlannedStarttime())) {
 						this.getBookedResources().add(resource);
 						break;
 					}
 				}
 			}
-			if(newDateToEvaluateForRessources == null){
-				// this ressource type has no possible ressource. I have to think about what to do in this case.
-			}
-			else if (newDateToEvaluateForRessources.before(newDateToEvaluate)) {
-				newDateToEvaluate = newDateToEvaluateForRessources;
-			}
+			if (newDateToEvaluateForRessources == null) {
+				// this ressource type has no possible ressource. I have to think about what to
+				// do in this case.
+			} else
+				if (newDateToEvaluateForRessources.before(newDateToEvaluate)) {
+					newDateToEvaluate = newDateToEvaluateForRessources;
+				}
 		}
-		// do the same for  roles
+		// do the same for roles
 		for (Position position : this.getBookedProcedure().getNeededEmployeePositions()) {
 			Date newDateToEvaluateForEmployees = null;
 			boolean employeeFound = false;
 			for (Employee employee : oldEmployeeList) {
-				if(this.getBookedEmployees().contains(employee)){
+				if (this.getBookedEmployees().contains(employee)) {
 					continue;
 				}
 				employee.populateAppointments(appointmentService);
-				Date temp = employee.getLatestAvailableDate(this.getPlannedStarttime(), this.getBookedProcedure().getDuration());
+				Date temp = employee.getLatestAvailableDate(this.getPlannedStarttime(),
+						this.getBookedProcedure().getDuration());
 				if (temp != null) {
 					if (newDateToEvaluateForEmployees == null) {
 						newDateToEvaluateForEmployees = temp;
@@ -738,22 +759,23 @@ public class Appointment implements Serializable {
 					if (temp.after(newDateToEvaluateForEmployees)) {
 						newDateToEvaluateForEmployees = temp;
 					}
-					if(!temp.before(this.getPlannedStarttime())){
+					if (!temp.before(this.getPlannedStarttime())) {
 						this.getBookedEmployees().add(employee);
 						employeeFound = true;
 						break;
 					}
 				}
 			}
-			if(employeeFound){
+			if (employeeFound) {
 				break;
 			}
 			for (Employee employee : employeeService.getAll(position.getId())) {
-				if(this.getBookedEmployees().contains(employee)){
+				if (this.getBookedEmployees().contains(employee)) {
 					continue;
 				}
 				employee.populateAppointments(appointmentService);
-				Date temp = employee.getLatestAvailableDate(this.getPlannedStarttime(), this.getBookedProcedure().getDuration());
+				Date temp = employee.getLatestAvailableDate(this.getPlannedStarttime(),
+						this.getBookedProcedure().getDuration());
 				if (temp != null) {
 					if (newDateToEvaluateForEmployees == null) {
 						newDateToEvaluateForEmployees = temp;
@@ -761,21 +783,22 @@ public class Appointment implements Serializable {
 					if (temp.after(newDateToEvaluateForEmployees)) {
 						newDateToEvaluateForEmployees = temp;
 					}
-					if(!temp.before(this.getPlannedStarttime())){
+					if (!temp.before(this.getPlannedStarttime())) {
 						this.getBookedEmployees().add(employee);
 						break;
 					}
 				}
 			}
-			if(newDateToEvaluateForEmployees == null){
-				// this position has no possible Employee. I have to think about what to do in this case.
-			}
-			else if (newDateToEvaluateForEmployees.before(newDateToEvaluate)) {
-				newDateToEvaluate = newDateToEvaluateForEmployees;
-			}
+			if (newDateToEvaluateForEmployees == null) {
+				// this position has no possible Employee. I have to think about what to do in
+				// this case.
+			} else
+				if (newDateToEvaluateForEmployees.before(newDateToEvaluate)) {
+					newDateToEvaluate = newDateToEvaluateForEmployees;
+				}
 		}
 
-		if(newDateToEvaluate.before(this.getPlannedStarttime())){
+		if (newDateToEvaluate.before(this.getPlannedStarttime())) {
 			this.setBookedResources(oldResourceList);
 			this.setBookedEmployees(oldEmployeeList);
 			this.setPlannedStarttime(newDateToEvaluate);

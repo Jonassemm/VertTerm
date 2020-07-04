@@ -147,7 +147,7 @@ public class EmployeeServiceImp extends WarningServiceImpl implements EmployeeSe
 		repo.save(user);
 		
 		getPlannedAppointmentsWithId(id).forEach(app -> {
-			app.addWarning(Warning.EMPLOYEE_WARNING);
+			app.addWarnings(Warning.EMPLOYEE_WARNING);
 			appointmentService.update(app);
 		});
 

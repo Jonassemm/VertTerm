@@ -59,7 +59,7 @@ public class ResourceServiceImp extends WarningServiceImpl implements ResourceSe
 		ResRepo.save(Res);
 
 		getPlannedAppointmentsWithId(id).forEach(app -> {
-			app.addWarning(Warning.RESOURCE_WARNING);
+			app.addWarnings(Warning.RESOURCE_WARNING);
 			appointmentService.update(app);
 		});
 
