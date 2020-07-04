@@ -107,8 +107,8 @@ public class BlockerServiceImp implements BlockerService {
 		// set "APPOINTMENT_WARNING"  in all appointments and save changed to DB
 		for (Appointment app : appointments) {
 			// Appointment appDB = this.appointmentService.getById(app.getId());
-			if (appDB.addWarnings(Warning.APPOINTMENT_WARNING))
-				appointmentRepo.save(appDB);
+			if (app.addWarnings(Warning.APPOINTMENT_WARNING))
+				appointmentRepo.save(app);
 			// else
 			// throw new AppointmentException("Appointment has already 'APPOINTMENT_WARNING'
 			// ", app);
@@ -126,8 +126,7 @@ public class BlockerServiceImp implements BlockerService {
 				tester.testAppointment(appointmentServiceImp);
 			} catch (Exception ex) {
 				// add Warning
-				// setze Warning
-				appDB.addWarnings(Warning.APPOINTMENT_WARNING);
+				app.addWarnings(Warning.APPOINTMENT_WARNING);
 			}
 			appointmentRepo.save(app);
 		}
