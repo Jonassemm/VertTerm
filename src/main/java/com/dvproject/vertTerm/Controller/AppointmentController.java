@@ -1,4 +1,3 @@
-
 package com.dvproject.vertTerm.Controller;
 
 import com.dvproject.vertTerm.Model.Appointment;
@@ -14,10 +13,8 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
-import java.io.Console;
 import java.security.Principal;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
@@ -89,7 +86,7 @@ public class AppointmentController {
 			@RequestParam(required = false) Date starttime, @RequestParam(required = false) Date endtime,
 			@RequestParam(required = false, name = "status") String statusString) {
 		List<Appointment> appointments = null;
-		AppointmentStatus status = statusString == null ? null : AppointmentStatus.enumOf(statusString);
+		AppointmentStatus status = AppointmentStatus.enumOf(statusString);
 
 		if (starttime == null || endtime == null) {
 			appointments = service.getAppointmentsByResourceIdAndAppointmentStatus(resourceId, status);
@@ -108,17 +105,17 @@ public class AppointmentController {
 			@RequestParam(required = false, name = "status") String statusString) {
 		List<Appointment> appointments = new ArrayList<>();
 		boolean isEmployee = userService.getById(userid) instanceof Employee;
-		AppointmentStatus appointmentStatus = statusString == null ? AppointmentStatus.PLANNED
-				: AppointmentStatus.enumOf(statusString);
+		AppointmentStatus appointmentStatus = AppointmentStatus.enumOf(statusString);
 
 		if (starttime == null || endtime == null) {
-			appointments.addAll(service.getAppointmentsByUserIdAndAppointmentStatus(userid, null));
+			appointments.addAll(service.getAppointmentsByUserIdAndAppointmentStatus(userid, appointmentStatus));
 
 			if (isEmployee)
-				appointments.addAll(service.getAppointmentsByEmployeeIdAndAppointmentStatus(userid, null));
+				appointments.addAll(service.getAppointmentsByEmployeeIdAndAppointmentStatus(userid, appointmentStatus));
 		} else
 			if (starttime != null && endtime != null) {
-				appointments.addAll(service.getAppointmentsWithUseridAndTimeInterval(userid, starttime, endtime));
+				appointments.addAll(
+						service.getAppointmentsOfBookedCustomerInTimeinterval(userid, starttime, endtime, appointmentStatus));
 
 				if (isEmployee)
 					appointments.addAll(service.getAppointmentsOfBookedEmployeeInTimeinterval(userid, starttime, endtime,
