@@ -1,3 +1,4 @@
+//author: Patrick Venturini
 import React, { useState, useEffect } from "react"
 import {getAllOptionalAttributes} from "./optionalAttributesRequests"
 import OptionalAttributesForm from "./optionalAttributesForm"
@@ -7,12 +8,13 @@ function optionalAttributesPage() {
  
     const [optionalAttributeLists, setOptionalAttributeLists] = useState([])
 
+
     useEffect(() => {
         loadOptionalAttributes()
     }, [])
 
 
-    //---------------------------------LOAD---------------------------------
+    //----------------------------------------LOAD-----------------------------------
     const loadOptionalAttributes = async () => {
         var data = [];
         try{ 
@@ -22,9 +24,10 @@ function optionalAttributesPage() {
           console.log(Object.keys(error), error.message)
         }
         setOptionalAttributeLists(data)
-        console.log(data)
     };
 
+
+    //-----------------------------OverviewPage-Components---------------------------
     const tableBody =
         optionalAttributeLists.map((item,index) => {
             var attributeClass //translated boolean
@@ -72,5 +75,4 @@ function optionalAttributesPage() {
         </React.Fragment>
     )
 }
-
 export default optionalAttributesPage

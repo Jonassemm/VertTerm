@@ -1,11 +1,13 @@
+//author: Patrick Venturini
 import React, { useState, useEffect } from "react"
-import { Form, Table } from "react-bootstrap"
+import { Form } from "react-bootstrap"
 import { Container, Button } from "react-bootstrap"
 import {addRestriction, deleteRestriction, editRestriction } from "./RestrictionRequests"
 
 const RestrictionForm = ({ onCancel, edit, selected }) => {
     const [name, setName] = useState("")
     const [edited, setEdited] = useState(false)
+
 
     useEffect(() => {
         if (edit) {
@@ -19,6 +21,7 @@ const RestrictionForm = ({ onCancel, edit, selected }) => {
         setEdited(true)
     }
 
+
     const handleSubmit = async event => {
         event.preventDefault()
         let res = {}
@@ -30,7 +33,6 @@ const RestrictionForm = ({ onCancel, edit, selected }) => {
             const data = {id, name}
             res = await editRestriction(data)
         }
-        console.log(res)
         onCancel()
     }
 
@@ -40,13 +42,13 @@ const RestrictionForm = ({ onCancel, edit, selected }) => {
         if (answer) {
             try {
                 const res = await deleteRestriction(selected.id)
-                console.log(res)
             } catch (error) {
                 console.log(Object.keys(error), error.message)
             }
         }
         onCancel()
     }
+    
 
     return (
         <React.Fragment>

@@ -1,49 +1,62 @@
+//author: Patrick Venturini
 import React, { useState, useEffect } from "react"
-import { Container, Form, Col, Row, Modal, Button } from "react-bootstrap"
+import { Container, Form, Col, Button } from "react-bootstrap"
 import {Link} from 'react-router-dom';
 import {setDate} from "../TimeComponents/TimeFunctions"
-import {getWarningsAsString, getTranslatedWarning} from "../Warnings"
+import {getWarningsAsString} from "../Warnings"
+import { hasRight } from "../../auth"
 import {appointmentStatus, translateStatus} from "./AppointmentStatus"
 import {
     deleteAppointment,
-    deleteOverrideAppointment,
-    getAllAppointments,
-    getGroupOfAppointment,
     testAppointment,
     updateCustomerIsWaiting,
     startAppointment,
-    stopAppointment
+    stopAppointment,
+    testPreferredAppointment,
+    isBlocker,
+    deleteBlocker
 } from "./AppointmentRequests"
 
 var moment = require('moment'); 
+const twoMinutes = 120000
 
 
 export const handleDeleteAppointment = async (id, handleOnCancel = undefined, setException, setPreferredAppointment) => {
     const answer = confirm("Termin wirklich löschen? ")
     if(answer) {
+        var isBlocker = false
         try{
-            await deleteAppointment(id)
-            .then(res => {
-                if (res.status = "200") {
-                    //deleting successful
-                }
-                console.log(res.headers)
-                if(res.headers.appointmentid != undefined && res.headers.starttime != undefined) {
-                    setPreferredAppointment(res.headers.appointmentid, res.headers.starttime)
-                }
-                if (res.headers.exception) {
-                    setException(res.headers.exception)
-                }
-            })
-            .catch((error) => {
-                console.log("EXCEPTION while deleting appointment")
-                console.log(error.response.headers)
-                if(error.response.headers.exception != undefined) {
-                    setException(error.response.headers.exception)
-                }
-            })
-        } catch (error){
-        console.log(Object.keys(error), error.message)
+            const response = await isBlocker(id)
+            isBlocker = response.data
+        }catch (error){
+            console.log(Object.keys(error), error.message)
+        }
+
+        if(isBlocker){
+            try{
+                await deleteBlocker(id)
+            }catch (error){
+                console.log(Object.keys(error), error.message)
+            }
+        }else {//is appointment
+            try{
+                await deleteAppointment(id)
+                .then(res => {
+                    if(res.headers.appointmentid != undefined && res.headers.starttime != undefined) {
+                        setPreferredAppointment(res.headers.appointmentid, res.headers.starttime)
+                    }
+                    if (res.headers.exception) {
+                        setException(res.headers.exception)
+                    }
+                })
+                .catch((error) => {
+                    if(error.response.headers.exception != undefined) {
+                        setException(error.response.headers.exception, id)
+                    }
+                })
+            } catch (error){
+                console.log(Object.keys(error), error.message)
+            }
         }
 
         //only necessary for rerender calendar
@@ -60,11 +73,13 @@ function AppointmentForm({
     selected, 
     handleExceptionChange,
     handlePreferredAppointmentChange,
+    userStore,
     refreshData = null,                         //optional (HomePage)
     month = null,                               //optional (HomePage)
     year = null                                 //optional (HomePage)
     }) {
-    //Editing
+    const rightNameOwn = "OWN_APPOINTMENT_WRITE"
+    const rightName = "APPOINTMENT_WRITE"
     const [edited, setEdited] = useState(false)
     const [procedure, setProcedure] = useState(null)
     const [bookedEmployees, setBookedEmployees] = useState([])
@@ -78,16 +93,8 @@ function AppointmentForm({
     const [status, setStatus] = useState("null") //string will be overwritten but necessary for first rendering
     const [warnings, setWarnings] = useState([])
     const [customerIsWaiting, setCustomerIsWaiting] = useState(false)
+    const [ownAppointmentView, setOwnAppointmentView] = useState(false)
     
-
-    const handleCustomerIsWaitingChange = () => {
-            if(customerIsWaiting) {
-                setCustomerIsWaiting(false) 
-            } else {
-                setCustomerIsWaiting(true) 
-            }
-            setEdited(true)
-    }
 
     useEffect(() => { 
         if(edit) {
@@ -103,30 +110,48 @@ function AppointmentForm({
             setBookedEmployees(selected.bookedEmployees)     
             setBookedResources(selected.bookedResources)
             setCustomerIsWaiting(selected.customerIsWaiting)
+            //check if the selected is an appointment of the logged in user 
+            if(selected.bookedCustomer.id == userStore.userID){
+                setOwnAppointmentView(true)
+            }
+            if(selected.bookedEmployees.length > 0){
+                selected.bookedEmployees.map(employee => {
+                    if(employee.id == userStore.userID){
+                        setOwnAppointmentView(true)
+                    }
+                })
+            }
         } 
     }, [])
 
 
+    const handleCustomerIsWaitingChange = () => {
+        if(checkRights()){
+            if(customerIsWaiting) {
+                setCustomerIsWaiting(false) 
+            } else {
+                setCustomerIsWaiting(true) 
+            }
+            setEdited(true)
+        }
+    }
+
+
     const handleSubmit = async () => {
-        try{
-            const res = await updateCustomerIsWaiting(selected.id, customerIsWaiting)
-            //.then(res => {
-                if (res.status = "200") {
-                    //updating successful
-                }
-                console.log("Antwort:")
-                console.log(res.headers)
+        if(checkRights()){
+            try{
+                const res = await updateCustomerIsWaiting(selected.id, customerIsWaiting)
                 if(res.headers.appointmentid != undefined && res.headers.starttime != undefined) {
-                    handlePreferredAppointmentChange(res.headers.appointmentid, res.headers.starttime)
+                    //panned start > now + (2 minutes = 120000)
+                    if(moment(plannedStarttime, "DD.MM.yyyy HH:mm").toDate().getTime() > (moment().toDate().getTime()+twoMinutes)) {
+                        handlePreferredAppointmentChange(res.headers.appointmentid, res.headers.starttime)  
+                    }
                 }
-            //})
-            /* .catch((error) => {
-                console.log("Fehler")
-                console.log(error)
-            }) */
-        } catch (error){
-            console.log("Fehler")
-            console.log(Object.keys(error), error.message)
+            } catch (error){
+                console.log(Object.keys(error), error.message)
+            }
+        }else {//no right -> submit not allowed 
+            noRights()
         }
 
         handleOnCancel()
@@ -135,53 +160,53 @@ function AppointmentForm({
     
     const handleStart = async () =>{
         var data = true
-        
-        try{
-            const response = await startAppointment(selected.id);
-            console.log("RESPONSE OF start:")
-            console.log(response.data)
-          } catch (error){
-            console.log(Object.keys(error), error.message)
-          }
-        if(!data){
-            alert("Termin kann nicht vorzeitig gestartet werden")
-        }
-        setActualStarttime(moment(new Date).format("DD.MM.YYYY / HH:mm").toString()) //set the actual time 
+        if(checkRights()){
+            try{
+                const response = await startAppointment(selected.id);
+            } catch (error){
+                console.log(Object.keys(error), error.message)
+            }
+            if(!data){
+                alert("Termin kann nicht vorzeitig gestartet werden")
+            }
+            setActualStarttime(moment(new Date).format("DD.MM.YYYY / HH:mm").toString()) //set the actual time 
 
-        //refresh Appointments
-        if(refreshData != null) {
-            refreshData(month, year) 
+            //refresh Appointments
+            if(refreshData != null) {
+                refreshData(month, year) 
+            }
+        }else {//no right -> submit not allowed 
+            noRights()
         }
     }
+
 
     const handleEnd = async() =>{
         const newEndtime = moment(new Date).format("DD.MM.YYYY / HH:mm").toString()
         const newStatus = appointmentStatus.done
-        var updateData = {actualEndTime: newEndtime, status: newStatus}
-        
-        try{
-            await stopAppointment(selected.id)
-            .then(res => {
-                if (res.status = "200") {
-                    //stopping successful
-                }
-                console.log("ANTWORT:")
-                console.log(res.headers)
-                if(res.headers.appointmentid != undefined && res.headers.starttime != undefined) {
-                    handlePreferredAppointmentChange(res.headers.appointmentid, res.headers.starttime)
-                }
-            })
-        } catch (error){
-        console.log(Object.keys(error), error.message)
-        }
-        setActualEndtime(newEndtime) 
-        setStatus(newStatus)
+        if(checkRights()){
+            try{
+                await stopAppointment(selected.id)
+                .then(res => {
+                    if(res.headers.appointmentid != undefined && res.headers.starttime != undefined) {
+                        handlePreferredAppointmentChange(res.headers.appointmentid, res.headers.starttime)
+                    }
+                })
+            } catch (error){
+            console.log(Object.keys(error), error.message)
+            }
+            setActualEndtime(newEndtime) 
+            setStatus(newStatus)
 
-        //refresh Appointments
-        if(refreshData != null) {
-            refreshData(month, year) 
+            //refresh Appointments
+            if(refreshData != null) {
+                refreshData(month, year) 
+            }
+        }else {//no right -> submit not allowed 
+            noRights()
         }
     }
+
 
     const handleOnCancel = () => {
         //refresh Appointments
@@ -191,13 +216,19 @@ function AppointmentForm({
         onCancel()
     }
 
+
     const handleDelete = () => {
-        handleDeleteAppointment(
-            selected.id, 
-            handleOnCancel, 
-            handleExceptionChange, 
-            handlePreferredAppointmentChange)
+        if(checkRights()){
+            handleDeleteAppointment(
+                selected.id, 
+                handleOnCancel, 
+                handleExceptionChange, 
+                handlePreferredAppointmentChange)
+        }else {//no right -> submit not allowed 
+            noRights()
+        }
     }
+
 
     const handleTest = async() => {
         var data = []
@@ -208,11 +239,48 @@ function AppointmentForm({
         console.log(Object.keys(error), error.message)
         }
 
-        if(!JSON.stringify(data)==JSON.stringify(warnings)){
+        if(JSON.stringify(data)!=JSON.stringify(warnings)){
             setWarnings(data)
             if(refreshData != null) {
                 refreshData(month, year) 
             }
+        }
+    }
+
+
+    //----------------------------------Help-Functions----------------------------------
+    const checkRights = () => {
+        var rightExists = hasRight(userStore, [rightName])
+        if(ownAppointmentView && hasRight(userStore, [rightNameOwn])){
+        rightExists = true
+        }
+        return rightExists
+    }
+
+
+    const noRights = () => {
+        if(ownAppointmentView){
+            alert("Für diesen Vorgang besitzten Sie nicht die erforderlichen Rechte!\n\nBenötigtes Recht: " + rightNameOwn)
+        }else {
+            alert("Für diesen Vorgang besitzten Sie nicht die erforderlichen Rechte!\n\nBenötigtes Recht: " + rightName)
+        }
+    }
+
+
+    const preferAppointment = async () => {
+        var start = null
+        var id = null
+        try{
+            const response = await testPreferredAppointment(selected.id)
+            start = response.headers.starttime
+            id = response.headers.appointmentid
+        } catch (error){
+        console.log(Object.keys(error), error.message)
+        }
+        if(start != null && id != null) {
+            handlePreferredAppointmentChange(id, start)
+        }else{
+            alert("Termin kann leider nicht vorgezogen werden")
         }
     }
 
@@ -227,7 +295,11 @@ function AppointmentForm({
             break;
             case "customer":
                 if(customer != null) {
-                   text += customer.firstName + " " + customer.lastName 
+                    if(customer.firstName != null && customer.lastName != null){
+                        text += customer.firstName + " " + customer.lastName 
+                    }else {
+                        text = "anonymer Kunder"
+                    }
                 }
             break;
             case "employee":
@@ -245,7 +317,7 @@ function AppointmentForm({
                         text += item.name 
                     } else {
                        text += "; " + item.name 
-                    }0
+                    }
                 })
             break;
         }
@@ -257,11 +329,27 @@ function AppointmentForm({
         return actualStarttime
     }
 
+    const test = async() => {
+        try{
+            const response = await isBlocker(selected.id)
+            console.log(response)
+        }catch (error){
+            console.log(Object.keys(error), error.message)
+        }
+    }
+
 
     const rendertest = () => {
         console.log("---------Render-FORM------")
+        /* console.log(getActualStarttime() != null)
+        console.log(actualEndtime == null)
+        console.log(moment(plannedStarttime, "DD.MM.yyyy HH:mm").toDate().getTime() < moment().toDate().getTime())
+        console.log(moment(actualStarttime, "DD.MM.yyyy HH:mm").toDate().getTime() < moment().toDate().getTime())
+        console.log(checkRights()) */
     }
+    
    
+
     return (
         <div className="page">
             <Container>
@@ -318,20 +406,27 @@ function AppointmentForm({
                             null
                         }
                         </Form.Group>
-                        <Form.Group as={Col} md="8">
+                        <Form.Group as={Col} md="4">
+                            <div style={{ textAlign: "left" }}>     
+                            {selected.customerIsWaiting &&
+                               <Button variant="primary" onClick={preferAppointment} style={{ marginLeft: "4px" }}>Termin vorziehbar?</Button>  
+                            }    
+                                  
+                            </div>
+                        </Form.Group>
+                        <Form.Group as={Col} md="4">
                             
                             <div style={{ textAlign: "right" }}>         
-                                {/* (actualStarttime != null && status == AppointmentStatus.planned) &&
-                                    <Button variant="secondary" onClick={handleUndoStart} style={{ marginLeft: "4px" }}>Zurücksetzen</Button> */
-                                }
-                                {(getActualStarttime() != null && actualEndtime == null) && 
+                                {(getActualStarttime() != null && actualEndtime == null) &&
                                     (moment(plannedStarttime, "DD.MM.yyyy HH:mm").toDate().getTime() < moment().toDate().getTime() &&
                                     moment(actualStarttime, "DD.MM.yyyy HH:mm").toDate().getTime() < moment().toDate().getTime()) &&
+                                    checkRights() &&
                                         <Button variant="primary" onClick={handleEnd} style={{ marginLeft: "4px" }}>Termin beenden</Button>
                                 }
                                 {getActualStarttime() == null && customerIsWaiting && status == appointmentStatus.planned &&
                                 //panned start < now + (2 minutes = 120000)
-                                moment(plannedStarttime, "DD.MM.yyyy HH:mm").toDate().getTime() < (moment().toDate().getTime()+120000) &&
+                                moment(plannedStarttime, "DD.MM.yyyy HH:mm").toDate().getTime() < (moment().toDate().getTime()+twoMinutes) &&
+                                checkRights() &&
                                     <Button variant="primary" onClick={handleStart} style={{ marginLeft: "4px" }}>Termin starten</Button>
                                 }
                             </div>
@@ -353,9 +448,12 @@ function AppointmentForm({
                             <Form.Group as={Col} md="3">
                                 <div style={{textAlign: "bottom", marginTop: "32px"}}>
                                     <Button variant="primary" onClick={handleTest} style={{ marginLeft: "0px" }}>Prüfen</Button>
-                                    <Link to={`/warning/${warnings[0]}`}>
-                                        <Button variant="success" style={{ marginLeft: "10px" }}>Beheben</Button>
-                                    </Link>
+                                    {checkRights() &&
+                                        <Link to={`/warning/${warnings[0]}`}>
+                                            <Button variant="success" style={{ marginLeft: "10px" }}>Beheben</Button>
+                                        </Link>
+                                    }
+                                    
                                 </div>
                             </Form.Group>   
                         </Form.Row>
@@ -437,15 +535,16 @@ function AppointmentForm({
                         {(edited && actualStarttime == null) &&
                             <Button variant="secondary" onClick={onCancel}>Abbrechen</Button>
                         }
-                        {(status == appointmentStatus.planned && actualStarttime == null) && 
+                        {(status == appointmentStatus.planned && actualStarttime == null) && checkRights() &&
                             <Button variant="danger" onClick={handleDelete} style={{marginLeft: "3px"}}>Termin löschen</Button> 
                         }
-                        {(status == appointmentStatus.planned && actualStarttime == null) &&
+                        {(status == appointmentStatus.planned && actualStarttime == null) && checkRights() &&
                             <Link to={`/booking/${selected.id}`}>
-                                <Button variant="primary"style={{marginLeft: "3px"}}>Zur Bearbeitung</Button>
-                            </Link> 
+                                <Button variant="primary" style={{marginLeft: "3px"}}>Zur Bearbeitung</Button>
+                            </Link>
                         }
                         {(edited && actualStarttime == null) ?
+                            checkRights() &&
                             <Button variant="success" onClick={handleSubmit} style={{ marginLeft: "4px" }}>Übernehmen</Button>:
                             <Button variant="success" onClick={onCancel} style={{ marginLeft: "4px" }}>OK</Button>
                         }

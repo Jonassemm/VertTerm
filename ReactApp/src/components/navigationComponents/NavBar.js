@@ -4,7 +4,8 @@ import Styled from "styled-components"
 import { Link } from 'react-router-dom'
 import LoginForm from "./LoginForm"
 import { observer } from "mobx-react"
-import { hasRole } from "../../auth"
+import { hasRight } from "../../auth"
+import {managementRights, ownAppointmentRights, appointmentRights} from "../Rights"
 
 
 const Styles = Styled.div`
@@ -15,8 +16,7 @@ const Styles = Styled.div`
 
 
 function NavBar({ userStore }) {
-    var x = document.cookie
-    console.log(x)
+    console.log(document.cookie)
     return (
         <Styles>
             <Navbar variant="dark" bg="dark" expand="lg" justify-content="end" fixed="top">
@@ -24,9 +24,15 @@ function NavBar({ userStore }) {
                 <Navbar.Toggle aria-controls="basic-navbar-nav" />
                 <Navbar.Collapse id="basic-navbar-nav" className="mr-auto">
                     <Nav className="mr-auto">
-                        <Nav.Item><Nav.Link as={Link} to="/admin">Verwaltung</Nav.Link></Nav.Item>
-                        <Nav.Item><Nav.Link as={Link} to="/warning">Konfliktansicht</Nav.Link></Nav.Item>
-                        <Nav.Item><Nav.Link as={Link} to="/appointment">Terminansicht</Nav.Link></Nav.Item>
+                        {hasRight(userStore, managementRights()) &&
+                            <Nav.Item><Nav.Link as={Link} to="/admin">Verwaltung</Nav.Link></Nav.Item>
+                        }
+                        {hasRight(userStore, ownAppointmentRights.concat(appointmentRights)) && 
+                            <Nav.Item><Nav.Link as={Link} to="/warning">Konfliktansicht</Nav.Link></Nav.Item>
+                        }
+                        {hasRight(userStore, ownAppointmentRights.concat(appointmentRights)) &&
+                            <Nav.Item><Nav.Link as={Link} to="/appointment">Terminansicht</Nav.Link></Nav.Item>
+                        }       
                         <Nav.Item><Nav.Link as={Link} to="/booking">Buchen</Nav.Link></Nav.Item>
                     </Nav>
                 </Navbar.Collapse >

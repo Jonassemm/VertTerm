@@ -1,6 +1,7 @@
 import React, { Suspense } from 'react';
 import { HashRouter as Router, Switch, Route } from 'react-router-dom';
-import { hasRole } from "./auth"
+import { hasRight } from "./auth"
+import {managementRights, ownAppointmentRights, appointmentRights} from "./components/Rights"
 import { observer } from "mobx-react"
 // required css for whole app
 import './App.css';
@@ -11,7 +12,6 @@ import NavBar from './components/navigationComponents/NavBar'
 import Footer from './components/navigationComponents/Footer';
 // preloaded pages
 import Home from "./components/Home"
-import HomePage from './components/calendarComponents/HomePage'
 import BookingForm from "./components/calendarComponents/BookingForm"
 import AdminPage from "./components/navigationComponents/AdminPage"
 import AppointmentPage from "./components/appointmentComponents/AppointmentPage"
@@ -29,14 +29,21 @@ export default observer(function App({ userStore, calendarStore }) {
         <div style={{ margin: "55px 0px 50px 0px" }}>
           <Switch>
             <Route path="/" exact component={() => <Home />} />
-            <Route path="/admin" component={() => <AdminPage userStore={userStore}/>} />
-            <Route exact path="/calendar" component={() => (<HomePage calendarStore={calendarStore} UserID={userStore.userID}/>)} />
-            <Route path="/appointment" component={() => <AppointmentPage calendarStore={calendarStore} userStore={userStore} />} />
+            {hasRight(userStore, managementRights()) &&
+              <Route path="/admin" component={() => <AdminPage userStore={userStore}/>} />
+            }
+            {hasRight(userStore, ownAppointmentRights.concat(appointmentRights)) &&
+              <Route path="/appointment" component={() => <AppointmentPage calendarStore={calendarStore} userStore={userStore} />} />
+            }
             <Route exact path="/booking" component={() => (<BookingForm/>)}/>
             <Route exact path="/booking/:appointmentID" component={BookingForm}/>
             <Route exact path="/booking/:appointmentID/:startTime" component={BookingForm}/>
-            <Route exact path="/warning/" component={() => <AppointmentWarningPage/>}/>
-            <Route exact path="/warning/:initialWarning" component={AppointmentWarningPage}/>
+            {hasRight(userStore, ownAppointmentRights.concat(appointmentRights)) && 
+              <Route exact path="/warning/" component={() => <AppointmentWarningPage userStore={userStore}/>}/>
+            }
+            {hasRight(userStore, ownAppointmentRights.concat(appointmentRights)) && 
+               <Route exact path="/warning/:initialWarning" component={(initialWarning) => <AppointmentWarningPage userStore={userStore} warning={initialWarning.match.params.initialWarning}/>}/>
+            }
             <Route exact path="/test" component={TestComponent}/>
             <Route exact path="/apts/:credString" component={(credString) => <AnonymousLogin userStore={userStore} credString={credString.match.params.credString}/>}/>
             <Route exact path="/qr" component={AppointmentQR}/>

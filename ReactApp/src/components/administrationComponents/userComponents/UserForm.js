@@ -1,8 +1,10 @@
+//author: Patrick Venturini
 import React ,{useState, useEffect} from 'react'
 import {Form, Table, Col, Container, Button, InputGroup, Tabs, Tab } from 'react-bootstrap'
 import Availability from "../availabilityComponents/Availability"
 import ObjectPicker from "../../ObjectPicker"
-import {ExceptionModal} from "../../ExceptionModal"
+import { hasRight } from "../../../auth"
+import {userRights, ownUserRights} from "../../Rights"
 
 import {
   addEmployee,
@@ -12,64 +14,47 @@ import {
   updateCustomer,
   deleteCustomer
 } from "./UserRequests";
-
 import {
   getAllOptionalAttributes
 } from "../optionalAttributesComponents/optionalAttributesRequests"
 
 
-function UserForm({onCancel, edit, selected, type, setException = null}) {
-  //Switch
+function UserForm({onCancel, 
+  edit, 
+  selected, 
+  type,           //type could be "emplyee" or "customer"
+  setException,   //Availability exception
+  userStore}) {
+
   var initialTypeIsEmployee = false
   if(type == "employee") {
       initialTypeIsEmployee = true
   }
+
+  const rightNameOwn = ownUserRights[1] //write right
+  const rightName = userRights[1] //write right
+  
   const [isEmployee, setIsEmployee] = useState(initialTypeIsEmployee)
   const [valideForm, setValideForm] = useState(false)
-  //Editing
   const [edited, setEdited] = useState(false)
-  //Tabs
   const [tabKey, setTabKey] = useState('general')
-  //User
+
   const [firstName, setFirstname] = useState("")
   const [lastName, setLastname] = useState("")
   const [username, setUsername] = useState("") 
   const [password, setPassword] = useState("")
+  const [passwordChanged, setPasswordChanged] = useState(false)
   const [systemStatus, setSystemStatus] = useState("active")
   const [availabilities, setAvailabilities] = useState([])
   const [positions, setPositions] = useState([])
   const [roles, setRoles] = useState([])
   const [restrictions, setRestrictions] = useState([])
-  //Optional Attributes (Employee)
+
   const [optionalAttributesOfUser, setOptionalAttributesOfUser] = useState([])
-  //Attribute Input
   const [optionalAttributInput, setOptionalAttributeInput] = useState() //needed to render page when editing any optional attribute
   const [requiredOptionalAttributCounter, setRequiredOptionalAttributCounter] = useState(0)
-  //recognizing password change
-  const [passwordChanged, setPasswordChanged] = useState(false)
+  const [ownUserView, setOwnUserView] = useState(false)
 
-
-  //HANDEL CHANGE
-  const handleFirstnameChange = event => {setFirstname(event.target.value); setEdited(true)}
-  const handleLastnameChange = event => {setLastname(event.target.value); setEdited(true)}
-  const handleUsernameChange = event => {setUsername(event.target.value); setEdited(true)}
-  const handlePasswordChange = event => {setPasswordChanged(true); setPassword(event.target.value); setEdited(true)}
-  const handleSystemStatusChange = event => {setSystemStatus(event.target.value); setEdited(true)}
-  const handlePositionsChange = data => {setPositions(data); setEdited(true)}
-  const handleRoleChange = data => {setRoles(data); setEdited(true)}
-  const handleRestrictionChange = data => {setRestrictions(data); setEdited(true)}
-  const handleOptionalAttributesChange = (e, name) => {
-    setOptionalAttributeValue(name, e.target.value); 
-    setOptionalAttributeInput([e.target.value, name]); //only for rendering
-    setEdited(true) 
-  };
-  const incrementRequiredCounter = () => {
-    setRequiredOptionalAttributCounter(requiredOptionalAttributCounter => requiredOptionalAttributCounter + 1)
-  }
-  const decrementRequiredCounter = () => {
-    setRequiredOptionalAttributCounter(requiredOptionalAttributCounter => requiredOptionalAttributCounter - 1)
-  }
-  
 
   useEffect(() => { 
     if(edit) {
@@ -90,11 +75,114 @@ function UserForm({onCancel, edit, selected, type, setException = null}) {
         if(selected.availabilities != null && selected.availabilities.length > 0 ) {
           setAvailabilities(selected.availabilities);
         }
+        if(selected.id == userStore.userID){
+          setOwnUserView(true)
+        }
     } 
     loadOptionalAttributes()
   }, [])
 
-  
+
+  const handleFirstnameChange = event => {setFirstname(event.target.value); setEdited(true)}
+  const handleLastnameChange = event => {setLastname(event.target.value); setEdited(true)}
+  const handleUsernameChange = event => {setUsername(event.target.value); setEdited(true)}
+  const handlePasswordChange = event => {setPasswordChanged(true); setPassword(event.target.value); setEdited(true)}
+  const handleSystemStatusChange = event => {setSystemStatus(event.target.value); setEdited(true)}
+  const handlePositionsChange = data => {setPositions(data); setEdited(true)}
+  const handleRoleChange = data => {setRoles(data); setEdited(true)}
+  const handleRestrictionChange = data => {setRestrictions(data); setEdited(true)}
+  const handleOptionalAttributesChange = (e, name) => {
+    setOptionalAttributeValue(name, e.target.value); 
+    setOptionalAttributeInput([e.target.value, name]); //for rendering
+    setEdited(true) 
+  };
+
+
+  const handleSubmit = async event => {
+    event.preventDefault();//reload the page after clicking "Enter"
+    
+    var newPassword = ""
+    if(passwordChanged) {
+      newPassword = password
+    }
+
+    if(valideForm) {
+      if(edit) { //editing-mode
+        if(checkRights()){
+          var id = selected.id
+          var updateData = {}
+          try {
+            if(isEmployee){ //employee
+                updateData = {id, firstName, lastName, username, password: newPassword, systemStatus, roles, positions, availabilities, restrictions, 
+                              optionalAttributes: optionalAttributesOfUser}
+                await updateEmployee(id, updateData)
+                  .then(res => {
+                    if (res.headers.exception) {
+                      setException(res.headers.exception)
+                    }
+                  })
+            }else { //customer
+                updateData = {id, firstName, lastName, username, password: newPassword, systemStatus, roles, restrictions,
+                              optionalAttributes: optionalAttributesOfUser}
+                await updateCustomer(id, updateData);
+            }
+          } catch (error) {
+            console.log(Object.keys(error), error.message)
+          } 
+        }else {//no right -> submit not allowed 
+          noRights()
+        }
+      } else { //creation-mode
+          var newData = {}
+          try {
+          if(isEmployee){ //employee
+              newData = {firstName, lastName, username, password, systemStatus, roles, positions, availabilities, restrictions,
+                          optionalAttributes: optionalAttributesOfUser}
+              await addEmployee(newData);
+          }else { //customer
+              newData = {firstName, lastName, username, password, systemStatus, roles, restrictions, 
+                          optionalAttributes: optionalAttributesOfUser}
+              await addCustomer(newData);
+          }
+          } catch (error) {
+            console.log(Object.keys(error), error.message)
+          } 
+      } 
+      onCancel()
+    } 
+  };
+
+
+  const handleDeleteUser = async () => {
+    if(edit) {
+      if(checkRights()){
+        if(isEmployee){
+          const answer = confirm("Möchten Sie diesen Mitarbeiter wirklich löschen? ")
+          if (answer) {
+            try{
+              await deleteEmployee(selected.id)
+            } catch (error){
+              console.log(Object.keys(error), error.message)
+            }
+          }
+        }else {
+          const answer = confirm("Möchten Sie diesen Kunden wirklich löschen? ")
+          if (answer) {
+            try{
+              await deleteCustomer(selected.id)
+            } catch (error){
+              console.log(Object.keys(error), error.message)
+            }
+          }
+        }
+      }else {//no rights!
+        noRights()
+      }
+    }
+    onCancel()
+  }
+
+
   //---------------------------------LOAD---------------------------------
   const loadOptionalAttributes = async () => {
     var data = [];
@@ -152,7 +240,6 @@ function UserForm({onCancel, edit, selected, type, setException = null}) {
       requiredOptionalAttributCounter == 0 &&
       employeeFieldsAreSet
     )
-    
     //--------------------------General-VIEW-------------------------
     if(tabKey == "general"){
       if(isEmployee){
@@ -170,8 +257,7 @@ function UserForm({onCancel, edit, selected, type, setException = null}) {
         }
       }
     }
-
-    //--------------------------Availability-VIEW-------------------------
+    //--------------------------Availability-VIEW---------------------
     if(tabKey == "availability" && !generalFieldsAreSet){
       if(isEmployee){
         if(requiredOptionalAttributCounter != 0){
@@ -198,83 +284,49 @@ function UserForm({onCancel, edit, selected, type, setException = null}) {
   }
 
 
-  //---------------------------------USER-SUBMIT---------------------------------
-  //ADD
-  const handleSubmit = async event => {
-    event.preventDefault();//reload the page after clicking "Enter"
-    var newPassword = ""
-    if(passwordChanged) {
-      newPassword = password
-    }
-    if(valideForm) {
-      if(edit) { //editing-mode
-        var id = selected.id
-        var updateData = {}
-        try {
-          if(isEmployee){ //employee
-              updateData = {id, firstName, lastName, username, password: newPassword, systemStatus, roles, positions, availabilities, restrictions, 
-                            optionalAttributes: optionalAttributesOfUser}
-              await updateEmployee(id, updateData)
-                .then(res => {
-                  if (res.headers.exception) {
-                    setException(res.headers.exception)
-                  }
-                })
-          }else { //customer
-              updateData = {id, firstName, lastName, username, password: newPassword, systemStatus, roles, restrictions,
-                            optionalAttributes: optionalAttributesOfUser}
-              await updateCustomer(id, updateData);
-          }
-        } catch (error) {
-          console.log(Object.keys(error), error.message)
-        } 
-
-      } else { //creation-mode
-          var newData = {}
-          try {
-          if(isEmployee){ //employee
-              newData = {firstName, lastName, username, password, systemStatus, roles, positions, availabilities, restrictions,
-                          optionalAttributes: optionalAttributesOfUser}
-              await addEmployee(newData);
-          }else { //customer
-              newData = {firstName, lastName, username, password, systemStatus, roles, restrictions, 
-                          optionalAttributes: optionalAttributesOfUser}
-              await addCustomer(newData);
-          }
-          } catch (error) {
-            console.log(Object.keys(error), error.message)
-          } 
-      } 
-      onCancel()
-    } 
-  };
-
-
-  const handleDeleteUser = async () => {
-    if(isEmployee){
-      const answer = confirm("Möchten Sie diesen Mitarbeiter wirklich löschen? ")
-      if (answer) {
-        try{
-          await deleteEmployee(selected.id)
-        } catch (error){
-          console.log(Object.keys(error), error.message)
-        }
-      }
-    }else {
-      const answer = confirm("Möchten Sie diesen Kunden wirklich löschen? ")
-      if (answer) {
-        try{
-          await deleteCustomer(selected.id)
-        } catch (error){
-          console.log(Object.keys(error), error.message)
-        }
-      }
-    }
-    onCancel()
+  //---------------------------------Availability---------------------------------
+  const addAvailability = (newAvailability) => {
+    setAvailabilities(availabilities => [...availabilities, newAvailability]);
   }
 
 
-  //---------------------------------Optional Attributes---------------------------------
+  const updateAvailabilities = (newAvailabilities) => {
+    setAvailabilities([])
+    newAvailabilities.map((SingleAvailability)=> {
+      setAvailabilities(availabilities => [...availabilities, SingleAvailability]);
+    })
+  }
+
+
+  //-----------------------------Help-Functions----------------------------------
+  const checkRights = () => {
+    var rightExists = hasRight(userStore, [rightName])
+    if(ownUserView && hasRight(userStore, [rightNameOwn])){
+      rightExists = true
+    }
+    return rightExists
+  }
+
+
+  const noRights = () => {
+    if(ownUserView){
+        alert("Für diesen Vorgang besitzten Sie nicht die erforderlichen Rechte!\n\nBenötigtes Recht: " + rightNameOwn)
+    }else {
+        alert("Für diesen Vorgang besitzten Sie nicht die erforderlichen Rechte!\n\nBenötigtes Recht: " + rightName)
+    }
+  }
+
+  
+  const incrementRequiredCounter = () => {
+    setRequiredOptionalAttributCounter(requiredOptionalAttributCounter => requiredOptionalAttributCounter + 1)
+  }
+
+
+  const decrementRequiredCounter = () => {
+    setRequiredOptionalAttributCounter(requiredOptionalAttributCounter => requiredOptionalAttributCounter - 1)
+  }
+
+
   const setOptionalAttributeValue = (name, value) => {   
     if(optionalAttributesOfUser.length > 0) {
       optionalAttributesOfUser.map(attribute=> {
@@ -290,19 +342,6 @@ function UserForm({onCancel, edit, selected, type, setException = null}) {
         }
       })
     }
-  }
-
-  //---------------------------------Availability---------------------------------
-  const addAvailability = (newAvailability) => {
-    setAvailabilities(availabilities => [...availabilities, newAvailability]);
-  }
-
-
-  const updateAvailabilities = (newAvailabilities) => {
-    setAvailabilities([])
-    newAvailabilities.map((SingleAvailability)=> {
-      setAvailabilities(availabilities => [...availabilities, SingleAvailability]);
-    })
   }
 
 
@@ -326,7 +365,7 @@ function UserForm({onCancel, edit, selected, type, setException = null}) {
   };
 
 
-   return (
+  return (
     <React.Fragment>
       <Container>
         <Form id="employeeAdd" onSubmit={(e) => handleSubmit(e)}>
@@ -499,11 +538,14 @@ function UserForm({onCancel, edit, selected, type, setException = null}) {
             {isEmployee &&
                 <Tab eventKey="availability" title="Verfügbarkeit">
                 <Form.Row style={{marginTop: "25px"}}>
-                    <Availability 
-                    availabilities={availabilities} 
-                    addAvailability={addAvailability}
-                    updateAvailabilities={updateAvailabilities} 
-                    editedAvailabilities={setEdited}/>
+                      <Availability 
+                        availabilities={availabilities} 
+                        addAvailability={addAvailability}
+                        updateAvailabilities={updateAvailabilities} 
+                        editedAvailabilities={setEdited}
+                        userStore={userStore}
+                        selected={selected}
+                      />
                 </Form.Row>
                 </Tab>
             }
@@ -512,13 +554,16 @@ function UserForm({onCancel, edit, selected, type, setException = null}) {
               <Form.Row>
                 <Container style={{textAlign: "right"}}>
                 {edit ? 
+                  checkRights() &&
                   <Button variant="danger" onClick={handleDeleteUser} style={{marginRight: "20px"}}>Löschen</Button> :
                   null
                 }
                 <Button variant="secondary" onClick={onCancel} style={{marginRight: "20px"}}>Abbrechen</Button>
-                {(edit ? edited ? 
-                  <Button variant="success" type="submit" onClick={() => validation()}>Übernehmen</Button>:
-                  null : <Button variant="success"  type="submit" onClick={() => validation()}>Benutzer anlegen</Button>)
+                {edit && edited && checkRights() &&
+                  <Button variant="success" type="submit" onClick={() => validation()}>Übernehmen</Button>
+                }
+                {!edit && 
+                  <Button variant="success"  type="submit" onClick={() => validation()}>Benutzer anlegen</Button>
                 }
                 </Container>
               </Form.Row>
@@ -527,7 +572,6 @@ function UserForm({onCancel, edit, selected, type, setException = null}) {
     </React.Fragment>
   )
 }
-
 export default UserForm
 
 

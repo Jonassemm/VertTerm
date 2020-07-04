@@ -1,12 +1,12 @@
+//author: Patrick Venturini
 import React, { useState, useEffect } from "react"
-import OverviewPage from "../../OverviewPage"
+import OverviewPage, {modalTypes} from "../../OverviewPage"
 import ResourceForm from "./ResourceForm"
 import {getAllResources} from "./ResourceRequests"
 import {ExceptionModal} from "../../ExceptionModal"
 
-function ResourcePage() {
+function ResourcePage({userStore}) {
     const [resources, setResources] = useState([])
-    //exception needs overriding (ExceptionModal)
     const [exception, setException] = useState(null)
     const [showExceptionModal, setShowExceptionModal] = useState(false)
 
@@ -16,12 +16,14 @@ function ResourcePage() {
     }, [])
 
 
-    //-------------------------------ExceptionModal--------------------------------
+    //-----------------------------ExceptionModal-----------------------------
     const handleExceptionChange = (newException) => {
         setException(newException)
         setShowExceptionModal(true)
     }
 
+
+    //---------------------------------LOAD-----------------------------------
     const loadResources= async () => {
         var data = [];
         try{ 
@@ -33,8 +35,6 @@ function ResourcePage() {
         
         //don't save object with status="deleted"
         var reducedData = []
-        console.log("original data:")
-        console.log(data)
         data.map((singleResource) => {
             if(singleResource.status != "deleted") {
                 reducedData.push(singleResource)
@@ -44,6 +44,7 @@ function ResourcePage() {
     }
 
 
+    //------------------------OverviewPage-Components--------------------------
     const tableBody =
         resources.map((item, index) => {
             var status //translated status
@@ -82,6 +83,7 @@ function ResourcePage() {
             )
         })
 
+
     const modal = (onCancel, edit, selectedItem) => {
         return (
             <ResourceForm
@@ -89,9 +91,11 @@ function ResourcePage() {
                 edit={edit}
                 selected={selectedItem}
                 setException={handleExceptionChange}
+                userStore={userStore}
             />
         )
     }
+
 
     return (
         <React.Fragment>
@@ -111,10 +115,11 @@ function ResourcePage() {
                 modal={modal}
                 data={resources}
                 refreshData={loadResources} 
+                userStore={userStore}
+                modalType={modalTypes.resource}
                 modalSize="xl"
             />
         </React.Fragment>
     )
 }
-
 export default ResourcePage

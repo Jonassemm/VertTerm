@@ -1,12 +1,17 @@
+//author: Patrick Venturini
 import React, { useState, useEffect } from "react"
-import { Form, Table } from "react-bootstrap"
+import {Form} from "react-bootstrap"
 import { Container, Button } from "react-bootstrap"
 import {addPosition, deletePosition, editPosition } from "./PositionRequests"
+import { hasRight } from "../../../auth"
+import {positionRights} from "../../Rights"
 
-const PositionForm = ({ onCancel, edit, selected }) => {
+const PositionForm = ({onCancel, edit, selected, userStore}) => {
+    const rightName = positionRights[1] //write right
     const [name, setName] = useState("")
     const [description, setDescription] = useState("")
     const [edited, setEdited] = useState(false)
+
 
     useEffect(() => {
         if (edit) {
@@ -26,33 +31,43 @@ const PositionForm = ({ onCancel, edit, selected }) => {
         setEdited(true)
     }
 
+
     const handleSubmit = async event => {
         event.preventDefault()
-        let res = {}
-        if (!edit) {
-            const data = {name, description}
-            res = await addPosition(data)
-        } else {
-            var id = selected.id
-            const data = {id, name, description}
-            res = await editPosition(id, data)
+
+        if(hasRight(userStore, [rightName])) {
+            let res = {}
+            if (!edit) {
+                const data = {name, description}
+                res = await addPosition(data)
+            } else {
+                var id = selected.id
+                const data = {id, name, description}
+                res = await editPosition(id, data)
+            }
+            onCancel()
+        }else {//no right to submit 
+            alert("Für diesen Vorgang besitzten Sie nicht die erforderlichen Rechte!\n\nBenötigtes Recht: " + rightName)
         }
-        console.log(res)
+    }
+
+
+    const handleDeletePosition = async () => {
+        if(hasRight(userStore, [rightName])){
+            const answer = confirm("Möchten Sie diese Position wirklich löschen? ")
+            if (answer) {
+                try {
+                    const res = await deletePosition(selected.id)
+                } catch (error) {
+                    console.log(Object.keys(error), error.message)
+                }
+            }
+        }else {//no rights!
+            alert("Für diesen Vorgang besitzten Sie nicht die erforderlichen Rechte!\n\nBenötigtes Recht: " + rightName)
+        }
         onCancel()
     }
 
-    const handleDeletePosition = async () => {
-        const answer = confirm("Möchten Sie diese Position wirklich löschen? ")
-        if (answer) {
-            try {
-                const res = await deletePosition(selected.id)
-                console.log(res)
-            } catch (error) {
-                console.log(Object.keys(error), error.message)
-            }
-        }
-        onCancel()
-    }
 
     return (
         <React.Fragment>
@@ -95,5 +110,4 @@ const PositionForm = ({ onCancel, edit, selected }) => {
         </React.Fragment>
     )
 }
-
 export default PositionForm

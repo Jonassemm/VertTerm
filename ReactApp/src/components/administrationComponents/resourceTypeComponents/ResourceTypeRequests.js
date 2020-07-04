@@ -1,5 +1,7 @@
+//author: Patrick Venturini
 import axios from "axios"
 import {APIURL} from "../../../APIConfig"
+
 
 export const getAllResourceTypes = () => axios.get(`${APIURL}/api/ResourceTypes`)
 export const addResourceType = data => axios.post(`${APIURL}/api/ResourceTypes`,data)
