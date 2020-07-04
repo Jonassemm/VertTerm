@@ -1,8 +1,8 @@
+//author: Patrick Venturini
 import React, {useState, useEffect} from 'react'
-import OverviewPage from "../../OverviewPage"
+import OverviewPage, {modalTypes} from "../../OverviewPage"
 import UserForm from "./UserForm"
 import {ExceptionModal} from "../../ExceptionModal"
-
 
 import {
     getEmployeeList,
@@ -10,7 +10,7 @@ import {
   } from "./UserRequests";
 
 
-export default function UserList({userStore, userType}) {
+export default function UserPage({userStore, userType}) {
     const [userList, setUserList] = useState([])
     const [exception, setException] = useState(null)
     const [showExceptionModal, setShowExceptionModal] = useState(false)
@@ -102,6 +102,7 @@ export default function UserList({userStore, userType}) {
                 selected={selectedItem}
                 type={"employee"}
                 setException={handleExceptionChange}
+                userStore={userStore}
             />
         )
     }
@@ -115,6 +116,7 @@ export default function UserList({userStore, userType}) {
                 selected={selectedItem}
                 type={"customer"}
                 setException={handleExceptionChange}
+                userStore={userStore}
             />
         )
     }
@@ -140,6 +142,8 @@ export default function UserList({userStore, userType}) {
                     data={userList}
                     modalSize="xl"
                     refreshData={loadUserList}
+                    userStore={userStore}
+                    modalType={modalTypes.user}
                 /> :
                 <OverviewPage
                     pageTitle="Kunden"
@@ -150,6 +154,8 @@ export default function UserList({userStore, userType}) {
                     data={userList}
                     modalSize="xl"
                     refreshData={loadUserList}
+                    userStore={userStore}
+                    modalType={modalTypes.user}
                 />
             }
         </React.Fragment>

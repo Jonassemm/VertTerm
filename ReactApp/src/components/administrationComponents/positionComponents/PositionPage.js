@@ -1,9 +1,10 @@
+//author: Patrick Venturini
 import React, { useState, useEffect } from "react"
 import { getAllPositions } from "./PositionRequests"
 import PositionForm from "./PositionForm"
-import OverviewPage from "../../OverviewPage"
+import OverviewPage, {modalTypes} from "../../OverviewPage"
 
-function PositionPage() {
+function PositionPage({userStore}) {
     const [positions, setPositions] = useState([])
 
 
@@ -21,7 +22,15 @@ function PositionPage() {
         }catch (error) {
           console.log(Object.keys(error), error.message)
         }
-        setPositions(data);
+
+        //don't save object with status="deleted"
+        var reducedData = []
+        data.map((singlePosition) => {
+            if(singlePosition.status != "deleted") {
+                reducedData.push(singlePosition)
+            }
+        })
+        setPositions(reducedData);
     };
 
 
@@ -41,6 +50,7 @@ function PositionPage() {
                 onCancel={onCancel}
                 edit={edit}
                 selected={selectedItem}
+                userStore={userStore}
             />
         )
     }
@@ -55,6 +65,8 @@ function PositionPage() {
                 modal={modal}
                 data={positions}
                 refreshData={loadPositions}
+                userStore={userStore}
+                modalType={modalTypes.position}
             />
         </React.Fragment>
     )

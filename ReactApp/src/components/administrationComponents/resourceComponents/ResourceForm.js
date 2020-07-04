@@ -1,10 +1,18 @@
+//author: Patrick Venturini
 import React, { useState, useEffect } from "react"
 import { Container, Form, Col, Tabs, Tab, Button} from "react-bootstrap"
 import {addResource, editResource, deleteResource, addConsumable, editConsumable, deleteConsumable } from "./ResourceRequests"
 import ObjectPicker from "../../ObjectPicker"
 import Availability from "../availabilityComponents/Availability"
+import { hasRight } from "../../../auth"
+import {resourceRights} from "../../Rights"
 
-const RessourceForm = ({ onCancel, edit, selected, setException = null}) => {
+const RessourceForm = ({ onCancel, 
+  edit, 
+  selected, 
+  setException, //Availability exception
+  userStore}) => {
+    const rightName = resourceRights[1] //write right
     const [valideForm, setValideForm] = useState(false)
     const [tabKey, setTabKey] = useState('general')  
     const [edited, setEdited] = useState(false)
@@ -22,20 +30,6 @@ const RessourceForm = ({ onCancel, edit, selected, setException = null}) => {
 
 
     useEffect(() => {
-      //if one item was selected update the attribute "isConsumable"
-      if(selected != undefined) {
-        //check if this item is a resource or a consumable
-        if(selected.amountInStock == undefined && 
-          selected.pricePerUnit == undefined) {
-          setIsConsumable(false) //item is resource
-          } else {
-            setIsConsumable(true) //item is consumable
-            if(edit) {
-              setAmountInStock((selected.amountInStock).toString())
-              setPricePerUnit(((selected.pricePerUnit / 100).toFixed(2)).toString())
-            }
-          }
-      }
       if (edit) {
           setName(selected.name)
           setDescription(selected.description)
@@ -43,6 +37,19 @@ const RessourceForm = ({ onCancel, edit, selected, setException = null}) => {
           setResourceTypes(selected.resourceTypes)
           setAvailabilities(selected.availabilities)
           setRestrictions(selected.restrictions)
+          //check if this item is a resource or a consumable
+          if(selected.amountInStock == undefined && selected.pricePerUnit == undefined) {
+            setIsConsumable(false) //item is resource
+          } else {
+            setIsConsumable(true) //item is consumable
+            if(edit) {
+              setAmountInStock((selected.amountInStock).toString())
+              setPricePerUnit(((selected.pricePerUnit / 100).toFixed(2)).toString())
+            }
+          }
+          if(selected.id == userStore.userID){
+            setOwnUserView(true)
+          }
       }
     }, [])
 
@@ -58,58 +65,67 @@ const RessourceForm = ({ onCancel, edit, selected, setException = null}) => {
 
     const handleSubmit = async event => {
       event.preventDefault()
-      if(valideForm) {
-        const amountInStockAsInt = parseInt(amountInStock)
-        const pricePerUnitAsInt = parseInt((parseFloat(pricePerUnit)*100).toFixed(1))
-        var data 
-        if(isConsumable) {
-          data = {name, description, status, availabilities, restrictions, resourceTypes,
-                  amountInStock: amountInStockAsInt,
-                  pricePerUnit: pricePerUnitAsInt}
-          if(edit) {
-            await editConsumable(selected.id, data)
-            .then(res => {
-              if (res.headers.exception) {
-                setException(res.headers.exception)
-              }
-            })
-          }else {
-            await addConsumable(data)
+
+      if(hasRight(userStore, [rightName])) {  
+        if(valideForm) {
+          const amountInStockAsInt = parseInt(amountInStock)
+          const pricePerUnitAsInt = parseInt((parseFloat(pricePerUnit)*100).toFixed(1))
+          var data 
+          if(isConsumable) {
+            data = {name, description, status, availabilities, restrictions, resourceTypes,
+                    amountInStock: amountInStockAsInt,
+                    pricePerUnit: pricePerUnitAsInt}
+            if(edit) {
+              await editConsumable(selected.id, data)
+              .then(res => {
+                if (res.headers.exception) {
+                  setException(res.headers.exception)
+                }
+              })
+            }else {
+              await addConsumable(data)
+            }
+          }else { //is not a Consumable
+            data = {name, description, status, availabilities, restrictions, resourceTypes}
+            if (edit){
+              await editResource(selected.id, data)
+              .then(res => {
+                if (res.headers.exception) {
+                  setException(res.headers.exception)
+                }
+              })
+            }else{
+              await addResource(data)
+            }
           }
-        }else { //is not a Consumable
-          data = {name, description, status, availabilities, restrictions, resourceTypes}
-          if (edit){
-            await editResource(selected.id, data)
-            .then(res => {
-              if (res.headers.exception) {
-                setException(res.headers.exception)
-              }
-            })
-          }else{
-            await addResource(data)
-          }
+          onCancel()
         }
-        onCancel()
+      }else {//no right to submit 
+        alert("Für diesen Vorgang besitzten Sie nicht die erforderlichen Rechte!\n\nBenötigts Recht: " + rightName)
       }
   }
 
 
   const handleDeleteRessource = async () => {
-    const answer = confirm("Möchten Sie diese Ressource wirklich löschen? ")
-    if (answer) { 
-      if(isConsumable){
-        try{
-          await deleteConsumable(selected.id)
-        } catch (error){
-          console.log(Object.keys(error), error.message)
-        }
-      } else {
-        try{
-          await deleteResource(selected.id)
-        } catch (error){
-          console.log(Object.keys(error), error.message)
+    if(hasRight(userStore, [rightName])){
+      const answer = confirm("Möchten Sie diese Ressource wirklich löschen? ")
+      if (answer) { 
+        if(isConsumable){
+          try{
+            await deleteConsumable(selected.id)
+          } catch (error){
+            console.log(Object.keys(error), error.message)
+          }
+        } else {
+          try{
+            await deleteResource(selected.id)
+          } catch (error){
+            console.log(Object.keys(error), error.message)
+          }
         }
       }
+    }else {//no rights!
+        alert("Für diesen Vorgang besitzten Sie nicht die erforderlichen Rechte!\n\nBenötigtes Recht: " + rightName)
     }
     onCancel()
   }
@@ -304,7 +320,10 @@ const RessourceForm = ({ onCancel, edit, selected, setException = null}) => {
                   availabilities={availabilities} 
                   addAvailability={addAvailability}
                   updateAvailabilities={updateAvailabilities} 
-                  editedAvailabilities={setEdited}/>
+                  editedAvailabilities={setEdited}
+                  userStore={userStore}
+                  selected={selected}
+                />
               </Form.Row>
             </Tab>
           </Tabs>

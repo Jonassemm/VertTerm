@@ -1,9 +1,14 @@
+//author: Patrick Venturini
 import React, { useState, useEffect } from "react"
 import { Form } from "react-bootstrap"
 import { Container, Button } from "react-bootstrap"
 import {addResourceType, deleteResourceType, editResourceType } from "./ResourceTypeRequests"
+import { hasRight } from "../../../auth"
+import {resourceTypeRights} from "../../Rights"
 
-const ResourceTypeForm = ({ onCancel, edit, selected }) => {
+const ResourceTypeForm = ({ onCancel, edit, selected, userStore }) => {
+    const rightName = resourceTypeRights[1] //write right
+    
     const [name, setName] = useState("")
     const [description, setDescription] = useState("")
     const [edited, setEdited] = useState(false)
@@ -31,24 +36,33 @@ const ResourceTypeForm = ({ onCancel, edit, selected }) => {
 
     const handleSubmit = async event => {
         event.preventDefault()
-        const data = { name: name, description: description}
-        let res = {}
-        if (!edit) {
-            res = await addResourceType(data)
-        } else {
-            res = await editResourceType(selected.id, data)
-        }
-        onCancel()
+
+        if(hasRight(userStore, [rightName])) { 
+            const data = { name: name, description: description}
+            let res = {}
+            if (!edit) {
+                res = await addResourceType(data)
+            } else {
+                res = await editResourceType(selected.id, data)
+            }
+            onCancel()
+        }else {//no right to submit 
+            alert("Für diesen Vorgang besitzten Sie nicht die erforderlichen Rechte!\n\nBenötigtes Recht: " + rightName)
+          }
     }
 
     const handleDeleteResourceType = async () => {
-        const answer = confirm("Möchten Sie diese Ressourcentyp wirklich löschen?")
-        if (answer) {
-            try {
-                const res = await deleteResourceType(selected.id)
-            } catch (error) {
-                console.log(Object.keys(error), error.message)
+        if(hasRight(userStore, [rightName])){
+            const answer = confirm("Möchten Sie diese Ressourcentyp wirklich löschen?")
+            if (answer) {
+                try {
+                    const res = await deleteResourceType(selected.id)
+                } catch (error) {
+                    console.log(Object.keys(error), error.message)
+                }
             }
+        }else {//no rights!
+            alert("Für diesen Vorgang besitzten Sie nicht die erforderlichen Rechte!\n\nBenötigtes Recht: " + rightName)
         }
         onCancel()
     }

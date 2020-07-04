@@ -1,10 +1,11 @@
+//author: Patrick Venturini
 import React, { useState, useEffect } from "react"
-import OverviewPage from "../../OverviewPage"
+import OverviewPage, {modalTypes} from "../../OverviewPage"
 import ResourceForm from "./ResourceForm"
 import {getAllResources} from "./ResourceRequests"
 import {ExceptionModal} from "../../ExceptionModal"
 
-function ResourcePage() {
+function ResourcePage({userStore}) {
     const [resources, setResources] = useState([])
     const [exception, setException] = useState(null)
     const [showExceptionModal, setShowExceptionModal] = useState(false)
@@ -90,6 +91,7 @@ function ResourcePage() {
                 edit={edit}
                 selected={selectedItem}
                 setException={handleExceptionChange}
+                userStore={userStore}
             />
         )
     }
@@ -113,10 +115,11 @@ function ResourcePage() {
                 modal={modal}
                 data={resources}
                 refreshData={loadResources} 
+                userStore={userStore}
+                modalType={modalTypes.resource}
                 modalSize="xl"
             />
         </React.Fragment>
     )
 }
-
 export default ResourcePage

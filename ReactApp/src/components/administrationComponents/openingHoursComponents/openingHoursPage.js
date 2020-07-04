@@ -1,3 +1,4 @@
+//author: Patrick Venturini
 import React ,{useState, useEffect, useRef} from 'react'
 import Availability from "../availabilityComponents/Availability"
 import {Style} from "../../OverviewPage"
@@ -6,7 +7,7 @@ import {getOpeningHours, updateOpeningHours} from "./OpeningHoursRequests"
 
 
 
-export default function OpeningHoursPage () {
+export default function OpeningHoursPage ({userStore}) {
     const [edited, setEdited] = useState(false)
     const [availabilities, setAvailabilities] = useState([])
     const [openingHours, setOpeningHours] = useState(null)
@@ -88,6 +89,7 @@ export default function OpeningHoursPage () {
                         updateAvailabilities={updateAvailabilities} 
                         editedAvailabilities={setEdited}
                         withOpeningHours={false}
+                        userStore={userStore}
                     />
                 </Row>
                 <hr/>

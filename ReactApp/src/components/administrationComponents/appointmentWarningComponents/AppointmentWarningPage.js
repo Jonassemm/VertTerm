@@ -1,5 +1,6 @@
+//author: Patrick Venturini
 import React, {useState, useEffect} from 'react'
-import OverviewPage from "../../OverviewPage"
+import OverviewPage, {modalTypes} from "../../OverviewPage"
 import ObjectPicker from "../../ObjectPicker"
 import {Form, Col, Modal, Button } from "react-bootstrap"
 import {Link} from 'react-router-dom';
@@ -17,11 +18,13 @@ import {
 var moment = require('moment'); 
 
 
-export default function AppointmentWarningPage(props) {
+export default function AppointmentWarningPage({userStore, warning}) {
     var initialSelectedWarning = []
-    if(Object.keys(props).length != 0) {
-        initialSelectedWarning = [props.match.params.initialWarning]
+    if(warning != undefined) {
+        initialSelectedWarning = [warning]
     }
+    const rightNameOwn = "OWN_APPOINTMENT_READ"
+    const rightName = "APPOINTMENT_READ"
     const [selectedKindOfWarning, setSelectedKindOfWarning] = useState(initialSelectedWarning)
     const [appointmentsWithWarnings, setAppointmentsWithWarnings] = useState([])
     const [initialWarning, setInitialWarning] = useState(true)
@@ -98,7 +101,7 @@ export default function AppointmentWarningPage(props) {
         var data = []
 
         try {
-            if((Object.keys(props).length == 0 && initialWarning) || selectedKindOfWarning.length == 0) {
+            if(initialWarning != undefined || selectedKindOfWarning.length == 0) {
                 response = await getAllAppointmentsWithWarning()
             }else {
                 response = await getAppointmentsWithWarning(creatWarningList(selectedKindOfWarning))
@@ -159,8 +162,6 @@ export default function AppointmentWarningPage(props) {
 
     const renderfkt = () => {
         console.log("---------Render-PAGE------")
-        console.log(preferredAppointment)
-        console.log(preferredAppointment != null)
     }
 
 
@@ -275,9 +276,11 @@ export default function AppointmentWarningPage(props) {
                 modal={modal}
                 data={appointmentsWithWarnings}
                 refreshData={() => loadAppointmentsWithWarnings()}
+                userStore={userStore}
                 withoutCreate={true}
                 modalSize="lg"
                 noTopMargin={true}
+                modalType={modalTypes.appointment}
             /> 
         </React.Fragment>
    )

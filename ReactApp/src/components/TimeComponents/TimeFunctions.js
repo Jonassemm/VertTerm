@@ -1,3 +1,4 @@
+//author: Patrick Venturini
 var moment = require('moment'); 
 
  /*--------------------String/Date - Translation-----------------------
@@ -6,7 +7,6 @@ var moment = require('moment');
     var date = moment(string, "DD.MM.yyyy HH:mm").toDate();
     var dateString = moment(date).format("DD.MM.YYYY HH:mm").toString();
 */
-
 
 export function setDate() {
     const date = new Date();

@@ -1,5 +1,4 @@
-'use strict'
-
+//author: Patrick Venturini, Jonas Semmler
 import React, {useState, useEffect} from "react"
 import { Calendar, momentLocalizer } from "react-big-calendar"
 import moment from "moment"
@@ -34,6 +33,7 @@ const views = {day: "day", week: "week", month: "month"};
 
 function CalendarPage({
     calendarStore, 
+    userStore,
     UserID, 
     loadAppointments = undefined,       //optional extern loading of appointments
     handleExceptionChange,              //pass to AppointmentForm
@@ -48,7 +48,6 @@ function CalendarPage({
 
 
     useEffect(() => {
-        console.log(referenceDateOfView)
         if((!initialized && loadAppointments == undefined)) {
             refreshCalendarAppointments()
         }
@@ -124,11 +123,17 @@ function CalendarPage({
 
         //prepare response for calendar
         const evts = reducedData.map(item => {
+            var title
+            if(item.bookedCustomer.firstName != null && item.bookedCustomer.lastName != null){
+                title = item.bookedProcedure.name + " (" + item.bookedCustomer.username + ")"
+            }else {
+                title = item.bookedProcedure.name + " (anonym)"
+            }
             return {
                 ...item,
                 plannedStarttime: moment(item.plannedStarttime, "DD.MM.yyyy HH:mm").toDate(),
                 plannedEndtime: moment(item.plannedEndtime, "DD.MM.yyyy HH:mm").toDate(),
-                title: item.bookedProcedure.name + " (" + item.bookedCustomer.username + ")"
+                title: title
             }
         })
         calendarStore.setCalendarEvents(evts)
@@ -173,6 +178,7 @@ function CalendarPage({
                         edit={true}
                         handleExceptionChange={handleExceptionChange}
                         handlePreferredAppointmentChange={handlePreferredAppointmentChange}
+                        userStore={userStore}
                         refreshData={refreshCalendarAppointments}
                         month={referenceDateOfView.getMonth()}
                         year={referenceDateOfView.getFullYear()}

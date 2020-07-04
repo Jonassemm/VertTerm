@@ -1,6 +1,6 @@
+//author: Patrick Venturini
 import axios from "axios"
 import {APIURL} from "../../APIConfig"
-
 
 //Appointment
 export const updateAppointment = (id,data) => axios.put(`${APIURL}/api/Appointments/${id}`, data)
@@ -22,3 +22,8 @@ export const stopAppointment = appointmentId => axios.put(`${APIURL}/api/Appoint
 export const deleteAppointment = id => axios.delete(`${APIURL}/api/Appointmentgroups/Appointment/${id}`)
 export const deleteOverrideAppointment = id => axios.delete(`${APIURL}/api/Appointmentgroups/override/Appointment/${id}`)
 export const testAppointment = appointmentId => axios.put(`${APIURL}/api/Appointmentgroups/test/${appointmentId}`) 
+
+
+//Blocker
+export const isBlocker = id => axios.get(`${APIURL}/api/Blocker/exists/${id}`)
+export const deleteBlocker = id => axios.delete(`${APIURL}/api/Blocker/${id}`)

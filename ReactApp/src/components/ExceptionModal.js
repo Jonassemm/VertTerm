@@ -1,3 +1,4 @@
+//author: Patrick Venturini
 import React from 'react'
 import {Form, Col, Button, Modal} from "react-bootstrap"
 import {getErrorMessage} from "./calendarComponents/bookingErrors"

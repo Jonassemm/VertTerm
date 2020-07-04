@@ -4,8 +4,15 @@ import ObjectPicker from "../../ObjectPicker"
 import { addProcedure, deleteProcedure, editProcedure } from "./ProcedureRequests"
 import Availability from "../availabilityComponents/Availability"
 import "./ProcedureStyles.css"
+import { hasRight } from "../../../auth"
+import {procedureRights} from "../../Rights"
 
-function ProcedureForm({ onCancel, edit, selected, setException = null }) {
+function ProcedureForm({ onCancel, 
+    edit, 
+    selected, 
+    setException, //Availability exception
+    userStore }) {
+    const rightName = procedureRights[1] //write right
     const [tabKey, setTabKey] = useState('general')
     const [edited, setEdited] = useState(false)
     const [enterPrice, setEnterPrice] = useState(false)
@@ -107,7 +114,15 @@ function ProcedureForm({ onCancel, edit, selected, setException = null }) {
     }
 
     const handleDelete = async () => {
-        const res = await deleteProcedure(selected.id)
+        if(hasRight(userStore, [rightName])){
+            try{
+                await  deleteProcedure(selected.id)
+            } catch (error){
+                console.log(Object.keys(error), error.message)
+            }
+        }else {//no rights!
+            alert("Für diesen Vorgang besitzten Sie nicht die erforderlichen Rechte!\n\nBenötigtes Recht: " + rightName)
+        }
         onCancel()
     }
 
@@ -207,81 +222,85 @@ function ProcedureForm({ onCancel, edit, selected, setException = null }) {
     const handleSubmit = async event => {
         event.preventDefault()
 
-        const transformTimes = (timeString) => {
-            if (timeString === null) {
-                return null
+        if(hasRight(userStore, [rightName])) { 
+            const transformTimes = (timeString) => {
+                if (timeString === null) {
+                    return null
+                } else {
+                    return Number(timeString) * 60
+                }
+            }
+    
+            //combines the selected positions with the count
+            let extendedPositions = []
+            for (let i = 0; i < positions.length; i++) {
+                for (let p = 0; p < positionsCount[i]; p++) {
+                    extendedPositions.push({ id: positions[i].id, ref: "position" })
+                }
+            }
+    
+            let extendedResourceTypes = []
+            for (let i = 0; i < resourceTypes.length; i++) {
+                for (let p = 0; p < resourceTypesCount[i]; p++) {
+                    extendedResourceTypes.push({ id: resourceTypes[i].id, ref: "resourceType" })
+                }
+            }
+    
+            let reducedPrecedingRelations = precedingRelations.map(item => {
+                return {
+                    procedure: { id: item.procedure.id, ref: "procedure" },
+                    maxDifference: transformTimes(item.maxDifference),
+                    minDifference: transformTimes(item.minDifference)
+                }
+            })
+    
+            let reducedSubsequentRelations = subsequentRelations.map(item => {
+                return {
+                    procedure: { id: item.procedure.id, ref: "procedure" },
+                    maxDifference: transformTimes(item.maxDifference),
+                    minDifference: transformTimes(item.minDifference)
+                }
+            })
+    
+            let restrictionsRef = restrictions.map(item => {
+                return {
+                    id: item.id,
+                    ref: "restriction"
+                }
+            })
+    
+            const data = {
+                name: name,
+                description: description,
+                duration: transformTimes(duration),
+                pricePerInvocation: pricePerInvocation,
+                pricePerHour: pricePerHour,
+                status: status,
+                precedingRelations: reducedPrecedingRelations,
+                subsequentRelations: subsequentRelations,
+                neededResourceTypes: extendedResourceTypes,
+                neededEmployeePositions: extendedPositions,
+                restrictions: restrictionsRef,
+                availabilities: availabilities,
+                publicProcedure: publicProcedure
+            }
+            console.log(data)
+    
+            if (!edit) {
+                const res = await addProcedure(data)
             } else {
-                return Number(timeString) * 60
+                data.id = selected.id
+                const res = await editProcedure(selected.id, data)
+                    .then(res => {
+                        if (res.headers.exception) {
+                        setException(res.headers.exception)
+                        }
+                    })
             }
-        }
-
-        //combines the selected positions with the count
-        let extendedPositions = []
-        for (let i = 0; i < positions.length; i++) {
-            for (let p = 0; p < positionsCount[i]; p++) {
-                extendedPositions.push({ id: positions[i].id, ref: "position" })
-            }
-        }
-
-        let extendedResourceTypes = []
-        for (let i = 0; i < resourceTypes.length; i++) {
-            for (let p = 0; p < resourceTypesCount[i]; p++) {
-                extendedResourceTypes.push({ id: resourceTypes[i].id, ref: "resourceType" })
-            }
-        }
-
-        let reducedPrecedingRelations = precedingRelations.map(item => {
-            return {
-                procedure: { id: item.procedure.id, ref: "procedure" },
-                maxDifference: transformTimes(item.maxDifference),
-                minDifference: transformTimes(item.minDifference)
-            }
-        })
-
-        let reducedSubsequentRelations = subsequentRelations.map(item => {
-            return {
-                procedure: { id: item.procedure.id, ref: "procedure" },
-                maxDifference: transformTimes(item.maxDifference),
-                minDifference: transformTimes(item.minDifference)
-            }
-        })
-
-        let restrictionsRef = restrictions.map(item => {
-            return {
-                id: item.id,
-                ref: "restriction"
-            }
-        })
-
-        const data = {
-            name: name,
-            description: description,
-            duration: transformTimes(duration),
-            pricePerInvocation: pricePerInvocation,
-            pricePerHour: pricePerHour,
-            status: status,
-            precedingRelations: reducedPrecedingRelations,
-            subsequentRelations: subsequentRelations,
-            neededResourceTypes: extendedResourceTypes,
-            neededEmployeePositions: extendedPositions,
-            restrictions: restrictionsRef,
-            availabilities: availabilities,
-            publicProcedure: publicProcedure
-        }
-        console.log(data)
-
-        if (!edit) {
-            const res = await addProcedure(data)
-        } else {
-            data.id = selected.id
-            const res = await editProcedure(selected.id, data)
-                .then(res => {
-                    if (res.headers.exception) {
-                    setException(res.headers.exception)
-                    }
-                })
-        }
-        onCancel()
+            onCancel()
+        }else {//no right to submit 
+            alert("Für diesen Vorgang besitzten Sie nicht die erforderlichen Rechte!\n\nBenötigtes Recht: " + rightName)
+          }
     }
 
     const LabelStyle = { marginTop: "10px" }
@@ -400,7 +419,14 @@ function ProcedureForm({ onCancel, edit, selected, setException = null }) {
                         }
                     </Tab>
                     <Tab eventKey="availability" title="Verfügbarkeit" style={TabStyle}>
-                        <Availability availabilities={availabilities} addAvailability={addAvailability} updateAvailabilities={updateAvailabilities} editedAvailabilities={setEdited} />
+                        <Availability 
+                            availabilities={availabilities} 
+                            addAvailability={addAvailability} 
+                            updateAvailabilities={updateAvailabilities} 
+                            editedAvailabilities={setEdited} 
+                            userStore={userStore}
+                            selected={selected}
+                        />
                     </Tab>
                     <Tab eventKey="dependencies" title="Abhängigkeiten" style={TabStyle}>
                         <Form.Label>Zwingende Vorläufer</Form.Label>

@@ -1,9 +1,10 @@
+//author: Patrick Venturini
 import React, { useState, useEffect } from "react"
 import { getAllResourceTypes } from "./ResourceTypeRequests"
 import ResourceTypeForm from "./ResourceTypeForm"
-import OverviewPage from "../../OverviewPage"
+import OverviewPage, {modalTypes} from "../../OverviewPage"
 
-function ResourceTypePage() {
+function ResourceTypePage({userStore}) {
     const [resourceTypes, setResourceTypes] = useState([])
 
 
@@ -21,7 +22,15 @@ function ResourceTypePage() {
         }catch (error) {
           console.log(Object.keys(error), error.message)
         }
-        setResourceTypes(data);
+
+        //don't save object with status="deleted"
+        var reducedData = []
+        data.map((singleType) => {
+            if(singleType.status != "deleted") {
+                reducedData.push(singleType)
+            }
+        })
+        setResourceTypes(reducedData);
     };
 
 
@@ -41,6 +50,7 @@ function ResourceTypePage() {
                 onCancel={onCancel}
                 edit={edit}
                 selected={selectedItem}
+                userStore={userStore}
             />
         )
     }
@@ -55,9 +65,10 @@ function ResourceTypePage() {
                 modal={modal}
                 data={resourceTypes}
                 refreshData={loadResourceTypes}
+                userStore={userStore}
+                modalType={modalTypes.resourceType}
             />
         </React.Fragment>
     )
 }
-
 export default ResourceTypePage

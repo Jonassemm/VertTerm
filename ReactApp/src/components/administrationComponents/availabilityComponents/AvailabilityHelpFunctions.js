@@ -1,3 +1,4 @@
+//author: Patrick Venturini
 import React from 'react'
 import {Form, Button} from 'react-bootstrap';
 var moment = require('moment');
@@ -59,7 +60,12 @@ export function validateDates(startDateString, endDateString, endOfSeriesString)
 
 
 //-----------------------------------------------------------RENDERING---------------------------------------------------------------------
-export function renderAvailabilityTable(allAvailabilities, addedAvailabilitiesLength, availabilityRhythm, handleCancleAvailability) {
+export function renderAvailabilityTable(allAvailabilities, 
+    addedAvailabilitiesLength, 
+    availabilityRhythm, 
+    handleCancleAvailability, 
+    changeAvailabilityAllowed
+    ) {
     var startDate = null
     var endDate = null
     var endOfSeries = null
@@ -88,7 +94,9 @@ export function renderAvailabilityTable(allAvailabilities, addedAvailabilitiesLe
                                   SingleAvailability.rhythm == availabilityRhythm.oneTime ? "-" :
                                   "Ohne Ende"}/></td>
                       <td>{((allAvailabilities.length - addedAvailabilitiesLength) > index) ? 
+                            changeAvailabilityAllowed &&
                             <Button style={{marginTop:"0px"}} variant="danger" value={index} onClick={handleCancleAvailability}>Deaktivieren</Button>:
+                            changeAvailabilityAllowed &&
                             <Button style={{marginTop:"0px"}} variant="secondary" value={index} onClick={handleCancleAvailability}>Entfernen</Button>
                         }</td>
                     </tr>

@@ -1,7 +1,11 @@
+//author: Patrick Venturini
 import React ,{useState, useEffect} from 'react'
 import {Form, Table, Col, Container, Button, InputGroup, Tabs, Tab } from 'react-bootstrap'
 import Availability from "../availabilityComponents/Availability"
 import ObjectPicker from "../../ObjectPicker"
+import { hasRight } from "../../../auth"
+import {userRights, ownUserRights} from "../../Rights"
+
 import {
   addEmployee,
   updateEmployee,
@@ -15,12 +19,21 @@ import {
 } from "../optionalAttributesComponents/optionalAttributesRequests"
 
 
-function UserForm({onCancel, edit, selected, type, setException = null}) {
+function UserForm({onCancel, 
+  edit, 
+  selected, 
+  type,           //type could be "emplyee" or "customer"
+  setException,   //Availability exception
+  userStore}) {
+
   var initialTypeIsEmployee = false
   if(type == "employee") {
       initialTypeIsEmployee = true
   }
 
+  const rightNameOwn = ownUserRights[1] //write right
+  const rightName = userRights[1] //write right
+  
   const [isEmployee, setIsEmployee] = useState(initialTypeIsEmployee)
   const [valideForm, setValideForm] = useState(false)
   const [edited, setEdited] = useState(false)
@@ -40,6 +53,7 @@ function UserForm({onCancel, edit, selected, type, setException = null}) {
   const [optionalAttributesOfUser, setOptionalAttributesOfUser] = useState([])
   const [optionalAttributInput, setOptionalAttributeInput] = useState() //needed to render page when editing any optional attribute
   const [requiredOptionalAttributCounter, setRequiredOptionalAttributCounter] = useState(0)
+  const [ownUserView, setOwnUserView] = useState(false)
 
 
   useEffect(() => { 
@@ -60,6 +74,9 @@ function UserForm({onCancel, edit, selected, type, setException = null}) {
         }
         if(selected.availabilities != null && selected.availabilities.length > 0 ) {
           setAvailabilities(selected.availabilities);
+        }
+        if(selected.id == userStore.userID){
+          setOwnUserView(true)
         }
     } 
     loadOptionalAttributes()
@@ -83,33 +100,38 @@ function UserForm({onCancel, edit, selected, type, setException = null}) {
 
   const handleSubmit = async event => {
     event.preventDefault();//reload the page after clicking "Enter"
+    
     var newPassword = ""
     if(passwordChanged) {
       newPassword = password
     }
+
     if(valideForm) {
       if(edit) { //editing-mode
-        var id = selected.id
-        var updateData = {}
-        try {
-          if(isEmployee){ //employee
-              updateData = {id, firstName, lastName, username, password: newPassword, systemStatus, roles, positions, availabilities, restrictions, 
-                            optionalAttributes: optionalAttributesOfUser}
-              await updateEmployee(id, updateData)
-                .then(res => {
-                  if (res.headers.exception) {
-                    setException(res.headers.exception)
-                  }
-                })
-          }else { //customer
-              updateData = {id, firstName, lastName, username, password: newPassword, systemStatus, roles, restrictions,
-                            optionalAttributes: optionalAttributesOfUser}
-              await updateCustomer(id, updateData);
-          }
-        } catch (error) {
-          console.log(Object.keys(error), error.message)
-        } 
-
+        if(checkRights()){
+          var id = selected.id
+          var updateData = {}
+          try {
+            if(isEmployee){ //employee
+                updateData = {id, firstName, lastName, username, password: newPassword, systemStatus, roles, positions, availabilities, restrictions, 
+                              optionalAttributes: optionalAttributesOfUser}
+                await updateEmployee(id, updateData)
+                  .then(res => {
+                    if (res.headers.exception) {
+                      setException(res.headers.exception)
+                    }
+                  })
+            }else { //customer
+                updateData = {id, firstName, lastName, username, password: newPassword, systemStatus, roles, restrictions,
+                              optionalAttributes: optionalAttributesOfUser}
+                await updateCustomer(id, updateData);
+            }
+          } catch (error) {
+            console.log(Object.keys(error), error.message)
+          } 
+        }else {//no right -> submit not allowed 
+          noRights()
+        }
       } else { //creation-mode
           var newData = {}
           try {
@@ -132,23 +154,29 @@ function UserForm({onCancel, edit, selected, type, setException = null}) {
 
 
   const handleDeleteUser = async () => {
-    if(isEmployee){
-      const answer = confirm("Möchten Sie diesen Mitarbeiter wirklich löschen? ")
-      if (answer) {
-        try{
-          await deleteEmployee(selected.id)
-        } catch (error){
-          console.log(Object.keys(error), error.message)
+    if(edit) {
+      if(checkRights()){
+        if(isEmployee){
+          const answer = confirm("Möchten Sie diesen Mitarbeiter wirklich löschen? ")
+          if (answer) {
+            try{
+              await deleteEmployee(selected.id)
+            } catch (error){
+              console.log(Object.keys(error), error.message)
+            }
+          }
+        }else {
+          const answer = confirm("Möchten Sie diesen Kunden wirklich löschen? ")
+          if (answer) {
+            try{
+              await deleteCustomer(selected.id)
+            } catch (error){
+              console.log(Object.keys(error), error.message)
+            }
+          }
         }
-      }
-    }else {
-      const answer = confirm("Möchten Sie diesen Kunden wirklich löschen? ")
-      if (answer) {
-        try{
-          await deleteCustomer(selected.id)
-        } catch (error){
-          console.log(Object.keys(error), error.message)
-        }
+      }else {//no rights!
+        noRights()
       }
     }
     onCancel()
@@ -270,7 +298,25 @@ function UserForm({onCancel, edit, selected, type, setException = null}) {
   }
 
 
-  //-------------------------------Help-Functions--------------------------
+  //-----------------------------Help-Functions----------------------------------
+  const checkRights = () => {
+    var rightExists = hasRight(userStore, [rightName])
+    if(ownUserView && hasRight(userStore, [rightNameOwn])){
+      rightExists = true
+    }
+    return rightExists
+  }
+
+
+  const noRights = () => {
+    if(ownUserView){
+        alert("Für diesen Vorgang besitzten Sie nicht die erforderlichen Rechte!\n\nBenötigtes Recht: " + rightNameOwn)
+    }else {
+        alert("Für diesen Vorgang besitzten Sie nicht die erforderlichen Rechte!\n\nBenötigtes Recht: " + rightName)
+    }
+  }
+
+  
   const incrementRequiredCounter = () => {
     setRequiredOptionalAttributCounter(requiredOptionalAttributCounter => requiredOptionalAttributCounter + 1)
   }
@@ -492,11 +538,14 @@ function UserForm({onCancel, edit, selected, type, setException = null}) {
             {isEmployee &&
                 <Tab eventKey="availability" title="Verfügbarkeit">
                 <Form.Row style={{marginTop: "25px"}}>
-                    <Availability 
-                    availabilities={availabilities} 
-                    addAvailability={addAvailability}
-                    updateAvailabilities={updateAvailabilities} 
-                    editedAvailabilities={setEdited}/>
+                      <Availability 
+                        availabilities={availabilities} 
+                        addAvailability={addAvailability}
+                        updateAvailabilities={updateAvailabilities} 
+                        editedAvailabilities={setEdited}
+                        userStore={userStore}
+                        selected={selected}
+                      />
                 </Form.Row>
                 </Tab>
             }
@@ -505,13 +554,16 @@ function UserForm({onCancel, edit, selected, type, setException = null}) {
               <Form.Row>
                 <Container style={{textAlign: "right"}}>
                 {edit ? 
+                  checkRights() &&
                   <Button variant="danger" onClick={handleDeleteUser} style={{marginRight: "20px"}}>Löschen</Button> :
                   null
                 }
                 <Button variant="secondary" onClick={onCancel} style={{marginRight: "20px"}}>Abbrechen</Button>
-                {(edit ? edited ? 
-                  <Button variant="success" type="submit" onClick={() => validation()}>Übernehmen</Button>:
-                  null : <Button variant="success"  type="submit" onClick={() => validation()}>Benutzer anlegen</Button>)
+                {edit && edited && checkRights() &&
+                  <Button variant="success" type="submit" onClick={() => validation()}>Übernehmen</Button>
+                }
+                {!edit && 
+                  <Button variant="success"  type="submit" onClick={() => validation()}>Benutzer anlegen</Button>
                 }
                 </Container>
               </Form.Row>

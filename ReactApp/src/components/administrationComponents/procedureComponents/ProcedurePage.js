@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from "react"
-import OverviewPage from "../../OverviewPage"
+import OverviewPage, {modalTypes} from "../../OverviewPage"
 import ProcedureForm from "./ProcedureForm"
 import { getProcedures } from "./ProcedureRequests"
 import {ExceptionModal} from "../../ExceptionModal"
 
-function ProcedurePage() {
+function ProcedurePage({userStore}) {
     const [procedures, setProcedudres] = useState([])
 
     //exception needs overriding (ExceptionModal)
@@ -46,6 +46,7 @@ function ProcedurePage() {
                 edit={edit}
                 selected={selectedItem}
                 setException={handleExceptionChange}
+                userStore={userStore}
             />
         )
     }
@@ -68,6 +69,8 @@ function ProcedurePage() {
                 modal={modal}
                 data={procedures}
                 refreshData={prepareProcedures} 
+                userStore={userStore}
+                modalType={modalTypes.procedure}
                 modalSize="xl"
             />
         </React.Fragment>

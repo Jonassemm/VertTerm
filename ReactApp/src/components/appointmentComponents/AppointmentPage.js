@@ -1,5 +1,6 @@
+//author: Patrick Venturini
 import React, {useState, useEffect} from 'react'
-import {Form, Col, Tabs, Tab, Button, Modal} from "react-bootstrap"
+import {Form, Col, Tabs, Tab, Button, Modal, Spinner} from "react-bootstrap"
 import OverviewPage from "../OverviewPage"
 import {Link} from 'react-router-dom';
 import AppointmentForm from "./AppointmentForm"
@@ -8,6 +9,7 @@ import ObjectPicker from "../ObjectPicker"
 import {appointmentStatus, translateStatus} from "./AppointmentStatus"
 import {ExceptionModal} from "../ExceptionModal"
 import styled from "styled-components"
+import { hasRight } from "../../auth"
 
 var moment = require('moment'); 
 import {
@@ -45,14 +47,15 @@ const Style = styled.div`
 `
 
 export default function AppointmentPage({calendarStore, userStore}) {
-    
-    const [loading, setLoading] = useState(false) //for loading appointments (could take some time)
-    const [calendarLoaded, setCalendarLoaded] = useState(false)
-    const [tabKey, setTabKey] = useState('calendar')
     var initialUser = []
     if(userStore.user != null && userStore.username != "admin" && userStore.username != "anonymousUser"){
         initialUser = [userStore.user]
     }
+    const rightNameOwn = "OWN_APPOINTMENT_READ"
+    const rightName = "APPOINTMENT_READ"
+    const [loading, setLoading] = useState(false) //for loading appointments (could take some time)
+    const [calendarLoaded, setCalendarLoaded] = useState(false)
+    const [tabKey, setTabKey] = useState('calendar')
     const [selectedUser, setSelectedUser] = useState(initialUser)
     const [tableAppointments, setTableAppointments] = useState([])
     const [appointmentsOf, setAppointmentsOf] = useState(loadMode.own)
@@ -62,11 +65,23 @@ export default function AppointmentPage({calendarStore, userStore}) {
     const [preferredAppointment, setPreferredAppointment] = useState(null)
     const [preferredAppointmentStarttime, setPreferredAppointmentStarttime] = useState(null)
     const [overrideDeleteId, setOverrideDeleteId] = useState(null)
+    const [allowOwnView, setAllowOwnView] = useState(false)
+    const [allowEntireView, setAllowEntireView] = useState(false)
 
 
     useEffect( () => {
         loadAppointments(appointmentsOf)
     },[appointmentsOf, tabKey])
+
+
+    useEffect( () => {
+        if(hasRight(userStore, [rightName])){
+            setAllowEntireView(true)
+        }else if(hasRight(userStore, [rightNameOwn])){
+            setAllowOwnView(true)
+        }
+    },[])
+
 
 
     const handleSelectedUserChange = (data) => {
@@ -157,7 +172,12 @@ export default function AppointmentPage({calendarStore, userStore}) {
                 //create and add title to each appointment
                 if(response != null) {
                     data = response.data.map(singleAppointment => { 
-                        var title = singleAppointment.bookedProcedure.name + " (" + singleAppointment.bookedCustomer.username + ")"
+                        var title
+                        if(singleAppointment.bookedCustomer.firstName != null && singleAppointment.bookedCustomer.lastName != null){
+                            title = singleAppointment.bookedProcedure.name + " (" + singleAppointment.bookedCustomer.username + ")"
+                        }else {
+                            title = singleAppointment.bookedProcedure.name + " (anonym)"
+                        }
                         return {
                             ...singleAppointment,
                             title: title
@@ -245,11 +265,17 @@ export default function AppointmentPage({calendarStore, userStore}) {
 
         //prepare response for calendar
         const evts = reducedData.map(item => {
+            var title
+            if(item.bookedCustomer.firstName != null && item.bookedCustomer.lastName != null){
+                title = item.bookedProcedure.name + " (" + item.bookedCustomer.username + ")"
+            }else {
+                title = item.bookedProcedure.name + " (anonym)"
+            }
             return {
                 ...item,
                 plannedStarttime: moment(item.plannedStarttime, "DD.MM.yyyy HH:mm").toDate(),
                 plannedEndtime: moment(item.plannedEndtime, "DD.MM.yyyy HH:mm").toDate(),
-                title: item.bookedProcedure.name + " (" + item.bookedCustomer.username + ")"
+                title: title
             }
         })
         calendarStore.setCalendarEvents(evts)
@@ -289,10 +315,6 @@ export default function AppointmentPage({calendarStore, userStore}) {
     }
 
     const modal = (onCancel,edit,selectedItem) => {
-        var user = {}
-        if(selectedUser.length == 1){
-            user = selectedUser[0]
-        }
         return (
             <AppointmentForm
                 onCancel={onCancel}
@@ -300,6 +322,7 @@ export default function AppointmentPage({calendarStore, userStore}) {
                 selected={selectedItem}
                 handleExceptionChange={handleExceptionChange}
                 handlePreferredAppointmentChange={handlePreferredAppointmentChange}
+                userStore={userStore}
             />
         )
     }
@@ -311,7 +334,7 @@ export default function AppointmentPage({calendarStore, userStore}) {
 
     return (
         <React.Fragment>
-            {loading ? <div className="loadview"><div style={{fontSize:"48pt", color:"white"}}>Loading</div></div> : null}
+            {loading ? <div className="loadview"><Spinner animation="border" variant="light" /></div> : null}
             {renderfkt()}
             {exception != null && 
                 <ExceptionModal //modal for deleting appointments
@@ -404,34 +427,44 @@ export default function AppointmentPage({calendarStore, userStore}) {
             }
             
             <div style={{display: "flex",  justifyContent: "center"}}>
-                <div style={{margin: "10px 10px 0px 0px", fontWeight: "bold"}}>Ansicht von: </div>
+                {(allowEntireView || allowOwnView) ?
+                    <div style={{margin: "10px 10px 0px 0px", fontWeight: "bold"}}>Ansicht von: </div>:
+                    <div style={{margin: "10px 10px 0px 0px", fontWeight: "bold"}}>
+                        Ihnen fehlt das Recht {rightNameOwn} oder {rightName} zur Ansicht von Terminen!</div>
+                }
                 <div style={{marginTop: "5px", width: "250px"}}>
                     {appointmentsOf == loadMode.own ? 
-                        selectedUser.length > 0 &&
+                        selectedUser.length > 0 && (allowEntireView || allowOwnView) &&
                         <Form.Control
                             readOnly
                             type="text"
                             value={selectedUser[0].firstName + " " + selectedUser[0].lastName || ""}
                         />: (appointmentsOf == loadMode.foreign || appointmentsOf == loadMode.foreignUnpicked) ?
-                            userStore.user != null &&
+                            userStore.user != null && allowEntireView &&
                                 <ObjectPicker 
                                     setState={handleSelectedUserChange}
                                     DbObject="user"
                                     initial={selectedUser} 
                                     multiple={false}
                                     selectedItem={userStore.user}
-                                />:
-                            <Form.Control
-                                readOnly
-                                type="text"
-                                value={"Allen Benutzern"}
-                            />
+                                />: allowEntireView &&
+                                <Form.Control
+                                    readOnly
+                                    type="text"
+                                    value={"Allen Benutzern"}
+                                />
                     }
                 </div> 
                 <div>
-                    <Button style={{margin:"5px 0px 0px 10px"}} variant="primary" onClick={() => setAppointments(loadMode.own)}>Eigene</Button>
-                    <Button style={{margin:"5px 0px 0px 10px"}} variant="primary" onClick={() => setAppointments(loadMode.foreignUnpicked)}>Fremde</Button>
-                    <Button style={{margin:"5px 0px 0px 10px"}} variant="primary" onClick={() => setAppointments(loadMode.all)}>Alle</Button>
+                    {allowEntireView &&
+                        <Button style={{margin:"5px 0px 0px 10px"}} variant="primary" onClick={() => setAppointments(loadMode.own)}>Eigene</Button>
+                    }
+                    {allowEntireView &&
+                        <Button style={{margin:"5px 0px 0px 10px"}} variant="primary" onClick={() => setAppointments(loadMode.foreignUnpicked)}>Fremde</Button>
+                    }
+                    {allowEntireView &&
+                        <Button style={{margin:"5px 0px 0px 10px"}} variant="primary" onClick={() => setAppointments(loadMode.all)}>Alle</Button>
+                    }
                 </div>
             </div>
             {(selectedUser.length == 1 || (appointmentsOf == loadMode.all && selectedUser.length == 0)) && 
@@ -445,6 +478,7 @@ export default function AppointmentPage({calendarStore, userStore}) {
                     {calendarLoaded &&
                         <CalendarPage 
                             calendarStore={calendarStore} 
+                            userStore={userStore}
                             UserID={selectedUser.length > 0 ? appointmentsOf == loadMode.own ? userStore.userID : selectedUser[0].id: null}
                             loadAppointments={loadCalendarAppointments}
                             handleExceptionChange={handleExceptionChange}

@@ -1,3 +1,4 @@
+//author: Patrick Venturini
 import React, { useState, useEffect } from "react"
 import {Form, Table, Container, Col, Button } from "react-bootstrap"
 import {editOptionalAttributes} from "./optionalAttributesRequests"

@@ -1,12 +1,13 @@
+//author: Patrick Venturini
 import React , {useState, useEffect, forwardRef, useImperativeHandle} from 'react'
 import {Form, Table, Col, Container, Button} from 'react-bootstrap';
 import DatePicker from "react-datepicker"
 import "react-datepicker/dist/react-datepicker.css"
-
 import {setValidEndDateString, validateDates, renderAvailabilityTable} from "./AvailabilityHelpFunctions"
 import {setDate} from "../../TimeComponents/TimeFunctions"
-
 import {getOpeningHours} from "../openingHoursComponents/OpeningHoursRequests"
+import { hasRight } from "../../../auth"
+import {ownAppointmentRights, availabilityRights} from "../../Rights"
 
 var moment = require('moment'); 
 
@@ -17,7 +18,9 @@ var moment = require('moment');
         addAvailability={addAvailability}
         updateAvailabilities={updateAvailabilities} 
         editedAvailabilities={setEdited}
-        withOpeningHours={false}  //this prop is optional to reduces the functionality of adding opening hours (default value: true)
+        userStore={userStore}
+        selected={selected}
+        withOpeningHours={false}
     />
 
 -> Make sure you have a state for your availabilities as an array like this: 
@@ -42,12 +45,14 @@ var moment = require('moment');
 ----------------------------------------------------------------------------------------------------------------------------*/
 
 const Availability = forwardRef((props, ref) => {
-    //props.availabilities
-    //props.addAvailability()
-    //props.editedAvailabilities()
-    //props.updateAvailabilities()
-    //props.withOpeningHours -> optional porp
-    
+    //props.availabilities          //the availabilities of the parent component
+    //props.addAvailability()       //function of the parent component to add an availability 
+    //props.editedAvailabilities()  //function of the parent component to pass the information that something has edited
+    //props.updateAvailabilities()  //function of the parent component to update an availability
+    //props.userStore               //to check the rights
+    //props.selected                //optional prop which is the selected item that contains this availability component
+    //props.withOpeningHours        //optional prop to reduce the switch for adding the availabilities of the opening hours
+
     if(props.withOpeningHours == undefined) {
         props.withOpeningHours = true //default value
     }
@@ -60,22 +65,34 @@ const Availability = forwardRef((props, ref) => {
         monthly: "monthly",
         yearly: "yearly",
     }
+    const rightName = availabilityRights[1] //write right
+    const rightNameOwn = ownAppointmentRights[1] //write right
     const [startDateString, setStartDateString] = useState(setDate())
     const [endDateString, setEndDateString] = useState(setValidEndDateString(setDate()))
     const [rhythm, setRhythm] = useState(availabilityRhythm.oneTime)
     const [frequency, setFrequency] = useState(1)
     const [endOfSeriesDateString, setEndOfSeriesDateString] = useState(null)
     const [withSeriesEnd, setWithSeriesEnd] = useState(false)
-    //needed to separate new added availavilities with the submitted availabilities
+    //needed to separate new added availavilities to the submitted availabilities
     const [addedAvailabilities, setAddedAvailabilities] = useState([])
     const [openingHoursAvailabilities, setOpeningHoursAvailabilites] = useState([])
     const [openingHoursAdded, setOpeningHoursAdded] = useState(false)
     const [openingHoursIndex, setOpeningHoursIndex] = useState(null)
     const [countOfIncludedOpeningHours, setCountOfIncludedOpeningHours] = useState(null)
+    const [changeAvailabilityAllowed, setChangeAvailabilityAllowed] = useState(false)
     
 
     useEffect(() => {
         loadOpeningHoursAvailabilities()
+        if(props.userStore != undefined) {
+            if(hasRight(props.userStore, [rightName])){
+                setChangeAvailabilityAllowed(true)
+            }else if(props.selected != undefined && props.selected.id == props.userStore.userID && hasRight(props.userStore, [rightNameOwn])){
+                setChangeAvailabilityAllowed(true)
+            }else if(props.selected == undefined && hasRight(props.userStore, [rightNameOwn])){
+                setChangeAvailabilityAllowed(true)
+            }
+        }
     }, [])
 
 
@@ -317,7 +334,7 @@ const Availability = forwardRef((props, ref) => {
             <Container>
                 <Form.Row style={{ alignItems: "baseline" }}>
                 <Form.Group as={Col} style={{textAlign: "right"}}>
-                    {props.withOpeningHours &&
+                    {props.withOpeningHours && changeAvailabilityAllowed &&
                         <Form.Check
                             id="switchAsOpeningHours"
                             type="switch"
@@ -330,10 +347,12 @@ const Availability = forwardRef((props, ref) => {
                     }
                 </Form.Group>
             </Form.Row>
+            { changeAvailabilityAllowed &&
             <Form.Row>
                 <Form.Label><h5>Erster verfügbarer Zeitraum</h5></Form.Label>
             </Form.Row>
-            {
+            }
+            {changeAvailabilityAllowed &&
             <Container>
                 <Form.Row>
                     <Form.Group style={{display: "flex", flexWrap: "nowrap"}} as={Col} md="6">
@@ -464,7 +483,9 @@ const Availability = forwardRef((props, ref) => {
                 <Form.Row>
                     <Form.Group as={Col} md="12">
                         <div style={{textAlign: "center"}}>
-                            <Button onClick={handleAdd}>Verfügbarkeit hinzufügen</Button>
+                            {changeAvailabilityAllowed &&
+                                <Button onClick={handleAdd}>Verfügbarkeit hinzufügen</Button>
+                            }
                         </div>
                     </Form.Group>
                 </Form.Row>
@@ -490,7 +511,8 @@ const Availability = forwardRef((props, ref) => {
                             props.availabilities, 
                             addedAvailabilities.length, 
                             availabilityRhythm, 
-                            handleCancleAvailability)
+                            handleCancleAvailability,
+                            changeAvailabilityAllowed)
                         }
                     </tbody>
                 </Table> 

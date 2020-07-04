@@ -1,3 +1,4 @@
+//author: Patrick Venturini
 export const kindOfWarning = {
     appointmenttime: "AppointmenttimeWarning",
     appointment: "AppointmentWarning",
