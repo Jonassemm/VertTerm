@@ -55,6 +55,13 @@ public class Procedure implements Serializable, Available {
 	@DBRef
 	private List<Availability> availabilities;
 
+	public Procedure(){
+		this.neededEmployeePositions = new ArrayList<>();
+		this.neededResourceTypes = new ArrayList<>();
+		this.subsequentRelations = new ArrayList<>();
+		this.precedingRelations = new ArrayList<>();
+	}
+
 	public String getId() {
 		return id;
 	}

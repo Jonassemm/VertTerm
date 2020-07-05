@@ -526,7 +526,7 @@ public class Appointment implements Serializable {
 			return;
 		}
 		this.setStatus(AppointmentStatus.RECOMMENDED);
-		this.setPlannedEndtime(new Date(this.plannedStarttime.getTime() + this.getBookedProcedure().getDuration().toMillis()));
+		this.setPlannedEndtime(this.generatePlannedEndtime(this.plannedStarttime));
 		// check if customer is available
 		this.getBookedCustomer().populateAppointments(appointmentService);
 		Date newDateToEvaluate = this.getBookedCustomer().getEarliestAvailableDate(this.getPlannedStarttime(), this.getBookedProcedure().getDuration());
