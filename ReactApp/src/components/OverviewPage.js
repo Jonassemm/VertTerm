@@ -230,7 +230,7 @@ function OverviewPage({
                                             case modalTypes.user:
                                                 if(hasRight(userStore, [userRights[0]])){
                                                     showCurrentRow = true
-                                                }else if(hasRight(userStore, [ownUserRights[0]] && rowItem[1] == userStore.username)){
+                                                }else if(hasRight(userStore, [ownUserRights[0]]) && rowItem[1] == userStore.username){
                                                     showCurrentRow = true
                                                 }
                                                 break;

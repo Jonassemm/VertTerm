@@ -5,6 +5,7 @@ import {Link} from 'react-router-dom';
 import {setDate} from "../TimeComponents/TimeFunctions"
 import {getWarningsAsString} from "../Warnings"
 import { hasRight } from "../../auth"
+import {ownAppointmentRights, appointmentRights} from "../Rights"
 import {appointmentStatus, translateStatus} from "./AppointmentStatus"
 import {
     deleteAppointment,
@@ -78,8 +79,8 @@ function AppointmentForm({
     month = null,                               //optional (HomePage)
     year = null                                 //optional (HomePage)
     }) {
-    const rightNameOwn = "OWN_APPOINTMENT_WRITE"
-    const rightName = "APPOINTMENT_WRITE"
+    const rightNameOwn = ownAppointmentRights[1] //write right
+    const rightName = appointmentRights[1] //write right
     const [edited, setEdited] = useState(false)
     const [procedure, setProcedure] = useState(null)
     const [bookedEmployees, setBookedEmployees] = useState([])
@@ -341,14 +342,8 @@ function AppointmentForm({
 
     const rendertest = () => {
         console.log("---------Render-FORM------")
-        /* console.log(getActualStarttime() != null)
-        console.log(actualEndtime == null)
-        console.log(moment(plannedStarttime, "DD.MM.yyyy HH:mm").toDate().getTime() < moment().toDate().getTime())
-        console.log(moment(actualStarttime, "DD.MM.yyyy HH:mm").toDate().getTime() < moment().toDate().getTime())
-        console.log(checkRights()) */
     }
     
-   
 
     return (
         <div className="page">
@@ -436,7 +431,7 @@ function AppointmentForm({
                     {warnings.length != 0 &&
                         <Form.Row>
                             <Form.Group as={Col} md="9">
-                                <Form.Label>Konflikte:</Form.Label>
+                                <Form.Label>Konflikte mit:</Form.Label>
                                 <Form.Control
                                     readOnly
                                     style={{background: "white", color: "red", fontWeight: "bold"}}
@@ -450,7 +445,7 @@ function AppointmentForm({
                                     <Button variant="primary" onClick={handleTest} style={{ marginLeft: "0px" }}>Prüfen</Button>
                                     {checkRights() &&
                                         <Link to={`/warning/${warnings[0]}`}>
-                                            <Button variant="success" style={{ marginLeft: "10px" }}>Beheben</Button>
+                                            <Button variant="success" style={{ marginLeft: "10px" }}>Lösen</Button>
                                         </Link>
                                     }
                                     
