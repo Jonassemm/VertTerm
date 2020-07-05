@@ -28,6 +28,7 @@ const optionalAttributesForm = ({ onCancel, edit, selected }) => {
         const data = {id: selected.id, optionalAttributes, classOfOptionalAttribut: selected.classOfOptionalAttribut}
         try{
             res = await editOptionalAttributes(data, selected.id)
+            userStore.setMessage("Optionale Attribute erfolgreich geändert!")
         }catch (error) {
             console.log(Object.keys(error), error.message)
         }

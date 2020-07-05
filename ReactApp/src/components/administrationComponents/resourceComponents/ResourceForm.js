@@ -81,9 +81,11 @@ const RessourceForm = ({ onCancel,
                 if (res.headers.exception) {
                   setException(res.headers.exception)
                 }
+                userStore.setMessage("Verbrauchbare Ressource erfolgreich geändert!")
               })
             }else {
               await addConsumable(data)
+              userStore.setMessage("Verbrauchbare Ressource erfolgreich hinzugefügt!")
             }
           }else { //is not a Consumable
             data = {name, description, status, availabilities, restrictions, resourceTypes}
@@ -93,9 +95,11 @@ const RessourceForm = ({ onCancel,
                 if (res.headers.exception) {
                   setException(res.headers.exception)
                 }
+                userStore.setMessage("Ressource erfolgreich geändert!")
               })
             }else{
               await addResource(data)
+              userStore.setMessage("Ressource erfolgreich hinzugefügt!")
             }
           }
           onCancel()
@@ -113,12 +117,14 @@ const RessourceForm = ({ onCancel,
         if(isConsumable){
           try{
             await deleteConsumable(selected.id)
+            userStore.setMessage("Verbrauchbare Ressource erfolgreich gelöscht!")
           } catch (error){
             console.log(Object.keys(error), error.message)
           }
         } else {
           try{
             await deleteResource(selected.id)
+            userStore.setMessage("Ressource erfolgreich gelöscht!")
           } catch (error){
             console.log(Object.keys(error), error.message)
           }

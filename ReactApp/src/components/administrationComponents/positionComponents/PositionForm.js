@@ -40,10 +40,12 @@ const PositionForm = ({onCancel, edit, selected, userStore}) => {
             if (!edit) {
                 const data = {name, description}
                 res = await addPosition(data)
+                userStore.setMessage("Position erfolgreich hinzugefügt!")
             } else {
                 var id = selected.id
                 const data = {id, name, description}
                 res = await editPosition(id, data)
+                userStore.setMessage("Position erfolgreich geändert!")
             }
             onCancel()
         }else {//no right to submit 
@@ -58,6 +60,7 @@ const PositionForm = ({onCancel, edit, selected, userStore}) => {
             if (answer) {
                 try {
                     const res = await deletePosition(selected.id)
+                    userStore.setMessage("Position erfolgreich gelöscht!")
                 } catch (error) {
                     console.log(Object.keys(error), error.message)
                 }

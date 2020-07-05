@@ -118,6 +118,7 @@ function ProcedureForm({ onCancel,
         if(hasRight(userStore, [rightName])){
             try{
                 await  deleteProcedure(selected.id)
+                userStore.setMessage("Prozedur erfolgreich gelöscht!")
             } catch (error){
                 console.log(Object.keys(error), error.message)
             }
@@ -140,6 +141,7 @@ function ProcedureForm({ onCancel,
                 if (res.headers.exception) {
                     setException(res.headers.exception)
                 }
+                userStore.setMessage("Prozedur erfolgreich geändert!")
             })
         onCancel()
     }
@@ -289,6 +291,7 @@ function ProcedureForm({ onCancel,
     
             if (!edit) {
                 const res = await addProcedure(data)
+                userStore.setMessage("Prozedur erfolgreich hinzugefügt!")
             } else {
                 data.id = selected.id
                 const res = await editProcedure(selected.id, data)
@@ -296,6 +299,7 @@ function ProcedureForm({ onCancel,
                         if (res.headers.exception) {
                         setException(res.headers.exception)
                         }
+                        userStore.setMessage("Prozedur erfolgreich geändert!")
                     })
             }
             onCancel()

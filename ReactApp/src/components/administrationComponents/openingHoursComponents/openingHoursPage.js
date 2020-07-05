@@ -23,6 +23,7 @@ export default function OpeningHoursPage ({userStore}) {
         try {
             openingHours.availabilities = availabilities
             await updateOpeningHours(openingHours)
+            userStore.setMessage("Öffnungszeiten erfolgreich geändert!")
         }catch (error) {
             console.log(Object.keys(error), error.message)
         }
