@@ -4,6 +4,7 @@ import java.security.Principal;
 import java.util.Collection;
 import java.util.List;
 
+import com.dvproject.vertTerm.Model.*;
 import com.dvproject.vertTerm.Service.EmployeeService;
 import com.dvproject.vertTerm.Service.ResourceService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,11 +21,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.dvproject.vertTerm.Model.Appointment;
-import com.dvproject.vertTerm.Model.Appointmentgroup;
-import com.dvproject.vertTerm.Model.Optimizationstrategy;
-import com.dvproject.vertTerm.Model.Status;
-import com.dvproject.vertTerm.Model.Warning;
 import com.dvproject.vertTerm.Service.AppointmentService;
 import com.dvproject.vertTerm.Service.AppointmentgroupService;
 
@@ -169,15 +165,21 @@ public class AppointmentgroupController {
 		return appointmentgroupService.bookAppointmentgroup(userid, appointmentgroup, override);
 	}
 
-	@GetMapping("/Recommend/EarlyEnd")
-	public @ResponseBody Appointmentgroup recommendByEarlyEnd(@RequestBody Appointmentgroup appointment, @RequestParam int index) {
-		appointment.optimizeAppointmentsForEarliestEnd(appointmentService, resourceService, employeeService, appointment.getAppointments().get(index));
-		return appointment;
+	@GetMapping("/Recommend/EarlyEnd/{index}")
+	public @ResponseBody Appointmentgroup recommendByEarlyEnd(@RequestBody Appointmentgroup appointments, @PathVariable int index) {
+		for (Appointment appointment : appointments.getAppointments()){
+			appointment.setStatus(AppointmentStatus.OPEN);
+		}
+		appointments.optimizeAppointmentsForEarliestEnd(appointmentService, resourceService, employeeService, appointments.getAppointments().get(index));
+		return appointments;
 	}
 
-	@GetMapping("/Recommend/LateBeginning")
-	public @ResponseBody Appointmentgroup recommendByLateBeginning(@RequestBody Appointmentgroup appointment, @RequestParam int index) {
-		appointment.optimizeAppointmentsForLatestBeginning(appointmentService, resourceService, employeeService, appointment.getAppointments().get(index));
-		return appointment;
+	@GetMapping("/Recommend/LateBeginning/{index}")
+	public @ResponseBody Appointmentgroup recommendByLateBeginning(@RequestBody Appointmentgroup appointments, @PathVariable int index) {
+		for (Appointment appointment : appointments.getAppointments()){
+			appointment.setStatus(AppointmentStatus.OPEN);
+		}
+		appointments.optimizeAppointmentsForLatestBeginning(appointmentService, resourceService, employeeService, appointments.getAppointments().get(index));
+		return appointments;
 	}
 }
