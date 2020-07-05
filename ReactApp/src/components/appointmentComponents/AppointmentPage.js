@@ -49,8 +49,15 @@ const Style = styled.div`
 
 export default function AppointmentPage({calendarStore, userStore}) {
     var initialUser = []
-    if(userStore.user != null && userStore.username != "admin" && userStore.username != "anonymousUser"){
+    var initialLoadMode = loadMode.own
+    if(userStore.user != null && userStore.firstName != null){
         initialUser = [userStore.user]
+    }else{
+        console.log("x")
+        console.log(userStore.username)
+        if(userStore.username == "admin"){
+            initialLoadMode = loadMode.all
+        }
     }
     const rightNameOwn = ownAppointmentRights[0] //read right
     const rightName = appointmentRights[0] //read right
@@ -60,7 +67,7 @@ export default function AppointmentPage({calendarStore, userStore}) {
     const [tabKey, setTabKey] = useState('calendar')
     const [selectedUser, setSelectedUser] = useState(initialUser)
     const [tableAppointments, setTableAppointments] = useState([])
-    const [appointmentsOf, setAppointmentsOf] = useState(loadMode.own)
+    const [appointmentsOf, setAppointmentsOf] = useState(initialLoadMode)
     const [exception, setException] = useState(null)
     const [showExceptionModal, setShowExceptionModal] = useState(false)
     const [showPreferredAppointmentModal, setShowPreferredAppointmentModal] = useState(false)
@@ -68,7 +75,7 @@ export default function AppointmentPage({calendarStore, userStore}) {
     const [preferredAppointmentStarttime, setPreferredAppointmentStarttime] = useState(null)
     const [overrideDeleteId, setOverrideDeleteId] = useState(null)
     const [allowOwnView, setAllowOwnView] = useState(true)
-    const [allowEntireView, setAllowEntireView] = useState(true)
+    const [allowEntireView, setAllowEntireView] = useState(false)
 
 
     useEffect( () => {
@@ -382,7 +389,9 @@ export default function AppointmentPage({calendarStore, userStore}) {
                                     style={{background: "white"}}
                                     name="customer"
                                     type="text"
-                                    value={preferredAppointment.bookedCustomer.firstName + ", " + preferredAppointment.bookedCustomer.lastName } 
+                                    value={preferredAppointment.bookedCustomer.firstName == null ? 
+                                            "Anonymer Benutzer": 
+                                            preferredAppointment.bookedCustomer.firstName + ", " + preferredAppointment.bookedCustomer.lastName}
                                 />
                             </Form.Group>
                         </Form.Row>
@@ -445,17 +454,18 @@ export default function AppointmentPage({calendarStore, userStore}) {
             }
             <div style={{display: "flex",  justifyContent: "center"}}>
                 <div style={{margin: "10px 10px 0px 0px", fontWeight: "bold"}}>
-                    {(allowEntireView || allowOwnView) ?
+                    {(allowEntireView || allowOwnView) && (userStore.username != "admin" || appointmentsOf != loadMode.own)?
                         "Ansicht von": 
+                        (userStore.username != "admin" || appointmentsOf != loadMode.own) &&
                         "Ihnen fehlt das Recht " + rightNameOwn + " oder " + rightName + " zur Ansicht von Terminen!"}
                 </div>
                 <div style={{marginTop: "5px", width: "250px"}}>
                     {appointmentsOf == loadMode.own ? 
-                        selectedUser.length > 0 && (allowEntireView || allowOwnView) &&
+                        selectedUser.length > 0 && (allowEntireView || allowOwnView) && userStore.username != "admin" &&
                         <Form.Control
                             readOnly
                             type="text"
-                            value={selectedUser[0].firstName + " " + selectedUser[0].lastName || ""}
+                            value={userStore.username == "anonymousUser" ? "Anonymer Benutzer": selectedUser[0].firstName + " " + selectedUser[0].lastName || ""}
                         />: (appointmentsOf == loadMode.foreign || appointmentsOf == loadMode.foreignUnpicked) ?
                             userStore.user != null && allowEntireView &&
                                 <ObjectPicker 
@@ -473,7 +483,7 @@ export default function AppointmentPage({calendarStore, userStore}) {
                     }
                 </div> 
                 <div>
-                    {allowEntireView &&
+                    {allowEntireView && userStore.firstName != null && //Admin and anonym user have no appointments
                         <Button style={{margin:"5px 0px 0px 10px"}} variant="primary" onClick={() => setAppointments(loadMode.own)}>Eigene</Button>
                     }
                     {allowEntireView &&

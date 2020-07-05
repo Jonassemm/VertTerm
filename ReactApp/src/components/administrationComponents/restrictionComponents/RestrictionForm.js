@@ -4,7 +4,7 @@ import { Form } from "react-bootstrap"
 import { Container, Button } from "react-bootstrap"
 import {addRestriction, deleteRestriction, editRestriction } from "./RestrictionRequests"
 
-const RestrictionForm = ({ onCancel, edit, selected }) => {
+const RestrictionForm = ({ onCancel, edit, selected, userStore }) => {
     const [name, setName] = useState("")
     const [edited, setEdited] = useState(false)
 

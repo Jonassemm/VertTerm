@@ -95,6 +95,10 @@ class UserStore {
         this.setFirstName(null)
         this.setLastName(null)
         this.setUserID(null)
+        this.setMessage(null)
+        this.setInfoMessage(null)
+        this.setWarningMessage(null)
+        this.setErrorMessage(null)
         this.setRights([])
         this.setRoles([])
     }

@@ -4,7 +4,7 @@ import {getAllOptionalAttributes} from "./optionalAttributesRequests"
 import OptionalAttributesForm from "./optionalAttributesForm"
 import OverviewPage from "../../OverviewPage"
 
-function optionalAttributesPage() {
+function optionalAttributesPage({userStore}) {
  
     const [optionalAttributeLists, setOptionalAttributeLists] = useState([])
 
@@ -55,6 +55,7 @@ function optionalAttributesPage() {
                 onCancel={onCancel}
                 edit={edit}
                 selected={selectedItem}
+                userStore={userStore}
             />
         )
     }

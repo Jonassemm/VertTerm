@@ -18,6 +18,8 @@ import OpeningHours from "../administrationComponents/openingHoursComponents/ope
 import { hasRight, hasRole } from "../../auth";
 import {managementRights, ownUserRights, userRights, positionRights, procedureRights, resourceRights, resourceTypeRights, roleRights} from "../Rights"
 
+const adminRole = "Admin_role"
+
 
 function openMenu() {
     document.getElementById('sidebar-wrapper').style.marginLeft = "0";
@@ -46,8 +48,8 @@ function AdminPage({userStore}) {
                 {hasRight(userStore, procedureRights) &&
                     <Route exact path="/admin/procedure" component={() => <ProcedurePage userStore={userStore}/>} />
                 }
-                {hasRole(userStore, ["ADMIN_ROLE"]) &&
-                     <Route exact path="/admin/restriction" component={RestrictionPage} />
+                {hasRole(userStore, [adminRole]) &&
+                     <Route exact path="/admin/restriction" component={() => <RestrictionPage userStore={userStore}/>} />
                 }
                 {hasRight(userStore, ownUserRights.concat(userRights)) &&
                     <Route exact path="/admin" component={() => <UserPage userStore={userStore} userType={"customer"} />} />
@@ -58,8 +60,8 @@ function AdminPage({userStore}) {
                 {hasRight(userStore, ownUserRights.concat(userRights)) &&
                     <Route exact path="/admin/employee" component={() => <UserPage userStore={userStore} userType={"employee"} />} />
                 }
-                {hasRole(userStore, ["ADMIN_ROLE"]) &&
-                    <Route exact path="/admin/optionalAttributes" component={OptionalAttributesPage} />
+                {hasRole(userStore, [adminRole]) &&
+                    <Route exact path="/admin/optionalAttributes" component={() => <OptionalAttributesPage userStore={userStore}/>} />
                 }
                 {hasRight(userStore, resourceRights) &&
                     <Route exact path="/admin/resource" component={() => <ResourcePage userStore={userStore}/>} />
@@ -73,7 +75,7 @@ function AdminPage({userStore}) {
                 {hasRight(userStore, resourceTypeRights) &&
                     <Route exact path="/admin/resourceType"component={() => <ResourceTypePage userStore={userStore}/>} />
                 }
-                {hasRole(userStore, ["ADMIN_ROLE"]) &&
+                {hasRole(userStore, [adminRole]) &&
                     <Route exact path="/admin/openingHours"component={() => <OpeningHours userStore={userStore}/>} />
                 }
                

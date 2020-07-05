@@ -4,7 +4,7 @@ import { getAllRestrictions } from "./RestrictionRequests"
 import RestrictionForm from "./RestrictionForm"
 import OverviewPage from "../../OverviewPage"
 
-function RestrictionPage() {
+function RestrictionPage({userStore}) {
     const [restrictionsa, setRestrictions] = useState([])
 
 
@@ -42,6 +42,7 @@ function RestrictionPage() {
                 onCancel={onCancel}
                 edit={edit}
                 selected={selectedItem}
+                userStore={userStore}
             />
         )
     }

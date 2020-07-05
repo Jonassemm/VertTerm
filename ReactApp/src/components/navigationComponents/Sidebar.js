@@ -5,6 +5,8 @@ import { Link } from 'react-router-dom'
 import { hasRight, hasRole } from "../../auth"
 import {ownUserRights, userRights, positionRights, procedureRights, resourceRights, resourceTypeRights, roleRights} from "../Rights"
 
+const adminRole = "Admin_role"
+
 const Side = ({closeFunction, userStore}) => {
     return (
         <div id="sidebar-wrapper" onMouseLeave={closeFunction}>
@@ -24,22 +26,22 @@ const Side = ({closeFunction, userStore}) => {
                     </Nav.Item>
                 }
                 {(hasRight(userStore, ownUserRights.concat(userRights)) &&
-                    (hasRole(userStore, ["ADMIN_ROLE"]) || hasRight(userStore, positionRights) || hasRight(userStore, roleRights)) ||
+                    (hasRole(userStore, [adminRole]) || hasRight(userStore, positionRights) || hasRight(userStore, roleRights)) ||
                     hasRight(userStore, procedureRights) ||
                     (hasRight(userStore, resourceTypeRights) || hasRight(userStore, resourceRights))) &&
                     <hr />
                 }
-                {hasRole(userStore, ["ADMIN_ROLE"]) &&
+                {hasRole(userStore, [adminRole]) &&
                     <Nav.Item>
                         <Nav.Link className="sidebarLink" as={Link} to="/admin/openingHours">Öffnungszeiten</Nav.Link>
                     </Nav.Item>
                 }
-                {hasRole(userStore, ["ADMIN_ROLE"]) &&
+                {hasRole(userStore, [adminRole]) &&
                     <Nav.Item>
                         <Nav.Link className="sidebarLink" as={Link} to="/admin/restriction">Einschränkungen</Nav.Link>
                     </Nav.Item>
                 }
-                {hasRole(userStore, ["ADMIN_ROLE"]) &&
+                {hasRole(userStore, [adminRole]) &&
                     <Nav.Item>
                         <Nav.Link className="sidebarLink" as={Link} to="/admin/optionalAttributes">Optionale Attribute</Nav.Link>
                     </Nav.Item>
@@ -54,7 +56,7 @@ const Side = ({closeFunction, userStore}) => {
                         <Nav.Link className="sidebarLink" as={Link} to="/admin/role">Rollen</Nav.Link>
                     </Nav.Item>
                 }
-                {(hasRole(userStore, ["ADMIN_ROLE"]) || hasRight(userStore, positionRights) || hasRight(userStore, roleRights)) &&
+                {(hasRole(userStore, [adminRole]) || hasRight(userStore, positionRights) || hasRight(userStore, roleRights)) &&
                      (hasRight(userStore, procedureRights) ||
                      (hasRight(userStore, resourceTypeRights) || hasRight(userStore, resourceRights))) &&
                     <hr />

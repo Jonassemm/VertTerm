@@ -4,7 +4,7 @@ import {Form, Table, Container, Col, Button } from "react-bootstrap"
 import {editOptionalAttributes} from "./optionalAttributesRequests"
 
 
-const optionalAttributesForm = ({ onCancel, edit, selected }) => {
+const optionalAttributesForm = ({ onCancel, edit, selected, userStore }) => {
     const [name, setName] = useState("")
     const [mandatoryField, setMandatoryField] = useState(false)
     const [edited, setEdited] = useState(false)
