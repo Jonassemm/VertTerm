@@ -137,17 +137,17 @@ function UserForm({onCancel,
       } else { //creation-mode
           var newData = {}
           try {
-          if(isEmployee){ //employee
-              newData = {firstName, lastName, username, password, systemStatus, roles, positions, availabilities, restrictions,
-                          optionalAttributes: optionalAttributesOfUser}
-              await addEmployee(newData);
-              userStore.setMessage("Mitarbeiter erfolgreich hinzugefügt!")
-          }else { //customer
-              newData = {firstName, lastName, username, password, systemStatus, roles, restrictions, 
-                          optionalAttributes: optionalAttributesOfUser}
-              await addCustomer(newData);
-              userStore.setMessage("Kunde erfolgreich hinzugefügt!")
-          }
+            if(isEmployee){ //employee
+                newData = {firstName, lastName, username, password, systemStatus, roles, positions, availabilities, restrictions,
+                            optionalAttributes: optionalAttributesOfUser}
+                await addEmployee(newData);
+                userStore.setMessage("Mitarbeiter erfolgreich hinzugefügt!")
+            }else { //customer
+                newData = {firstName, lastName, username, password, systemStatus, roles, restrictions, 
+                            optionalAttributes: optionalAttributesOfUser}
+                await addCustomer(newData);
+                userStore.setMessage("Kunde erfolgreich hinzugefügt!")
+            }
           } catch (error) {
             console.log(Object.keys(error), error.message)
           } 
@@ -168,6 +168,7 @@ function UserForm({onCancel,
               userStore.setMessage("Mitarbeiter erfolgreich gelöscht!")
             } catch (error){
               console.log(Object.keys(error), error.message)
+              userStore.setErrorMessage("Mitarbeiter kann mit bestehenden Terminen nicht gelöscht werden!")
             }
           }
         }else {
@@ -178,6 +179,7 @@ function UserForm({onCancel,
               userStore.setMessage("Kunde erfolgreich geändert!")
             } catch (error){
               console.log(Object.keys(error), error.message)
+              userStore.setErrorMessage("Kunde kann mit bestehenden Terminen nicht gelöscht werden!")
             }
           }
         }

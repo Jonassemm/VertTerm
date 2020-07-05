@@ -42,9 +42,24 @@ function NavBar({ userStore }) {
                     <LoginForm userStore={userStore} />
                 </Navbar>
             </Styles>
-            <Toast show={userStore.message} onClose={() => userStore.setMessage(null)} style={{height: "60px", border: "none", position: "fixed", zIndex: "100000", top: "30px", left: "40%" }} delay={5000} autohide>
-                <Toast.Header className="justify-content-md-center" style={{ height: "60px", textAlign: "center", backgroundColor: "#def2d6" }}>
-                    <h5 style={{ margin: "0px", padding: "0px", color: "#5a7052" }}>{userStore.message}</h5>
+            <Toast show={userStore.message} onClose={() => userStore.setMessage(null)} style={{height: "60px", border: "none", position: "fixed", zIndex: "100003", top: "30px", left: "40%" }} delay={3000} autohide>
+                <Toast.Header className="justify-content-md-center" style={{ height: "60px", textAlign: "center", backgroundColor: "#b5e8a0" }}>
+                    <h5 style={{ margin: "0px", padding: "0px", color:"black" }}>{userStore.message}</h5>
+                </Toast.Header>
+            </Toast>
+            <Toast show={userStore.infoMessage} onClose={() => userStore.setInfoMessage(null)} style={{height: "60px", border: "none", position: "fixed", zIndex: "100002", top: "30px", left: "40%" }} delay={5000} autohide>
+                <Toast.Header className="justify-content-md-center" style={{ height: "60px", textAlign: "center", backgroundColor: "#7f96e3" }}>
+                    <h5 style={{ margin: "0px", padding: "0px", color:"black" }}>{userStore.infoMessage}</h5>
+                </Toast.Header>
+            </Toast>
+            <Toast show={userStore.warningMessage} onClose={() => userStore.setWarningMessage(null)} style={{height: "60px", border: "none", position: "fixed", zIndex: "100001", top: "30px", left: "40%" }} delay={5000} autohide>
+                <Toast.Header className="justify-content-md-center" style={{ height: "60px", textAlign: "center", backgroundColor: "#e3b759" }}>
+                    <h5 style={{ margin: "0px", padding: "0px", color:"black" }}>{userStore.warningMessage}</h5>
+                </Toast.Header>
+            </Toast>
+            <Toast show={userStore.errorMessage} onClose={() => userStore.setErrorMessage(null)} style={{height: "60px", border: "none", position: "fixed", zIndex: "100000", top: "30px", left: "40%" }} delay={5000} autohide>
+                <Toast.Header className="justify-content-md-center" style={{ height: "60px", textAlign: "center", backgroundColor: "#f06565" }}>
+                    <h5 style={{ margin: "0px", padding: "0px", color:"black"}}>{userStore.errorMessage}</h5>
                 </Toast.Header>
             </Toast>
         </React.Fragment>

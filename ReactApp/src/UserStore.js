@@ -12,6 +12,21 @@ class UserStore {
         this.message = message
     }
 
+    infoMessage = null
+    setInfoMessage(infoMessage) {
+        this.infoMessage = infoMessage
+    }
+
+    warningMessage = null
+    setWarningMessage(warningMessage) {
+        this.warningMessage = warningMessage
+    }
+
+    errorMessage = null
+    setErrorMessage(errorMessage) {
+        this.errorMessage = errorMessage
+    }
+
     username = null
     setUsername(username) {
         this.username = username;
@@ -58,12 +73,6 @@ class UserStore {
                     return (item.name)
 
                 }))
-        /* const tempRights = []
-        res.data.roles.forEach((item,index,array) => {
-            item.rights.forEach((item, index) => {
-                tempRights.push(item)
-            })
-        }) */
         var allRights = []
         res.data.roles.map((role) => {
             role.rights.map((right)=> {
@@ -94,6 +103,9 @@ class UserStore {
 UserStore = decorate(UserStore, {
     user: observable,
     message: observable,
+    infoMessage: observable,
+    warningMessage: observable,
+    errorMessage: observable,
     username: observable,
     firstName: observable,
     lastName: observable,
@@ -109,6 +121,9 @@ UserStore = decorate(UserStore, {
     setLastName: action,
     setUserID: action,
     setMessage: action,
+    setInfoMessage: action,
+    setWarningMessage: action,
+    setErrorMessage: action,
     setLoggedIn: action
 })
 
