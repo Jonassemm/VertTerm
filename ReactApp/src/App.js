@@ -25,7 +25,8 @@ export default observer(function App({ userStore, calendarStore }) {
 
   async function refreshLogin() {
     const { data } = await getCurrentUser()
-    if (data != null) {
+    console.log(data)
+    if (data) {
       userStore.setUserID(data.id)
       userStore.setLoggedIn(true)
     }
