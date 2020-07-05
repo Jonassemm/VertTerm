@@ -276,7 +276,7 @@ public class AppointmentServiceImpl implements AppointmentService {
 				        		ResSer.isResourceAvailableBetween(resource.getId(),appointment.getPlannedStarttime(),
 								appointment.getPlannedEndtime());
 				      
-						if (ResApps.size() == 0 && !(containedinResources)) {
+						if (ResApps.size() == 0 && !(containedinResources) && (ResIsAva) ) {
 							Resources.add(resource);
 						//	Resourcefound = true;
 							break;
