@@ -16,7 +16,7 @@
 }
 
 .namebox {
-    width: 20%;
+    width: 30%;
     padding-left: 10px;
 }
 
@@ -32,11 +32,11 @@
 }
 
 .middleBoxLeft {
-    width: 30%;
+    width: 35%;
 }
 
 .middleBoxRight {
-    width: 70%;
+    width: 65%;
 }
 
 .rightBox {
@@ -56,12 +56,12 @@
 }
 
 .rightBoxLeft {
-    width: 30%;
+    width: 40%;
     text-align: center;
 }
 
 .rightBoxRight {
-    width: 70%;
+    width: 60%;
 }
 
 .input {
@@ -76,4 +76,22 @@
 .endDate {
     height: 35px;
     border: 1px solid #bbb;
+}
+
+@media (min-width: 1600px) {
+    .container{
+        max-width: 70%;
+    }
+}
+
+@media (max-width: 1200px) {
+    .container{
+        max-width: 90%;
+    }
+}
+
+@media (max-width: 1200px) {
+    .container {
+        max-width: 100%
+    }
 }

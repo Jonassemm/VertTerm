@@ -1,6 +1,6 @@
+//author: Jonas Semmler
 import React from "react";
-import { Container, Row, Col, Card, Form, Button } from "react-bootstrap";
-import { withRouter, Switch } from "react-router";
+import { Container} from "react-bootstrap";
 import Sidebar from "./Sidebar"
 import { Route } from "react-router"
 import "./adminPage_style.css"
