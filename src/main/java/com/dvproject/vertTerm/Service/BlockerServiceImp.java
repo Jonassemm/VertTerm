@@ -23,7 +23,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-
 //author Amar Alkhankan
 @Service
 @Transactional
@@ -42,16 +41,17 @@ public class BlockerServiceImp implements BlockerService {
 	// @PreAuthorize("hasAuthority('')")
 	public Blocker create(Blocker blocker) {
 		// create new blocker if not exist
-		blocker.setName(capitalize(blocker.getName()));
-		if (this.blockerRepo.findByname(blocker.getName()) == null) {
-			blockerRepo.save(blocker);
-			SetOrRemoveWarningFlag(blocker.getId(), "SET");
-			return blocker;
+//		if (blocker.getName() != null || blocker.getName().equals("")) 
+//			blocker.setName(capitalize(blocker.getName()));
 
-		} else {
-			throw new ResourceNotFoundException(
-					"Blocker with the given name :" + blocker.getName() + " already exsist");
-		}
+		blockerRepo.save(blocker);
+		SetOrRemoveWarningFlag(blocker.getId(), "SET");
+		return blocker;
+
+//			else {
+//			throw new ResourceNotFoundException(
+//					"Blocker with the given name :" + blocker.getName() + " already exsist");
+//		}
 
 	}
 
@@ -82,13 +82,15 @@ public class BlockerServiceImp implements BlockerService {
 
 					appointments.addAll(ResApps);
 				}
-			
-			// get all appointments from DB in the time interval of the blocker
-			if(appointments.size() == 0 )
-				appointments= appointmentService.getAppointmentsInTimeIntervalAndStatus(blocker.getPlannedStarttime(), blocker.getPlannedEndtime(), AppointmentStatus.PLANNED);
-			
+
+//			// get all appointments from DB in the time interval of the blocker
+//			if(appointments.size() == 0 )
+//				appointments= appointmentService.getAppointmentsInTimeIntervalAndStatus(blocker.getPlannedStarttime(), blocker.getPlannedEndtime(), AppointmentStatus.PLANNED);
+//			
+
 			// if the appointments-List not empty
-			// for each appointment in appointments-List SET/REMOVE (APPOINTMENT_WARNING)-flag
+			// for each appointment in appointments-List SET/REMOVE
+			// (APPOINTMENT_WARNING)-flag
 			if (appointments != null && appointments.size() > 0) {
 				if (SetorRemove.equals("SET"))
 					SetWarning(appointments);
@@ -104,12 +106,12 @@ public class BlockerServiceImp implements BlockerService {
 	}
 
 	public void SetWarning(List<Appointment> appointments) {
-		// set "APPOINTMENT_WARNING"  in all appointments and save changed to DB
+		// set "APPOINTMENT_WARNING" in all appointments and save changed to DB
 		for (Appointment app : appointments) {
 			// Appointment appDB = this.appointmentService.getById(app.getId());
-			if (app.addWarnings(Warning.APPOINTMENT_WARNING))
+			if (app.addWarning(Warning.APPOINTMENT_WARNING))
 				appointmentRepo.save(app);
-			// else
+//			else
 			// throw new AppointmentException("Appointment has already 'APPOINTMENT_WARNING'
 			// ", app);
 		}
@@ -126,7 +128,7 @@ public class BlockerServiceImp implements BlockerService {
 				tester.testAppointment(appointmentServiceImp);
 			} catch (Exception ex) {
 				// add Warning
-				app.addWarnings(Warning.APPOINTMENT_WARNING);
+				app.addWarning(Warning.APPOINTMENT_WARNING);
 			}
 			appointmentRepo.save(app);
 		}
@@ -136,7 +138,7 @@ public class BlockerServiceImp implements BlockerService {
 	// @PreAuthorize("hasAuthority('')")
 	public Blocker update(Blocker blocker) {
 		// update a blocker if it's exist
-		blocker.setName(capitalize(blocker.getName()));
+		// blocker.setName(capitalize(blocker.getName()));
 		if (blockerRepo.findById(blocker.getId()).isPresent()) {
 			// remove "APPOINTMENT_WARNING" from all appointments in the old blocker
 			SetOrRemoveWarningFlag(blocker.getId(), "REMOVE");
@@ -166,8 +168,8 @@ public class BlockerServiceImp implements BlockerService {
 			throw new ResourceNotFoundException("Blocker with the given id :" + id + " not found");
 		}
 	}
-	
-	public boolean exists (String id) {
+
+	public boolean exists(String id) {
 		return blockerRepo.existsById(id);
 	}
 

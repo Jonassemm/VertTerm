@@ -7,7 +7,6 @@ import org.springframework.data.mongodb.core.mapping.Document;
 //author Amar Alkhankan
 public class Blocker extends Appointment{
 
-    @Indexed(unique = true)
     private String name;
     
     public Blocker () {

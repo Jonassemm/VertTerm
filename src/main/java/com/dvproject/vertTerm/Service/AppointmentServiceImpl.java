@@ -261,16 +261,20 @@ public class AppointmentServiceImpl implements AppointmentService {
 		
 			if (ResourceTypes.size() > 0)
 				for (ResourceType rt : ResourceTypes) {
-					boolean Resourcefound = false;
+					//boolean Resourcefound = false;
 					for (Resource resource : ResSer.getActiveResourcesbyResourceType(rt)) {
 						List<Appointment> ResApps = this.getAppointmentsOfBookedResourceInTimeinterval(resource.getId(),
-								appointment.getPlannedStarttime(), appointment.getActualEndtime(),
+								appointment.getPlannedStarttime(), appointment.getPlannedEndtime(),
 								AppointmentStatus.PLANNED);
 						boolean containedinResources = Resources.stream()
-								.anyMatch(res -> res.getId().equals(resource.getId()));
-						if (ResApps.size() == 0 && !(containedinResources) ) {
+						.anyMatch(res -> res.getId().equals(resource.getId()));
+				        boolean ResIsAva=
+				        		ResSer.isResourceAvailableBetween(resource.getId(),appointment.getPlannedStarttime(),
+								appointment.getPlannedEndtime());
+				      
+						if (ResApps.size() == 0 && !(containedinResources) &&(ResIsAva) ){
 							Resources.add(resource);
-							Resourcefound = true;
+						//	Resourcefound = true;
 							break;
 						}
 					}
@@ -285,16 +289,19 @@ public class AppointmentServiceImpl implements AppointmentService {
 			// "Employees"-List
 			if (Positions.size() > 0)
 				for (Position pos : Positions) {
-					boolean Employeefound = false;
+					//boolean Employeefound = false;
 					for (Employee employee : EmpSer.getActiveEmployeesByPositionId(pos.getId())) {
 						List<Appointment> EmpApps = this.getAppointmentsOfBookedEmployeeInTimeinterval(employee.getId(),
 								appointment.getPlannedStarttime(), appointment.getActualEndtime(),
 								AppointmentStatus.PLANNED);
 						boolean containedinEmployees = Employees.stream()
 								.anyMatch(emp -> emp.getId().equals(employee.getId()));
-						if (EmpApps.size() == 0 && !(containedinEmployees)) {
+				        boolean EmpIsAva=
+				        		EmpSer.isEmployeeAvailableBetween(employee.getId(),appointment.getPlannedStarttime(),
+								appointment.getPlannedEndtime());
+						if (EmpApps.size() == 0 && !(containedinEmployees) && (EmpIsAva) ) {
 							Employees.add(employee);
-							Employeefound = true;
+						//	Employeefound = true;
 							break;
 						}
 					}
