@@ -107,7 +107,7 @@ const ObjectPicker = forwardRef((props, ref) => {
         })
         //filter for Anonymous and Admin user
         for (let i = 0; i < result.length; i++) {
-            if ((result[i].username == "admin") || (result[i].username == "anonymousUser")) {
+            if ((result[i].username == "admin") || (result[i].username == "anonymousUser") || (result[i].firstName === null)) {
                 result.splice(i, 1)
                 i -= 1
             }
@@ -123,30 +123,6 @@ const ObjectPicker = forwardRef((props, ref) => {
         setInit(true)
     }
 
-    /*  //REKURSIVE function to prevent setting a parent-resource "A" as a child-resource of his child-resource "B" (-> ChildOf(A) = B, ChildOf(B) = A) 
-     function checkChildResources(resource, reference) {
-         var feedback = true
-         var results = [] // for each child
- 
-         if (resource.childResources.length > 0) {
-             resource.childResources.map(singleChild => {
-                 if (singleChild.id == reference.id) {
-                     results.push(false) //save result 
-                 } else {
-                     results.push(checkChildResources(singleChild, reference)) //save result and start recursion
-                 }
-             })
-             if (results.map(singleResult => {
- 
-                 if (!singleResult) {
-                     feedback = false //overwrite feedback if resource has reference as a child resource
-                 }
-             }))
-                 return feedback
-         } else {
-             return feedback // resource cannot contain the reference as a child resource
-         }
-     } */
 
     async function getResourceData() {
         let res = {}

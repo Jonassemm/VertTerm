@@ -31,7 +31,7 @@ public class OverrideBookingTester extends BookingTester {
 			appointment.testPlannedTimes();
 			appointment.testOverlapping(timeIntervallsOfAppointments);
 		} catch (AppointmentTimeException ex) {
-			appointment.addWarning(Warning.APPOINTMENT_TIME_WARNING);
+			appointment.addWarnings(Warning.APPOINTMENT_TIME_WARNING);
 		}
 	}
 
@@ -40,7 +40,7 @@ public class OverrideBookingTester extends BookingTester {
 		try {
 			appointment.testEmployeesOfAppointment();
 		} catch (EmployeeException ex) {
-			appointment.addWarning(Warning.EMPLOYEE_WARNING);
+			appointment.addWarnings(Warning.EMPLOYEE_WARNING);
 		}
 
 	}
@@ -50,7 +50,7 @@ public class OverrideBookingTester extends BookingTester {
 		try {
 			appointment.testBookedEmployeesAgainstPositionsOfProcedure();
 		} catch (PositionException ex) {
-			appointment.addWarning(Warning.POSITION_WARINING);
+			appointment.addWarnings(Warning.POSITION_WARINING);
 		}
 	}
 
@@ -59,7 +59,7 @@ public class OverrideBookingTester extends BookingTester {
 		try {
 			appointment.testResourcesOfAppointment();
 		} catch (ResourceException ex) {
-			appointment.addWarning(Warning.RESOURCE_WARNING);
+			appointment.addWarnings(Warning.RESOURCE_WARNING);
 		}
 	}
 
@@ -68,7 +68,7 @@ public class OverrideBookingTester extends BookingTester {
 		try {
 			appointment.testBookedResourcesAgainstResourceTypesOfProcedure();
 		} catch (ResourceTypeException ex) {
-			appointment.addWarning(Warning.RESOURCETYPE_WARNING);
+			appointment.addWarnings(Warning.RESOURCETYPE_WARNING);
 		}
 	}
 
@@ -77,7 +77,7 @@ public class OverrideBookingTester extends BookingTester {
 		try {
 			appointment.testProcedureDuration();
 		} catch (ProcedureException ex) {
-			appointment.addWarning(Warning.PROCEDURE_WARNING);
+			appointment.addWarnings(Warning.PROCEDURE_WARNING);
 		}
 	}
 
@@ -86,7 +86,7 @@ public class OverrideBookingTester extends BookingTester {
 		try {
 			appointment.testAvailabilitiesOfProcedure_Employees_Resources();
 		} catch (AvailabilityException ex) {
-			appointment.addWarning(Warning.AVAILABILITY_WARNING);
+			appointment.addWarnings(Warning.AVAILABILITY_WARNING);
 		}
 	}
 
@@ -95,7 +95,7 @@ public class OverrideBookingTester extends BookingTester {
 		try {
 			appointment.testRestrictions(restrictionService);
 		} catch (RestrictionException ex) {
-			appointment.addWarning(Warning.RESTRICTION_WARNING);
+			appointment.addWarnings(Warning.RESTRICTION_WARNING);
 		}
 	}
 
@@ -105,12 +105,12 @@ public class OverrideBookingTester extends BookingTester {
 			appointment.testDistinctBookedAttributes();
 			appointment.testBlockage(appointmentService);
 		} catch (AppointmentException ex) {
-			appointment.addWarning(Warning.APPOINTMENT_WARNING);
+			appointment.addWarnings(Warning.APPOINTMENT_WARNING);
 		} catch (AppointmentInternalException ex) {
-			appointment.addWarning(Warning.APPOINTMENT_WARNING);
+			appointment.addWarnings(Warning.APPOINTMENT_WARNING);
 			
 			ex.getAppointments().forEach(app -> { 
-				app.addWarning(Warning.APPOINTMENT_WARNING); 
+				app.addWarnings(Warning.APPOINTMENT_WARNING); 
 				appointmentService.update(app);
 			});
 		}

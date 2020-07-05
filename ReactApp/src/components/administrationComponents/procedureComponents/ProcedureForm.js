@@ -4,8 +4,15 @@ import ObjectPicker from "../../ObjectPicker"
 import { addProcedure, deleteProcedure, editProcedure } from "./ProcedureRequests"
 import Availability from "../availabilityComponents/Availability"
 import "./ProcedureStyles.css"
+import { hasRight } from "../../../auth"
+import {procedureRights} from "../../Rights"
 
-function ProcedureForm({ onCancel, edit, selected, setException = null }) {
+function ProcedureForm({ onCancel, 
+    edit, 
+    selected, 
+    setException, //Availability exception
+    userStore }) {
+    const rightName = procedureRights[1] //write right
     const [tabKey, setTabKey] = useState('general')
     const [edited, setEdited] = useState(false)
     const [enterPrice, setEnterPrice] = useState(false)
@@ -44,6 +51,7 @@ function ProcedureForm({ onCancel, edit, selected, setException = null }) {
     }, [name, publicProcedure, description, duration, status, precedingRelations, subsequentRelations, positions, resourceTypes, availabilities, pricePerHour, pricePerInvocation, restrictions, resourceTypesCount, positionsCount])
 
     const secondsToMinutes = (time) => {
+        console.log(time)
         if (time === null) {
             return null
         } else {
@@ -107,7 +115,15 @@ function ProcedureForm({ onCancel, edit, selected, setException = null }) {
     }
 
     const handleDelete = async () => {
-        const res = await deleteProcedure(selected.id)
+        if(hasRight(userStore, [rightName])){
+            try{
+                await  deleteProcedure(selected.id)
+            } catch (error){
+                console.log(Object.keys(error), error.message)
+            }
+        }else {//no rights!
+            alert("Für diesen Vorgang besitzten Sie nicht die erforderlichen Rechte!\n\nBenötigtes Recht: " + rightName)
+        }
         onCancel()
     }
 
@@ -122,7 +138,7 @@ function ProcedureForm({ onCancel, edit, selected, setException = null }) {
         const res = await editProcedure(selected.id, data)
             .then(res => {
                 if (res.headers.exception) {
-                setException(res.headers.exception)
+                    setException(res.headers.exception)
                 }
             })
         onCancel()
@@ -207,81 +223,85 @@ function ProcedureForm({ onCancel, edit, selected, setException = null }) {
     const handleSubmit = async event => {
         event.preventDefault()
 
-        const transformTimes = (timeString) => {
-            if (timeString === null) {
-                return null
+        if(hasRight(userStore, [rightName])) { 
+            const transformTimes = (timeString) => {
+                if (timeString === null) {
+                    return null
+                } else {
+                    return Number(timeString) * 60
+                }
+            }
+    
+            //combines the selected positions with the count
+            let extendedPositions = []
+            for (let i = 0; i < positions.length; i++) {
+                for (let p = 0; p < positionsCount[i]; p++) {
+                    extendedPositions.push({ id: positions[i].id, ref: "position" })
+                }
+            }
+    
+            let extendedResourceTypes = []
+            for (let i = 0; i < resourceTypes.length; i++) {
+                for (let p = 0; p < resourceTypesCount[i]; p++) {
+                    extendedResourceTypes.push({ id: resourceTypes[i].id, ref: "resourceType" })
+                }
+            }
+    
+            let reducedPrecedingRelations = precedingRelations.map(item => {
+                return {
+                    procedure: { id: item.procedure.id, ref: "procedure" },
+                    maxDifference: transformTimes(item.maxDifference),
+                    minDifference: transformTimes(item.minDifference)
+                }
+            })
+    
+            let reducedSubsequentRelations = subsequentRelations.map(item => {
+                return {
+                    procedure: { id: item.procedure.id, ref: "procedure" },
+                    maxDifference: transformTimes(item.maxDifference),
+                    minDifference: transformTimes(item.minDifference)
+                }
+            })
+    
+            let restrictionsRef = restrictions.map(item => {
+                return {
+                    id: item.id,
+                    ref: "restriction"
+                }
+            })
+    
+            const data = {
+                name: name,
+                description: description,
+                duration: transformTimes(duration),
+                pricePerInvocation: pricePerInvocation,
+                pricePerHour: pricePerHour,
+                status: status,
+                precedingRelations: reducedPrecedingRelations,
+                subsequentRelations: subsequentRelations,
+                neededResourceTypes: extendedResourceTypes,
+                neededEmployeePositions: extendedPositions,
+                restrictions: restrictionsRef,
+                availabilities: availabilities,
+                publicProcedure: publicProcedure
+            }
+            console.log(data)
+    
+            if (!edit) {
+                const res = await addProcedure(data)
             } else {
-                return Number(timeString) * 60
+                data.id = selected.id
+                const res = await editProcedure(selected.id, data)
+                    .then(res => {
+                        if (res.headers.exception) {
+                        setException(res.headers.exception)
+                        }
+                    })
             }
-        }
-
-        //combines the selected positions with the count
-        let extendedPositions = []
-        for (let i = 0; i < positions.length; i++) {
-            for (let p = 0; p < positionsCount[i]; p++) {
-                extendedPositions.push({ id: positions[i].id, ref: "position" })
-            }
-        }
-
-        let extendedResourceTypes = []
-        for (let i = 0; i < resourceTypes.length; i++) {
-            for (let p = 0; p < resourceTypesCount[i]; p++) {
-                extendedResourceTypes.push({ id: resourceTypes[i].id, ref: "resourceType" })
-            }
-        }
-
-        let reducedPrecedingRelations = precedingRelations.map(item => {
-            return {
-                procedure: { id: item.procedure.id, ref: "procedure" },
-                maxDifference: transformTimes(item.maxDifference),
-                minDifference: transformTimes(item.minDifference)
-            }
-        })
-
-        let reducedSubsequentRelations = subsequentRelations.map(item => {
-            return {
-                procedure: { id: item.procedure.id, ref: "procedure" },
-                maxDifference: transformTimes(item.maxDifference),
-                minDifference: transformTimes(item.minDifference)
-            }
-        })
-
-        let restrictionsRef = restrictions.map(item => {
-            return {
-                id: item.id,
-                ref: "restriction"
-            }
-        })
-
-        const data = {
-            name: name,
-            description: description,
-            duration: transformTimes(duration),
-            pricePerInvocation: pricePerInvocation,
-            pricePerHour: pricePerHour,
-            status: status,
-            precedingRelations: reducedPrecedingRelations,
-            subsequentRelations: subsequentRelations,
-            neededResourceTypes: extendedResourceTypes,
-            neededEmployeePositions: extendedPositions,
-            restrictions: restrictionsRef,
-            availabilities: availabilities,
-            publicProcedure: publicProcedure
-        }
-        console.log(data)
-
-        if (!edit) {
-            const res = await addProcedure(data)
-        } else {
-            data.id = selected.id
-            const res = await editProcedure(selected.id, data)
-                .then(res => {
-                    if (res.headers.exception) {
-                    setException(res.headers.exception)
-                    }
-                })
-        }
-        onCancel()
+            onCancel()
+        }else {//no right to submit 
+            alert("Für diesen Vorgang besitzten Sie nicht die erforderlichen Rechte!\n\nBenötigtes Recht: " + rightName)
+          }
     }
 
     const LabelStyle = { marginTop: "10px" }
@@ -297,7 +317,7 @@ function ProcedureForm({ onCancel, edit, selected, setException = null }) {
                 >
                     <Tab eventKey="general" title="Allgemein" style={TabStyle}>
                         <Form.Row style={{ display: "flex" }}>
-                            <div style={{padding: "0px", marginBottom: "0px", width:"70%" }}>
+                            <div style={{ padding: "0px", marginBottom: "0px", width: "70%" }}>
                                 <Form.Label>
                                     Name
                                 </Form.Label>
@@ -310,7 +330,7 @@ function ProcedureForm({ onCancel, edit, selected, setException = null }) {
                                     onChange={e => setName(e.target.value)}
                                 />
                             </div>
-                            <div style={{paddingTop: "40px", textAlign: "right", marginBottom: "0px", width:"30%" }}>
+                            <div style={{ paddingTop: "40px", textAlign: "right", marginBottom: "0px", width: "30%" }}>
                                 <Form.Check
                                     type="switch"
                                     id="custom-switch"
@@ -348,7 +368,7 @@ function ProcedureForm({ onCancel, edit, selected, setException = null }) {
                                 min="0"
                                 name="duration"
                                 placeholder="Dauer in Minuten eingeben"
-                                value={duration || null}
+                                value={duration === null ? null : duration}
                                 onChange={e => {
                                     if (e.target.value === "") setDuration(null)
                                     else setDuration(event.target.value)
@@ -399,8 +419,74 @@ function ProcedureForm({ onCancel, edit, selected, setException = null }) {
                             </Form.Row>
                         }
                     </Tab>
+                    <Tab eventKey="resources" title="Ressourcen" style={TabStyle}>
+                        <Form.Label style={{ marginTop: "5px" }}>Benötigte Ressourcentypen:</Form.Label>
+                        <ObjectPicker DbObject="resourceType" initial={edit && resourceTypes} setState={setResourceTypesExt} multiple={true} />
+                        {resourceTypes.map((item, index) => {
+                            return (
+                                <Row style={{ marginTop: "5px" }}>
+                                    <div style={{ paddingTop: "7px", width: "50%", textAlign: "right" }}>
+                                        <span>Anzahl {item.name}:</span>
+                                    </div>
+                                    <Col>
+                                        <Form.Control
+                                            type="number"
+                                            min="1"
+                                            name={index}
+                                            value={resourceTypesCount[index] || "1"}
+                                            onChange={e => {
+                                                setResourceTypesCount(resourceTypesCount.map((item, index) => {
+                                                    if (index == e.target.name) {
+                                                        return Number(e.target.value)
+                                                    } else {
+                                                        return item
+                                                    }
+                                                }))
+                                            }}
+                                        />
+                                    </Col>
+                                </Row>
+                            )
+                        })}
+                        <Form.Label style={{ marginTop: "10px" }}>Benötigte Positionen:</Form.Label>
+                        <ObjectPicker DbObject="position" initial={edit && positions} setState={setPositionsExt} multiple={true}></ObjectPicker>
+                        {positions.map((item, index) => {
+                            return (
+                                <Row style={{ marginTop: "5px" }}>
+                                    <div style={{ paddingTop: "7px", width: "50%", textAlign: "right" }}>
+                                        <span>Anzahl {item.name}:</span>
+                                    </div>
+                                    <Col>
+                                        <Form.Control
+                                            type="number"
+                                            min={1}
+                                            id={index}
+                                            name={index}
+                                            value={positionsCount[index] || 1}
+                                            onChange={e => {
+                                                setPositionsCount(positionsCount.map((item, index) => {
+                                                    if (index == e.target.name) {
+                                                        return Number(e.target.value)
+                                                    } else {
+                                                        return item
+                                                    }
+                                                }))
+                                            }}
+                                        />
+                                    </Col>
+                                </Row>
+                            )
+                        })}
+                    </Tab>
                     <Tab eventKey="availability" title="Verfügbarkeit" style={TabStyle}>
-                        <Availability availabilities={availabilities} addAvailability={addAvailability} updateAvailabilities={updateAvailabilities} editedAvailabilities={setEdited} />
+                        <Availability 
+                            availabilities={availabilities} 
+                            addAvailability={addAvailability} 
+                            updateAvailabilities={updateAvailabilities} 
+                            editedAvailabilities={setEdited} 
+                            userStore={userStore}
+                            selected={selected}
+                        />
                     </Tab>
                     <Tab eventKey="dependencies" title="Abhängigkeiten" style={TabStyle}>
                         <Form.Label>Zwingende Vorläufer</Form.Label>
@@ -523,64 +609,6 @@ function ProcedureForm({ onCancel, edit, selected, setException = null }) {
                             </Table>
                         }
 
-                    </Tab>
-                    <Tab eventKey="resources" title="Ressourcen" style={TabStyle}>
-                        <Form.Label style={{ marginTop: "5px" }}>Benötigte Ressourcentypen:</Form.Label>
-                        <ObjectPicker DbObject="resourceType" initial={edit && resourceTypes} setState={setResourceTypesExt} multiple={true} />
-                        {resourceTypes.map((item, index) => {
-                            return (
-                                <Row style={{ marginTop: "5px" }}>
-                                    <Col style={{ textAlign: "right", verticalAlign: "bottom" }}>
-                                        <span>Anzahl {item.name}:</span>
-                                    </Col>
-                                    <Col>
-                                        <Form.Control
-                                            type="number"
-                                            min="1"
-                                            name={index}
-                                            value={resourceTypesCount[index] || "1"}
-                                            onChange={e => {
-                                                setResourceTypesCount(resourceTypesCount.map((item, index) => {
-                                                    if (index == e.target.name) {
-                                                        return Number(e.target.value)
-                                                    } else {
-                                                        return item
-                                                    }
-                                                }))
-                                            }}
-                                        />
-                                    </Col>
-                                </Row>
-                            )
-                        })}
-                        <Form.Label style={{ marginTop: "10px" }}>Benötigte Positionen:</Form.Label>
-                        <ObjectPicker DbObject="position" initial={edit && positions} setState={setPositionsExt} multiple={true}></ObjectPicker>
-                        {positions.map((item, index) => {
-                            return (
-                                <Row style={{ marginTop: "5px" }}>
-                                    <Col style={{ textAlign: "right", verticalAlign: "bottom" }}><span>Anzahl {item.name}:</span>
-                                    </Col>
-                                    <Col>
-                                        <Form.Control
-                                            type="number"
-                                            min={1}
-                                            id={index}
-                                            name={index}
-                                            value={positionsCount[index] || 1}
-                                            onChange={e => {
-                                                setPositionsCount(positionsCount.map((item, index) => {
-                                                    if (index == e.target.name) {
-                                                        return Number(e.target.value)
-                                                    } else {
-                                                        return item
-                                                    }
-                                                }))
-                                            }}
-                                        />
-                                    </Col>
-                                </Row>
-                            )
-                        })}
                     </Tab>
                 </Tabs>
                 <hr />

@@ -1,5 +1,7 @@
+//author: Patrick Venturini
 import axios from "axios"
 import {APIURL} from "../../../APIConfig"
+
 
 export const getAllRestrictions = () => axios.get(`${APIURL}/api/Restrictions`)
 export const addRestriction = data => axios.post(`${APIURL}/api/Restrictions`,data)

@@ -56,7 +56,9 @@ public class EmployeeServiceImp extends WarningServiceImpl implements EmployeeSe
 	}
 
 	public List<Employee> getActiveEmployeesByPositionId(String positionId) {
-		// get all Active Employees from type
+
+		//get all Active Employees from position 
+
 		List<Employee> employees = new ArrayList<>();
 		List<Employee> AllEmployees = this.getAll(positionId);
 		for (Employee emp : AllEmployees) {
@@ -147,7 +149,7 @@ public class EmployeeServiceImp extends WarningServiceImpl implements EmployeeSe
 		repo.save(user);
 		
 		getPlannedAppointmentsWithId(id).forEach(app -> {
-			app.addWarning(Warning.EMPLOYEE_WARNING);
+			app.addWarnings(Warning.EMPLOYEE_WARNING);
 			appointmentService.update(app);
 		});
 

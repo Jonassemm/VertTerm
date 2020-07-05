@@ -14,6 +14,8 @@ import org.springframework.stereotype.Service;
 import com.dvproject.vertTerm.repository.RessourceRepository;
 import com.dvproject.vertTerm.repository.RestrictionRepository;
 
+//author Amar Alkhankan 
+//testCorrectDependencies Methode ?
 @Service
 public class ResourceServiceImp extends WarningServiceImpl implements ResourceService, AvailabilityService {
 
@@ -59,7 +61,7 @@ public class ResourceServiceImp extends WarningServiceImpl implements ResourceSe
 		ResRepo.save(Res);
 
 		getPlannedAppointmentsWithId(id).forEach(app -> {
-			app.addWarning(Warning.RESOURCE_WARNING);
+			app.addWarnings(Warning.RESOURCE_WARNING);
 			appointmentService.update(app);
 		});
 
@@ -174,9 +176,10 @@ public class ResourceServiceImp extends WarningServiceImpl implements ResourceSe
 		return Resource.getResourceTypes();
 	}
 
+	
 	// @PreAuthorize("hasAuthority('RESOURCE_READ')")
 	public List<Resource> getResources(String ResTid) {
-		// get all resources from type
+		// get all resources from resource-type using id
 		List<Resource> Resources = new ArrayList<>();
 		List<Resource> AllResources = ResRepo.findAll();
 		for (Resource r : AllResources) {
