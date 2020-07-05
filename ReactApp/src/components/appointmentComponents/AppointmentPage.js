@@ -10,6 +10,7 @@ import {appointmentStatus, translateStatus} from "./AppointmentStatus"
 import {ExceptionModal} from "../ExceptionModal"
 import styled from "styled-components"
 import { hasRight } from "../../auth"
+import {ownAppointmentRights, appointmentRights, overrideRight} from "../Rights"
 
 var moment = require('moment'); 
 import {
@@ -51,8 +52,9 @@ export default function AppointmentPage({calendarStore, userStore}) {
     if(userStore.user != null && userStore.username != "admin" && userStore.username != "anonymousUser"){
         initialUser = [userStore.user]
     }
-    const rightNameOwn = "OWN_APPOINTMENT_READ"
-    const rightName = "APPOINTMENT_READ"
+    const rightNameOwn = ownAppointmentRights[0] //read right
+    const rightName = appointmentRights[0] //read right
+    const rightOverride = overrideRight[0] // array with just one right
     const [loading, setLoading] = useState(false) //for loading appointments (could take some time)
     const [calendarLoaded, setCalendarLoaded] = useState(false)
     const [tabKey, setTabKey] = useState('calendar')
@@ -104,13 +106,17 @@ export default function AppointmentPage({calendarStore, userStore}) {
     }
 
     const handleOverrideDelete = async () => {
-        try{
-            await deleteOverrideAppointment(overrideDeleteId);
-        } catch (error){
-            console.log(Object.keys(error), error.message)
+        if(hasRight(userStore, [rightOverride])){
+            try{
+                await deleteOverrideAppointment(overrideDeleteId);
+            } catch (error){
+                console.log(Object.keys(error), error.message)
+            }
+            setShowExceptionModal(false)
+            loadAppointments(appointmentsOf)
+        }else{
+            alert("Für diesen Vorgang besitzten Sie nicht die erforderlichen Rechte!\n\nBenötigtes Recht: " + rightOverride)
         }
-        setShowExceptionModal(false)
-        loadAppointments(appointmentsOf)
     }
 
     //-------------------------PreferredAppointmentModal----------------------------
