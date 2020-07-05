@@ -5,7 +5,7 @@ import { Container, Form, Col, Row, Button, Modal, Spinner } from "react-bootstr
 import ObjectPicker from "../ObjectPicker"
 import "./BookingForm.css"
 import DatePicker from "react-datepicker"
-import { addAppointmentGroup, addAppointmentGroupOverride,getAppointmentGroupByApt,editAppointmentGroup, addAppointmentGroupAny, getAppointment, searchAppointmentGroup, addBlocker } from "../requests"
+import { addAppointmentGroup, addAppointmentGroupAnyOverride, addAppointmentGroupOverride,getAppointmentGroupByApt,editAppointmentGroup, editAppointmentGroupOverride, addAppointmentGroupAny, getAppointment, searchAppointmentGroup, addBlocker, OptimizeEarlyEnd } from "../requests"
 import { useHistory } from "react-router-dom"
 import { getErrorMessage } from "./bookingErrors"
 import SearchAptCalendar from "./SearchCalendar/SearchAptCalendar"
@@ -14,7 +14,7 @@ import BlockerForm from "./BlockerForm"
 
 const localizer = momentLocalizer(moment)
 
-function BookingForm(props) {
+function BookingForm({editData,userStore}) {
     const [calendarEvents, setCalendarEvents] = useState([])
     const [selectedProcedures, setSelectedProcedures] = useState([])
     const [selectedCustomer, setSelectedCustomer] = useState([])
@@ -45,9 +45,9 @@ function BookingForm(props) {
     }, [])
 
     async function setupEdit() {
-        if (!(Object.keys(props).length === 0 && props.constructor === Object)) {
+        if (editData) {
             setEditMode(true)
-            const { appointmentID } = props.match.params
+            const { appointmentID } = editData.match.params
             let {data} = await getAppointmentGroupByApt(appointmentID)
             data = data.appointments.map(item => {
                 return {...item,
@@ -228,7 +228,7 @@ function BookingForm(props) {
                 }
             })
         }else {
-            if((customApt.bookedCustomer.length != 0) && (customApt.plannedStarttime != null) && (customApt.plannedEndtime != null)) complete = true
+            if((customApt.plannedStarttime != null) && (customApt.plannedEndtime != null)) complete = true
         }
         setFormComplete(complete)
     }
@@ -256,6 +256,13 @@ function BookingForm(props) {
     function setSelectedTime(procedure, timeslot){
         setApts(apts.map(apt => {
             if(apt.bookedProcedure.id == procedure.id){
+                if(apt.bookedProcedure.duration != null){
+                    return {
+                        ...apt,
+                        plannedStarttime: timeslot.start,
+                        plannedEndtime: moment(timeslot.start).add(apt.bookedProcedure.duration,"seconds").toDate()
+                    }
+                }else 
                 return {
                     ...apt,
                     plannedStarttime: timeslot.start,
@@ -266,8 +273,9 @@ function BookingForm(props) {
         setShowSelectCalendarModal(false)
     }
 
-    function optimizeAppointment() {
-        //TODO missing API
+    async function optimizeAppointment() {
+        const aptGroup = buildFinalData()
+        const res = await OptimizeEarlyEnd(aptGroup.appointments[0])
     }
 
     async function searchAppointment() {
@@ -315,18 +323,18 @@ function BookingForm(props) {
         }
         aptGroup = { appointments: finalData, status: "active" }
     }else{
-        aptGroup = {bookedCustomer: {id: customApt.bookedCustomer[0].id, ref:"user"},
-                        name: customApt.name,
-                        bookedResources: customApt.bookedResources.map(item => {
-                            return {id: item.id, ref:"resource"}
-                        }),
-                        bookedEmployees: customApt.bookedEmployees.map(item => {
-                            return {id: item.id, ref:"user"}
-                        }),
-                        plannedEndtime: moment(customApt.plannedEndtime).format("DD.MM.YYYY HH:mm").toString(),
-                        plannedStarttime: moment(customApt.plannedStarttime).format("DD.MM.YYYY HH:mm").toString(),
-                        status: "planned"
-                        }
+        aptGroup = {
+            name: customApt.name,
+            bookedResources: customApt.bookedResources.map(item => {
+                return {id: item.id, ref:"resource"}
+            }),
+            bookedEmployees: customApt.bookedEmployees.map(item => {
+                return {id: item.id, ref:"user"}
+            }),
+            plannedEndtime: moment(customApt.plannedEndtime).format("DD.MM.YYYY HH:mm").toString(),
+            plannedStarttime: moment(customApt.plannedStarttime).format("DD.MM.YYYY HH:mm").toString(),
+            status: "planned"
+            }
     }
         return aptGroup
     }
@@ -337,13 +345,27 @@ function BookingForm(props) {
     }
 
     async function overrideSubmit() {
-        if (selectedCustomer.length != 0 || selectedCustomer === {}) {
             const aptGroup = buildFinalData()
-            await addAppointmentGroupOverride(aptGroup, selectedCustomer[0].id)
+            try{
+            if(!editMode){
+                if(selectedCustomer.length != 0){
+                    await addAppointmentGroupOverride(aptGroup, selectedCustomer[0].id)
+                    userStore.setMessage("Termin erfolgreich gebucht!")
+                    history.push("/appointment")
+                } else {
+                    const res = await addAppointmentGroupAnyOverride(aptGroup)
+                    const data = btoa(res.data)
+                    userStore.setMessage("Termin erfolgreich gebucht!")
+                    setQRCred(data)
+                    setShowMode(true)
+                }
+            }else{
+                await editAppointmentGroupOverride(aptGroup, selectedCustomer[0].id)
+                userStore.setMessage("Termin erfolgreich geändert!")
+            }
             history.push("/appointment")
-        } else {
-            setException("customer")
-            setShowExceptionModal(true)
+        }catch(error){
+            userStore.setMessage("Error!")
         }
     }
 
@@ -355,19 +377,21 @@ function BookingForm(props) {
             try {
             if(editMode){
                 await editAppointmentGroup(aptGroup, selectedCustomer[0].id)
+                userStore.setMessage("Termin erfolgreich gebucht!")
                 history.push("/appointment")
             }else if(custom){
                 await addBlocker(aptGroup)
+                userStore.setMessage("Termin erfolgreich gebucht!")
                 history.push("/appointment")
             }else {
                 if(selectedCustomer.length != 0){
                     await addAppointmentGroup(aptGroup, selectedCustomer[0].id)
+                    userStore.setMessage("Termin erfolgreich gebucht!")
                     history.push("/appointment")
                 } else {
-                    console.log("anonym")
                     const res = await addAppointmentGroupAny(aptGroup)
-                    // obscuring the link
                     const data = btoa(res.data)
+                    userStore.setMessage("Termin erfolgreich gebucht!")
                     setQRCred(data)
                     setShowMode(true)
                 }
@@ -383,11 +407,11 @@ function BookingForm(props) {
 
     return (
         <div className="page">
-            <Container>
+            <Container id="bookingForm">
                 <Form onSubmit={handleSubmit}>
                     <Row style={{ alignItems: "baseline" }}>
                         <Col>
-                            <h1>{editMode? "Termin ändern" : showMode ? "βooking Terminbestätigung" : "Termin Buchen"}</h1>
+                            <h1>{editMode? "Termin ändern" : showMode ? "betabook.me Terminbestätigung" : "Termin Buchen"}</h1>
                         </Col>
                         {!editMode && !showMode &&
                         <Col className="selectType">
@@ -402,6 +426,10 @@ function BookingForm(props) {
                         </Col>
                         }
                     </Row>
+                    
+                    {custom && <BlockerForm apt={customApt} setApt={setCustomApt} edit={editMode} customer={selectedCustomer}/>}
+                    {!custom &&
+                    <React.Fragment>
                     <hr />
                     {!showMode && !editMode &&
                         <Form.Row>
@@ -430,8 +458,6 @@ function BookingForm(props) {
                         </Form.Group>
                     </Form.Row>
                     }
-                    {custom && <BlockerForm apt={customApt} setApt={setCustomApt} edit={editMode} customer={selectedCustomer}/>}
-                    {!custom && 
                     <React.Fragment>
                     <Form.Row>
                         <Form.Group as={Col} style={{ textAlign: "bottom" }}>
@@ -485,8 +511,8 @@ function BookingForm(props) {
                                         {apt.bookedProcedure.neededEmployeePositions && apt.bookedProcedure.neededEmployeePositions.map((innerItem, index) => {
                                             return (
                                                 <div className="middleBox">
-                                                    <div className="middleBoxLeft">
-                                                        <span>{innerItem.name}</span>
+                                                    <div className="middleBoxLeft" style={{paddingTop: "7px"}}>
+                                                        <span style={{}}>{innerItem.name}</span>
                                                     </div>
                                                     <div className="middleBoxRight">
                                                         <ObjectPicker
@@ -504,7 +530,7 @@ function BookingForm(props) {
                                         {apt.bookedProcedure.neededResourceTypes && apt.bookedProcedure.neededResourceTypes.map((innerItem, index) => {
                                             return (
                                                 <div className="middleBox">
-                                                    <div className="middleBoxLeft">
+                                                    <div className="middleBoxLeft" style={{paddingTop: "7px"}}>
                                                         <span>{innerItem.name}</span>
                                                     </div>
                                                     <div className="middleBoxRight">
@@ -569,6 +595,7 @@ function BookingForm(props) {
                             </React.Fragment>
                         )
                     })}
+                    </React.Fragment>
                     </React.Fragment>
                     }
                     <hr />

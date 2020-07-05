@@ -18,7 +18,6 @@ import com.dvproject.vertTerm.Model.AvailabilityRhythm;
 import com.dvproject.vertTerm.Model.Customer;
 import com.dvproject.vertTerm.Model.Employee;
 import com.dvproject.vertTerm.Model.OpeningHours;
-import com.dvproject.vertTerm.Model.OptionalAttribute;
 import com.dvproject.vertTerm.Model.OptionalAttributes;
 import com.dvproject.vertTerm.Model.Right;
 import com.dvproject.vertTerm.Model.Role;
@@ -75,8 +74,8 @@ public class SetupDataLoader implements ApplicationListener<ContextRefreshedEven
 
 		setupRights();
 
-		Role adminRole = createRoleIfNotFound("ADMIN_ROLE", setUpAdminRights());
-		Role userRole = createRoleIfNotFound("ANONYMOUS_ROLE", setUpAnonymusUserRights());
+		Role adminRole = createRoleIfNotFound("Admin_role", setUpAdminRights());
+		Role userRole = createRoleIfNotFound("Anonymous_role", setUpAnonymusUserRights());
 
 		createEmployeeIfNotFound("admin", "password", Arrays.asList(adminRole));
 		createUserIfNotFound("anonymousUser", "password", Arrays.asList(userRole));
@@ -231,8 +230,8 @@ public class SetupDataLoader implements ApplicationListener<ContextRefreshedEven
 		setupRight("CUSTOMER_WRITE", "Ändern aller Kunden erlaubt");
 
 		// role
-		setupRight("ROLE_READ", "Lesen aller Kunden erlaubt");
-		setupRight("ROLE_WRITE", "Ändern aller Kunden erlaubt");
+		setupRight("ROLE_READ", "Lesen aller Rollen erlaubt");
+		setupRight("ROLE_WRITE", "Ändern aller Rollen erlaubt");
 
 		// right
 		setupRight("RIGHT_READ", "Lesen aller Rechte erlaubt");
@@ -251,15 +250,13 @@ public class SetupDataLoader implements ApplicationListener<ContextRefreshedEven
 
 		// availability
 		setupRight("OWN_AVAILABILITY_WRITE", "Ändern der eigenen Verfügbarkeiten erlaubt");
-		setupRight("AVAILABILITY_WRITE", "Ändern aller VerfÃ¼gbarkeiten erlaubt");
+		setupRight("AVAILABILITY_WRITE", "Ändern aller Verfügbarkeiten erlaubt");
 
 		// appointment
 		setupRight("OWN_APPOINTMENT_READ", "Lesen der eigenen Termine erlaubt");
 		setupRight("OWN_APPOINTMENT_WRITE", "Ändern der eigenen Termine erlaubt");
-		setupRight("OWN_APPOINTMENT_BOOK", "Buchen der eigenen Termine erlaubt");
 		setupRight("APPOINTMENT_READ", "Lesen aller Termine erlaubt");
 		setupRight("APPOINTMENT_WRITE", "Ändern aller Termine erlaubt");
-		setupRight("APPOINTMENT_BOOK", "Buchen aller Termine erlaubt");
 
 		setupRight("OVERRIDE",
 				"Erlaubt das Durchführen einer Aktion, welche ansonsten aufgrund nicht eingehaltener Bedingungen nicht erlaubt wäre");

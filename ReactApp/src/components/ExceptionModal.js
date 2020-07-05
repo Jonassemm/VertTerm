@@ -1,6 +1,6 @@
+//author: Patrick Venturini
 import React from 'react'
-import {Form, Col, Container, Tabs, Tab, Button, Modal} from "react-bootstrap"
-import {getWarningsAsString} from "./Warnings"
+import {Form, Col, Button, Modal} from "react-bootstrap"
 import {getErrorMessage} from "./calendarComponents/bookingErrors"
 import {Link} from 'react-router-dom';
 
@@ -50,7 +50,7 @@ export function ExceptionModal({
                                 style={{background: "white", color: "red", fontWeight: "bold"}}
                                 name="warnings"
                                 type="text"
-                                value={getErrorMessage(exception)}
+                                value={getErrorMessage((exception == "Availability") ? "removedAvailability" : exception)}
                             />
                     </Form.Group>
                 </Form.Row>

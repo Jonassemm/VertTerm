@@ -1,3 +1,4 @@
+//author: Patrick Venturini
 export const kindOfWarning = {
     appointmenttime: "AppointmenttimeWarning",
     appointment: "AppointmentWarning",
@@ -139,7 +140,5 @@ export const creatWarningList = (list) => {
             }
         }
     }
-    console.log("WarningLIST")
-    console.log(warningList)
     return warningList  
 }

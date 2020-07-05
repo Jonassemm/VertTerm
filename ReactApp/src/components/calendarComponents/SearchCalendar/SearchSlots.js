@@ -1,5 +1,5 @@
 'use strict'
-
+//author: Jonas Semmler
 import { getResources, getEmployees, getProcedureAvailability, getResourceAppointments, getEmployeeAppointments } from "./SearchCalendarRequests"
 import { checkSlotOverlap, checkSlotTouch, getSlotCompression, subtractTimeslots, getOverlapSlot } from "./SlotFunctions"
 import moment from "moment"
@@ -37,6 +37,7 @@ function reset() {
 function getBounds(procedure){
     const pro = transformAvailabilities(moment().startOf("week"),moment().endOf("week"),procedure)
     let min, max = null
+    console.log(pro)
     if(pro.timeSlots.length > 0){
         min = pro.timeSlots[0].startDate
         max = pro.timeSlots[0].endDate

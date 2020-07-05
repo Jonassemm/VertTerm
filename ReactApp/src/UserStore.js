@@ -7,9 +7,39 @@ class UserStore {
         this.user = user
     }
 
+    message = null
+    setMessage(message) {
+        this.message = message
+    }
+
+    infoMessage = null
+    setInfoMessage(infoMessage) {
+        this.infoMessage = infoMessage
+    }
+
+    warningMessage = null
+    setWarningMessage(warningMessage) {
+        this.warningMessage = warningMessage
+    }
+
+    errorMessage = null
+    setErrorMessage(errorMessage) {
+        this.errorMessage = errorMessage
+    }
+
     username = null
     setUsername(username) {
         this.username = username;
+    }
+
+    firstName = null
+    setFirstName(firstName) {
+        this.firstName = firstName
+    }
+
+    lastName = null
+    setLastName(lastName) {
+        this.lastName = lastName
     }
 
     userID = null
@@ -39,33 +69,31 @@ class UserStore {
 
     async getData() {
         const res = await getUserData(this.userID)
-        console.log(res)
         this.setRoles(res.data.roles.map(item => {
                     return (item.name)
 
                 }))
-        /* const tempRights = []
-        res.data.roles.forEach((item,index,array) => {
-            item.rights.forEach((item, index) => {
-                tempRights.push(item)
-            })
-        }) */
         var allRights = []
         res.data.roles.map((role) => {
             role.rights.map((right)=> {
                 if(!allRights.some(allRights => allRights.id == right.id)){
-                    allRights.push(right) //only push rights which are not in allRights
+                    allRights.push(right.name) //only push rights which are not in allRights
                 }
             })
         })
         this.setUser(res.data)
         this.setRights(allRights) //without multiple rights
         this.setUsername(res.data.username)
+        this.setFirstName(res.data.firstName)
+        this.setLastName(res.data.lastName)
         this.setUserID(res.data.id)
     }
 
     deleteCurrentUser() {
+        this.setUser(null)
         this.setUsername(null)
+        this.setFirstName(null)
+        this.setLastName(null)
         this.setUserID(null)
         this.setRights([])
         this.setRoles([])
@@ -74,7 +102,13 @@ class UserStore {
 
 UserStore = decorate(UserStore, {
     user: observable,
+    message: observable,
+    infoMessage: observable,
+    warningMessage: observable,
+    errorMessage: observable,
     username: observable,
+    firstName: observable,
+    lastName: observable,
     userID: observable,
     rights: observable,
     roles: observable,
@@ -83,7 +117,13 @@ UserStore = decorate(UserStore, {
     setRights: action,
     setRoles: action,
     setUsername: action,
+    setFirstName: action,
+    setLastName: action,
     setUserID: action,
+    setMessage: action,
+    setInfoMessage: action,
+    setWarningMessage: action,
+    setErrorMessage: action,
     setLoggedIn: action
 })
 

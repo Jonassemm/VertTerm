@@ -1,9 +1,11 @@
 package com.dvproject.vertTerm.Controller;
 
 import java.security.Principal;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import com.dvproject.vertTerm.Model.*;
 import com.dvproject.vertTerm.Service.EmployeeService;
 import com.dvproject.vertTerm.Service.ResourceService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,11 +22,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.dvproject.vertTerm.Model.Appointment;
-import com.dvproject.vertTerm.Model.Appointmentgroup;
-import com.dvproject.vertTerm.Model.Optimizationstrategy;
-import com.dvproject.vertTerm.Model.Status;
-import com.dvproject.vertTerm.Model.Warning;
 import com.dvproject.vertTerm.Service.AppointmentService;
 import com.dvproject.vertTerm.Service.AppointmentgroupService;
 
@@ -82,7 +79,7 @@ public class AppointmentgroupController {
 	
 	@PostMapping(value = {"/override/", "/override/{userid}"})
 	public String bookAppointmentsOverride (
-			@PathVariable String userid, 
+			@PathVariable(required = false) String userid, 
 			@RequestBody Appointmentgroup appointmentgroup,
 			Principal principal) {
 		Collection<? extends GrantedAuthority> auth = SecurityContextHolder.getContext().getAuthentication().getAuthorities();
@@ -143,7 +140,9 @@ public class AppointmentgroupController {
 	}
 	
 	private String updateAppointmentgroupInternal(Principal principal, String userid, Appointmentgroup appointmentgroup, boolean override) {
+		String retVal = null;
 		List<Appointment> appointments = appointmentgroup.getAppointments();
+		List<Appointment> appointmentsToTestWarningsFor = new ArrayList<>();
 		
 		if(appointments == null || appointments.size() == 0)
 			throw new IllegalArgumentException("Appointmentgroup must contain at least one appointment");
@@ -157,7 +156,20 @@ public class AppointmentgroupController {
 		
 		appointmentgroup.resetAllWarnings();
 		
-		return appointmentgroupService.bookAppointmentgroup(userid, appointmentgroup, override);
+		for (Appointment appointment : appointments) {
+			Appointment appointmentFromDB = appointmentService.getById(appointment.getId());
+		
+			appointmentsToTestWarningsFor.addAll(appointmentService.getOverlappingAppointmentsInTimeInterval(
+					appointmentFromDB.getPlannedStarttime(),
+					appointmentFromDB.getPlannedEndtime(), 
+					AppointmentStatus.PLANNED));
+		}
+		
+		retVal =  appointmentgroupService.bookAppointmentgroup(userid, appointmentgroup, override);
+		
+		appointmentgroupService.testWarningsForAppointments(appointmentsToTestWarningsFor);		
+		
+		return retVal;
 	}
 	
 	private String bookAppointmentgroup(String userid, Appointmentgroup appointmentgroup, Principal principal, boolean override) {
@@ -169,15 +181,21 @@ public class AppointmentgroupController {
 		return appointmentgroupService.bookAppointmentgroup(userid, appointmentgroup, override);
 	}
 
-	@GetMapping("/Recommend/EarlyEnd")
-	public @ResponseBody Appointmentgroup recommendByEarlyEnd(@RequestBody Appointmentgroup appointment, @RequestParam int index) {
-		appointment.optimizeAppointmentsForEarliestEnd(appointmentService, resourceService, employeeService, appointment.getAppointments().get(index));
-		return appointment;
+	@PostMapping("/Recommend/EarlyEnd/{index}")
+	public @ResponseBody Appointmentgroup recommendByEarlyEnd(@RequestBody Appointmentgroup appointments, @PathVariable int index) {
+		for (Appointment appointment : appointments.getAppointments()){
+			appointment.setStatus(AppointmentStatus.OPEN);
+		}
+		appointments.optimizeAppointmentsForEarliestEnd(appointmentService, resourceService, employeeService, appointments.getAppointments().get(index));
+		return appointments;
 	}
 
-	@GetMapping("/Recommend/LateBeginning")
-	public @ResponseBody Appointmentgroup recommendByLateBeginning(@RequestBody Appointmentgroup appointment, @RequestParam int index) {
-		appointment.optimizeAppointmentsForLatestBeginning(appointmentService, resourceService, employeeService, appointment.getAppointments().get(index));
-		return appointment;
+	@PostMapping("/Recommend/LateBeginning/{index}")
+	public @ResponseBody Appointmentgroup recommendByLateBeginning(@RequestBody Appointmentgroup appointments, @PathVariable int index) {
+		for (Appointment appointment : appointments.getAppointments()){
+			appointment.setStatus(AppointmentStatus.OPEN);
+		}
+		appointments.optimizeAppointmentsForLatestBeginning(appointmentService, resourceService, employeeService, appointments.getAppointments().get(index));
+		return appointments;
 	}
 }

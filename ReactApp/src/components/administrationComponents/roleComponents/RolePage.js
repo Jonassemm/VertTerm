@@ -2,9 +2,9 @@ import React, { useState, useEffect } from "react"
 import {Button} from "react-bootstrap"
 import { getRoles } from "./RoleRequests"
 import RoleForm from "./RolesForm"
-import OverviewPage from "../../OverviewPage"
+import OverviewPage, {modalTypes} from "../../OverviewPage"
 
-function RolePage(userStore) {
+function RolePage({userStore}) {
     const [roles, setRoles] = useState([])
     
     async function prepareRoles() {
@@ -43,6 +43,7 @@ function RolePage(userStore) {
                 onCancel={onCancel}
                 edit={edit}
                 selected={selectedItem}
+                userStore={userStore}
             />
         )
     }
@@ -59,6 +60,8 @@ function RolePage(userStore) {
                 refreshData={prepareRoles}
                 modalSize="lg"
                 scrollable={true}
+                userStore={userStore}
+                modalType={modalTypes.role}
             />
         </React.Fragment>
     )

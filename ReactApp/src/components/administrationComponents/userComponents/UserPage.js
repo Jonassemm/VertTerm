@@ -1,8 +1,8 @@
+//author: Patrick Venturini
 import React, {useState, useEffect} from 'react'
-import OverviewPage from "../../OverviewPage"
+import OverviewPage, {modalTypes} from "../../OverviewPage"
 import UserForm from "./UserForm"
 import {ExceptionModal} from "../../ExceptionModal"
-
 
 import {
     getEmployeeList,
@@ -10,34 +10,29 @@ import {
   } from "./UserRequests";
 
 
-export default function UserList(props) {
-
+export default function UserPage({userStore, userType}) {
     const [userList, setUserList] = useState([])
-
-    //exception needs overriding (ExceptionModal)
     const [exception, setException] = useState(null)
     const [showExceptionModal, setShowExceptionModal] = useState(false)
+
 
     useEffect( () => {
         loadUserList()
     },[])
 
 
-    //-------------------------------ExceptionModal--------------------------------
     const handleExceptionChange = (newException) => {
         setException(newException)
         setShowExceptionModal(true)
     }
 
 
-    //---------------------------------USER---------------------------------
-    //LOAD USERLIST
+    //---------------------------------LOAD---------------------------------
     const loadUserList = async () => {
         var data = []
-        switch(props.userType) {
+        switch(userType) {
             case "employee":
                 try {
-                    console.log("getEmployeeList")
                     const response = await getEmployeeList();
                     data = response.data.map(user => {
                         return {
@@ -50,7 +45,6 @@ export default function UserList(props) {
             break;
             case "customer":
                 try {
-                    console.log("getCustomerlist")
                     const response = await getCustomerList();
                     data = response.data.map(user => {
                         return {
@@ -65,8 +59,6 @@ export default function UserList(props) {
 
         //don't save object with status="deleted"
         var reducedData = []
-        console.log("original data:")
-        console.log(data)
         data.map((singleUser) => {
             if(singleUser.systemStatus != "deleted") {
                 reducedData.push(singleUser)
@@ -75,6 +67,8 @@ export default function UserList(props) {
         setUserList(reducedData)
     }
 
+
+    //------------------------OverviewPage-Components-----------------------
     const tableBody = 
         userList.map((item, index) => { 
             var status //translated status
@@ -99,6 +93,7 @@ export default function UserList(props) {
             )
         })
 
+
     const modalEmployee = (onCancel,edit,selectedItem) => {
         return (
             <UserForm //EmployeeForm
@@ -107,9 +102,11 @@ export default function UserList(props) {
                 selected={selectedItem}
                 type={"employee"}
                 setException={handleExceptionChange}
+                userStore={userStore}
             />
         )
     }
+
 
     const modalCustomer = (onCancel,edit,selectedItem) => {
         return (
@@ -119,9 +116,11 @@ export default function UserList(props) {
                 selected={selectedItem}
                 type={"customer"}
                 setException={handleExceptionChange}
+                userStore={userStore}
             />
         )
     }
+
 
     return (
         <React.Fragment>
@@ -133,7 +132,7 @@ export default function UserList(props) {
                     warning={"AvailabilityWarning"}
                 />
             }
-            {props.userType == "employee" ? 
+            {userType == "employee" ? 
                 <OverviewPage
                     pageTitle="Mitarbeiter"
                     newItemText="Neuer Mitarbeiter"
@@ -143,6 +142,8 @@ export default function UserList(props) {
                     data={userList}
                     modalSize="xl"
                     refreshData={loadUserList}
+                    userStore={userStore}
+                    modalType={modalTypes.user}
                 /> :
                 <OverviewPage
                     pageTitle="Kunden"
@@ -153,6 +154,8 @@ export default function UserList(props) {
                     data={userList}
                     modalSize="xl"
                     refreshData={loadUserList}
+                    userStore={userStore}
+                    modalType={modalTypes.user}
                 />
             }
         </React.Fragment>

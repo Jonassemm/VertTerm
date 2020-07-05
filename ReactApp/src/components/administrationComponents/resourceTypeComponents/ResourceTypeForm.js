@@ -1,12 +1,18 @@
+//author: Patrick Venturini
 import React, { useState, useEffect } from "react"
-import { Form, Table } from "react-bootstrap"
+import { Form } from "react-bootstrap"
 import { Container, Button } from "react-bootstrap"
 import {addResourceType, deleteResourceType, editResourceType } from "./ResourceTypeRequests"
+import { hasRight } from "../../../auth"
+import {resourceTypeRights} from "../../Rights"
 
-const ResourceTypeForm = ({ onCancel, edit, selected }) => {
+const ResourceTypeForm = ({ onCancel, edit, selected, userStore }) => {
+    const rightName = resourceTypeRights[1] //write right
+    
     const [name, setName] = useState("")
     const [description, setDescription] = useState("")
     const [edited, setEdited] = useState(false)
+
 
     useEffect(() => {
         if (edit) {
@@ -21,39 +27,49 @@ const ResourceTypeForm = ({ onCancel, edit, selected }) => {
         setEdited(true)
     }
 
+
     function handleDescriptionChange(event) {
         setDescription(event.target.value)
         setEdited(true)
     }
 
+
     const handleSubmit = async event => {
         event.preventDefault()
-        const data = { name: name, description: description}
-        let res = {}
-        if (!edit) {
-            res = await addResourceType(data)
-        } else {
-            res = await editResourceType(selected.id, data)
-        }
-        console.log(res)
-        onCancel()
+
+        if(hasRight(userStore, [rightName])) { 
+            const data = { name: name, description: description}
+            let res = {}
+            if (!edit) {
+                res = await addResourceType(data)
+                userStore.setMessage("Ressourcentyp erfolgreich hinzugefügt!")
+            } else {
+                res = await editResourceType(selected.id, data)
+                userStore.setMessage("Ressourcentyp erfolgreich geändert!")
+            }
+            onCancel()
+        }else {//no right to submit 
+            alert("Für diesen Vorgang besitzten Sie nicht die erforderlichen Rechte!\n\nBenötigtes Recht: " + rightName)
+          }
     }
 
     const handleDeleteResourceType = async () => {
-        const answer = confirm("Möchten Sie diese Ressourcentyp wirklich löschen?")
-        if (answer) {
-            try {
-                const res = await deleteResourceType(selected.id)
-                console.log(res)
-            } catch (error) {
-                console.log(Object.keys(error), error.message)
-                alert("An error occoured while deleting a resource type")
+        if(hasRight(userStore, [rightName])){
+            const answer = confirm("Möchten Sie diese Ressourcentyp wirklich löschen?")
+            if (answer) {
+                try {
+                    const res = await deleteResourceType(selected.id)
+                    userStore.setMessage("Ressourcetyp erfolgreich gelöscht!")
+                } catch (error) {
+                    console.log(Object.keys(error), error.message)
+                }
             }
+        }else {//no rights!
+            alert("Für diesen Vorgang besitzten Sie nicht die erforderlichen Rechte!\n\nBenötigtes Recht: " + rightName)
         }
         onCancel()
-
-        
     }
+
 
     return (
         <React.Fragment>
@@ -96,5 +112,4 @@ const ResourceTypeForm = ({ onCancel, edit, selected }) => {
         </React.Fragment>
     )
 }
-
 export default ResourceTypeForm

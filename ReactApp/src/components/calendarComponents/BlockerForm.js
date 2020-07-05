@@ -4,7 +4,7 @@ import ObjectPicker from "../ObjectPicker"
 import {Form} from "react-bootstrap"
 import DatePicker from "react-datepicker"
 
-export default function BlockerForm({ edit, apt, setApt,customer }) {
+export default function BlockerForm({ edit, apt, setApt}) {
     const [name, setName] = useState("")
     const [employees, setEmployees] = useState([])
     const [resources, setResources] = useState([])
@@ -26,12 +26,11 @@ export default function BlockerForm({ edit, apt, setApt,customer }) {
 
     useEffect(() => {
         setApt(buildApt())
-    },[name,employees,resources,startTime,endTime, customer])
+    },[name,employees,resources,startTime,endTime])
 
     function buildApt() {
         const data = {
             name: name,
-            bookedCustomer: customer,
             bookedResources: resources,
             bookedEmployees: employees,
             plannedStarttime: startTime,
@@ -51,6 +50,7 @@ export default function BlockerForm({ edit, apt, setApt,customer }) {
                         </div>
                         <div className="middleBoxRight">
                             <Form.Control
+                                required
                                 type="text"
                                 value={name || ""}
                                 placeholder="Terminbezeichnung"

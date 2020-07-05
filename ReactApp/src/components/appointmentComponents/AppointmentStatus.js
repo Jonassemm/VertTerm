@@ -1,5 +1,3 @@
-import React from "react"
-
 export const appointmentStatus ={
     planned: "planned",
     done: "done",

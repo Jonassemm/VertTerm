@@ -328,7 +328,7 @@ public class Appointment implements Serializable {
 
 	public void testBookedResourcesAgainstResourceTypesOfProcedure() {
 		List<ResourceType> procedureResourceTypes = bookedProcedure.getNeededResourceTypes();
-		
+
 		if (procedureResourceTypes.size() != bookedResources.size()) {
 			addWarnings(Warning.RESOURCE_WARNING);
 			return;
@@ -534,8 +534,7 @@ public class Appointment implements Serializable {
 			EmployeeService employeeService) {
 		if (this.getBookedProcedure() == null) { return; }
 		this.setStatus(AppointmentStatus.RECOMMENDED);
-		this.setPlannedEndtime(
-				new Date(this.plannedStarttime.getTime() + this.getBookedProcedure().getDuration().toMillis()));
+		this.setPlannedEndtime(this.generatePlannedEndtime(this.plannedStarttime));
 		// check if customer is available
 		this.getBookedCustomer().populateAppointments(appointmentService);
 		Date newDateToEvaluate = this.getBookedCustomer().getEarliestAvailableDate(this.getPlannedStarttime(),

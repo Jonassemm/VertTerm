@@ -1,10 +1,11 @@
-import React, { useState, useEffect } from "react"
-import { Nav, Navbar, NavItem, NavDropdown } from "react-bootstrap"
+import React from "react"
+import { Nav, Navbar, Toast } from "react-bootstrap"
 import Styled from "styled-components"
 import { Link } from 'react-router-dom'
 import LoginForm from "./LoginForm"
 import { observer } from "mobx-react"
-import { hasRole } from "../../auth"
+import { hasRight } from "../../auth"
+import { managementRights, ownAppointmentRights, appointmentRights } from "../Rights"
 
 
 const Styles = Styled.div`
@@ -13,29 +14,55 @@ const Styles = Styled.div`
 }
 `
 
-
 function NavBar({ userStore }) {
-    var x = document.cookie
-    console.log(x)
+    console.log(document.cookie)
     return (
-        <Styles>
-            <Navbar variant="dark" bg="dark" expand="lg" justify-content="end" fixed="top">
-                <Navbar.Brand as={Link} to="/" >betabook.me</Navbar.Brand>
-                <Navbar.Toggle aria-controls="basic-navbar-nav" />
-                <Navbar.Collapse id="basic-navbar-nav" className="mr-auto">
-                    <Nav className="mr-auto">
-                        <Nav.Item><Nav.Link as={Link} to="/admin">Verwaltung</Nav.Link></Nav.Item>
-                        <Nav.Item><Nav.Link as={Link} to="/warning">Konfliktansicht</Nav.Link></Nav.Item>
-                        <Nav.Item><Nav.Link as={Link} to="/appointment">Terminansicht</Nav.Link></Nav.Item>
-                        <Nav.Item><Nav.Link as={Link} to="/booking">Buchen</Nav.Link></Nav.Item>
-                    </Nav>
-                </Navbar.Collapse >
-                <Nav.Item style={{ color: "#bbb", marginRight: "10px" }}>
-                    {userStore.loggedIn ? "" + userStore.userID : null}
-                </Nav.Item>
-                <LoginForm userStore={userStore} />
-            </Navbar>
-        </Styles>
+        <React.Fragment>
+            <Styles>
+                <Navbar variant="dark" bg="dark" expand="lg" justify-content="end" fixed="top">
+                    <Navbar.Brand as={Link} to="/" >betabook.me</Navbar.Brand>
+                    <Navbar.Toggle aria-controls="basic-navbar-nav" />
+                    <Navbar.Collapse id="basic-navbar-nav" className="mr-auto">
+                        <Nav className="mr-auto">
+                            {hasRight(userStore, managementRights()) &&
+                                <Nav.Item><Nav.Link as={Link} to="/admin">Verwaltung</Nav.Link></Nav.Item>
+                            }
+                            {hasRight(userStore, ownAppointmentRights.concat(appointmentRights)) && 
+                                <Nav.Item><Nav.Link as={Link} to="/warning">Konfliktansicht</Nav.Link></Nav.Item>
+                            }
+                            {hasRight(userStore, ownAppointmentRights.concat(appointmentRights)) &&
+                                <Nav.Item><Nav.Link as={Link} to="/appointment">Terminansicht</Nav.Link></Nav.Item>
+                            }       
+                            <Nav.Item><Nav.Link as={Link} to="/booking">Buchen</Nav.Link></Nav.Item>
+                        </Nav>
+                    </Navbar.Collapse >
+                    <Nav.Item style={{ color: "#bbb", marginRight: "20px", fontSize:"14pt"}}>
+                        {userStore.loggedIn ? "Benutzer: " + userStore.username : null}
+                    </Nav.Item>
+                    <LoginForm userStore={userStore} />
+                </Navbar>
+            </Styles>
+            <Toast show={userStore.message} onClose={() => userStore.setMessage(null)} style={{height: "60px", border: "none", position: "fixed", zIndex: "100003", top: "30px", left: "40%" }} delay={3000} autohide>
+                <Toast.Header className="justify-content-md-center" style={{ height: "60px", textAlign: "center", backgroundColor: "#b5e8a0" }}>
+                    <h5 style={{ margin: "0px", padding: "0px", color:"black" }}>{userStore.message}</h5>
+                </Toast.Header>
+            </Toast>
+            <Toast show={userStore.infoMessage} onClose={() => userStore.setInfoMessage(null)} style={{height: "60px", border: "none", position: "fixed", zIndex: "100002", top: "30px", left: "40%" }} delay={5000} autohide>
+                <Toast.Header className="justify-content-md-center" style={{ height: "60px", textAlign: "center", backgroundColor: "#7f96e3" }}>
+                    <h5 style={{ margin: "0px", padding: "0px", color:"black" }}>{userStore.infoMessage}</h5>
+                </Toast.Header>
+            </Toast>
+            <Toast show={userStore.warningMessage} onClose={() => userStore.setWarningMessage(null)} style={{height: "60px", border: "none", position: "fixed", zIndex: "100001", top: "30px", left: "40%" }} delay={5000} autohide>
+                <Toast.Header className="justify-content-md-center" style={{ height: "60px", textAlign: "center", backgroundColor: "#e3b759" }}>
+                    <h5 style={{ margin: "0px", padding: "0px", color:"black" }}>{userStore.warningMessage}</h5>
+                </Toast.Header>
+            </Toast>
+            <Toast show={userStore.errorMessage} onClose={() => userStore.setErrorMessage(null)} style={{height: "60px", border: "none", position: "fixed", zIndex: "100000", top: "30px", left: "40%" }} delay={5000} autohide>
+                <Toast.Header className="justify-content-md-center" style={{ height: "60px", textAlign: "center", backgroundColor: "#f06565" }}>
+                    <h5 style={{ margin: "0px", padding: "0px", color:"black"}}>{userStore.errorMessage}</h5>
+                </Toast.Header>
+            </Toast>
+        </React.Fragment>
     )
 }
 

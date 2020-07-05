@@ -2,8 +2,11 @@ import React, { useState, useEffect } from "react"
 import { Form, Table } from "react-bootstrap"
 import { Container, Button } from "react-bootstrap"
 import { getRights, addRole, deleteRole, editRole } from "./RoleRequests"
+import { hasRight } from "../../../auth"
+import {roleRights} from "../../Rights"
 
-const RolesForm = ({ onCancel, edit, selected }) => {
+const RolesForm = ({ onCancel, edit, selected, userStore }) => {
+    const rightName = roleRights[1] //write right
     const [rolename, setRolename] = useState("")
     const [description, setDescription] = useState("")
     const [rights, setRights] = useState([])
@@ -63,25 +66,36 @@ const RolesForm = ({ onCancel, edit, selected }) => {
 
     const handleSubmit = async event => {
         event.preventDefault()
-        const rightsData = []
-        for (let i = 0; i < selectedRights.length; i++) {
-            if (selectedRights[i]) rightsData.push(rights[i])
-        }
-        const data = { name: rolename, description: description, rights: rightsData }
-        let res = {}
-        if (!edit) {
-            res = await addRole(data)
-        } else {
-            res = await editRole(selected.id, data)
+        if(hasRight(userStore, [rightName])) {
+            const rightsData = []
+            for (let i = 0; i < selectedRights.length; i++) {
+                if (selectedRights[i]) rightsData.push(rights[i])
+            }
+            const data = { name: rolename, description: description, rights: rightsData }
+            let res = {}
+            if (!edit) {
+                res = await addRole(data)
+                userStore.setMessage("Rolle erfolgreich hinzugefügt!")
+            } else {
+                res = await editRole(selected.id, data)
+                userStore.setMessage("Rolle erfolgreich geändert!")
+            }
+        }else {//no rights!
+            alert("Für diesen Vorgang besitzten Sie nicht die erforderlichen Rechte!\n\nBenötigtes Recht: " + rightName)
         }
         onCancel()
     }
 
     const handleDelete = async () => {
-        const answer = confirm("Möchten Sie diese Rolle wirklich löschen? ")
-        if (answer) {
-            const res = await deleteRole(selected.id)
-            console.log(res)
+        if(hasRight(userStore, [rightName])) {
+            const answer = confirm("Möchten Sie diese Rolle wirklich löschen? ")
+            if (answer) {
+                const res = await deleteRole(selected.id)
+                userStore.setMessage("Rolle erfolgreich gelöscht!")
+                console.log(res)
+            }
+        }else {//no rights!
+            alert("Für diesen Vorgang besitzten Sie nicht die erforderlichen Rechte!\n\nBenötigtes Recht: " + rightName)
         }
         onCancel()
     }
@@ -136,9 +150,15 @@ const RolesForm = ({ onCancel, edit, selected }) => {
                         </tbody>
                     </Table>
                     <hr />
-                    {(edited || !edit) && <Button style={{ marginRight: "10px" }} type="submit">Bestätigen</Button>}
-                    <Button style={{ marginRight: "10px" }} variant="danger" onClick={handleDelete}>Löschen</Button>
-                    <Button onClick={onCancel} variant="secondary">Abbrechen</Button>
+                    <Container style={{textAlign: "right"}}>
+                        <Button variant="secondary" style={{ marginRight: "10px" }} onClick={onCancel}>Abbrechen</Button>
+                        {hasRight(userStore, [rightName]) && 
+                            <Button variant="danger" style={{ marginRight: "10px" }} onClick={handleDelete}>Löschen</Button>
+                        }
+                        {(edited || !edit) && hasRight(userStore, [rightName]) && 
+                            <Button variant="success" style={{ marginRight: "10px" }} type="submit">Übernehmen</Button>
+                        }
+                    </Container>
                 </Form>
             </Container>
         </React.Fragment>

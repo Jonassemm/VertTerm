@@ -22,34 +22,67 @@ public interface AppointmentRepository extends MongoRepository<Appointment, Stri
 
 	List<Appointment> findByWarningsIn(List<Warning> warnings);
 
-	List<Appointment> findByBookedCustomerIdAndWarnings(String userid, Warning warning);
-
-	List<Appointment> findByBookedCustomerIdAndWarningsIn(String userid, List<Warning> warnings);
-
 	List<Appointment> findByStatus(Status status);
 
-	List<Appointment> findByBookedCustomerId(String id);
+	// bookedCustomer
+	List<Appointment> findByBookedCustomerId(String customerid);
 
-	List<Appointment> findByBookedEmployeesId(String id);
+	List<Appointment> findByBookedCustomerIdAndStatus(String customerid, AppointmentStatus status);
 
-	List<Appointment> findByBookedResourcesId(String id);
-	
-	List<Appointment> findByBookedProcedureId(String id);
+	List<Appointment> findByBookedCustomerIdAndWarnings(String customerid, Warning warning);
 
-	List<Appointment> findByBookedCustomerIdAndStatus(String id, AppointmentStatus status);
+	List<Appointment> findByBookedCustomerIdAndWarningsIn(String customerid, List<Warning> warnings);
 
-	List<Appointment> findByBookedEmployeesIdAndStatus(String id, AppointmentStatus status);
+	@Query("{'bookedCustomer.$id': ObjectId(?0), " + overlapsWithOtherAppointment + "}")
+	List<Appointment> findAppointmentsByBookedCustomerInTimeinterval(String customerid, Date starttime, Date endtime);
 
-	List<Appointment> findByBookedResourcesIdAndStatus(String id, AppointmentStatus status);
-	
-	List<Appointment> findByBookedProcedureIdAndStatus(String id, AppointmentStatus status);
+	@Query("{'bookedCustomer.$id': ObjectId(?0), " + overlapsWithOtherAppointment + ", 'status': ?3}")
+	List<Appointment> findAppointmentsByBookedCustomerInTimeintervalWithStatus(String customerid, Date starttime,
+			Date endtime, AppointmentStatus status);
 
-	List<Appointment> findByBookedProcedureIdAndPlannedStarttimeAfter(String id, Date plannedStarttime);
+	// bookedEmployees
+	List<Appointment> findByBookedEmployeesId(String employeeid);
 
-	List<Appointment> findByBookedResourcesIdAndPlannedStarttimeAfter(String id, Date plannedStarttime);
+	List<Appointment> findByBookedEmployeesIdAndStatus(String employeeid, AppointmentStatus status);
 
-	List<Appointment> findByBookedEmployeesIdAndPlannedStarttimeAfter(String id, Date plannedStarttime);
+	List<Appointment> findByBookedEmployeesIdAndPlannedStarttimeAfter(String employeeid, Date plannedStarttime);
 
+	@Query("{'bookedEmployees.$id': ObjectId(?0), " + overlapsWithOtherAppointment + "}")
+	List<Appointment> findAppointmentsByBookedEmployeeInTimeinterval(String employeeid, Date starttime, Date endtime);
+
+	@Query("{'bookedEmployees.$id': ObjectId(?0), " + overlapsWithOtherAppointment + ", 'status': ?3}")
+	List<Appointment> findAppointmentsByBookedEmployeeInTimeintervalWithStatus(String employeeid, Date starttime,
+			Date endtime, AppointmentStatus status);
+
+	// bookedResources
+	List<Appointment> findByBookedResourcesId(String resourceid);
+
+	List<Appointment> findByBookedResourcesIdAndStatus(String resourceid, AppointmentStatus status);
+
+	List<Appointment> findByBookedResourcesIdAndPlannedStarttimeAfter(String resourceid, Date plannedStarttime);
+
+	@Query("{'bookedResources.$id': ObjectId(?0), " + overlapsWithOtherAppointment + "}")
+	List<Appointment> findAppointmentsByBookedResourceInTimeinterval(String resourceid, Date starttime, Date endtime);
+
+	@Query("{'bookedResources.$id': ObjectId(?0), " + overlapsWithOtherAppointment + ", 'status': ?3}")
+	List<Appointment> findAppointmentsByBookedResourceInTimeintervalWithStatus(String resourceid, Date starttime,
+			Date endtime, AppointmentStatus status);
+
+	// bookedProcedure
+	List<Appointment> findByBookedProcedureId(String procedureid);
+
+	List<Appointment> findByBookedProcedureIdAndStatus(String procedureid, AppointmentStatus status);
+
+	List<Appointment> findByBookedProcedureIdAndPlannedStarttimeAfter(String procedureid, Date plannedStarttime);
+
+	@Query("{'bookedProcedure.$id': ObjectId(?0), " + overlapsWithOtherAppointment + "}")
+	List<Appointment> findAppointmentsByBookedProceudreInTimeinterval(String procedureid, Date starttime, Date endtime);
+
+	@Query("{'bookedProcedure.$id': ObjectId(?0), " + overlapsWithOtherAppointment + ", 'status': ?3}")
+	List<Appointment> findAppointmentsByBookedProceudreInTimeintervalWithStatus(String procedureid, Date starttime,
+			Date endtime, AppointmentStatus status);
+
+	// other
 	@Query("{'$and':[{'plannedStarttime': {'$gte': ?0}}, {'plannedEndtime': {'$lte': ?1}}]}")
 	List<Appointment> findAppointmentsByTimeinterval(Date starttime, Date endtime);
 
@@ -62,23 +95,8 @@ public interface AppointmentRepository extends MongoRepository<Appointment, Stri
 	@Query("{'$and':[{'bookedCustomer.$id': ObjectId(?0)}, {'plannedStarttime': {'$gte': ?1}}, {'plannedEndtime': {'$lte': ?2}}]}")
 	List<Appointment> findAppointmentsByBookedUserAndTimeinterval(String userid, Date starttime, Date endtime);
 
-	@Query("{'bookedEmployees.$id': ObjectId(?0), " + overlapsWithOtherAppointment + ", 'status': ?3}")
-	List<Appointment> findAppointmentsByBookedEmployeeInTimeinterval(String employeeid, Date starttime, Date endtime,
-			AppointmentStatus status);
-
-	@Query("{'bookedResources.$id': ObjectId(?0), " + overlapsWithOtherAppointment + ", 'status': ?3}")
-	List<Appointment> findAppointmentsByBookedResourceInTimeinterval(String resourceid, Date starttime, Date endtime,
-			AppointmentStatus status);
-
-	@Query("{'bookedProcedure.$id': ObjectId(?0), " + overlapsWithOtherAppointment + ", 'status': ?3}")
-	List<Appointment> findAppointmentsByBookedProceudreInTimeinterval(String procedureid, Date starttime, Date endtime,
-			AppointmentStatus status);
-
-	@Query("{'bookedCustomer.$id': ObjectId(?0), " + overlapsWithOtherAppointment + ", 'status': ?3}")
-	List<Appointment> findAppointmentsByBookedCustomerInTimeinterval(String userid, Date starttime, Date endtime,
-			AppointmentStatus status);
-
 	@Query("{'$or': [{'bookedEmployees.$id': {'$in': ?0}}, {'bookedResources.$id': {'$in': ?1}}], 'plannedStarttime': {'$gt' : ?2}, 'status': ?3}")
 	List<Appointment> findAppointmentsWithCustomerEmployeeAndResourceAfterPlannedStarttime(List<ObjectId> employeeid,
 			List<ObjectId> resourceid, Date starttime, AppointmentStatus status);
+
 }

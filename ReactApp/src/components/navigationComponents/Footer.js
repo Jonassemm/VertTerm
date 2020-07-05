@@ -1,4 +1,5 @@
-import React, {Component} from 'react';
+//author: Patrick Venturini
+import React from 'react';
 
 import {Navbar, Container, Col} from 'react-bootstrap';
 
