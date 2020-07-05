@@ -5,7 +5,7 @@ import { Container, Form, Col, Row, Button, Modal, Spinner } from "react-bootstr
 import ObjectPicker from "../ObjectPicker"
 import "./BookingForm.css"
 import DatePicker from "react-datepicker"
-import { addAppointmentGroup, addAppointmentGroupOverride,getAppointmentGroupByApt,editAppointmentGroup, addAppointmentGroupAny, getAppointment, searchAppointmentGroup, addBlocker } from "../requests"
+import { addAppointmentGroup, addAppointmentGroupOverride,getAppointmentGroupByApt,editAppointmentGroup, addAppointmentGroupAny, getAppointment, searchAppointmentGroup, addBlocker, OptimizeEarlyEnd } from "../requests"
 import { useHistory } from "react-router-dom"
 import { getErrorMessage } from "./bookingErrors"
 import SearchAptCalendar from "./SearchCalendar/SearchAptCalendar"
@@ -273,8 +273,9 @@ function BookingForm({editData,userStore}) {
         setShowSelectCalendarModal(false)
     }
 
-    function optimizeAppointment() {
-        //TODO missing API
+    async function optimizeAppointment() {
+        const aptGroup = buildFinalData()
+        const res = await OptimizeEarlyEnd(aptGroup.appointments[0])
     }
 
     async function searchAppointment() {
@@ -347,6 +348,7 @@ function BookingForm({editData,userStore}) {
         if (selectedCustomer.length != 0 || selectedCustomer === {}) {
             const aptGroup = buildFinalData()
             await addAppointmentGroupOverride(aptGroup, selectedCustomer[0].id)
+            userStore.setMessage("Termin erfolgreich gebucht!")
             history.push("/appointment")
         } else {
             setException("customer")
@@ -393,7 +395,7 @@ function BookingForm({editData,userStore}) {
 
     return (
         <div className="page">
-            <Container>
+            <Container id="bookingForm">
                 <Form onSubmit={handleSubmit}>
                     <Row style={{ alignItems: "baseline" }}>
                         <Col>

@@ -50,7 +50,7 @@ export function ExceptionModal({
                                 style={{background: "white", color: "red", fontWeight: "bold"}}
                                 name="warnings"
                                 type="text"
-                                value={getErrorMessage(exception)}
+                                value={getErrorMessage((exception == "Availability") ? "removedAvailability" : exception)}
                             />
                     </Form.Group>
                 </Form.Row>

@@ -34,3 +34,7 @@ export const getResourcesOfType = type => axios.get(`${APIURL}/api/Resources/res
 
 export {getProcedures}
 export const getRestrictions = getAllRestrictions
+
+export const OptimizeEarlyEnd = (data,earliestApt) => axios.post(`${APIURL}/api/Appointments/Recommend/EarlyEnd`,data)
+
+export const getCurrentUser = () => axios.get(`${APIURL}/api/Users/Own`)

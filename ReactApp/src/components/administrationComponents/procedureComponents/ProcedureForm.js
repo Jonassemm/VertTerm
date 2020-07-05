@@ -5,11 +5,11 @@ import { addProcedure, deleteProcedure, editProcedure } from "./ProcedureRequest
 import Availability from "../availabilityComponents/Availability"
 import "./ProcedureStyles.css"
 import { hasRight } from "../../../auth"
-import {procedureRights} from "../../Rights"
+import { procedureRights } from "../../Rights"
 
-function ProcedureForm({ onCancel, 
-    edit, 
-    selected, 
+function ProcedureForm({ onCancel,
+    edit,
+    selected,
     setException, //Availability exception
     userStore }) {
     const rightName = procedureRights[1] //write right
@@ -51,7 +51,6 @@ function ProcedureForm({ onCancel,
     }, [name, publicProcedure, description, duration, status, precedingRelations, subsequentRelations, positions, resourceTypes, availabilities, pricePerHour, pricePerInvocation, restrictions, resourceTypesCount, positionsCount])
 
     const secondsToMinutes = (time) => {
-        console.log(time)
         if (time === null) {
             return null
         } else {
@@ -115,13 +114,14 @@ function ProcedureForm({ onCancel,
     }
 
     const handleDelete = async () => {
-        if(hasRight(userStore, [rightName])){
-            try{
-                await  deleteProcedure(selected.id)
-            } catch (error){
+        if (hasRight(userStore, [rightName])) {
+            try {
+                await deleteProcedure(selected.id)
+                userStore.setMessage("Prozedur erfolgreich gelöscht")
+            } catch (error) {
                 console.log(Object.keys(error), error.message)
             }
-        }else {//no rights!
+        } else {//no rights!
             alert("Für diesen Vorgang besitzten Sie nicht die erforderlichen Rechte!\n\nBenötigtes Recht: " + rightName)
         }
         onCancel()
@@ -223,7 +223,7 @@ function ProcedureForm({ onCancel,
     const handleSubmit = async event => {
         event.preventDefault()
 
-        if(hasRight(userStore, [rightName])) { 
+        if (hasRight(userStore, [rightName])) {
             const transformTimes = (timeString) => {
                 if (timeString === null) {
                     return null
@@ -231,7 +231,7 @@ function ProcedureForm({ onCancel,
                     return Number(timeString) * 60
                 }
             }
-    
+
             //combines the selected positions with the count
             let extendedPositions = []
             for (let i = 0; i < positions.length; i++) {
@@ -239,14 +239,14 @@ function ProcedureForm({ onCancel,
                     extendedPositions.push({ id: positions[i].id, ref: "position" })
                 }
             }
-    
+
             let extendedResourceTypes = []
             for (let i = 0; i < resourceTypes.length; i++) {
                 for (let p = 0; p < resourceTypesCount[i]; p++) {
                     extendedResourceTypes.push({ id: resourceTypes[i].id, ref: "resourceType" })
                 }
             }
-    
+
             let reducedPrecedingRelations = precedingRelations.map(item => {
                 return {
                     procedure: { id: item.procedure.id, ref: "procedure" },
@@ -254,7 +254,7 @@ function ProcedureForm({ onCancel,
                     minDifference: transformTimes(item.minDifference)
                 }
             })
-    
+
             let reducedSubsequentRelations = subsequentRelations.map(item => {
                 return {
                     procedure: { id: item.procedure.id, ref: "procedure" },
@@ -262,14 +262,14 @@ function ProcedureForm({ onCancel,
                     minDifference: transformTimes(item.minDifference)
                 }
             })
-    
+
             let restrictionsRef = restrictions.map(item => {
                 return {
                     id: item.id,
                     ref: "restriction"
                 }
             })
-    
+
             const data = {
                 name: name,
                 description: description,
@@ -286,22 +286,26 @@ function ProcedureForm({ onCancel,
                 publicProcedure: publicProcedure
             }
             console.log(data)
-    
-            if (!edit) {
-                const res = await addProcedure(data)
-            } else {
-                data.id = selected.id
-                const res = await editProcedure(selected.id, data)
-                    .then(res => {
-                        if (res.headers.exception) {
+            try {
+                if (!edit) {
+                    const res = await addProcedure(data)
+                    userStore.setMessage("Prozedur erfolgreich hinzugefügt")
+                } else {
+                    data.id = selected.id
+                    const res = await editProcedure(selected.id, data)
+                    if (res.headers.exception) {
                         setException(res.headers.exception)
-                        }
-                    })
+                    }else{
+                        userStore.setMessage("Prozedur erfolgreich geändert")
+                    }
+                }
+            } catch (error) {
+                userStore.setMessage("Error!")
             }
             onCancel()
-        }else {//no right to submit 
+        } else {//no right to submit 
             alert("Für diesen Vorgang besitzten Sie nicht die erforderlichen Rechte!\n\nBenötigtes Recht: " + rightName)
-          }
+        }
     }
 
     const LabelStyle = { marginTop: "10px" }
@@ -479,11 +483,11 @@ function ProcedureForm({ onCancel,
                         })}
                     </Tab>
                     <Tab eventKey="availability" title="Verfügbarkeit" style={TabStyle}>
-                        <Availability 
-                            availabilities={availabilities} 
-                            addAvailability={addAvailability} 
-                            updateAvailabilities={updateAvailabilities} 
-                            editedAvailabilities={setEdited} 
+                        <Availability
+                            availabilities={availabilities}
+                            addAvailability={addAvailability}
+                            updateAvailabilities={updateAvailabilities}
+                            editedAvailabilities={setEdited}
                             userStore={userStore}
                             selected={selected}
                         />

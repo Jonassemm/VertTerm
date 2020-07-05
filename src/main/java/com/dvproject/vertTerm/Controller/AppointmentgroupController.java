@@ -165,7 +165,7 @@ public class AppointmentgroupController {
 		return appointmentgroupService.bookAppointmentgroup(userid, appointmentgroup, override);
 	}
 
-	@GetMapping("/Recommend/EarlyEnd/{index}")
+	@PostMapping("/Recommend/EarlyEnd/{index}")
 	public @ResponseBody Appointmentgroup recommendByEarlyEnd(@RequestBody Appointmentgroup appointments, @PathVariable int index) {
 		for (Appointment appointment : appointments.getAppointments()){
 			appointment.setStatus(AppointmentStatus.OPEN);
@@ -174,7 +174,7 @@ public class AppointmentgroupController {
 		return appointments;
 	}
 
-	@GetMapping("/Recommend/LateBeginning/{index}")
+	@PostMapping("/Recommend/LateBeginning/{index}")
 	public @ResponseBody Appointmentgroup recommendByLateBeginning(@RequestBody Appointmentgroup appointments, @PathVariable int index) {
 		for (Appointment appointment : appointments.getAppointments()){
 			appointment.setStatus(AppointmentStatus.OPEN);

@@ -50,6 +50,7 @@ export default function BlockerForm({ edit, apt, setApt}) {
                         </div>
                         <div className="middleBoxRight">
                             <Form.Control
+                                required
                                 type="text"
                                 value={name || ""}
                                 placeholder="Terminbezeichnung"

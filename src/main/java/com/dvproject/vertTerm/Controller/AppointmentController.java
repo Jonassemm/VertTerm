@@ -47,7 +47,7 @@ public class AppointmentController {
 		return service.getById(id);
 	}
 
-	@GetMapping("/Recommend/EarlyEnd")
+	@PostMapping("/Recommend/EarlyEnd")
 	public @ResponseBody Appointment recommendByEarlyEnd(@RequestBody Appointment appointment) {
 		appointment.optimizeAndPopulateForEarliestEnd(service, resourceService, employeeService);
 		return appointment;

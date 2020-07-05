@@ -56,12 +56,12 @@
 }
 
 .rightBoxLeft {
-    width: 40%;
+    width: 50%;
     text-align: center;
 }
 
 .rightBoxRight {
-    width: 60%;
+    width: 50%;
 }
 
 .input {
@@ -78,20 +78,21 @@
     border: 1px solid #bbb;
 }
 
+
 @media (min-width: 1600px) {
-    .container{
+    #bookingForm{
         max-width: 70%;
     }
 }
 
 @media (max-width: 1200px) {
-    .container{
+    #bookingForm{
         max-width: 90%;
     }
 }
 
 @media (max-width: 1200px) {
-    .container {
+    #bookingForm{
         max-width: 100%
     }
 }
