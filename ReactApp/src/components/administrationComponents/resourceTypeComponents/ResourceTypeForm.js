@@ -42,8 +42,10 @@ const ResourceTypeForm = ({ onCancel, edit, selected, userStore }) => {
             let res = {}
             if (!edit) {
                 res = await addResourceType(data)
+                userStore.setMessage("Ressourcentyp erfolgreich hinzugefügt!")
             } else {
                 res = await editResourceType(selected.id, data)
+                userStore.setMessage("Ressourcentyp erfolgreich geändert!")
             }
             onCancel()
         }else {//no right to submit 
@@ -57,6 +59,7 @@ const ResourceTypeForm = ({ onCancel, edit, selected, userStore }) => {
             if (answer) {
                 try {
                     const res = await deleteResourceType(selected.id)
+                    userStore.setMessage("Ressourcetyp erfolgreich gelöscht!")
                 } catch (error) {
                     console.log(Object.keys(error), error.message)
                 }

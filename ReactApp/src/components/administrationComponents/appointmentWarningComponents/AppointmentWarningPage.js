@@ -60,6 +60,7 @@ export default function AppointmentWarningPage({userStore, warning}) {
     const handleOverrideDelete = async () => {
         try{
             await deleteOverrideAppointment(overrideDeleteId);
+            userStore.setMessage("Termin erfolgreich gelöscht!")
         } catch (error){
             console.log(Object.keys(error), error.message)
         }

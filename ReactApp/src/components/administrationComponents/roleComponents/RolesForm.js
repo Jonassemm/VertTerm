@@ -75,8 +75,10 @@ const RolesForm = ({ onCancel, edit, selected, userStore }) => {
             let res = {}
             if (!edit) {
                 res = await addRole(data)
+                userStore.setMessage("Rolle erfolgreich hinzugefügt!")
             } else {
                 res = await editRole(selected.id, data)
+                userStore.setMessage("Rolle erfolgreich geändert!")
             }
         }else {//no rights!
             alert("Für diesen Vorgang besitzten Sie nicht die erforderlichen Rechte!\n\nBenötigtes Recht: " + rightName)
@@ -89,6 +91,7 @@ const RolesForm = ({ onCancel, edit, selected, userStore }) => {
             const answer = confirm("Möchten Sie diese Rolle wirklich löschen? ")
             if (answer) {
                 const res = await deleteRole(selected.id)
+                userStore.setMessage("Rolle erfolgreich gelöscht!")
                 console.log(res)
             }
         }else {//no rights!

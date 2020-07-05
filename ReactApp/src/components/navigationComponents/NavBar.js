@@ -27,16 +27,16 @@ function NavBar({ userStore }) {
                             {hasRight(userStore, managementRights()) &&
                                 <Nav.Item><Nav.Link as={Link} to="/admin">Verwaltung</Nav.Link></Nav.Item>
                             }
-                            {hasRight(userStore, ownAppointmentRights.concat(appointmentRights)) &&
+                            {hasRight(userStore, ownAppointmentRights.concat(appointmentRights)) && 
                                 <Nav.Item><Nav.Link as={Link} to="/warning">Konfliktansicht</Nav.Link></Nav.Item>
                             }
                             {hasRight(userStore, ownAppointmentRights.concat(appointmentRights)) &&
                                 <Nav.Item><Nav.Link as={Link} to="/appointment">Terminansicht</Nav.Link></Nav.Item>
-                            }
+                            }       
                             <Nav.Item><Nav.Link as={Link} to="/booking">Buchen</Nav.Link></Nav.Item>
                         </Nav>
                     </Navbar.Collapse >
-                    <Nav.Item style={{ color: "#bbb", marginRight: "20px", fontSize: "14pt" }}>
+                    <Nav.Item style={{ color: "#bbb", marginRight: "20px", fontSize:"14pt"}}>
                         {userStore.loggedIn ? "Benutzer: " + userStore.username : null}
                     </Nav.Item>
                     <LoginForm userStore={userStore} />

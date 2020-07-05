@@ -120,11 +120,13 @@ function UserForm({onCancel,
                     if (res.headers.exception) {
                       setException(res.headers.exception)
                     }
+                    userStore.setMessage("Mitarbeiter erfolgreich geändert!")
                   })
             }else { //customer
                 updateData = {id, firstName, lastName, username, password: newPassword, systemStatus, roles, restrictions,
                               optionalAttributes: optionalAttributesOfUser}
                 await updateCustomer(id, updateData);
+                userStore.setMessage("Kunde erfolgreich geändert!")
             }
           } catch (error) {
             console.log(Object.keys(error), error.message)
@@ -139,10 +141,12 @@ function UserForm({onCancel,
               newData = {firstName, lastName, username, password, systemStatus, roles, positions, availabilities, restrictions,
                           optionalAttributes: optionalAttributesOfUser}
               await addEmployee(newData);
+              userStore.setMessage("Mitarbeiter erfolgreich hinzugefügt!")
           }else { //customer
               newData = {firstName, lastName, username, password, systemStatus, roles, restrictions, 
                           optionalAttributes: optionalAttributesOfUser}
               await addCustomer(newData);
+              userStore.setMessage("Kunde erfolgreich hinzugefügt!")
           }
           } catch (error) {
             console.log(Object.keys(error), error.message)
@@ -161,6 +165,7 @@ function UserForm({onCancel,
           if (answer) {
             try{
               await deleteEmployee(selected.id)
+              userStore.setMessage("Mitarbeiter erfolgreich gelöscht!")
             } catch (error){
               console.log(Object.keys(error), error.message)
             }
@@ -170,6 +175,7 @@ function UserForm({onCancel,
           if (answer) {
             try{
               await deleteCustomer(selected.id)
+              userStore.setMessage("Kunde erfolgreich geändert!")
             } catch (error){
               console.log(Object.keys(error), error.message)
             }

@@ -114,11 +114,11 @@ function ProcedureForm({ onCancel,
     }
 
     const handleDelete = async () => {
-        if (hasRight(userStore, [rightName])) {
-            try {
-                await deleteProcedure(selected.id)
-                userStore.setMessage("Prozedur erfolgreich gelöscht")
-            } catch (error) {
+        if(hasRight(userStore, [rightName])){
+            try{
+                await  deleteProcedure(selected.id)
+                userStore.setMessage("Prozedur erfolgreich gelöscht!")
+            } catch (error){
                 console.log(Object.keys(error), error.message)
             }
         } else {//no rights!
@@ -140,6 +140,7 @@ function ProcedureForm({ onCancel,
                 if (res.headers.exception) {
                     setException(res.headers.exception)
                 }
+                userStore.setMessage("Prozedur erfolgreich geändert!")
             })
         onCancel()
     }

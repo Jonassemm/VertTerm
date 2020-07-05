@@ -28,10 +28,12 @@ const RestrictionForm = ({ onCancel, edit, selected }) => {
         if (!edit) {
             const data = {name}
             res = await addRestriction(data)
+            userStore.setMessage("Einschränkung erfolgreich hinzugefügt!")
         } else {
             var id = selected.id
             const data = {id, name}
             res = await editRestriction(data)
+            userStore.setMessage("Einschränkung erfolgreich geändert!")
         }
         onCancel()
     }
@@ -42,6 +44,7 @@ const RestrictionForm = ({ onCancel, edit, selected }) => {
         if (answer) {
             try {
                 const res = await deleteRestriction(selected.id)
+                userStore.setMessage("Einschränkung erfolgreich gelöscht!")
             } catch (error) {
                 console.log(Object.keys(error), error.message)
             }

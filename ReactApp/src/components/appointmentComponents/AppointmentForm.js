@@ -36,6 +36,7 @@ export const handleDeleteAppointment = async (id, handleOnCancel = undefined, se
         if(isBlocker){
             try{
                 await deleteBlocker(id)
+                userStore.setMessage("Blocker erfolgreich gelöscht!")
             }catch (error){
                 console.log(Object.keys(error), error.message)
             }
@@ -49,6 +50,7 @@ export const handleDeleteAppointment = async (id, handleOnCancel = undefined, se
                     if (res.headers.exception) {
                         setException(res.headers.exception)
                     }
+                    userStore.setMessage("Termin erfolgreich gelöscht!")
                 })
                 .catch((error) => {
                     if(error.response.headers.exception != undefined) {
@@ -142,6 +144,7 @@ function AppointmentForm({
         if(checkRights()){
             try{
                 const res = await updateCustomerIsWaiting(selected.id, customerIsWaiting)
+                userStore.setMessage("Termin erfolgreich geändert!\n\nKunde wartet nun.")
                 if(res.headers.appointmentid != undefined && res.headers.starttime != undefined) {
                     //panned start > now + (2 minutes = 120000)
                     if(moment(plannedStarttime, "DD.MM.yyyy HH:mm").toDate().getTime() > (moment().toDate().getTime()+twoMinutes)) {
@@ -164,6 +167,7 @@ function AppointmentForm({
         if(checkRights()){
             try{
                 const response = await startAppointment(selected.id);
+                userStore.setMessage("Termin erfolgreich gestartet!")
             } catch (error){
                 console.log(Object.keys(error), error.message)
             }
@@ -192,6 +196,7 @@ function AppointmentForm({
                     if(res.headers.appointmentid != undefined && res.headers.starttime != undefined) {
                         handlePreferredAppointmentChange(res.headers.appointmentid, res.headers.starttime)
                     }
+                    userStore.setMessage("Termin erfolgreich beendet!")
                 })
             } catch (error){
             console.log(Object.keys(error), error.message)

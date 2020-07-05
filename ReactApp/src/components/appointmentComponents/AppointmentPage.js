@@ -67,8 +67,8 @@ export default function AppointmentPage({calendarStore, userStore}) {
     const [preferredAppointment, setPreferredAppointment] = useState(null)
     const [preferredAppointmentStarttime, setPreferredAppointmentStarttime] = useState(null)
     const [overrideDeleteId, setOverrideDeleteId] = useState(null)
-    const [allowOwnView, setAllowOwnView] = useState(false)
-    const [allowEntireView, setAllowEntireView] = useState(false)
+    const [allowOwnView, setAllowOwnView] = useState(true)
+    const [allowEntireView, setAllowEntireView] = useState(true)
 
 
     useEffect( () => {
@@ -81,9 +81,11 @@ export default function AppointmentPage({calendarStore, userStore}) {
             setAllowEntireView(true)
         }else if(hasRight(userStore, [rightNameOwn])){
             setAllowOwnView(true)
+        }else{
+            setAllowEntireView(false)
+            setAllowOwnView(false)
         }
     },[])
-
 
 
     const handleSelectedUserChange = (data) => {
@@ -105,6 +107,7 @@ export default function AppointmentPage({calendarStore, userStore}) {
         setShowExceptionModal(true)
     }
 
+
     const handleOverrideDelete = async () => {
         if(hasRight(userStore, [rightOverride])){
             try{
@@ -118,6 +121,7 @@ export default function AppointmentPage({calendarStore, userStore}) {
             alert("Für diesen Vorgang besitzten Sie nicht die erforderlichen Rechte!\n\nBenötigtes Recht: " + rightOverride)
         }
     }
+
 
     //-------------------------PreferredAppointmentModal----------------------------
     const handlePreferredAppointmentChange = (id, starttime) =>{
@@ -224,6 +228,7 @@ export default function AppointmentPage({calendarStore, userStore}) {
         }
     }
 
+
     const loadCalendarAppointments = async (month, year, UserID) => { 
         const numberOfMonthsBefore = 2
         const numberOfMontsAfter = 2
@@ -259,6 +264,7 @@ export default function AppointmentPage({calendarStore, userStore}) {
             }
         }
 
+
         //don't save object with status="deleted"
         var reducedData = []
         if(response.data != undefined) {
@@ -268,6 +274,7 @@ export default function AppointmentPage({calendarStore, userStore}) {
                 }
             })
         }
+
 
         //prepare response for calendar
         const evts = reducedData.map(item => {
@@ -289,6 +296,7 @@ export default function AppointmentPage({calendarStore, userStore}) {
         setCalendarLoaded(true)
     }
 
+
     //----------------------------------Help-Functions------------------------------------
     const setAppointments = (selection) => {
         setAppointmentsOf(selection)
@@ -303,6 +311,7 @@ export default function AppointmentPage({calendarStore, userStore}) {
         }
         loadAppointments(selection)
     }
+
 
     //------------------------------------OverviewPage-Components----------------------------------
     var tableBody = []
@@ -319,6 +328,7 @@ export default function AppointmentPage({calendarStore, userStore}) {
             )
         })
     }
+
 
     const modal = (onCancel,edit,selectedItem) => {
         return (
@@ -340,7 +350,9 @@ export default function AppointmentPage({calendarStore, userStore}) {
 
     return (
         <React.Fragment>
-            {loading ? <div className="loadview"><Spinner animation="border" variant="light" /></div> : null}
+            <Style>
+                {loading ? <div className="loadview"><Spinner animation="border" variant="light" /></div> : null}
+            </Style>
             {renderfkt()}
             {exception != null && 
                 <ExceptionModal //modal for deleting appointments
@@ -431,13 +443,12 @@ export default function AppointmentPage({calendarStore, userStore}) {
                 </Modal.Footer>
             </Modal>
             }
-            
             <div style={{display: "flex",  justifyContent: "center"}}>
-                {(allowEntireView || allowOwnView) ?
-                    <div style={{margin: "10px 10px 0px 0px", fontWeight: "bold"}}>Ansicht von: </div>:
-                    <div style={{margin: "10px 10px 0px 0px", fontWeight: "bold"}}>
-                        Ihnen fehlt das Recht {rightNameOwn} oder {rightName} zur Ansicht von Terminen!</div>
-                }
+                <div style={{margin: "10px 10px 0px 0px", fontWeight: "bold"}}>
+                    {(allowEntireView || allowOwnView) ?
+                        "Ansicht von": 
+                        "Ihnen fehlt das Recht " + rightNameOwn + " oder " + rightName + " zur Ansicht von Terminen!"}
+                </div>
                 <div style={{marginTop: "5px", width: "250px"}}>
                     {appointmentsOf == loadMode.own ? 
                         selectedUser.length > 0 && (allowEntireView || allowOwnView) &&
