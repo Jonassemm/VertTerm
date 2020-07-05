@@ -23,8 +23,6 @@ export default function AppointmentWarningPage({userStore, warning}) {
     if(warning != undefined) {
         initialSelectedWarning = [warning]
     }
-    const rightNameOwn = "OWN_APPOINTMENT_READ"
-    const rightName = "APPOINTMENT_READ"
     const [selectedKindOfWarning, setSelectedKindOfWarning] = useState(initialSelectedWarning)
     const [appointmentsWithWarnings, setAppointmentsWithWarnings] = useState([])
     const [initialWarning, setInitialWarning] = useState(true)
@@ -101,7 +99,7 @@ export default function AppointmentWarningPage({userStore, warning}) {
         var data = []
 
         try {
-            if(initialWarning != undefined || selectedKindOfWarning.length == 0) {
+            if(initialWarning == undefined || selectedKindOfWarning.length == 0) {
                 response = await getAllAppointmentsWithWarning()
             }else {
                 response = await getAppointmentsWithWarning(creatWarningList(selectedKindOfWarning))
