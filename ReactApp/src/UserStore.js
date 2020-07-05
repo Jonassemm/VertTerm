@@ -7,6 +7,11 @@ class UserStore {
         this.user = user
     }
 
+    message = null
+    setMessage(message) {
+        this.message = message
+    }
+
     username = null
     setUsername(username) {
         this.username = username;
@@ -88,6 +93,7 @@ class UserStore {
 
 UserStore = decorate(UserStore, {
     user: observable,
+    message: observable,
     username: observable,
     firstName: observable,
     lastName: observable,
@@ -102,6 +108,7 @@ UserStore = decorate(UserStore, {
     setFirstName: action,
     setLastName: action,
     setUserID: action,
+    setMessage: action,
     setLoggedIn: action
 })
 

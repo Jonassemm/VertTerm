@@ -1,6 +1,6 @@
 //author: Patrick Venturini
 import React, {useState, useEffect} from 'react'
-import {Form, Col, Tabs, Tab, Button, Modal, Spinner} from "react-bootstrap"
+import {Form, Col, Tabs, Tab, Button, Modal, Spinner, Toast} from "react-bootstrap"
 import OverviewPage from "../OverviewPage"
 import {Link} from 'react-router-dom';
 import AppointmentForm from "./AppointmentForm"
@@ -508,7 +508,6 @@ export default function AppointmentPage({calendarStore, userStore}) {
                     </Tab>
                 </Tabs>
             }
-               
         </React.Fragment>
    )
 }

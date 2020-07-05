@@ -1,11 +1,11 @@
-import React, { useState, useEffect } from "react"
-import { Nav, Navbar, NavItem, NavDropdown } from "react-bootstrap"
+import React from "react"
+import { Nav, Navbar, Toast} from "react-bootstrap"
 import Styled from "styled-components"
 import { Link } from 'react-router-dom'
 import LoginForm from "./LoginForm"
 import { observer } from "mobx-react"
 import { hasRight } from "../../auth"
-import {managementRights, ownAppointmentRights, appointmentRights} from "../Rights"
+import { managementRights, ownAppointmentRights, appointmentRights } from "../Rights"
 
 
 const Styles = Styled.div`
@@ -13,7 +13,6 @@ const Styles = Styled.div`
     margin-left: 5px;
 }
 `
-
 
 function NavBar({ userStore }) {
     console.log(document.cookie)
@@ -42,6 +41,11 @@ function NavBar({ userStore }) {
                 <LoginForm userStore={userStore} />
             </Navbar>
         </Styles>
+         <Toast show={userStore.message} onClose={() => userStore.setMessage(null)} style={{ width: "600px", height: "60px", border: "none", position: "fixed", zIndex: "100000", top: "30px", left: "40%" }} delay={5000} autohide>
+         <Toast.Header className="justify-content-md-center" style={{ height: "60px", textAlign: "center", backgroundColor: "#def2d6" }}>
+             <h5 style={{margin:"0px", padding:"0px", color: "#5a7052" }}>{userStore.message}</h5>
+         </Toast.Header>
+     </Toast>
     )
 }
 
