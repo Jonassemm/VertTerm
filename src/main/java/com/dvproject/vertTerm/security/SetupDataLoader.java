@@ -74,8 +74,8 @@ public class SetupDataLoader implements ApplicationListener<ContextRefreshedEven
 
 		setupRights();
 
-		Role adminRole = createRoleIfNotFound("ADMIN_ROLE", setUpAdminRights());
-		Role userRole = createRoleIfNotFound("ANONYMOUS_ROLE", setUpAnonymusUserRights());
+		Role adminRole = createRoleIfNotFound("Admin_role", setUpAdminRights());
+		Role userRole = createRoleIfNotFound("Anonymous_role", setUpAnonymusUserRights());
 
 		createEmployeeIfNotFound("admin", "password", Arrays.asList(adminRole));
 		createUserIfNotFound("anonymousUser", "password", Arrays.asList(userRole));

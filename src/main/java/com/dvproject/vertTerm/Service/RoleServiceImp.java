@@ -44,6 +44,7 @@ public class RoleServiceImp implements RoleService {
 		//update role if it's exist
 		if (RoleRepo.findById(role.getId()).isPresent()) {
 			role.setName(capitalize(role.getName()));
+			testRoleData(role);
 			return RoleRepo.save(role);
 		} else {
 			throw new ResourceNotFoundException("Role with the given id :" + role.getId() + "not found");
@@ -233,5 +234,22 @@ public class RoleServiceImp implements RoleService {
 			return str;
 		// return str.toUpperCase() ;
 		return str.substring(0, 1).toUpperCase() + str.substring(1).toLowerCase();
+	}
+	
+	/**
+	 * 
+	 * author Joshua Müller
+	 */
+	private void testRoleData (Role role) {
+		String roleId = role.getId();
+		String roleName = role.getName();
+		Role adminRole = RoleRepo.findByName("Admin_role");
+		Role anonymousRole = RoleRepo.findByName("Anonymous_role");
+		
+		if (roleId.equals(adminRole.getId()) && !roleName.equals(adminRole.getName()))
+			throw new IllegalArgumentException("Can not change the name of the admin-role");
+		
+		if (roleId.equals(anonymousRole.getId()) && !roleName.equals(anonymousRole.getName())) 
+			throw new IllegalArgumentException("Can not change the name of the anonymous-role");
 	}
 }

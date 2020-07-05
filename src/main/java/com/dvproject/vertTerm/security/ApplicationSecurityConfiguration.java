@@ -20,8 +20,6 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.authentication.HttpStatusEntryPoint;
 import org.springframework.validation.beanvalidation.LocalValidatorFactoryBean;
 import org.springframework.web.cors.CorsConfiguration;
@@ -91,7 +89,7 @@ public class ApplicationSecurityConfiguration extends WebSecurityConfigurerAdapt
 
 	private List<GrantedAuthority> getAuthoritiesOfAnonymousUsers() {
 		List<GrantedAuthority> authorities = new ArrayList<GrantedAuthority>();
-		Role anonymousRole = roleReposiroty.findByName("ANONYMOUS_ROLE");
+		Role anonymousRole = roleReposiroty.findByName("Anonymous_role");
 		List<Right> rights = null;
 
 		if (anonymousRole == null) {
