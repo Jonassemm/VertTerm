@@ -431,7 +431,7 @@ function AppointmentForm({
                     {warnings.length != 0 &&
                         <Form.Row>
                             <Form.Group as={Col} md="9">
-                                <Form.Label>Konflikte:</Form.Label>
+                                <Form.Label>Konflikte mit:</Form.Label>
                                 <Form.Control
                                     readOnly
                                     style={{background: "white", color: "red", fontWeight: "bold"}}
@@ -445,7 +445,7 @@ function AppointmentForm({
                                     <Button variant="primary" onClick={handleTest} style={{ marginLeft: "0px" }}>Prüfen</Button>
                                     {checkRights() &&
                                         <Link to={`/warning/${warnings[0]}`}>
-                                            <Button variant="success" style={{ marginLeft: "10px" }}>Beheben</Button>
+                                            <Button variant="success" style={{ marginLeft: "10px" }}>Lösen</Button>
                                         </Link>
                                     }
                                     

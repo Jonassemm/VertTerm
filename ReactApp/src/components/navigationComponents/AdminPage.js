@@ -49,13 +49,13 @@ function AdminPage({userStore}) {
                 {hasRole(userStore, ["ADMIN_ROLE"]) &&
                      <Route exact path="/admin/restriction" component={RestrictionPage} />
                 }
-                {hasRight(userStore, userRights) &&
+                {hasRight(userStore, ownUserRights.concat(userRights)) &&
                     <Route exact path="/admin" component={() => <UserPage userStore={userStore} userType={"customer"} />} />
                 }
-                {hasRight(userStore, userRights) &&
+                {hasRight(userStore, ownUserRights.concat(userRights)) &&
                     <Route exact path="/admin/customer" component={() => <UserPage userStore={userStore} userType={"customer"} />} />
                 }
-                {hasRight(userStore, userRights) &&
+                {hasRight(userStore, ownUserRights.concat(userRights)) &&
                     <Route exact path="/admin/employee" component={() => <UserPage userStore={userStore} userType={"employee"} />} />
                 }
                 {hasRole(userStore, ["ADMIN_ROLE"]) &&

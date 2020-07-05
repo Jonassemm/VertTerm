@@ -36,8 +36,8 @@ function NavBar({ userStore }) {
                         <Nav.Item><Nav.Link as={Link} to="/booking">Buchen</Nav.Link></Nav.Item>
                     </Nav>
                 </Navbar.Collapse >
-                <Nav.Item style={{ color: "#bbb", marginRight: "10px" }}>
-                    {userStore.loggedIn ? "" + userStore.userID : null}
+                <Nav.Item style={{ color: "#bbb", marginRight: "20px", fontSize:"14pt"}}>
+                    {userStore.loggedIn ? "Benutzer: " + userStore.username : null}
                 </Nav.Item>
                 <LoginForm userStore={userStore} />
             </Navbar>
