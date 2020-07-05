@@ -5,7 +5,7 @@ import { Container, Form, Col, Row, Button, Modal, Spinner } from "react-bootstr
 import ObjectPicker from "../ObjectPicker"
 import "./BookingForm.css"
 import DatePicker from "react-datepicker"
-import { addAppointmentGroup, addAppointmentGroupOverride,getAppointmentGroupByApt,editAppointmentGroup, addAppointmentGroupAny, getAppointment, searchAppointmentGroup, addBlocker, OptimizeEarlyEnd } from "../requests"
+import { addAppointmentGroup, addAppointmentGroupAnyOverride, addAppointmentGroupOverride,getAppointmentGroupByApt,editAppointmentGroup, editAppointmentGroupOverride, addAppointmentGroupAny, getAppointment, searchAppointmentGroup, addBlocker, OptimizeEarlyEnd } from "../requests"
 import { useHistory } from "react-router-dom"
 import { getErrorMessage } from "./bookingErrors"
 import SearchAptCalendar from "./SearchCalendar/SearchAptCalendar"
@@ -345,14 +345,27 @@ function BookingForm({editData,userStore}) {
     }
 
     async function overrideSubmit() {
-        if (selectedCustomer.length != 0 || selectedCustomer === {}) {
             const aptGroup = buildFinalData()
-            await addAppointmentGroupOverride(aptGroup, selectedCustomer[0].id)
-            userStore.setMessage("Termin erfolgreich gebucht!")
+            try{
+            if(!editMode){
+                if(selectedCustomer.length != 0){
+                    await addAppointmentGroupOverride(aptGroup, selectedCustomer[0].id)
+                    userStore.setMessage("Termin erfolgreich gebucht!")
+                    history.push("/appointment")
+                } else {
+                    const res = await addAppointmentGroupAnyOverride(aptGroup)
+                    const data = btoa(res.data)
+                    userStore.setMessage("Termin erfolgreich gebucht!")
+                    setQRCred(data)
+                    setShowMode(true)
+                }
+            }else{
+                await editAppointmentGroupOverride(aptGroup, selectedCustomer[0].id)
+                userStore.setMessage("Termin erfolgreich geändert!")
+            }
             history.push("/appointment")
-        } else {
-            setException("customer")
-            setShowExceptionModal(true)
+        }catch(error){
+            userStore.setMessage("Error!")
         }
     }
 
@@ -377,7 +390,6 @@ function BookingForm({editData,userStore}) {
                     history.push("/appointment")
                 } else {
                     const res = await addAppointmentGroupAny(aptGroup)
-                    // obscuring the link
                     const data = btoa(res.data)
                     userStore.setMessage("Termin erfolgreich gebucht!")
                     setQRCred(data)
