@@ -49,10 +49,17 @@ public class Availability {
 		if (this.getRhythm() == AvailabilityRhythm.ONE_TIME) { return end.after(endDate) ? null : date; }
 		if (endOfSeries != null && end.after(endOfSeries)) { return null; }
 
-		Date tmpStartDate = startDate;
-		Date tmpEndDate = endDate;
+		Date tmpStartDate = this.startDate;
+		Date tmpEndDate = this.endDate;
 
 		while (endOfSeries == null || tmpStartDate.before(endOfSeries)) {
+			if (!tmpEndDate.before(end)) {
+				if (date.before(tmpStartDate)) {
+					return tmpStartDate;
+				} else {
+					return date;
+				}
+			}
 			if (tmpEndDate.before(end)) {
 				Calendar startCalendar = Calendar.getInstance();
 				Calendar endCalendar = Calendar.getInstance();
@@ -80,11 +87,6 @@ public class Availability {
 				}
 				tmpStartDate = startCalendar.getTime();
 				tmpEndDate = endCalendar.getTime();
-			}
-			if (date.before(tmpStartDate)) {
-				return tmpStartDate;
-			} else {
-				return date;
 			}
 		}
 		return null;
