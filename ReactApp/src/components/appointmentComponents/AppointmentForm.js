@@ -22,18 +22,29 @@ var moment = require('moment');
 const twoMinutes = 120000
 
 
-export const handleDeleteAppointment = async (id, handleOnCancel = undefined, setException, setPreferredAppointment) => {
-    const answer = confirm("Termin wirklich löschen? ")
-    if(answer) {
-        var isBlocker = false
-        try{
-            const response = await isBlocker(id)
-            isBlocker = response.data
-        }catch (error){
-            console.log(Object.keys(error), error.message)
-        }
+export const handleDeleteAppointment = async (id, 
+    handleOnCancel = undefined, 
+    setException, 
+    setPreferredAppointment, 
+    userStore) => {
 
-        if(isBlocker){
+    var answer = false
+    var blockerSelected = false
+    try{
+        const response = await isBlocker(id)
+        blockerSelected = response.data
+    }catch (error){
+        console.log(Object.keys(error), error.message)
+    }
+
+    if(blockerSelected){
+        answer = confirm("Blocker wirklich löschen? ")
+    }else{
+        answer = confirm("Termin wirklich löschen? ")
+    }
+
+    if(answer) {
+        if(blockerSelected){
             try{
                 await deleteBlocker(id)
                 userStore.setMessage("Blocker erfolgreich gelöscht!")
@@ -77,9 +88,9 @@ function AppointmentForm({
     handleExceptionChange,
     handlePreferredAppointmentChange,
     userStore,
-    refreshData = null,                         //optional (HomePage)
-    month = null,                               //optional (HomePage)
-    year = null                                 //optional (HomePage)
+    refreshData = null,                         //optional (for CalendarPage)
+    month = null,                               //optional (for CalendarPage)
+    year = null                                 //optional (for CalendarPage)
     }) {
     const rightNameOwn = ownAppointmentRights[1] //write right
     const rightName = appointmentRights[1] //write right
@@ -144,7 +155,11 @@ function AppointmentForm({
         if(checkRights()){
             try{
                 const res = await updateCustomerIsWaiting(selected.id, customerIsWaiting)
-                userStore.setMessage("Termin erfolgreich geändert!\n\nKunde wartet nun.")
+                if(customerIsWaiting){
+                    userStore.setMessage("Kunde wartet vor Ort!")
+                }else{
+                    userStore.setMessage("Kunde nicht vor Ort!")
+                }
                 if(res.headers.appointmentid != undefined && res.headers.starttime != undefined) {
                     //panned start > now + (2 minutes = 120000)
                     if(moment(plannedStarttime, "DD.MM.yyyy HH:mm").toDate().getTime() > (moment().toDate().getTime()+twoMinutes)) {
@@ -172,7 +187,7 @@ function AppointmentForm({
                 console.log(Object.keys(error), error.message)
             }
             if(!data){
-                alert("Termin kann nicht vorzeitig gestartet werden")
+                userStore.setWarningMessage("Termin kann nicht vorzeitig gestartet werden")
             }
             setActualStarttime(moment(new Date).format("DD.MM.YYYY / HH:mm").toString()) //set the actual time 
 
@@ -229,7 +244,8 @@ function AppointmentForm({
                 selected.id, 
                 handleOnCancel, 
                 handleExceptionChange, 
-                handlePreferredAppointmentChange)
+                handlePreferredAppointmentChange,
+                userStore)
         }else {//no right -> submit not allowed 
             noRights()
         }
@@ -266,9 +282,9 @@ function AppointmentForm({
 
     const noRights = () => {
         if(ownAppointmentView){
-            alert("Für diesen Vorgang besitzten Sie nicht die erforderlichen Rechte!\n\nBenötigtes Recht: " + rightNameOwn)
+            userStore.setWarningMessage("Ihnen fehlt das Recht:\n"+ rightNameOwn)
         }else {
-            alert("Für diesen Vorgang besitzten Sie nicht die erforderlichen Rechte!\n\nBenötigtes Recht: " + rightName)
+            userStore.setWarningMessage("Ihnen fehlt das Recht:\n"+ rightName)
         }
     }
 
@@ -286,7 +302,7 @@ function AppointmentForm({
         if(start != null && id != null) {
             handlePreferredAppointmentChange(id, start)
         }else{
-            alert("Termin kann leider nicht vorgezogen werden")
+            userStore.setInfoMessage("Termin kann leider nicht vorgezogen werden")
         }
     }
 
@@ -335,25 +351,10 @@ function AppointmentForm({
         return actualStarttime
     }
 
-    const test = async() => {
-        try{
-            const response = await isBlocker(selected.id)
-            console.log(response)
-        }catch (error){
-            console.log(Object.keys(error), error.message)
-        }
-    }
-
-
-    const rendertest = () => {
-        console.log("---------Render-FORM------")
-    }
-    
 
     return (
         <div className="page">
             <Container>
-                {rendertest()}
                 <Form>   
                     <Form.Row>
                         <Form.Group as={Col} md="4" >

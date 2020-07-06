@@ -2,6 +2,7 @@
 import axios from "axios"
 import {APIURL} from "../../APIConfig"
 
+
 //Appointment
 export const updateAppointment = (id,data) => axios.put(`${APIURL}/api/Appointments/${id}`, data)
 export const getAppointmentsByID = (id) => axios.get(`${APIURL}/api/Appointments/${id}`) 

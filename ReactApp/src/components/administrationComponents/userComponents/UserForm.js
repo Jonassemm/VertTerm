@@ -4,7 +4,7 @@ import {Form, Table, Col, Container, Button, InputGroup, Tabs, Tab } from 'react
 import Availability from "../availabilityComponents/Availability"
 import ObjectPicker from "../../ObjectPicker"
 import { hasRight } from "../../../auth"
-import {userRights, ownUserRights} from "../../Rights"
+import {userRights, ownUserRights, roleRights} from "../../Rights"
 
 import {
   addEmployee,
@@ -33,6 +33,7 @@ function UserForm({onCancel,
 
   const rightNameOwn = ownUserRights[1] //write right
   const rightName = userRights[1] //write right
+  const roleRight = roleRights[1] //write right
   
   const [isEmployee, setIsEmployee] = useState(initialTypeIsEmployee)
   const [valideForm, setValideForm] = useState(false)
@@ -54,6 +55,7 @@ function UserForm({onCancel,
   const [optionalAttributInput, setOptionalAttributeInput] = useState() //needed to render page when editing any optional attribute
   const [requiredOptionalAttributCounter, setRequiredOptionalAttributCounter] = useState(0)
   const [ownUserView, setOwnUserView] = useState(false)
+  const [roleChangeAllow, setRoleChangeAllow] = useState(false)
 
 
   useEffect(() => { 
@@ -78,6 +80,11 @@ function UserForm({onCancel,
         if(selected.id == userStore.userID){
           setOwnUserView(true)
         }
+        if(hasRight(userStore, [roleRight])){
+          setRoleChangeAllow(true)
+        }else{
+          setRoleChangeAllow(false)
+        }
     } 
     loadOptionalAttributes()
   }, [])
@@ -89,8 +96,18 @@ function UserForm({onCancel,
   const handlePasswordChange = event => {setPasswordChanged(true); setPassword(event.target.value); setEdited(true)}
   const handleSystemStatusChange = event => {setSystemStatus(event.target.value); setEdited(true)}
   const handlePositionsChange = data => {setPositions(data); setEdited(true)}
-  const handleRoleChange = data => {setRoles(data); setEdited(true)}
   const handleRestrictionChange = data => {setRestrictions(data); setEdited(true)}
+  
+  
+  const handleRoleChange = data => {
+    if(hasRight(userStore, [roleRight])){
+      setRoles(data); setEdited(true)
+    }else{
+      userStore.setWarningMessage("Ihnen fehlt das Recht:\n"+ roleRight)
+    }
+  }
+
+  
   const handleOptionalAttributesChange = (e, name) => {
     setOptionalAttributeValue(name, e.target.value); 
     setOptionalAttributeInput([e.target.value, name]); //for rendering
@@ -253,15 +270,16 @@ function UserForm({onCancel,
       if(isEmployee){
         if(roles.length == 0) { //check roles
           result = false
-          alert("Bitte wählen Sie mindestens eine Rolle aus!")
+          userStore.setWarningMessage("Bitte mindestens eine Rolle wählen!")
+
         }else if(positions.length == 0) { //check positions
           result = false
-          alert("Bitte wählen Sie mindestens eine Position aus!")
+          userStore.setWarningMessage("Bitte mindestens eine Position wählen!")
         }
       }else {
         if(roles.length == 0) { //check roles
           result = false
-          alert("Bitte wählen Sie mindestens eine Rolle aus!")
+          userStore.setWarningMessage("Bitte mindestens eine Rolle wählen!")
         }
       }
     }
@@ -269,21 +287,21 @@ function UserForm({onCancel,
     if(tabKey == "availability" && !generalFieldsAreSet){
       if(isEmployee){
         if(requiredOptionalAttributCounter != 0){
-          alert("Bitte füllen Sie in der Allgemein-Ansicht die erforderlichen optionalen Attribute aus!")
+          userStore.setWarningMessage("Optionales Attribut wurde nicht eingetragen!")
         } else if(roles.length == 0) { //check roles
-          alert("Bitte wählen Sie in der Allgemein-Ansicht mindestens eine Rolle aus!")
+          userStore.setWarningMessage("Rolle wurde nicht eingetragen!")
         }else if(positions.length == 0) { //check positions
-          alert("Bitte wählen Sie in der Allgemein-Ansicht mindestens eine Position aus!")
+          userStore.setWarningMessage("Position wurde nicht eingetragen!")
         }else {
-          alert("Bitte Felder auf der Allgemein-Ansicht überprüfen!")
+          userStore.setWarningMessage("Felder auf der Allgemein-Ansicht überprüfen!")
         }
       }else {
         if(requiredOptionalAttributCounter != 0){
-          alert("Bitte füllen Sie in der Allgemein-Ansicht die erforderlichen optionalen Attribute aus!")
+          userStore.setWarningMessage("Optionales Attribute wurde nicht eingetragen!")
         } else if(roles.length == 0) { //check roles
-          alert("Bitte wählen Sie in der Allgemein-Ansicht mindestens eine Rolle aus!")
+          userStore.setWarningMessage("Rolle wurde nicht eingetragen!")
         }else {
-          alert("Bitte Felder auf der Allgemein-Ansicht überprüfen!")
+          userStore.setWarningMessage("Felder auf der Allgemein-Ansicht überprüfen!")
         }
       }
       result = false
@@ -318,9 +336,9 @@ function UserForm({onCancel,
 
   const noRights = () => {
     if(ownUserView){
-        alert("Für diesen Vorgang besitzten Sie nicht die erforderlichen Rechte!\n\nBenötigtes Recht: " + rightNameOwn)
+        userStore.setWarningMessage("Ihnen fehlt das Recht:\n"+ rightNameOwn)
     }else {
-        alert("Für diesen Vorgang besitzten Sie nicht die erforderlichen Rechte!\n\nBenötigtes Recht: " + rightName)
+        userStore.setWarningMessage("Ihnen fehlt das Recht:\n"+ rightName)
     }
   }
 
@@ -332,6 +350,19 @@ function UserForm({onCancel,
 
   const decrementRequiredCounter = () => {
     setRequiredOptionalAttributCounter(requiredOptionalAttributCounter => requiredOptionalAttributCounter - 1)
+  }
+
+
+  const getRoleString = () => {
+    var string = ""
+    roles.map((role, index) => {
+      if(index == 0){
+        string += role.name
+      }else{
+        string += ", " + role.name
+      }
+    })
+    return string
   }
 
 
@@ -467,7 +498,7 @@ function UserForm({onCancel,
                         <Form.Control
                           required
                           //pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}" //min 8 characters with one upper and one lower case letter and one digit
-                          //title="Das Passwort muss mindestens 8 Zeichen lang sein und einen Groß- sowie Klein-Buchstaben enthalten, sowie mindestens eine Zahl"
+                          //title="Das Passwort muss mindestens 8 Zeichen lang sein und einen Groß- sowie Klein-Buchstaben enthalten und mindestens eine Zahl"
                           name="password"
                           type="password"
                           placeholder="Passwort"
@@ -498,20 +529,34 @@ function UserForm({onCancel,
               <Form.Group as={Col} md="5">
                   <Form.Label>Rollen:</Form.Label>
                   <Container style={{display: "flex", flexWrap: "nowrap"}}>
-                    {isEmployee &&
+                    {(isEmployee && roleChangeAllow || (isEmployee && !edit)) ?
                       <ObjectPicker 
                         setState={handleRoleChange}
                         DbObject="employeeRole"
                         initial={roles} 
                         multiple={true}
-                      />
-                    }{!isEmployee &&
+                      />: isEmployee &&
+                      <Form.Control
+                          readOnly
+                          type="role"
+                          placeholder="Keine Rolle"
+                          value={getRoleString()}
+                          onChange={handlePasswordChange}
+                        />
+                    }{(!isEmployee && roleChangeAllow || (!isEmployee && !edit)) ?
                       <ObjectPicker // customer cannot choose ADMIN_ROLE
                         setState={handleRoleChange}
                         DbObject="customerRole"
                         initial={roles} 
                         multiple={true}
-                      />
+                      />: (!isEmployee) &&
+                      <Form.Control
+                          readOnly
+                          type="role"
+                          placeholder="Keine Rolle"
+                          value={getRoleString()}
+                          onChange={handlePasswordChange}
+                        />
                     }
                   </Container>
                 </Form.Group>

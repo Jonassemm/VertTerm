@@ -12,7 +12,6 @@ import styled from "styled-components"
 import { hasRight } from "../../auth"
 import {ownAppointmentRights, appointmentRights, overrideRight} from "../Rights"
 
-var moment = require('moment'); 
 import {
     getAllAppointments,
     getAppointmentsByID,
@@ -31,6 +30,8 @@ export const loadMode = {
     all: "all"
 }
 
+var moment = require('moment'); 
+
 const Style = styled.div`
 .loadview {
     position: fixed;
@@ -44,21 +45,21 @@ const Style = styled.div`
     display: flex;
     align-items: center;
     justify-content: center;
-}
-`
+}`
+
 
 export default function AppointmentPage({calendarStore, userStore}) {
     var initialUser = []
     var initialLoadMode = loadMode.own
+
     if(userStore.user != null && userStore.firstName != null){
         initialUser = [userStore.user]
     }else{
-        console.log("x")
-        console.log(userStore.username)
         if(userStore.username == "admin"){
             initialLoadMode = loadMode.all
         }
     }
+
     const rightNameOwn = ownAppointmentRights[0] //read right
     const rightName = appointmentRights[0] //read right
     const rightOverride = overrideRight[0] // array with just one right
@@ -125,7 +126,7 @@ export default function AppointmentPage({calendarStore, userStore}) {
             setShowExceptionModal(false)
             loadAppointments(appointmentsOf)
         }else{
-            alert("Für diesen Vorgang besitzten Sie nicht die erforderlichen Rechte!\n\nBenötigtes Recht: " + rightOverride)
+            userStore.setWarningMessage("Ihnen fehlt das Recht:\n"+ rightOverride)
         }
     }
 
@@ -350,17 +351,12 @@ export default function AppointmentPage({calendarStore, userStore}) {
         )
     }
 
-    const renderfkt = () => {
-        console.log("---------Render-PAGE------")   
-    }
-
 
     return (
         <React.Fragment>
             <Style>
                 {loading ? <div className="loadview"><Spinner animation="border" variant="light" /></div> : null}
             </Style>
-            {renderfkt()}
             {exception != null && 
                 <ExceptionModal //modal for deleting appointments
                     showExceptionModal={showExceptionModal} 

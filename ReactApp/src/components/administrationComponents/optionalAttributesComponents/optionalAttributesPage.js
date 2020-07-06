@@ -49,6 +49,7 @@ function optionalAttributesPage({userStore}) {
             )
         })
 
+        
     const modal = (onCancel,edit,selectedItem) => {
         return (
             <OptionalAttributesForm
@@ -59,6 +60,7 @@ function optionalAttributesPage({userStore}) {
             />
         )
     }
+
 
     return (
         <React.Fragment>

@@ -6,6 +6,7 @@ import {addResourceType, deleteResourceType, editResourceType } from "./Resource
 import { hasRight } from "../../../auth"
 import {resourceTypeRights} from "../../Rights"
 
+
 const ResourceTypeForm = ({ onCancel, edit, selected, userStore }) => {
     const rightName = resourceTypeRights[1] //write right
     
@@ -49,10 +50,11 @@ const ResourceTypeForm = ({ onCancel, edit, selected, userStore }) => {
             }
             onCancel()
         }else {//no right to submit 
-            alert("Für diesen Vorgang besitzten Sie nicht die erforderlichen Rechte!\n\nBenötigtes Recht: " + rightName)
+            userStore.setWarningMessage("Ihnen fehlt das Recht:\n"+ rightName)
           }
     }
 
+    
     const handleDeleteResourceType = async () => {
         if(hasRight(userStore, [rightName])){
             const answer = confirm("Möchten Sie diese Ressourcentyp wirklich löschen?")
@@ -65,7 +67,7 @@ const ResourceTypeForm = ({ onCancel, edit, selected, userStore }) => {
                 }
             }
         }else {//no rights!
-            alert("Für diesen Vorgang besitzten Sie nicht die erforderlichen Rechte!\n\nBenötigtes Recht: " + rightName)
+            userStore.setWarningMessage("Ihnen fehlt das Recht:\n"+ rightName)
         }
         onCancel()
     }
