@@ -537,7 +537,9 @@ function AppointmentForm({
                             <Button variant="secondary" onClick={onCancel}>Abbrechen</Button>
                         }
                         {(status == appointmentStatus.planned && actualStarttime == null) && checkRights() &&
-                            <Button variant="danger" onClick={handleDelete} style={{marginLeft: "3px"}}>Termin löschen</Button> 
+                            (selected.bookedCustomer != null && selected.bookedProcedure != null) ?
+                            <Button variant="danger" onClick={handleDelete} style={{marginLeft: "3px"}}>Termin löschen</Button>: 
+                            <Button variant="danger" onClick={handleDelete} style={{marginLeft: "3px"}}>Blocker löschen</Button>
                         }
                         {(status == appointmentStatus.planned && actualStarttime == null) && checkRights() &&
                             <Link to={`/booking/${selected.id}`}>

@@ -163,6 +163,7 @@ export default function AppointmentWarningPage({userStore, warning}) {
                 selected={selectedItem}
                 handleExceptionChange={handleExceptionChange}
                 handlePreferredAppointmentChange={handlePreferredAppointmentChange}
+                userStore={userStore}
             />
         )
     }

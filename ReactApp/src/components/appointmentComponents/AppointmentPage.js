@@ -190,11 +190,15 @@ export default function AppointmentPage({calendarStore, userStore}) {
                 //create and add title to each appointment
                 if(response != null) {
                     data = response.data.map(singleAppointment => { 
-                        var title
-                        if(singleAppointment.bookedCustomer.firstName != null && singleAppointment.bookedCustomer.lastName != null){
-                            title = singleAppointment.bookedProcedure.name + " (" + singleAppointment.bookedCustomer.username + ")"
-                        }else {
-                            title = singleAppointment.bookedProcedure.name + " (anonym)"
+                        var title = ""
+                        if(singleAppointment.bookedCustomer != null && singleAppointment.bookedProcedure != null){
+                            if(singleAppointment.bookedCustomer.firstName != null && singleAppointment.bookedCustomer.lastName != null){
+                                title = singleAppointment.bookedProcedure.name + " (" + singleAppointment.bookedCustomer.username + ")"
+                            }else {
+                                title = singleAppointment.bookedProcedure.name + " (anonym)"
+                            }
+                        }else if(singleAppointment.name != null){
+                                title = singleAppointment.name
                         }
                         return {
                             ...singleAppointment,
@@ -206,7 +210,10 @@ export default function AppointmentPage({calendarStore, userStore}) {
                 //don't save object with status="deleted"
                 data.map((singleAppointment) => {
                     if(singleAppointment.status != appointmentStatus.deleted) {
-                        reducedData.push(singleAppointment)
+                        //don't save blocker ("Buchung -> Benutzerdefiniert Eingabe")
+                        if(singleAppointment.bookedCustomer != null && singleAppointment.bookedProcedure != null){
+                          reducedData.push(singleAppointment)  
+                        }
                     }
                 })
                 
@@ -285,8 +292,6 @@ export default function AppointmentPage({calendarStore, userStore}) {
 
 
         //prepare response for calendar
-        console.log("reduceData")
-        console.log(reducedData)
         const evts = reducedData.map(item => {
             var title
             if(item.bookedCustomer != null && item.bookedProcedure != null){
@@ -336,12 +341,25 @@ export default function AppointmentPage({calendarStore, userStore}) {
     var tableBody = []
     if(tableAppointments.length > 0) {
         tableBody = tableAppointments.map((item, index) => { 
+            var bookedCustomer = ""
+            var bookedProcedure = ""
+            if(item.bookedCustomer != null){
+                if(item.bookedCustomer.firstName != null || item.bookedCustomer.lastName != null){
+                    bookedCustomer = item.bookedCustomer.firstName + ", " + item.bookedCustomer.lastName
+                }else{
+                    bookedCustomer = "anonymer Kunder"
+                }
+            }
+            if(item.bookedProcedure != null){
+                bookedProcedure = item.bookedProcedure.name
+            }
             var status = translateStatus(item.status)
             return ([
                 index + 1,
                 moment(moment(item.plannedStarttime, "DD.MM.yyyy HH:mm").toDate()).format("DD.MM.YYYY / HH:mm").toString(),
                 moment(moment(item.plannedEndtime, "DD.MM.yyyy HH:mm").toDate()).format("DD.MM.YYYY / HH:mm").toString(),
-                item.bookedProcedure.name,
+                bookedCustomer,
+                bookedProcedure,
                 item.description,
                 status]
             )
@@ -524,7 +542,7 @@ export default function AppointmentPage({calendarStore, userStore}) {
                     <OverviewPage
                         pageTitle={"Termine"}
                         newItemText="Termin buchen"
-                        tableHeader={["#", "Start", "Ende", "Prozedur", "Beschreibung", "Status"]}
+                        tableHeader={["#", "Start", "Ende", "Kunde", "Prozedur", "Beschreibung", "Status"]}
                         tableBody={tableBody}
                         modal={modal}
                         data={tableAppointments}
