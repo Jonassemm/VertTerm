@@ -15,7 +15,6 @@ const Styles = Styled.div`
 `
 
 function NavBar({ userStore }) {
-    console.log(document.cookie)
     return (
         <React.Fragment>
             <Styles>

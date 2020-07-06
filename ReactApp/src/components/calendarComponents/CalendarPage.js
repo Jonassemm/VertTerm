@@ -158,13 +158,8 @@ function CalendarPage({
     }
 
 
-    const renderfkt = () => {
-        console.log("------Render-CALENDAR------")
-    }
-
     return (
         <Style>
-        {renderfkt()}
         <div className="page">
             {loading ? <div className="loadview"><div>Loading</div></div> : null}
             <Modal size="lg" show={showEditModal} onHide={hideModal}>

@@ -125,7 +125,7 @@ function AppointmentForm({
             setBookedResources(selected.bookedResources)
             setCustomerIsWaiting(selected.customerIsWaiting)
             //check if the selected is an appointment of the logged in user 
-            if(selected.bookedCustomer.id == userStore.userID){
+            if(selected.bookedCustomer != null && selected.bookedCustomer.id == userStore.userID){
                 setOwnAppointmentView(true)
             }
             if(selected.bookedEmployees.length > 0){
@@ -537,7 +537,9 @@ function AppointmentForm({
                             <Button variant="secondary" onClick={onCancel}>Abbrechen</Button>
                         }
                         {(status == appointmentStatus.planned && actualStarttime == null) && checkRights() &&
-                            <Button variant="danger" onClick={handleDelete} style={{marginLeft: "3px"}}>Termin löschen</Button> 
+                            (selected.bookedCustomer != null && selected.bookedProcedure != null) ?
+                            <Button variant="danger" onClick={handleDelete} style={{marginLeft: "3px"}}>Termin löschen</Button>: 
+                            <Button variant="danger" onClick={handleDelete} style={{marginLeft: "3px"}}>Blocker löschen</Button>
                         }
                         {(status == appointmentStatus.planned && actualStarttime == null) && checkRights() &&
                             <Link to={`/booking/${selected.id}`}>

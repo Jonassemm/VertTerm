@@ -11,7 +11,8 @@ function AppointmentWarningForm({
     edit, 
     selected,
     handleExceptionChange,
-    handlePreferredAppointmentChange}) {
+    handlePreferredAppointmentChange,
+    userStore}) {
 
     let history = useHistory();
 
