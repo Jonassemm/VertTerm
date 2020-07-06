@@ -16,6 +16,7 @@ import com.dvproject.vertTerm.Service.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.DBRef;
+import org.springframework.data.mongodb.core.mapping.Document;
 
 import com.dvproject.vertTerm.exception.AppointmentTimeException;
 import com.dvproject.vertTerm.exception.AppointmentInternalException;
@@ -26,6 +27,7 @@ import com.dvproject.vertTerm.exception.ResourceException;
 import com.dvproject.vertTerm.exception.ResourceTypeException;
 import com.dvproject.vertTerm.exception.RestrictionException;
 
+@Document("appointment")
 public class Appointment implements Serializable {
 	private static final long serialVersionUID = 2862268218236152790L;
 

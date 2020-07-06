@@ -5,6 +5,7 @@ import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 //author Amar Alkhankan
+@Document("appointment")
 public class Blocker extends Appointment{
 
     private String name;
