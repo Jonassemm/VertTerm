@@ -6,7 +6,6 @@ import { Container, Row, Col, Button, Table, Modal } from "react-bootstrap"
 import {getOpeningHours, updateOpeningHours} from "./OpeningHoursRequests"
 
 
-
 export default function OpeningHoursPage ({userStore}) {
     const [edited, setEdited] = useState(false)
     const [availabilities, setAvailabilities] = useState([])
@@ -67,15 +66,9 @@ export default function OpeningHoursPage ({userStore}) {
         availabilityRef.current.submitted()
     }
 
-
-    const render = () => {
-        console.log("render")
-    }
-
     
     return (
         <Style>
-            {render}
              <Container>
                 <div className="topRow"></div>
                 <Row>

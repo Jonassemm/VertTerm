@@ -4,6 +4,7 @@ import { getAllRestrictions } from "./RestrictionRequests"
 import RestrictionForm from "./RestrictionForm"
 import OverviewPage from "../../OverviewPage"
 
+
 function RestrictionPage({userStore}) {
     const [restrictionsa, setRestrictions] = useState([])
 

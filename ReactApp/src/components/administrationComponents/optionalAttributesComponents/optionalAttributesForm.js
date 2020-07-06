@@ -41,13 +41,13 @@ const optionalAttributesForm = ({ onCancel, edit, selected, userStore }) => {
         var newAttribute = {name, mandatoryField}
         if(name != "") {
             if(optionalAttributes.some(optionalAttributes => optionalAttributes.name === newAttribute.name)) {
-                alert("Attribut bereits vorhanden!");
+                userStore.setWarningMessage("Attribut bereits vorhanden!")
             } else {
                 setOptionalAttributes(optionalAttributes => [...optionalAttributes, newAttribute])
                 setEdited(true)
             }
         } else {
-        alert("Bitte Attribut eingeben!")
+        userStore.setInfoMessage("Bitte Attribut eingeben!")
         }
         setName("")//reset inputfield
     };
@@ -126,8 +126,6 @@ const optionalAttributesForm = ({ onCancel, edit, selected, userStore }) => {
                     </Form.Row>
                     <hr style={{ border: "0,5px solid #999999" }}/>
                     <Container style={{textAlign: "right"}}>
-                        {//edit ? <Button style={{ marginRight: "10px" }} variant="danger" onClick={handleDeleteOptionalAttributes}>Löschen</Button> : null
-                        }
                         <Button style={{ marginRight: "10px" }} onClick={onCancel} variant="secondary">Abbrechen</Button>
                         {(edit ? edited ? 
                             <Button variant="success"  type="submit">Übernehmen</Button>:

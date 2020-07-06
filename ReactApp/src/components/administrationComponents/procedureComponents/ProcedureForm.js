@@ -122,7 +122,7 @@ function ProcedureForm({ onCancel,
                 console.log(Object.keys(error), error.message)
             }
         } else {//no rights!
-            alert("Für diesen Vorgang besitzten Sie nicht die erforderlichen Rechte!\n\nBenötigtes Recht: " + rightName)
+            userStore.setWarningMessage("Ihnen fehlt das Recht:\n"+ rightName)
         }
         onCancel()
     }
@@ -305,7 +305,7 @@ function ProcedureForm({ onCancel,
             }
             onCancel()
         } else {//no right to submit 
-            alert("Für diesen Vorgang besitzten Sie nicht die erforderlichen Rechte!\n\nBenötigtes Recht: " + rightName)
+            userStore.setWarningMessage("Ihnen fehlt das Recht:\n"+ rightName)
         }
     }
 

@@ -6,6 +6,7 @@ import {addPosition, deletePosition, editPosition } from "./PositionRequests"
 import { hasRight } from "../../../auth"
 import {positionRights} from "../../Rights"
 
+
 const PositionForm = ({onCancel, edit, selected, userStore}) => {
     const rightName = positionRights[1] //write right
     const [name, setName] = useState("")
@@ -26,6 +27,7 @@ const PositionForm = ({onCancel, edit, selected, userStore}) => {
         setEdited(true)
     }
 
+    
     function handleDescriptionChange(event) {
         setDescription(event.target.value)
         setEdited(true)
@@ -49,7 +51,7 @@ const PositionForm = ({onCancel, edit, selected, userStore}) => {
             }
             onCancel()
         }else {//no right to submit 
-            alert("Für diesen Vorgang besitzten Sie nicht die erforderlichen Rechte!\n\nBenötigtes Recht: " + rightName)
+            userStore.setWarningMessage("Ihnen fehlt das Recht:\n"+ rightName)
         }
     }
 
@@ -66,7 +68,7 @@ const PositionForm = ({onCancel, edit, selected, userStore}) => {
                 }
             }
         }else {//no rights!
-            alert("Für diesen Vorgang besitzten Sie nicht die erforderlichen Rechte!\n\nBenötigtes Recht: " + rightName)
+            userStore.setWarningMessage("Ihnen fehlt das Recht:\n"+ rightName)
         }
         onCancel()
     }

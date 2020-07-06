@@ -323,14 +323,8 @@ const Availability = forwardRef((props, ref) => {
     }))
 
 
-    const render = () =>{
-        console.log("____RENDER____")
-    }
-
-
     return (
         <React.Fragment>
-            {render()}
             <Container>
                 <Form.Row style={{ alignItems: "baseline" }}>
                 <Form.Group as={Col} style={{textAlign: "right"}}>

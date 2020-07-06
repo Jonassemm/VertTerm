@@ -12,6 +12,7 @@ import com.dvproject.vertTerm.Model.Blocker;
 import com.dvproject.vertTerm.Model.BookingTester;
 import com.dvproject.vertTerm.Model.Employee;
 import com.dvproject.vertTerm.Model.NormalBookingTester;
+import com.dvproject.vertTerm.Model.OverrideBookingTester;
 import com.dvproject.vertTerm.Model.Resource;
 import com.dvproject.vertTerm.Model.Warning;
 import com.dvproject.vertTerm.exception.AppointmentException;
@@ -42,8 +43,7 @@ public class BlockerServiceImp implements BlockerService {
 	public Blocker create(Blocker blocker) {
 		// create new blocker if not exist
 //		if (blocker.getName() != null || blocker.getName().equals("")) 
-//			blocker.setName(capitalize(blocker.getName()));
-
+//		blocker.setName(capitalize(blocker.getName()));
 		blockerRepo.save(blocker);
 		SetOrRemoveWarningFlag(blocker.getId(), "SET");
 		return blocker;
@@ -96,8 +96,9 @@ public class BlockerServiceImp implements BlockerService {
 					SetWarning(appointments);
 				else
 					RemoveWarning(appointments);
-			} else
-				throw new ResourceNotFoundException("There are no Appointments");
+			}
+//			else
+//				throw new ResourceNotFoundException("There are no Appointments");
 
 		} else {
 			throw new ResourceNotFoundException("Blocker with the given id :" + id + " not found");
@@ -118,19 +119,15 @@ public class BlockerServiceImp implements BlockerService {
 	}
 
 	public void RemoveWarning(List<Appointment> appointments) {
-		BookingTester tester = new NormalBookingTester();
+		BookingTester tester = new OverrideBookingTester();
 		// test appointment , remove "AppointmentWarning" Flag and
 		// save changed to DB
 		for (Appointment app : appointments) {
-			// Appointment appDB = this.appointmentService.getById(app.getId());
+			// Appointment appDB = this.appointmentService.getById(app.getId());			
 			app.removeWarning(Warning.APPOINTMENT_WARNING);
-			try {
-				tester.testAppointment(appointmentServiceImp);
-			} catch (Exception ex) {
-				// add Warning
-				app.addWarning(Warning.APPOINTMENT_WARNING);
-			}
-			appointmentRepo.save(app);
+			tester.setAppointment(app);
+			tester.testAppointment(appointmentServiceImp);
+		
 		}
 
 	}

@@ -4,6 +4,7 @@ import { getAllResourceTypes } from "./ResourceTypeRequests"
 import ResourceTypeForm from "./ResourceTypeForm"
 import OverviewPage, {modalTypes} from "../../OverviewPage"
 
+
 function ResourceTypePage({userStore}) {
     const [resourceTypes, setResourceTypes] = useState([])
 
@@ -44,6 +45,7 @@ function ResourceTypePage({userStore}) {
             )
         })
 
+
     const modal = (onCancel,edit,selectedItem) => {
         return (
             <ResourceTypeForm
@@ -55,6 +57,7 @@ function ResourceTypePage({userStore}) {
         )
     }
 
+    
     return (
         <React.Fragment>
             <OverviewPage

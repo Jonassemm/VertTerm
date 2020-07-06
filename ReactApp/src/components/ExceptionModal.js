@@ -31,8 +31,9 @@ export function ExceptionModal({
     exception, 
     overrideSubmit = null,          //optional (only in combination with overrideText)
     overrideText = null,            //optional (only in combination with overrideSubmit)
-    warning = null                  //optional, links to the conflict page
+    warning = null                  //optional, links to the appointmentWarningPage
     }) {
+
 
     return (
         <Modal size="xl" show={showExceptionModal} onHide={() => setShowExceptionModal(false)}>

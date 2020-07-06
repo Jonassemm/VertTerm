@@ -4,6 +4,7 @@ import { getAllPositions } from "./PositionRequests"
 import PositionForm from "./PositionForm"
 import OverviewPage, {modalTypes} from "../../OverviewPage"
 
+
 function PositionPage({userStore}) {
     const [positions, setPositions] = useState([])
 
@@ -44,6 +45,7 @@ function PositionPage({userStore}) {
             )
         })
 
+
     const modal = (onCancel,edit,selectedItem) => {
         return (
             <PositionForm
@@ -55,6 +57,7 @@ function PositionPage({userStore}) {
         )
     }
 
+    
     return (
         <React.Fragment>
             <OverviewPage

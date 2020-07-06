@@ -159,14 +159,8 @@ export default function AppointmentWarningPage({userStore, warning}) {
     }
 
 
-    const renderfkt = () => {
-        console.log("---------Render-PAGE------")
-    }
-
-
     return (
         <React.Fragment>
-            {renderfkt()}
             {exception != null &&
                 <ExceptionModal //modal for deleting appointments
                     showExceptionModal={showExceptionModal} 

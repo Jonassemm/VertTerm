@@ -1,3 +1,4 @@
+//author: Patrick Venturini, Jonas Semmler
 import { observable, action, decorate } from "mobx"
 import { getUserData } from "./components/navigationComponents/ActiveUserRequests"
 

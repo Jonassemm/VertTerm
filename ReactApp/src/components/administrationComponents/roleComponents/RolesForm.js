@@ -81,7 +81,7 @@ const RolesForm = ({ onCancel, edit, selected, userStore }) => {
                 userStore.setMessage("Rolle erfolgreich geändert!")
             }
         }else {//no rights!
-            alert("Für diesen Vorgang besitzten Sie nicht die erforderlichen Rechte!\n\nBenötigtes Recht: " + rightName)
+            userStore.setWarningMessage("Ihnen fehlt das Recht:\n"+ rightName)
         }
         onCancel()
     }
@@ -95,7 +95,7 @@ const RolesForm = ({ onCancel, edit, selected, userStore }) => {
                 console.log(res)
             }
         }else {//no rights!
-            alert("Für diesen Vorgang besitzten Sie nicht die erforderlichen Rechte!\n\nBenötigtes Recht: " + rightName)
+            userStore.setWarningMessage("Ihnen fehlt das Recht:\n"+ rightName)
         }
         onCancel()
     }

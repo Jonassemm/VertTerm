@@ -7,6 +7,7 @@ import Availability from "../availabilityComponents/Availability"
 import { hasRight } from "../../../auth"
 import {resourceRights} from "../../Rights"
 
+
 const RessourceForm = ({ onCancel, 
   edit, 
   selected, 
@@ -105,7 +106,7 @@ const RessourceForm = ({ onCancel,
           onCancel()
         }
       }else {//no right to submit 
-        alert("Für diesen Vorgang besitzten Sie nicht die erforderlichen Rechte!\n\nBenötigts Recht: " + rightName)
+        userStore.setWarningMessage("Ihnen fehlt das Recht:\n"+ rightName)
       }
   }
 
@@ -131,7 +132,7 @@ const RessourceForm = ({ onCancel,
         }
       }
     }else {//no rights!
-        alert("Für diesen Vorgang besitzten Sie nicht die erforderlichen Rechte!\n\nBenötigtes Recht: " + rightName)
+      userStore.setWarningMessage("Ihnen fehlt das Recht:\n"+ rightName)
     }
     onCancel()
   }
@@ -159,16 +160,16 @@ const RessourceForm = ({ onCancel,
       //check resourceType
       if(resourceTypes.length == 0) { 
         result = false
-        alert("Fehler: Bitte wählen Sie einen Ressourcentyp aus!")
+        userStore.setWarningMessage("Ressourcentyp wurde nicht eingetragen!")
       }
     }
 
     //--------------------------Availability-VIEW-------------------------
     if(tabKey == "availability" && !generalFieldsAreSet){
       if(resourceTypes.length != 1) {
-        alert("Bitte wählen Sie auf der Allgemein-Ansicht einen Ressourcentyp aus!")
+        userStore.setWarningMessage("Ressourcentyp wurde nicht eingetragen!")
       } else {
-        alert("Bitte Felder auf der Allgemein-Ansicht überprüfen!")
+        userStore.setWarningMessage("Felder auf der Allgemein-Ansicht überprüfen!")
       }
       result = false
     }
@@ -352,5 +353,4 @@ const RessourceForm = ({ onCancel,
     </React.Fragment>
   )
 }
-
 export default RessourceForm

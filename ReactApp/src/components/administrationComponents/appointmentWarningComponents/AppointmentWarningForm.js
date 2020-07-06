@@ -5,8 +5,6 @@ import { Container, Form, Col, Button} from "react-bootstrap"
 import {getWarningsAsString} from "../../Warnings"
 import {handleDeleteAppointment} from "../../appointmentComponents/AppointmentForm"
 
-var moment = require('moment'); 
-
 
 function AppointmentWarningForm({
     onCancel, 
@@ -18,28 +16,24 @@ function AppointmentWarningForm({
     let history = useHistory();
 
 
-    const rebookingAppointments = () => {
-        history.push(`/booking/${selected.id}/`)
-    }
-
-
     const handleDelete = () => {
         handleDeleteAppointment(
             selected.id,
             onCancel, 
             handleExceptionChange, 
-            handlePreferredAppointmentChange)
+            handlePreferredAppointmentChange,
+            userStore)
     }
 
 
-    const rendertest = () => {
-        console.log("---------Render-FORM------")
+    const rebookingAppointments = () => {
+        history.push(`/booking/${selected.id}/`)
     }
+
    
     return (
         <div className="page">
             <Container>
-                {rendertest()}
                 <Form>   
                     <Form.Row>
                        <h4>Wie sollen die Konflikte behandelt werden?</h4>
