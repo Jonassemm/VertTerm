@@ -53,7 +53,7 @@ public class AppointmentController {
 		return appointment;
 	}
 
-	@GetMapping("/Recommend/LateBeginning")
+	@PostMapping("/Recommend/LateBeginning")
 	public @ResponseBody Appointment recommendByLateBeginning(@RequestBody Appointment appointment) {
 		appointment.optimizeAndPopulateForLatestBeginning(service, resourceService, employeeService);
 		return appointment;
