@@ -35,7 +35,7 @@ public class RoleServiceImp implements RoleService {
 		if (this.RoleRepo.findByName(role.getName()) == null) {
 			return RoleRepo.save(role);
 		} else {
-			throw new ResourceNotFoundException("Role with the given id :" + role.getId() + "already exist");
+			throw new ResourceNotFoundException("Role with the given id :" + role.getName() + "already exist");
 		}
 	}
 

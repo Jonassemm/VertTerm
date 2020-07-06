@@ -42,8 +42,7 @@ public class BlockerServiceImp implements BlockerService {
 	public Blocker create(Blocker blocker) {
 		// create new blocker if not exist
 //		if (blocker.getName() != null || blocker.getName().equals("")) 
-//			blocker.setName(capitalize(blocker.getName()));
-
+//		blocker.setName(capitalize(blocker.getName()));
 		blockerRepo.save(blocker);
 		SetOrRemoveWarningFlag(blocker.getId(), "SET");
 		return blocker;
@@ -96,8 +95,9 @@ public class BlockerServiceImp implements BlockerService {
 					SetWarning(appointments);
 				else
 					RemoveWarning(appointments);
-			} else
-				throw new ResourceNotFoundException("There are no Appointments");
+			}
+//			else
+//				throw new ResourceNotFoundException("There are no Appointments");
 
 		} else {
 			throw new ResourceNotFoundException("Blocker with the given id :" + id + " not found");
