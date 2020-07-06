@@ -40,7 +40,7 @@ public abstract class Bookable {
                 if(earliestDate == null){
                     earliestDate = currentBestAvailability;
                 }
-                else if(earliestDate.before(earliestDate)){
+                else if(currentBestAvailability.before(earliestDate)){
                     earliestDate = currentBestAvailability;
                 }
             }
@@ -75,7 +75,7 @@ public abstract class Bookable {
                 if(latestDate == null){
                     latestDate = currentBestAvailability;
                 }
-                else if(latestDate.after(latestDate)){
+                else if(currentBestAvailability.after(latestDate)){
                     latestDate = currentBestAvailability;
                 }
             }

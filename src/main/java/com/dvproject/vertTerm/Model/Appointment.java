@@ -567,6 +567,7 @@ public class Appointment implements Serializable {
 					}
 					if (!temp.after(this.getPlannedStarttime())) {
 						this.getBookedResources().add(resource);
+						resourceTypeFound = true;
 						break;
 					}
 				}
@@ -590,9 +591,13 @@ public class Appointment implements Serializable {
 					}
 					if (!temp.after(this.getPlannedStarttime())) {
 						this.getBookedResources().add(resource);
+						resourceTypeFound = true;
 						break;
 					}
 				}
+			}
+			if (resourceTypeFound) {
+				break;
 			}
 			if (newDateToEvaluateForRessources == null) {
 				// this ressource type has no possible ressource. I have to think about what to
@@ -647,9 +652,13 @@ public class Appointment implements Serializable {
 					}
 					if (!temp.after(this.getPlannedStarttime())) {
 						this.getBookedEmployees().add(employee);
+						employeeFound = true;
 						break;
 					}
 				}
+			}
+			if (employeeFound) {
+				break;
 			}
 			if (newDateToEvaluateForEmployees == null) {
 				// this position has no possible Employee. I have to think about what to do in
@@ -705,6 +714,7 @@ public class Appointment implements Serializable {
 					}
 					if (!temp.before(this.getPlannedStarttime())) {
 						this.getBookedResources().add(resource);
+						resourceTypeFound = true;
 						break;
 					}
 				}
@@ -728,9 +738,13 @@ public class Appointment implements Serializable {
 					}
 					if (!temp.before(this.getPlannedStarttime())) {
 						this.getBookedResources().add(resource);
+						resourceTypeFound = true;
 						break;
 					}
 				}
+			}
+			if (resourceTypeFound) {
+				break;
 			}
 			if (newDateToEvaluateForRessources == null) {
 				// this ressource type has no possible ressource. I have to think about what to
@@ -784,9 +798,13 @@ public class Appointment implements Serializable {
 					}
 					if (!temp.before(this.getPlannedStarttime())) {
 						this.getBookedEmployees().add(employee);
+						employeeFound = true;
 						break;
 					}
 				}
+			}
+			if (employeeFound) {
+				break;
 			}
 			if (newDateToEvaluateForEmployees == null) {
 				// this position has no possible Employee. I have to think about what to do in
