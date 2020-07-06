@@ -56,12 +56,12 @@ public abstract class Bookable {
             }
             if (appointment.getPlannedStarttime().before(date)) {
                 if (appointment.getPlannedEndtime().after(date)) {
-                    return getEarliestAvailableDate(appointment.getPlannedEndtime(), duration);
+                    return getEarliestAvailableDateByAppointments(appointment.getPlannedEndtime(), duration);
                 }
             }
             else{
                 if(appointment.getPlannedStarttime().before(plannedEnd))
-                    return getEarliestAvailableDate(appointment.getPlannedEndtime(), duration);
+                    return getEarliestAvailableDateByAppointments(appointment.getPlannedEndtime(), duration);
             }
         }
         return date;
@@ -92,13 +92,13 @@ public abstract class Bookable {
             if (appointment.getPlannedStarttime().before(date)) {
                 if (appointment.getPlannedEndtime().after(date)) {
                     Date startTimeWithoutDuration = new Date(appointment.getPlannedStarttime().getTime() - duration.toMillis());
-                    return getEarliestAvailableDate(startTimeWithoutDuration, duration);
+                    return getLatestAvailableDateByAppointments(startTimeWithoutDuration, duration);
                 }
             }
             else{
                 if(appointment.getPlannedStarttime().before(plannedEnd)) {
                     Date startTimeWithoutDuration = new Date(appointment.getPlannedStarttime().getTime() - duration.toMillis());
-                    return getEarliestAvailableDate(startTimeWithoutDuration, duration);
+                    return getLatestAvailableDateByAppointments(startTimeWithoutDuration, duration);
                 }
             }
         }

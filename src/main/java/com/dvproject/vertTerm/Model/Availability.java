@@ -52,7 +52,7 @@ public class Availability {
 		Date tmpStartDate = startDate;
 		Date tmpEndDate = endDate;
 
-		while (endOfSeries == null || !tmpStartDate.after(endOfSeries)) {
+		while (endOfSeries == null || tmpStartDate.before(endOfSeries)) {
 			if (tmpEndDate.before(end)) {
 				Calendar startCalendar = Calendar.getInstance();
 				Calendar endCalendar = Calendar.getInstance();
@@ -79,13 +79,12 @@ public class Availability {
 						break;
 				}
 				tmpStartDate = startCalendar.getTime();
-				tmpEndDate   = endCalendar.getTime();
+				tmpEndDate = endCalendar.getTime();
+			}
+			if (date.before(tmpStartDate)) {
+				return tmpStartDate;
 			} else {
-				if (date.before(tmpStartDate)) {
-					return tmpStartDate;
-				} else {
-					return date;
-				}
+				return date;
 			}
 		}
 		return null;

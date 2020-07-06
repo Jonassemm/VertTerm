@@ -65,6 +65,7 @@ public class User extends Bookable implements Serializable
 	}
 
 	public User() {
+		super();
 		this.setCreationDate();
 		this.systemStatus = Status.ACTIVE;
 	}
