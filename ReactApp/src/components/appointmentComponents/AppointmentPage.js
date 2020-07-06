@@ -285,18 +285,29 @@ export default function AppointmentPage({calendarStore, userStore}) {
 
 
         //prepare response for calendar
+        console.log("reduceData")
+        console.log(reducedData)
         const evts = reducedData.map(item => {
             var title
-            if(item.bookedCustomer.firstName != null && item.bookedCustomer.lastName != null){
-                title = item.bookedProcedure.name + " (" + item.bookedCustomer.username + ")"
-            }else {
-                title = item.bookedProcedure.name + " (anonym)"
-            }
-            return {
-                ...item,
-                plannedStarttime: moment(item.plannedStarttime, "DD.MM.yyyy HH:mm").toDate(),
-                plannedEndtime: moment(item.plannedEndtime, "DD.MM.yyyy HH:mm").toDate(),
-                title: title
+            if(item.bookedCustomer != null && item.bookedProcedure != null){
+                if(item.bookedCustomer.firstName != null && item.bookedCustomer.lastName != null){
+                    title = item.bookedProcedure.name + " (" + item.bookedCustomer.username + ")"
+                }else {
+                    title = item.bookedProcedure.name + " (anonym)"
+                }
+                return {
+                    ...item,
+                    plannedStarttime: moment(item.plannedStarttime, "DD.MM.yyyy HH:mm").toDate(),
+                    plannedEndtime: moment(item.plannedEndtime, "DD.MM.yyyy HH:mm").toDate(),
+                    title: title
+                }
+            }else{
+                return {
+                    ...item,
+                    plannedStarttime: moment(item.plannedStarttime, "DD.MM.yyyy HH:mm").toDate(),
+                    plannedEndtime: moment(item.plannedEndtime, "DD.MM.yyyy HH:mm").toDate(),
+                    title: item.name
+                }
             }
         })
         calendarStore.setCalendarEvents(evts)

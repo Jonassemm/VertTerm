@@ -125,7 +125,7 @@ function AppointmentForm({
             setBookedResources(selected.bookedResources)
             setCustomerIsWaiting(selected.customerIsWaiting)
             //check if the selected is an appointment of the logged in user 
-            if(selected.bookedCustomer.id == userStore.userID){
+            if(selected.bookedCustomer != null && selected.bookedCustomer.id == userStore.userID){
                 setOwnAppointmentView(true)
             }
             if(selected.bookedEmployees.length > 0){

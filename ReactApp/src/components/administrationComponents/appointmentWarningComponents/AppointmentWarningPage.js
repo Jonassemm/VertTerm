@@ -126,6 +126,8 @@ export default function AppointmentWarningPage({userStore, warning}) {
     const tableBody = 
         appointmentsWithWarnings.map((item, index) => { 
             var warningString = ""
+            var bookedCustomer = ""
+            var bookedProcedure = ""
             if (item.warnings.length > 0){
                 item.warnings.map((singleWarning, index) => {
                     if(index == 0){
@@ -135,12 +137,19 @@ export default function AppointmentWarningPage({userStore, warning}) {
                     }
                 })
             }
+            if(item.bookedCustomer != null){
+                bookedCustomer = item.bookedCustomer.firstName + ", " + item.bookedCustomer.lastName
+            }
+            if(item.bookedProcedure != null){
+                bookedProcedure = item.bookedProcedure.name
+            }
+
             return ([
                 index + 1,
                 moment(moment(item.plannedStarttime, "DD.MM.yyyy HH:mm").toDate()).format("DD.MM.YYYY / HH:mm").toString(),
                 moment(moment(item.plannedEndtime, "DD.MM.yyyy HH:mm").toDate()).format("DD.MM.YYYY / HH:mm").toString(),
-                item.bookedProcedure.name,
-                item.bookedCustomer.firstName + ", " + item.bookedCustomer.lastName,
+                bookedProcedure,
+                bookedCustomer,
                 warningString]
             )
         })
