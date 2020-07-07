@@ -642,6 +642,9 @@ public class Appointment implements Serializable {
 				if (this.getBookedEmployees().contains(employee)) {
 					continue;
 				}
+				if (employee.getSystemStatus() != Status.ACTIVE) {
+					continue;
+				}
 				employee.populateAppointments(appointmentService);
 				Date temp = employee.getEarliestAvailableDate(this.getPlannedStarttime(),
 						this.getBookedProcedure().getDuration());
@@ -786,6 +789,9 @@ public class Appointment implements Serializable {
 			}
 			for (Employee employee : employeeService.getAll(position.getId())) {
 				if (this.getBookedEmployees().contains(employee)) {
+					continue;
+				}
+				if (employee.getSystemStatus() != Status.ACTIVE) {
 					continue;
 				}
 				employee.populateAppointments(appointmentService);
