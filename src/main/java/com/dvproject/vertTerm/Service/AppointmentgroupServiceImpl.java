@@ -15,7 +15,6 @@ import java.util.stream.Collectors;
 
 import javax.servlet.http.HttpServletResponse;
 
-import com.dvproject.vertTerm.Model.*;
 import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.rest.webmvc.ResourceNotFoundException;
@@ -134,6 +133,7 @@ public class AppointmentgroupServiceImpl implements AppointmentgroupService {
 
 	@Override
 	public void testWarningsForAppointments(List<Appointment> appointmentsToTest) {
+		appointmentsToTest = appointmentService.cleanseAppointmentsOfBlocker(appointmentsToTest);
 		List<String> appointmentIdsTested = new ArrayList<>();
 
 		for (Appointment appointmentToTest : appointmentsToTest) {
@@ -450,6 +450,8 @@ public class AppointmentgroupServiceImpl implements AppointmentgroupService {
 			appointmentsToTest = appointmentService.getAppointmentsWithCustomerEmployeeResourceAfterDate(employeeids,
 					resourceids, startdate, AppointmentStatus.PLANNED);
 		}
+		
+		appointmentsToTest = appointmentService.cleanseAppointmentsOfBlocker(appointmentsToTest);
 
 		appointmentsToTest.removeIf(app -> !this.isPullable(app.getAppointmentWithNewDatesFor(startdate)));
 
@@ -514,7 +516,7 @@ public class AppointmentgroupServiceImpl implements AppointmentgroupService {
 		boolean isUpdateble = appointmentgroup.getStatus() == Status.ACTIVE;
 
 		isUpdateble &= appointments.stream()
-				.noneMatch(app -> hasActualTimeValue(app) && app.getStatus() == AppointmentStatus.DELETED);
+				.noneMatch(app -> hasActualTimeValue(app) && app.getStatus().isDeleted());
 
 		return isUpdateble ? appointmentgroup : null;
 	}

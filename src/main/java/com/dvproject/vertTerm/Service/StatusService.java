@@ -5,10 +5,10 @@ import com.dvproject.vertTerm.Model.Status;
 public class StatusService {
 
 	public static boolean isUpdateable (Status status) {
-		return status != Status.DELETED;
+		return !status.isDeleted();
 	}
 	
 	public static boolean isInsertable (Status status) {
-		return status == Status.ACTIVE;
+		return status.isActive();
 	}
 }

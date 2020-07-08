@@ -256,12 +256,6 @@ public class ResourceServiceImp extends WarningServiceImpl implements ResourceSe
 		}
 	}
 
-	private boolean changedStatusFromOrToInactive(Resource resource1, Resource resource2, Status status) {
-		Status oldStatus = resource1.getStatus();
-		Status newStatus = resource2.getStatus();
-		return (newStatus.isActive() && oldStatus == status) || (newStatus == status && oldStatus.isActive());
-	}
-
 	// capitalize first letter of a string
 	public static String capitalize(String str) {
 		if (str == null)

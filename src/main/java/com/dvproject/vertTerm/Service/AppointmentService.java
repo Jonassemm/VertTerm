@@ -69,4 +69,6 @@ public interface AppointmentService extends BasicService<Appointment> {
 
 	// PUT
 	boolean setCustomerIsWaiting(String id, boolean customerIsWaiting);
+	
+	List<Appointment> cleanseAppointmentsOfBlocker(List<Appointment> appointments);
 }

@@ -170,8 +170,7 @@ public class EmployeeServiceImp extends WarningServiceImpl implements EmployeeSe
 	}
 
 	public void testAppointments(String id) {
-		List<Appointment> appointments = appointmentService.getAppointmentsByEmployeeIdAndAppointmentStatus(id,
-				AppointmentStatus.PLANNED);
+		List<Appointment> appointments = getPlannedAppointmentsWithId(id);
 
 		if (appointments != null && appointments.size() > 0)
 			throw new IllegalArgumentException("Employee can not be deleted because he is used as a bookedEmployee");
