@@ -417,12 +417,14 @@ public class AppointmentgroupServiceImpl implements AppointmentgroupService {
 		List<Resource> resources = new ArrayList<>();
 
 		// populate list of employees
-		appointment.getBookedEmployees().forEach(employee -> employees.add(employeeService.getById(employee.getId())));
+		appointment.getBookedEmployees().stream().filter(employee -> employee.getId() != null)
+				.forEach(employee -> employees.add(employeeService.getById(employee.getId())));
 		// set employees of appointment
 		appointment.setBookedEmployees(employees);
 
 		// populate list of resources
-		appointment.getBookedResources().forEach(resource -> resources.add(resourceService.getById(resource.getId())));
+		appointment.getBookedResources().stream().filter(resource -> resource.getId() != null)
+				.forEach(resource -> resources.add(resourceService.getById(resource.getId())));
 		// set resources of appointment
 		appointment.setBookedResources(resources);
 

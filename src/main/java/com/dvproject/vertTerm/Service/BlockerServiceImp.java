@@ -167,7 +167,7 @@ public class BlockerServiceImp implements BlockerService {
 	}
 
 	public boolean exists(String id) {
-		return blockerRepo.existsById(id);
+		return blockerRepo.findById(id).isPresent();
 	}
 
 	// @PreAuthorize("hasAuthority('')")
