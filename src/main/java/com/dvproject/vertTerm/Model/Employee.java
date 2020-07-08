@@ -33,21 +33,6 @@ public class Employee extends User implements Serializable, Available {
 		}
 	}
 
-	public List<Appointment> getAppointmentsOfBookedEmployeeInTimeinterval(AppointmentService AppoService, String id,
-			Date starttime, Date endtime) {
-
-		List<Appointment> EmpApps = AppoService.getAppointmentsOfBookedEmployeeInTimeinterval(id, starttime, endtime,
-				AppointmentStatus.PLANNED);
-
-//		if (EmpApps.size() > 0 && (EmpApps != null)) {
-			return EmpApps;
-//		}
-//		else {
-//			throw new ResourceNotFoundException("No appointments from Employee with the id: " + id
-//					+ " in the time interval of the blocker appointment could be found");
-//		}
-
-	}
 
 	@Override
 	public List<Appointment> getAppointmentsAfterDate(AppointmentService appointmentService, Date startdate) {

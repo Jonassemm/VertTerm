@@ -83,20 +83,6 @@ public class Resource extends Bookable implements Serializable, Available {
 	}
 
 	
-	public List<Appointment> getAppointmentsOfBookedResourceInTimeinterval(AppointmentService AppoService, String id,
-			Date starttime, Date endtime) {
-
-		List<Appointment> ResApps = AppoService.getAppointmentsOfBookedResourceInTimeinterval(id, starttime, endtime,
-				AppointmentStatus.PLANNED);
-
-//		if (ResApps.size() > 0 && (ResApps != null)) {
-			return ResApps;
-//		} else {
-//			throw new ResourceNotFoundException("No appointments from resource with the id: " + id
-//					+ " in the time interval of the blocker appointment could be found");
-//		}
-
-	}
 
 	@Override
 	public List<Appointment> getAppointmentsAfterDate(AppointmentService appointmentService, Date startdate) {
