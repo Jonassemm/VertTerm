@@ -37,17 +37,14 @@ export const handleDeleteAppointment = async (id,
         console.log(Object.keys(error), error.message)
     }
 
-    if(blockerSelected){
-        answer = confirm("Blocker wirklich löschen? ")
-    }else{
-        answer = confirm("Termin wirklich löschen? ")
-    }
+
+    answer = confirm("Termin wirklich löschen? ")
 
     if(answer) {
         if(blockerSelected){
             try{
                 await deleteBlocker(id)
-                userStore.setMessage("Blocker erfolgreich gelöscht!")
+                userStore.setMessage("Termin erfolgreich gelöscht!")
             }catch (error){
                 console.log(Object.keys(error), error.message)
             }
@@ -209,8 +206,8 @@ function AppointmentForm({
                 await stopAppointment(selected.id)
                 .then(res => {
                     if(res.headers.appointmentid != undefined && res.headers.starttime != undefined) {
-                        handlePreferredAppointmentChange(res.headers.appointmentid, res.headers.starttime)
-                    }
+                            handlePreferredAppointmentChange(res.headers.appointmentid, res.headers.starttime)  
+                        }
                     userStore.setMessage("Termin erfolgreich beendet!")
                 })
             } catch (error){
@@ -249,22 +246,25 @@ function AppointmentForm({
         }else {//no right -> submit not allowed 
             noRights()
         }
-    }
+    }   
 
 
     const handleTest = async() => {
         var data = []
+        var response = null
         try{
-            const response = await testAppointment(selected.id)
+            response = await (selected.id)
             data = response.data
         } catch (error){
         console.log(Object.keys(error), error.message)
         }
 
-        if(JSON.stringify(data)!=JSON.stringify(warnings)){
-            setWarnings(data)
-            if(refreshData != null) {
-                refreshData(month, year) 
+        if(response.data != null){
+            if(JSON.stringify(data)!=JSON.stringify(warnings)){
+                setWarnings(data)
+                if(refreshData != null) {
+                    refreshData(month, year) 
+                }
             }
         }
     }
@@ -300,7 +300,13 @@ function AppointmentForm({
         console.log(Object.keys(error), error.message)
         }
         if(start != null && id != null) {
-            handlePreferredAppointmentChange(id, start)
+            //panned start > now + (2 minutes = 120000)
+            if(moment(plannedStarttime, "DD.MM.yyyy HH:mm").toDate().getTime() > (moment().toDate().getTime()+twoMinutes)) {
+                 handlePreferredAppointmentChange(id, start)
+            }else{
+                userStore.setInfoMessage("Termin kann leider nicht vorgezogen werden")
+            }
+            onCancel()
         }else{
             userStore.setInfoMessage("Termin kann leider nicht vorgezogen werden")
         }
@@ -345,7 +351,7 @@ function AppointmentForm({
         }
         return text
     }
-
+    
 
     const getActualStarttime = () => {
         return actualStarttime
@@ -454,7 +460,6 @@ function AppointmentForm({
                                             <Button variant="success" style={{ marginLeft: "10px" }}>Lösen</Button>
                                         </Link>
                                     }
-                                    
                                 </div>
                             </Form.Group>   
                         </Form.Row>
@@ -537,9 +542,7 @@ function AppointmentForm({
                             <Button variant="secondary" onClick={onCancel}>Abbrechen</Button>
                         }
                         {(status == appointmentStatus.planned && actualStarttime == null) && checkRights() &&
-                            (selected.bookedCustomer != null && selected.bookedProcedure != null) ?
-                            <Button variant="danger" onClick={handleDelete} style={{marginLeft: "3px"}}>Termin löschen</Button>: 
-                            <Button variant="danger" onClick={handleDelete} style={{marginLeft: "3px"}}>Blocker löschen</Button>
+                            <Button variant="danger" onClick={handleDelete} style={{marginLeft: "3px"}}>Termin löschen</Button>
                         }
                         {(status == appointmentStatus.planned && actualStarttime == null) && checkRights() &&
                             <Link to={`/booking/${selected.id}`}>

@@ -16,9 +16,7 @@ import ResourceTypePage from "../administrationComponents/resourceTypeComponents
 import ResourcePage from "../administrationComponents/resourceComponents/ResourcePage"
 import OpeningHours from "../administrationComponents/openingHoursComponents/openingHoursPage"
 import { hasRight, hasRole } from "../../auth";
-import {managementRights, ownUserRights, userRights, positionRights, procedureRights, resourceRights, resourceTypeRights, roleRights} from "../Rights"
-
-const adminRole = "Admin_role"
+import {managementRights, ownUserRights, userRights, positionRights, procedureRights, resourceRights, resourceTypeRights, roleRights, adminRole} from "../Rights"
 
 
 function openMenu() {

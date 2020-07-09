@@ -7,9 +7,9 @@ export default function Footer() {
     return (
         <div>
         <Navbar fixed="bottom" bg="dark" variant="dark">
-            <Container>
+            <Container style={{marginTop:"5px", marginBottom:"5px"}}>
                 <Col lg={12} className="text-center text-muted">
-                    <div>@betabook.me All Rights Reserved</div>
+                    <div style={{fontSize:"12pt"}}>@betabook.me All Rights Reserved</div>
                 </Col>
             </Container>
         </Navbar>
