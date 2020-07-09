@@ -253,7 +253,7 @@ function AppointmentForm({
         var data = []
         var response = null
         try{
-            response = await (selected.id)
+            response = await testAppointment(selected.id)
             data = response.data
         } catch (error){
         console.log(Object.keys(error), error.message)
@@ -265,6 +265,9 @@ function AppointmentForm({
                 if(refreshData != null) {
                     refreshData(month, year) 
                 }
+                userStore.setMessage("Unstimmigkeiten festgestellt und aktualisiert")
+            }else{
+                userStore.setInfoMessage("Keine Unstimmigkeiten festgestellt")
             }
         }
     }
