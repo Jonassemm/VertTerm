@@ -9,7 +9,7 @@ export const kindOfWarning = {
     availability: "AvailabilityWarning",
     restriction: "RestrictionWarning",
     position: "Position_Warning",
-    employee: "EmplyeeWarning",
+    employee: "EmployeeWarning",
     user: "UserWarning"
 }
 
@@ -23,7 +23,7 @@ export const kindOfWarningList = [
     "AvailabilityWarning",
     "RestrictionWarning",
     "Position_Warning",
-    "EmplyeeWarning",
+    "EmployeeWarning",
     "UserWarning"
 ]
 
@@ -95,11 +95,11 @@ export function getTranslatedWarning(warning) {
             translated = "Position_Warning"
             break;
 
-        case "EmplyeeWarning":
+        case "EmployeeWarning":
             translated = "Mitarbeiter"
             break;
         case "Mitarbeiter":
-            translated = "EmplyeeWarning"
+            translated = "EmployeeWarning"
             break;
 
         case "UserWarning": 
