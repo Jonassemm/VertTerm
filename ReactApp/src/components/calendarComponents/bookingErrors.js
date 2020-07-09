@@ -4,7 +4,7 @@ export function getErrorMessage(exceptionType) {
         case 'Employee': return "Zu wenige/viele Angestellte für einen der Termine"; break;
         case 'Restriction': return "Die nötigen Prozedurrelationen wurden nicht richtig umgesetzt"; break;
         case 'Appointment': return "Diese Zeit ist durch einen anderen Termin blockiert!"; break;
-        case 'Availability': return "Soll-Zeiten des Termins stimmen nicht mit den Verfügbarkeiten der Procedure/Angestellten/Ressourcen überein"; break;
+        case 'Availability': return "Die Prozedur, ein Mitarbeiter oder eine Ressource ist zu dieser Zeit nicht verfügbar."; break;
         case 'removedAvailability': return "Bei dieser Änderung kam es zu Konflikten bei bestehenden Terminen"; break;
         case 'ResourceType': return "Ressourcen des Termins stimmen nicht mit den Ressourcentypen der Prozedur überein"; break;
         case 'ProcedureRelation': return "Soll-Zeiten des Termins stimmen nicht mit den vorgegebenen Zeitabständen zwischen den Terminen überein"; break;

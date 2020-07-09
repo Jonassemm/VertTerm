@@ -117,6 +117,7 @@ const RolesForm = ({ onCancel, edit, selected, userStore }) => {
                             title="Die Bezeichnung muss zwischen 1 und 50 Zeichen beinhalten!"
                             type="text"
                             placeholder="Rollenname"
+                            disabled={rolename=="Anonymous_role" || rolename=="Admin_role"}
                             value={rolename || ""}
                             required
                             onChange={handleRolenameChange}

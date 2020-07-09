@@ -4,8 +4,9 @@ import Styled from "styled-components"
 import { Link } from 'react-router-dom'
 import LoginForm from "./LoginForm"
 import { observer } from "mobx-react"
-import { hasRight, hasRole } from "../../auth"
+import { hasRight } from "../../auth"
 import { managementRights, ownAppointmentRights, appointmentRights, adminRole } from "../Rights"
+import "./toastStyles.css"
 
 
 const Styles = Styled.div`
@@ -15,6 +16,23 @@ const Styles = Styled.div`
 `
 
 function NavBar({ userStore }) {
+    function getToastStyle(type) {
+        switch (type) {
+            case 'success': return { background: "#def2d6" };
+            case 'error': return { background: "#ecc8c5" };
+            case 'warning': return { background: "#f8f3d6" };
+            case 'info': return { background: "#cde8f5" };
+        }
+    }
+    function getToastTextStyle(type) {
+        switch (type) {
+            case 'success': return { color: "#5a7052" };
+            case 'error': return { color: "#b32f2d" };
+            case 'warning': return { color: "#967132" };
+            case 'info': return { color: "#4480ae" };
+        }
+    }
+
     return (
         <React.Fragment>
             <Styles>
@@ -26,39 +44,24 @@ function NavBar({ userStore }) {
                             {(hasRight(userStore, managementRights()) || hasRole(userStore, [adminRole])) &&
                                 <Nav.Item><Nav.Link as={Link} to="/admin">Verwaltung</Nav.Link></Nav.Item>
                             }
-                            {hasRight(userStore, ownAppointmentRights.concat(appointmentRights)) && 
+                            {hasRight(userStore, ownAppointmentRights.concat(appointmentRights)) &&
                                 <Nav.Item><Nav.Link as={Link} to="/warning">Konfliktansicht</Nav.Link></Nav.Item>
                             }
                             {hasRight(userStore, ownAppointmentRights.concat(appointmentRights)) &&
                                 <Nav.Item><Nav.Link as={Link} to="/appointment">Terminansicht</Nav.Link></Nav.Item>
-                            }       
+                            }
                             <Nav.Item><Nav.Link as={Link} to="/booking">Buchen</Nav.Link></Nav.Item>
                         </Nav>
                     </Navbar.Collapse >
-                    <Nav.Item style={{ color: "#bbb", marginRight: "20px", fontSize:"14pt"}}>
+                    <Nav.Item style={{ color: "#bbb", marginRight: "20px", fontSize: "14pt" }}>
                         {userStore.loggedIn ? "Benutzer: " + userStore.username : null}
                     </Nav.Item>
                     <LoginForm userStore={userStore} />
                 </Navbar>
             </Styles>
-            <Toast show={userStore.message} onClose={() => userStore.setMessage(null)} style={{height: "60px", border: "none", position: "fixed", zIndex: "100003", top: "30px", left: "40%" }} delay={3000} autohide>
-                <Toast.Header className="justify-content-md-center" style={{ height: "60px", textAlign: "center", backgroundColor: "#b5e8a0" }}>
-                    <h5 style={{ margin: "0px", padding: "0px", color:"black" }}>{userStore.message}</h5>
-                </Toast.Header>
-            </Toast>
-            <Toast show={userStore.infoMessage} onClose={() => userStore.setInfoMessage(null)} style={{height: "60px", border: "none", position: "fixed", zIndex: "100002", top: "30px", left: "40%" }} delay={5000} autohide>
-                <Toast.Header className="justify-content-md-center" style={{ height: "60px", textAlign: "center", backgroundColor: "#7f96e3" }}>
-                    <h5 style={{ margin: "0px", padding: "0px", color:"black" }}>{userStore.infoMessage}</h5>
-                </Toast.Header>
-            </Toast>
-            <Toast show={userStore.warningMessage} onClose={() => userStore.setWarningMessage(null)} style={{height: "60px", border: "none", position: "fixed", zIndex: "100001", top: "30px", left: "40%" }} delay={5000} autohide>
-                <Toast.Header className="justify-content-md-center" style={{ height: "60px", textAlign: "center", backgroundColor: "#e3b759" }}>
-                    <h5 style={{ margin: "0px", padding: "0px", color:"black" }}>{userStore.warningMessage}</h5>
-                </Toast.Header>
-            </Toast>
-            <Toast show={userStore.errorMessage} onClose={() => userStore.setErrorMessage(null)} style={{height: "60px", border: "none", position: "fixed", zIndex: "100000", top: "30px", left: "40%" }} delay={5000} autohide>
-                <Toast.Header className="justify-content-md-center" style={{ height: "60px", textAlign: "center", backgroundColor: "#f06565" }}>
-                    <h5 style={{ margin: "0px", padding: "0px", color:"black"}}>{userStore.errorMessage}</h5>
+            <Toast show={userStore.message} onClose={() => userStore.setMessage(null)} style={{ height: "60px", border: "none", position: "fixed", zIndex: "100003", top: "30px", left: "40%" }} delay={5000} autohide>
+                <Toast.Header className="justify-content-md-center" style={userStore.message && Object.assign({ height: "60px", textAlign: "center" }, getToastStyle(userStore.message.type))}>
+                    <h5 style={userStore.message && Object.assign({ margin: "0px", padding: "0px", color: "black" },getToastTextStyle(userStore.message.type))}>{userStore.message && userStore.message.message}</h5>
                 </Toast.Header>
             </Toast>
         </React.Fragment>

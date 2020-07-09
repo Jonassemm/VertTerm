@@ -297,7 +297,7 @@ function ProcedureForm({ onCancel,
                     if (res.headers.exception) {
                         setException(res.headers.exception)
                     }else{
-                        userStore.setMessage("Prozedur erfolgreich geändert")
+                        userStore.setInfoMessage("Prozedur erfolgreich geändert")
                     }
                 }
             } catch (error) {
