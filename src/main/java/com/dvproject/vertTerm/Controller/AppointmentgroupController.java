@@ -61,14 +61,6 @@ public class AppointmentgroupController {
 		return appointmentgroupService.getAppointmentgroupContainingAppointmentID(id);
 	}
 	
-	@GetMapping("/Optimize")
-	public Appointmentgroup getOptimizedSuggestion (
-			@RequestBody Appointmentgroup appointmentgroup,
-			@RequestParam Optimizationstrategy optimizationstrategy) {
-		//TODO
-		return appointmentgroupService.getOptimizedSuggestion(appointmentgroup, optimizationstrategy);
-	}
-	
 	@PostMapping(value = {"/", "/{userid}"})
 	public String bookAppointments (
 			@PathVariable(required = false) String userid, 
@@ -85,11 +77,6 @@ public class AppointmentgroupController {
 		Collection<? extends GrantedAuthority> auth = SecurityContextHolder.getContext().getAuthentication().getAuthorities();
 		
 		return this.bookAppointmentgroup(userid, appointmentgroup, principal, true);
-	}
-	
-	@PutMapping("")
-	public Appointmentgroup updateAppointmentgroup (@RequestBody Appointmentgroup appointmentgroup) {
-		return appointmentgroupService.update(appointmentgroup);
 	}
 	
 	@PutMapping("/{userid}")
