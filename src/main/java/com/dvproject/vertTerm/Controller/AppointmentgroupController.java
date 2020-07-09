@@ -6,11 +6,11 @@ import java.util.Collection;
 import java.util.List;
 
 import com.dvproject.vertTerm.Model.*;
-import com.dvproject.vertTerm.Service.EmployeeService;
-import com.dvproject.vertTerm.Service.ResourceService;
+import com.dvproject.vertTerm.Service.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -21,9 +21,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
-
-import com.dvproject.vertTerm.Service.AppointmentService;
-import com.dvproject.vertTerm.Service.AppointmentgroupService;
 
 @RestController
 @RequestMapping("/Appointmentgroups")
@@ -37,6 +34,9 @@ public class AppointmentgroupController {
 
 	@Autowired
 	EmployeeService employeeService;
+
+	@Autowired
+	UserService userService;
 
 	@Autowired
 	ResourceService resourceService;
@@ -183,10 +183,25 @@ public class AppointmentgroupController {
 
 	@PostMapping("/Recommend/EarlyEnd/{index}")
 	public @ResponseBody Appointmentgroup recommendByEarlyEnd(@RequestBody Appointmentgroup appointments, @PathVariable int index) {
+		PopulateCustomer(appointments);
 		for (Appointment appointment : appointments.getAppointments()){
 			appointment.setStatus(AppointmentStatus.OPEN);
 		}
 		appointments.optimizeAppointmentsForEarliestEnd(appointmentService, resourceService, employeeService, appointments.getAppointments().get(index));
+		return appointments;
+	}
+
+	@PostMapping("/Recommend/LeastWaitingTime/{index}")
+	public @ResponseBody Appointmentgroup recommendByLeastWaitingTime(@RequestBody Appointmentgroup appointments, @PathVariable int index) {
+		PopulateCustomer(appointments);
+		appointments.optimizeForLeastWaitingTime(appointmentService, resourceService, employeeService, appointments.getAppointments().get(index));
+		return appointments;
+	}
+
+	@PostMapping("/Recommend/LeastDays/{index}")
+	public @ResponseBody Appointmentgroup recommendByLeastDays(@RequestBody Appointmentgroup appointments, @PathVariable int index) {
+		PopulateCustomer(appointments);
+		appointments.optimizeForLeastDays(appointmentService, resourceService, employeeService, appointments.getAppointments().get(index));
 		return appointments;
 	}
 
@@ -195,7 +210,23 @@ public class AppointmentgroupController {
 		for (Appointment appointment : appointments.getAppointments()){
 			appointment.setStatus(AppointmentStatus.OPEN);
 		}
+		PopulateCustomer(appointments);
 		appointments.optimizeAppointmentsForLatestBeginning(appointmentService, resourceService, employeeService, appointments.getAppointments().get(index));
 		return appointments;
+	}
+
+	private void PopulateCustomer(Appointmentgroup appointmentgroup){
+		Appointment firstAppointment = appointmentgroup.getAppointments().get(0);
+		User user = FindUserForAppointments(firstAppointment.getBookedCustomer());
+		for(Appointment appointment : appointmentgroup.getAppointments()){
+			appointment.setBookedCustomer(user);
+		}
+	}
+
+	private User FindUserForAppointments(User user){
+		if(user == null){
+			return userService.getAnonymousUser();
+		}
+		else return userService.getById(user.getId());
 	}
 }

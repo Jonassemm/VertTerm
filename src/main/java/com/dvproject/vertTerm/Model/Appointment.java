@@ -471,7 +471,7 @@ public class Appointment implements Serializable {
 					"An employee already has an appointment in the given time interval", this);
 	}
 
-	private boolean allNeededBookablesFound() {
+	public  boolean allNeededBookablesFound() {
 		for (Position needed : this.getBookedProcedure().getNeededEmployeePositions()) {
 			boolean found = false;
 			for (Employee present : this.getBookedEmployees()) {
@@ -579,6 +579,9 @@ public class Appointment implements Serializable {
 			}
 			for (Resource resource : resourceService.getAll(resourceType)) {
 				if (this.getBookedResources().contains(resource)) {
+					continue;
+				}
+				if (resource.getStatus() == Status.ACTIVE) {
 					continue;
 				}
 				resource.populateAppointments(appointmentService);
@@ -729,6 +732,9 @@ public class Appointment implements Serializable {
 			}
 			for (Resource resource : resourceService.getAll(resourceType)) {
 				if (this.getBookedResources().contains(resource)) {
+					continue;
+				}
+				if (resource.getStatus() == Status.ACTIVE) {
 					continue;
 				}
 				resource.populateAppointments(appointmentService);
