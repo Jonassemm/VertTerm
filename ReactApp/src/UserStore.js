@@ -10,22 +10,21 @@ class UserStore {
 
     message = null
     setMessage(message) {
-        this.message = message
+        console.log(message)
+        if(message)this.message = {message: message, type:"success"}
+        else this.message = null
     }
 
-    infoMessage = null
-    setInfoMessage(infoMessage) {
-        this.infoMessage = infoMessage
+    setInfoMessage(message) {
+        this.message = {message: message, type:"info"}
     }
 
-    warningMessage = null
-    setWarningMessage(warningMessage) {
-        this.warningMessage = warningMessage
+    setErrorMessage(message) {
+        this.message = {message: message, type:"error"}
     }
 
-    errorMessage = null
-    setErrorMessage(errorMessage) {
-        this.errorMessage = errorMessage
+    setWarningMessage(message){
+        this.message = {message: message, type:"warning"}
     }
 
     username = null
@@ -97,9 +96,6 @@ class UserStore {
         this.setLastName(null)
         this.setUserID(null)
         this.setMessage(null)
-        this.setInfoMessage(null)
-        this.setWarningMessage(null)
-        this.setErrorMessage(null)
         this.setRights([])
         this.setRoles([])
     }
@@ -108,9 +104,6 @@ class UserStore {
 UserStore = decorate(UserStore, {
     user: observable,
     message: observable,
-    infoMessage: observable,
-    warningMessage: observable,
-    errorMessage: observable,
     username: observable,
     firstName: observable,
     lastName: observable,
@@ -126,9 +119,6 @@ UserStore = decorate(UserStore, {
     setLastName: action,
     setUserID: action,
     setMessage: action,
-    setInfoMessage: action,
-    setWarningMessage: action,
-    setErrorMessage: action,
     setLoggedIn: action
 })
 

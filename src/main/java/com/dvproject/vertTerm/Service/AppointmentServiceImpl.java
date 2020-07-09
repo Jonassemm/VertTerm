@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.bson.types.ObjectId;
 
@@ -113,32 +114,28 @@ public class AppointmentServiceImpl implements AppointmentService {
 	@Override
 	public List<Appointment> getAppointmentsByProcedureIdAndAppointmentStatus(String procedureid,
 			AppointmentStatus status) {
-		return status == null
-				? repo.findByBookedProcedureId(procedureid)
+		return status == null ? repo.findByBookedProcedureId(procedureid)
 				: repo.findByBookedProcedureIdAndStatus(procedureid, status);
 	}
 
 	@Override
 	public List<Appointment> getAppointmentsOfBookedEmployeeInTimeinterval(String employeeid, Date starttime,
 			Date endtime, AppointmentStatus status) {
-		return status == null
-				? repo.findAppointmentsByBookedEmployeeInTimeinterval(employeeid, starttime, endtime)
+		return status == null ? repo.findAppointmentsByBookedEmployeeInTimeinterval(employeeid, starttime, endtime)
 				: repo.findAppointmentsByBookedEmployeeInTimeintervalWithStatus(employeeid, starttime, endtime, status);
 	}
 
 	@Override
 	public List<Appointment> getAppointmentsOfBookedResourceInTimeinterval(String resourceid, Date starttime,
 			Date endtime, AppointmentStatus status) {
-		return status == null 
-				? repo.findAppointmentsByBookedResourceInTimeinterval(resourceid, starttime, endtime)
+		return status == null ? repo.findAppointmentsByBookedResourceInTimeinterval(resourceid, starttime, endtime)
 				: repo.findAppointmentsByBookedResourceInTimeintervalWithStatus(resourceid, starttime, endtime, status);
 	}
 
 	@Override
 	public List<Appointment> getAppointmentsOfBookedCustomerInTimeinterval(String userid, Date starttime, Date endtime,
 			AppointmentStatus status) {
-		return status == null 
-				? repo.findAppointmentsByBookedCustomerInTimeinterval(userid, starttime, endtime)
+		return status == null ? repo.findAppointmentsByBookedCustomerInTimeinterval(userid, starttime, endtime)
 				: repo.findAppointmentsByBookedCustomerInTimeintervalWithStatus(userid, starttime, endtime, status);
 	}
 
@@ -265,20 +262,18 @@ public class AppointmentServiceImpl implements AppointmentService {
 
 			if (ResourceTypes.size() > 0)
 				for (ResourceType rt : ResourceTypes) {
-					//boolean Resourcefound = false;
+					// boolean Resourcefound = false;
 					for (Resource resource : ResSer.getActiveResourcesbyResourceType(rt)) {
 						List<Appointment> ResApps = this.getAppointmentsOfBookedResourceInTimeinterval(resource.getId(),
-								appointment.getPlannedStarttime(), appointment.getPlannedEndtime(),
-								AppointmentStatus.PLANNED);
+								appointment.getPlannedStarttime(), appointment.getPlannedEndtime(), AppointmentStatus.PLANNED);
 						boolean containedinResources = Resources.stream()
-						.anyMatch(res -> res.getId().equals(resource.getId()));
-				        boolean ResIsAva=
-				        		ResSer.isResourceAvailableBetween(resource.getId(),appointment.getPlannedStarttime(),
-								appointment.getPlannedEndtime());
-				      
-						if (ResApps.size() == 0 && !(containedinResources) && (ResIsAva) ) {
+								.anyMatch(res -> res.getId().equals(resource.getId()));
+						boolean ResIsAva = ResSer.isResourceAvailableBetween(resource.getId(),
+								appointment.getPlannedStarttime(), appointment.getPlannedEndtime());
+
+						if (ResApps.size() == 0 && !(containedinResources) && (ResIsAva)) {
 							Resources.add(resource);
-						//	Resourcefound = true;
+							// Resourcefound = true;
 							break;
 						}
 					}
@@ -293,18 +288,17 @@ public class AppointmentServiceImpl implements AppointmentService {
 			// "Employees"-List
 			if (Positions.size() > 0)
 				for (Position pos : Positions) {
-					//boolean Employeefound = false;
+					// boolean Employeefound = false;
 					for (Employee employee : EmpSer.getActiveEmployeesByPositionId(pos.getId())) {
 						List<Appointment> EmpApps = this.getAppointmentsOfBookedEmployeeInTimeinterval(employee.getId(),
 								appointment.getPlannedStarttime(), appointment.getActualEndtime(), AppointmentStatus.PLANNED);
 						boolean containedinEmployees = Employees.stream()
 								.anyMatch(emp -> emp.getId().equals(employee.getId()));
-				        boolean EmpIsAva=
-				        		EmpSer.isEmployeeAvailableBetween(employee.getId(),appointment.getPlannedStarttime(),
-								appointment.getPlannedEndtime());
-						if (EmpApps.size() == 0 && !(containedinEmployees) && (EmpIsAva) ) {
+						boolean EmpIsAva = EmpSer.isEmployeeAvailableBetween(employee.getId(),
+								appointment.getPlannedStarttime(), appointment.getPlannedEndtime());
+						if (EmpApps.size() == 0 && !(containedinEmployees) && (EmpIsAva)) {
 							Employees.add(employee);
-						//	Employeefound = true;
+							// Employeefound = true;
 							break;
 						}
 					}
@@ -383,5 +377,10 @@ public class AppointmentServiceImpl implements AppointmentService {
 
 	private List<Appointment> getAppointmentsInTimeInterval(Date starttime, Date endtime) {
 		return repo.findAppointmentsByTimeinterval(starttime, endtime);
+	}
+	
+	public List<Appointment> cleanseAppointmentsOfBlocker(List<Appointment> appointments) {
+		return appointments.stream().filter(appointment -> appointment.getBookedProcedure() != null)
+				.collect(Collectors.toList());
 	}
 }

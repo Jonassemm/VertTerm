@@ -257,8 +257,10 @@ public class Appointment implements Serializable {
 			restrictionsToTest = resource.getRestrictions();
 
 			// resource and user contain the same restriction
-			if (restrictionsToTest != null && !restrictionService.testRestrictions(restrictionsToTest, userRestrictions))
-				throw new RestrictionException("A resource contains a restriction that the user also has", null);
+			if (restrictionsToTest != null && userRestrictions != null
+					&& !restrictionService.testRestrictions(restrictionsToTest, userRestrictions))
+				throw new RestrictionException(
+						"The appointment for the procedure contains a restriction that the given user also has", null);
 		}
 	}
 

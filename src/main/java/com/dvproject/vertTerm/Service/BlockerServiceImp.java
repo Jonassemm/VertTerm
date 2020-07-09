@@ -67,8 +67,8 @@ public class BlockerServiceImp implements BlockerService {
 			// and add them to the appointments-List
 			if (blocker.getBookedEmployees() != null)
 				for (Employee emp : blocker.getBookedEmployees()) {
-					List<Appointment> EmpApps = emp.getAppointmentsOfBookedEmployeeInTimeinterval(appointmentService,
-							emp.getId(), blocker.getPlannedStarttime(), blocker.getPlannedEndtime());
+					List<Appointment> EmpApps = appointmentService.getAppointmentsOfBookedEmployeeInTimeinterval(
+							emp.getId(), blocker.getPlannedStarttime(), blocker.getPlannedEndtime(),AppointmentStatus.PLANNED);
 
 					appointments.addAll(EmpApps);
 				}
@@ -77,8 +77,8 @@ public class BlockerServiceImp implements BlockerService {
 			// and add them to the appointments-List
 			if (blocker.getBookedResources() != null)
 				for (Resource res : blocker.getBookedResources()) {
-					List<Appointment> ResApps = res.getAppointmentsOfBookedResourceInTimeinterval(appointmentService,
-							res.getId(), blocker.getPlannedStarttime(), blocker.getPlannedEndtime());
+					List<Appointment> ResApps = appointmentService.getAppointmentsOfBookedResourceInTimeinterval(
+							res.getId(), blocker.getPlannedStarttime(), blocker.getPlannedEndtime(),AppointmentStatus.PLANNED);
 
 					appointments.addAll(ResApps);
 				}
@@ -92,6 +92,7 @@ public class BlockerServiceImp implements BlockerService {
 			// for each appointment in appointments-List SET/REMOVE
 			// (APPOINTMENT_WARNING)-flag
 			if (appointments != null && appointments.size() > 0) {
+				appointments=appointmentService.cleanseAppointmentsOfBlocker(appointments);
 				if (SetorRemove.equals("SET"))
 					SetWarning(appointments);
 				else
@@ -167,7 +168,7 @@ public class BlockerServiceImp implements BlockerService {
 	}
 
 	public boolean exists(String id) {
-		return blockerRepo.existsById(id);
+		return blockerRepo.findById(id).isPresent();
 	}
 
 	// @PreAuthorize("hasAuthority('')")

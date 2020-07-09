@@ -6,7 +6,7 @@ import { Container, Card } from "react-bootstrap"
 export default function AppointmentQR({cred}) {
     const credString = cred
     //const link = APIURL + `/apts/${credString}`
-    const link = `http://localhost:3001/#/apts/${credString}`
+    const link = `${APIURL}/api/${credString}`
 
     return (
         <div className="page">

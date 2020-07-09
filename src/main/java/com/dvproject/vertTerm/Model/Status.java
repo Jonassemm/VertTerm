@@ -22,14 +22,14 @@ public enum Status {
 	DELETED;
 	
 	public boolean isActive() {
-		return this == Status.ACTIVE;
+		return this == ACTIVE;
 	}
 	
 	public boolean isInactive() {
-		return this == Status.ACTIVE;
+		return this == INACTIVE;
 	}
 	
 	public boolean isDeleted() {
-		return this == Status.ACTIVE;
+		return this == DELETED;
 	}
 }

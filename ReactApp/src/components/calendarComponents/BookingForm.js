@@ -46,8 +46,9 @@ function BookingForm({editData,userStore}) {
 
     async function setupEdit() {
         if (editData) {
+            console.log(editData)
             setEditMode(true)
-            const { appointmentID } = editData.match.params
+            const appointmentID = editData.match.params.appointmentID
             let {data} = await getAppointmentGroupByApt(appointmentID)
             data = data.appointments.map(item => {
                 return {...item,
@@ -58,9 +59,15 @@ function BookingForm({editData,userStore}) {
                 return item.bookedProcedure
             })
             const tempApt = await getAppointment(appointmentID)
-            setSelectedCustomer([data[0].bookedCustomer])
+            if(editData.match.params.startTime){
+                console.log("yes Start Time")
+                validateTime({date: editData.match.params.startTime, ident: "start", ref: tempApt})
+                
+                userStore.setInfoMessage("Optimal Zeit wurde bereits übernommen!")
+            }
             setEditApt(tempApt.data)
             setSelectedProcedures(tempProcedures)
+            setSelectedCustomer([data[0].bookedCustomer])
             setApts(data)
         }
     }
@@ -74,6 +81,7 @@ function BookingForm({editData,userStore}) {
     }
     //function for setting the times and checking if they are valid
     function validateTime(data) {
+        console.log(data)
         //calculating the current date rounded to 5 minutes
         let currentDate = new Date()
         let mod = currentDate.getMinutes() % 10
@@ -275,7 +283,7 @@ function BookingForm({editData,userStore}) {
 
     async function optimizeAppointment() {
         const aptGroup = buildFinalData()
-        const res = await OptimizeEarlyEnd(aptGroup.appointments[0])
+        const res = await OptimizeEarlyEnd(aptGroup)
     }
 
     async function searchAppointment() {
@@ -309,15 +317,15 @@ function BookingForm({editData,userStore}) {
                     if(item) return { id: item.id, ref: "resource" }
                     else return {...item}
                 }),
-                plannedEndtime: moment(item.plannedEndtime).format("DD.MM.YYYY HH:mm").toString(),
-                plannedStarttime: moment(item.plannedStarttime).format("DD.MM.YYYY HH:mm").toString(),
+                plannedEndtime: item.plannedEndtime && moment(item.plannedEndtime).format("DD.MM.YYYY HH:mm").toString(),
+                plannedStarttime: item.plannedStarttime && moment(item.plannedStarttime).format("DD.MM.YYYY HH:mm").toString(),
             }
         })
         if(selectedCustomer.length != 0){
             finalData = finalData.map(item => {
                 return {
                     ...item,
-                    bookedCustomer: { id: selectedCustomer[0].id, ref: "user" },
+                    bookedCustomer: selectedCustomer[0],
                 }
             })
         }
@@ -453,7 +461,7 @@ function BookingForm({editData,userStore}) {
                         <Form.Group as={Col}>
                             <Form.Control
                                 type="text"
-                                value={`${selectedCustomer.firstname} ${selectedCustomer.lastname}`}
+                                value={selectedCustomer[0] && (`${selectedCustomer[0].firstName} ${selectedCustomer[0].lastName}`)}
                             />
                         </Form.Group>
                     </Form.Row>
@@ -601,7 +609,7 @@ function BookingForm({editData,userStore}) {
                     <hr />
                     <Row>
                         {!editMode && !showMode && !custom && (selectedProcedures.length != 0) &&
-                        <Col xs={8} style={{ textAlign: "left", display: "flex", alignItems: "baseline", justifyContent: "space-between" }}>
+                        <Col xs={7} style={{ textAlign: "left", display: "flex", alignItems: "baseline", justifyContent: "space-between" }}>
                             <Form.Control style={{ width: "50%" }} as="select">
                                 <option>Frühstes Ende</option>
                                 <option>Wenig Wartezeit</option>
