@@ -59,17 +59,12 @@ public class AppointmentgroupController {
 	public Appointmentgroup getAppointmentGroupByAppointmentId(@PathVariable String id) {
 		return appointmentgroupService.getAppointmentgroupContainingAppointmentID(id);
 	}
-
-	@GetMapping("/Optimize")
-	public Appointmentgroup getOptimizedSuggestion(@RequestBody Appointmentgroup appointmentgroup,
-			@RequestParam Optimizationstrategy optimizationstrategy) {
-		// TODO
-		return appointmentgroupService.getOptimizedSuggestion(appointmentgroup, optimizationstrategy);
-	}
-
-	@PostMapping(value = { "/", "/{userid}" })
-	public String bookAppointments(@PathVariable(required = false) String userid,
-			@RequestBody Appointmentgroup appointmentgroup, Principal principal) {
+	
+	@PostMapping(value = {"/", "/{userid}"})
+	public String bookAppointments (
+			@PathVariable(required = false) String userid, 
+			@RequestBody Appointmentgroup appointmentgroup,
+			Principal principal) {
 		return this.bookAppointmentgroup(userid, appointmentgroup, principal, false);
 	}
 
@@ -81,12 +76,7 @@ public class AppointmentgroupController {
 
 		return this.bookAppointmentgroup(userid, appointmentgroup, principal, true);
 	}
-
-	@PutMapping("")
-	public Appointmentgroup updateAppointmentgroup(@RequestBody Appointmentgroup appointmentgroup) {
-		return appointmentgroupService.update(appointmentgroup);
-	}
-
+	
 	@PutMapping("/{userid}")
 	public String updateAppointments(@PathVariable String userid, @RequestBody Appointmentgroup appointmentgroup,
 			Principal principal) {

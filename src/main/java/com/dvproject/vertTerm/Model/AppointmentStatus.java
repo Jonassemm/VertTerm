@@ -63,4 +63,8 @@ public enum AppointmentStatus {
 	public static List<AppointmentStatus> getAll() {
 		return new ArrayList<>(lookup.values());
 	}
+	
+	public boolean isDeleted () {
+		return this == DELETED;
+	}
 }

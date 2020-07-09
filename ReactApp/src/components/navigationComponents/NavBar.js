@@ -5,7 +5,7 @@ import { Link } from 'react-router-dom'
 import LoginForm from "./LoginForm"
 import { observer } from "mobx-react"
 import { hasRight } from "../../auth"
-import { managementRights, ownAppointmentRights, appointmentRights } from "../Rights"
+import { managementRights, ownAppointmentRights, appointmentRights, adminRole } from "../Rights"
 import "./toastStyles.css"
 
 
@@ -41,7 +41,7 @@ function NavBar({ userStore }) {
                     <Navbar.Toggle aria-controls="basic-navbar-nav" />
                     <Navbar.Collapse id="basic-navbar-nav" className="mr-auto">
                         <Nav className="mr-auto">
-                            {hasRight(userStore, managementRights()) &&
+                            {(hasRight(userStore, managementRights()) || hasRole(userStore, [adminRole])) &&
                                 <Nav.Item><Nav.Link as={Link} to="/admin">Verwaltung</Nav.Link></Nav.Item>
                             }
                             {hasRight(userStore, ownAppointmentRights.concat(appointmentRights)) &&

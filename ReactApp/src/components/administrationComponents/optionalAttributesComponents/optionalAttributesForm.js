@@ -18,8 +18,8 @@ const optionalAttributesForm = ({ onCancel, edit, selected, userStore }) => {
     }, [])
     
 
-    const handleNameChange = (event) => {setName(event.target.value); setEdited(true)}
-    const handleMandatoryFieldChange = () =>{setMandatoryField(!mandatoryField); setEdited(true)}
+    const handleNameChange = (event) => {setName(event.target.value)}
+    const handleMandatoryFieldChange = () =>{setMandatoryField(!mandatoryField)}
 
 
     const handleSubmit = async event => {
