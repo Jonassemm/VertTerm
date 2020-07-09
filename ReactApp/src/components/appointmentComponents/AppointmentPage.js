@@ -469,7 +469,7 @@ export default function AppointmentPage({calendarStore, userStore}) {
                     <div style={{ textAlign: "right" }}>
                         <Button onClick={() => setShowPreferredAppointmentModal(false)} variant="secondary">Nicht vorziehen</Button>
                         {preferredAppointment != null && preferredAppointmentStarttime != null &&
-                        <Link to={`/buchung/${preferredAppointment.id}/${preferredAppointmentStarttime}`}>
+                        <Link to={`/booking/${preferredAppointment.id}/${preferredAppointmentStarttime}`}>
                             <Button variant="success" style={{ marginLeft: "10px" }}>Terminumbuchung</Button>
                         </Link>
                         }
