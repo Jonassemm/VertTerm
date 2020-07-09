@@ -317,15 +317,15 @@ function BookingForm({editData,userStore}) {
                     if(item) return { id: item.id, ref: "resource" }
                     else return {...item}
                 }),
-                plannedEndtime: moment(item.plannedEndtime).format("DD.MM.YYYY HH:mm").toString(),
-                plannedStarttime: moment(item.plannedStarttime).format("DD.MM.YYYY HH:mm").toString(),
+                plannedEndtime: item.plannedEndtime && moment(item.plannedEndtime).format("DD.MM.YYYY HH:mm").toString(),
+                plannedStarttime: item.plannedStarttime && moment(item.plannedStarttime).format("DD.MM.YYYY HH:mm").toString(),
             }
         })
         if(selectedCustomer.length != 0){
             finalData = finalData.map(item => {
                 return {
                     ...item,
-                    bookedCustomer: { id: selectedCustomer[0].id, ref: "user" },
+                    bookedCustomer: selectedCustomer[0],
                 }
             })
         }
