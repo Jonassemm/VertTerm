@@ -23,6 +23,9 @@ import com.dvproject.vertTerm.Model.User;
 
 import net.springboot.javaguides.exception.ResourceNotFoundException;
 
+/**
+ * @author Joshua Müller
+ */
 @ControllerAdvice
 public class RestExceptionHandler extends ResponseEntityExceptionHandler {
 	@ExceptionHandler(ResourceNotFoundException.class)

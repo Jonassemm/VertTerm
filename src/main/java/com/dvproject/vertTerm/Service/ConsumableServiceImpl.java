@@ -5,15 +5,17 @@ import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.rest.webmvc.ResourceNotFoundException;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 
 import com.dvproject.vertTerm.Model.Availability;
 import com.dvproject.vertTerm.Model.Consumable;
-import com.dvproject.vertTerm.Model.Employee;
-import com.dvproject.vertTerm.Model.OptionalAttributes;
 import com.dvproject.vertTerm.Model.Status;
 import com.dvproject.vertTerm.repository.ConsumableRepository;
 
+/**
+ * @author Joshua Müller
+ */
 @Service
 public class ConsumableServiceImpl implements ConsumableService, AvailabilityService {
 	@Autowired
@@ -23,23 +25,27 @@ public class ConsumableServiceImpl implements ConsumableService, AvailabilitySer
 	private AvailabilityServiceImpl availabilityService;
 
 	@Override
+	@PreAuthorize("hasAuthority('RESOURCE_READ')")
 	public List<Consumable> getAll() {
 		return consumableRepository.findAll();
 	}
 
 	@Override
+	@PreAuthorize("hasAuthority('RESOURCE_READ')")
 	public List<Consumable> getAllWithStatus(Status status) {
 		return consumableRepository.findByStatus(status);
 	}
 
 	@Override
+	@PreAuthorize("hasAuthority('RESOURCE_READ')")
 	public Consumable getById(String id) {
-		return this.getConsumableFromDB(id);
+		return getConsumableFromDB(id);
 	}
 
 	@Override
+	@PreAuthorize("hasAuthority('RESOURCE_READ')")
 	public List<Availability> getAllAvailabilities(String id) {
-		Consumable consumable = this.getById(id);
+		Consumable consumable = getById(id);
 
 		if (consumable == null) {
 			throw new IllegalArgumentException("No consumable with the given id");
@@ -49,12 +55,14 @@ public class ConsumableServiceImpl implements ConsumableService, AvailabilitySer
 	}
 
 	@Override
+	@PreAuthorize("hasAuthority('RESOURCE_WRITE')")
 	public Consumable create(Consumable newInstance) {
 		availabilityService.update(newInstance.getAvailabilities(), newInstance);
 		return consumableRepository.save(newInstance);
 	}
 
 	@Override
+	@PreAuthorize("hasAuthority('RESOURCE_WRITE')")
 	public Consumable update(Consumable updatedInstance) {
 		Optional<Consumable> Consumable = consumableRepository.findById(updatedInstance.getId());
 		if (Consumable.isPresent()) {
@@ -67,6 +75,7 @@ public class ConsumableServiceImpl implements ConsumableService, AvailabilitySer
 	}
 
 	@Override
+	@PreAuthorize("hasAuthority('RESOURCE_WRITE')")
 	public boolean delete(String id) {
 		this.deleteFromDB(id);
 

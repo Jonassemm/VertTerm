@@ -4,6 +4,9 @@ import java.util.List;
 
 import com.dvproject.vertTerm.Model.Appointment;
 
+/**
+ * @author Joshua Müller
+ */
 public class AppointmentInternalException extends RuntimeException {
 	private static final long serialVersionUID = 244933595529555739L;
 

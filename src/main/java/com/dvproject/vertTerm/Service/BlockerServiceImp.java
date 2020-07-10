@@ -167,6 +167,11 @@ public class BlockerServiceImp implements BlockerService {
 		}
 	}
 
+	/**
+	 * @author Joshua Müller
+	 */
+	@Override
+	@PreAuthorize("hasAuthority('APPOINTMENT_READ')")
 	public boolean exists(String id) {
 		return blockerRepo.findById(id).isPresent();
 	}

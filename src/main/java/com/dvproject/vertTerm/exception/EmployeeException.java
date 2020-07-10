@@ -2,6 +2,9 @@ package com.dvproject.vertTerm.exception;
 
 import com.dvproject.vertTerm.Model.Employee;
 
+/**
+ * @author Joshua Müller
+ */
 public class EmployeeException extends RuntimeException{
 	private static final long serialVersionUID = 5505464839233329858L;
 	

@@ -11,7 +11,11 @@ import com.dvproject.vertTerm.Model.ResourceType;
 import com.dvproject.vertTerm.Model.Status;
 
 public interface RessourceRepository extends MongoRepository<Resource, String> {
+	/**
+	 * @author Joshua Müller
+	 */
 	Optional<Resource> findById (String id);
+	
 	Resource findByName(String name);
 	List<Resource> findByStatus(Status status);
 		

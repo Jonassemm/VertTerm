@@ -1,11 +1,6 @@
 package com.dvproject.vertTerm.Controller;
 
-import com.dvproject.vertTerm.Model.Appointment;
-import com.dvproject.vertTerm.Model.AppointmentStatus;
-import com.dvproject.vertTerm.Model.Appointmentgroup;
-import com.dvproject.vertTerm.Model.Employee;
-import com.dvproject.vertTerm.Model.User;
-import com.dvproject.vertTerm.Model.Warning;
+import com.dvproject.vertTerm.Model.*;
 import com.dvproject.vertTerm.Service.*;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,10 +9,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 @RestController
 @RequestMapping("/Appointments")

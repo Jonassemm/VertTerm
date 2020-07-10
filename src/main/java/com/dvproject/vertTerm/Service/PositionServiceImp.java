@@ -5,34 +5,42 @@ import com.dvproject.vertTerm.Model.Status;
 import com.dvproject.vertTerm.repository.PositionRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.rest.webmvc.ResourceNotFoundException;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * @author Joshua Müller
+ */
 @Service
 public class PositionServiceImp implements PositionService {
 	@Autowired
 	private PositionRepository positionRepository;
 
 	@Override
+	@PreAuthorize("hasAuthority('POSITION_READ')")
 	public List<Position> getAll() {
 		return positionRepository.findAll();
 	}
 
 	@Override
+	@PreAuthorize("hasAuthority('POSITION_READ')")
 	public List<Position> getAll(Status status) {
 		return positionRepository.findByStatus(status);
 	}
 
 	@Override
+	@PreAuthorize("hasAuthority('POSITION_READ')")
 	public Position getById(String id) {
 		Optional<Position> position = positionRepository.findById(id);
 		return position.orElse(null);
 	}
 
 	@Override
+	@PreAuthorize("hasAuthority('POSITION_WRITE')")
 	public Position update(Position position) {
 		if (position.getId() != null && positionRepository.findById(position.getId()).isPresent()
 				&& StatusService.isUpdateable(position.getStatus())) {
@@ -43,6 +51,7 @@ public class PositionServiceImp implements PositionService {
 	}
 
 	@Override
+	@PreAuthorize("hasAuthority('POSITION_WRITE')")
 	public boolean delete(String id) {
 		Position position = this.getPositionsInternal(id);
 		position.setStatus(Status.DELETED);
@@ -51,6 +60,7 @@ public class PositionServiceImp implements PositionService {
 	}
 
 	@Override
+	@PreAuthorize("hasAuthority('POSITION_READ')")
 	public List<Position> getPositions(String[] ids) {
 		List<Position> positions = new ArrayList<>();
 
@@ -62,6 +72,7 @@ public class PositionServiceImp implements PositionService {
 	}
 
 	@Override
+	@PreAuthorize("hasAuthority('POSITION_WRITE')")
 	public Position create(Position position) {
 		if (position.getId() == null) {
 			position.setName(capitalize(position.getName()));

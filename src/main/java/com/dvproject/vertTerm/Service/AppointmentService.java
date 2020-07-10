@@ -5,17 +5,11 @@ import java.util.List;
 
 import org.bson.types.ObjectId;
 
-import com.dvproject.vertTerm.Model.Appointment;
-import com.dvproject.vertTerm.Model.AppointmentStatus;
-import com.dvproject.vertTerm.Model.Appointmentgroup;
-import com.dvproject.vertTerm.Model.Available;
-import com.dvproject.vertTerm.Model.Bookable;
+import com.dvproject.vertTerm.Model.*;
 
-import com.dvproject.vertTerm.Model.Employee;
-import com.dvproject.vertTerm.Model.Procedure;
-import com.dvproject.vertTerm.Model.Resource;
-import com.dvproject.vertTerm.Model.Warning;
-
+/**
+ * @author Joshua Müller
+ */
 public interface AppointmentService extends BasicService<Appointment> {
 	// GET
 	List<Appointment> getAll(Bookable bookable);

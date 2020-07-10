@@ -1,9 +1,7 @@
 package com.dvproject.vertTerm.security;
 
 import java.io.PrintWriter;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.Validator;
@@ -28,10 +26,8 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
-import com.dvproject.vertTerm.Model.Right;
-import com.dvproject.vertTerm.Model.Role;
-import com.dvproject.vertTerm.repository.RoleRepository;
-import com.dvproject.vertTerm.repository.UserRepository;
+import com.dvproject.vertTerm.Model.*;
+import com.dvproject.vertTerm.repository.*;
 
 /**
  * @author Joshua Müller

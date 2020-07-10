@@ -1,28 +1,16 @@
 package com.dvproject.vertTerm.Controller;
 
 import java.security.Principal;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 
 import com.dvproject.vertTerm.Model.*;
 import com.dvproject.vertTerm.Service.*;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import com.dvproject.vertTerm.Service.AppointmentService;
 import com.dvproject.vertTerm.Service.AppointmentgroupService;
+import com.dvproject.vertTerm.security.AuthorityTester;
 
 @RestController
 @RequestMapping("/Appointmentgroups")
@@ -74,9 +62,7 @@ public class AppointmentgroupController {
 	@PostMapping(value = { "/override/", "/override/{userid}" })
 	public String bookAppointmentsOverride(@PathVariable String userid, @RequestBody Appointmentgroup appointmentgroup,
 			Principal principal) {
-		Collection<? extends GrantedAuthority> auth = SecurityContextHolder.getContext().getAuthentication()
-				.getAuthorities();
-
+		AuthorityTester.containsAny("OVERRIDE");
 		return this.bookAppointmentgroup(userid, appointmentgroup, principal, true);
 	}
 
@@ -89,6 +75,7 @@ public class AppointmentgroupController {
 	@PutMapping("/override/{userid}")
 	public String updateAppointmentsOverride(@PathVariable String userid,
 			@RequestBody Appointmentgroup appointmentgroup, Principal principal) {
+		AuthorityTester.containsAny("OVERRIDE");
 		return updateAppointmentgroupInternal(principal, userid, appointmentgroup, true);
 	}
 
@@ -120,6 +107,7 @@ public class AppointmentgroupController {
 
 	@DeleteMapping("/override/Appointment/{id}")
 	public boolean deleteAppointmentOverride(@PathVariable(name = "id") String appointmentId) {
+		AuthorityTester.containsAny("OVERRIDE");
 		return appointmentgroupService.deleteAppointment(appointmentId, true);
 	}
 

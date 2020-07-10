@@ -54,7 +54,11 @@ public class CustomerServiceImp implements CustomerService {
         return appointment.orElse(null);
     }
 
+    /**
+     * @author Joshua Müller
+     */
     @Override
+//	 @PreAuthorize("hasAuthority('CUSTOMER_WRITE')")
     public Customer create(Customer newInstance) {
         if (newInstance.getId() == null) {
         	userService.testMandatoryFields(newInstance);
@@ -69,7 +73,11 @@ public class CustomerServiceImp implements CustomerService {
         return null;
     }
 
+    /**
+     * @author Joshua Müller
+     */
     @Override
+	 @PreAuthorize("hasAuthority('CUSTOMER_WRITE')")
     public Customer update(Customer updatedInstance) {
    	 Customer retVal = null;
    	 
@@ -85,7 +93,11 @@ public class CustomerServiceImp implements CustomerService {
         return retVal;
     }
 
+    /**
+     * @author Joshua Müller
+     */
     @Override
+	 @PreAuthorize("hasAuthority('CUSTOMER_WRITE')")
     public boolean delete(String id) {
    	Customer user = getById(id);
 
@@ -94,7 +106,7 @@ public class CustomerServiceImp implements CustomerService {
 
     	user.setSystemStatus(Status.DELETED);
     	
-    	return getById(id).getSystemStatus() == Status.DELETED;
+    	return getById(id).getSystemStatus().isDeleted();
     }
     
     public static String capitalize(String str)

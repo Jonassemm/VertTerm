@@ -28,7 +28,11 @@ public class ResourceTypeServiceImp implements ResourceTypeService {
 		return this.ResourceTypeRepo.findAll();
 	}
 	
+	/**
+	 * @author Joshua Müller
+	 */
 	@Override
+	@PreAuthorize("hasAuthority('RESOURCE_TYPE_READ')")
 	public List<ResourceType> getAll(Status status) {
 		return ResourceTypeRepo.findByStatus(status);
 	}

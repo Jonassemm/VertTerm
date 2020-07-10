@@ -25,5 +25,8 @@ public interface UserRepository extends MongoRepository<User, String>
 	
 	List<User> findByLastName(String lastname);
 	
+	/**
+	 * @author Joshua Müller
+	 */
 	User findByUsername(String username);
 }
