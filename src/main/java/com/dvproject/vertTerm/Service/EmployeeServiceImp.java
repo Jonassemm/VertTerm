@@ -55,14 +55,14 @@ public class EmployeeServiceImp extends WarningServiceImpl implements EmployeeSe
 		return (users);
 	}
 
-	public List<Employee> getActiveEmployeesByPositionId(String positionId) {
+	public List<Employee> getEmployeesByPositionIdandStatus(String positionId,Status status) {
 
 		//get all Active Employees from position 
 
 		List<Employee> employees = new ArrayList<>();
 		List<Employee> AllEmployees = this.getAll(positionId);
 		for (Employee emp : AllEmployees) {
-			if (emp.getSystemStatus().equals(Status.ACTIVE)) {
+			if (emp.getSystemStatus().equals(status)) {
 				if (!employees.contains(emp))
 					employees.add(emp);
 

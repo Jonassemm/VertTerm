@@ -40,7 +40,7 @@ public class ResourceTypeServiceImp implements ResourceTypeService {
 		if (ResTypDb.isPresent()) {
 			return ResTypDb.get();
 		} else {
-			throw new ResourceNotFoundException("ResourceType with the given id :" + id + " already exists");
+			throw new ResourceNotFoundException("ResourceType with the given id :" + id + " nnnot found");
 		}
 
 	}

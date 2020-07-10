@@ -52,7 +52,7 @@ public class RessourceController {
 	     return resservice.getResources(ids);
 	 }
 	 @GetMapping("/status")
-	 public  @ResponseBody  List<Resource> getResources(@RequestBody Status status) {
+	 public  @ResponseBody  List<Resource> getResources(@RequestParam Status status) {
 	     return resservice.getResources(status);
 	 }
 	 @GetMapping("/restyps/{id}")
@@ -64,6 +64,12 @@ public class RessourceController {
 	 public  @ResponseBody  List<Resource> getResources(@PathVariable String id) {
 	     return resservice.getResources(id);
 	 }
+	 
+	 @GetMapping("/ResbyRTandStatus")
+	 public  @ResponseBody  List<Resource> getResourcesbyResourceTypeandStatus(@RequestParam String RTid,@RequestParam Status status) {		
+		 return resservice.getResourcesbyResourceTypeandStatus(RTid, status);
+	 }
+	 
 	 @PostMapping()
 	 public Resource createResource(@RequestBody Resource res) {
 	     return resservice.create(res);

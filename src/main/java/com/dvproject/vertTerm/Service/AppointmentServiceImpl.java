@@ -263,7 +263,7 @@ public class AppointmentServiceImpl implements AppointmentService {
 			if (ResourceTypes.size() > 0)
 				for (ResourceType rt : ResourceTypes) {
 					// boolean Resourcefound = false;
-					for (Resource resource : ResSer.getActiveResourcesbyResourceType(rt)) {
+					for (Resource resource : ResSer.getResourcesbyResourceTypeandStatus(rt.getId(), Status.ACTIVE)) {
 						List<Appointment> ResApps = this.getAppointmentsOfBookedResourceInTimeinterval(resource.getId(),
 								appointment.getPlannedStarttime(), appointment.getPlannedEndtime(), AppointmentStatus.PLANNED);
 						boolean containedinResources = Resources.stream()
@@ -289,7 +289,7 @@ public class AppointmentServiceImpl implements AppointmentService {
 			if (Positions.size() > 0)
 				for (Position pos : Positions) {
 					// boolean Employeefound = false;
-					for (Employee employee : EmpSer.getActiveEmployeesByPositionId(pos.getId())) {
+					for (Employee employee : EmpSer.getEmployeesByPositionIdandStatus(pos.getId(),Status.ACTIVE)) {
 						List<Appointment> EmpApps = this.getAppointmentsOfBookedEmployeeInTimeinterval(employee.getId(),
 								appointment.getPlannedStarttime(), appointment.getActualEndtime(), AppointmentStatus.PLANNED);
 						boolean containedinEmployees = Employees.stream()

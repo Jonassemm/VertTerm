@@ -2,6 +2,7 @@ package com.dvproject.vertTerm.Controller;
 
 import com.dvproject.vertTerm.Model.Availability;
 import com.dvproject.vertTerm.Model.Employee;
+import com.dvproject.vertTerm.Model.Resource;
 import com.dvproject.vertTerm.Model.Status;
 import com.dvproject.vertTerm.Service.EmployeeService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -56,6 +57,11 @@ public class EmployeeController {
         return service.update(newEmployee);
     }
 
+    @GetMapping("/EmpbyPosandStatus")
+	 public  @ResponseBody  List<Employee> getEmployeesByPositionIdandStatus(@RequestParam String positionId,@RequestParam Status status) {
+	     return service.getEmployeesByPositionIdandStatus(positionId, status);
+	}
+	 
     @DeleteMapping("/{id}")
     public boolean DeleteEmployee(@PathVariable String id)
     {
