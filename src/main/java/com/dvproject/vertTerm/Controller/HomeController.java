@@ -12,7 +12,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
 
 import com.dvproject.vertTerm.Model.User;
 import com.dvproject.vertTerm.repository.UserRepository;
@@ -29,12 +28,12 @@ public class HomeController {
 	@Autowired
 	private PasswordEncoder passwordEncoder;
 
-	@RequestMapping(value = "/")
+	@GetMapping("/")
 	public String index() {
 		return "index";
 	}
 
-	@GetMapping("/{login}")
+	@GetMapping("/login/{login}")
 	public String login(HttpServletRequest request, @PathVariable String login) {
 		LoginInformation loginInformation = new LoginInformation(login);
 		

@@ -17,6 +17,9 @@ public interface UserService extends BasicService<User> {
     List<Role> getUserRolesWithId (String id);
     List<Right> getUserRightsWithId (String id);
     
+    /**
+     * @author Joshua Müller
+     */
     void encodePassword (User user);
     void testMandatoryFields(User user);
     void testAppointments(String userid);

@@ -5,6 +5,9 @@ import com.dvproject.vertTerm.Model.Status;
 
 import java.util.List;
 
+/**
+ * @author Joshua Müller
+ */
 public interface PositionService extends BasicService<Position> {
 	//GET
 	List<Position> getAll(Status status);

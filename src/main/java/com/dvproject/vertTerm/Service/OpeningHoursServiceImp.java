@@ -1,26 +1,27 @@
 package com.dvproject.vertTerm.Service;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 
 import com.dvproject.vertTerm.Model.Availability;
 import com.dvproject.vertTerm.Model.OpeningHours;
 import com.dvproject.vertTerm.repository.OpeningHoursRepository;
 
+/**
+ * @author Joshua Müller
+ */
 @Service
 public class OpeningHoursServiceImp implements OpeningHoursService {
 	@Autowired
 	private OpeningHoursRepository openingHoursRepository;
 
 	@Override
+	@PreAuthorize("hasAuthority('OPENING_HOURS_READ')")
 	public OpeningHours get() {
 		List<OpeningHours> openingHours = openingHoursRepository.findAll();
 
@@ -34,6 +35,7 @@ public class OpeningHoursServiceImp implements OpeningHoursService {
 	}
 
 	@Override
+	@PreAuthorize("hasAuthority('OPENING_HOURS_WRITE')")
 	public OpeningHours update(OpeningHours updatedInstance) {
 		List<Availability> availabilitiesToInsert = new ArrayList<>();
 		Map<String, Availability> updatedAvailabilities = new HashMap<>();

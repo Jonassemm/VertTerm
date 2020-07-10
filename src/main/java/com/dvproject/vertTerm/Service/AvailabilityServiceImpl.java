@@ -20,6 +20,9 @@ import com.dvproject.vertTerm.Model.Warning;
 import com.dvproject.vertTerm.exception.AvailabilityException;
 import com.dvproject.vertTerm.repository.AvailabilityRepository;
 
+/**
+ * @author Joshua Müller
+ */
 @Service
 public class AvailabilityServiceImpl {
 
@@ -163,7 +166,7 @@ public class AvailabilityServiceImpl {
 				}
 			} catch (AvailabilityException ex) {
 				hasChanged    = appointment.addWarnings(Warning.AVAILABILITY_WARNING);
-				hasNewWarning = true;
+				hasNewWarning |= hasChanged;
 			} finally {
 				if (hasChanged)
 					appointmentService.update(appointment);

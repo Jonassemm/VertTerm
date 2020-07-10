@@ -79,3 +79,6 @@ export const managementRights = () =>{
                             procedureRights)             
     return rights
 } 
+
+
+export const adminRole = "Admin_role"

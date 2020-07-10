@@ -2,6 +2,9 @@ package com.dvproject.vertTerm.exception;
 
 import com.dvproject.vertTerm.Model.ResourceType;
 
+/**
+ * @author Joshua Müller
+ */
 public class ResourceTypeException extends RuntimeException {
 	private static final long serialVersionUID = 9036720560983407603L;
 	

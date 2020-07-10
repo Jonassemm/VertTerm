@@ -8,6 +8,9 @@ import org.springframework.data.mongodb.repository.MongoRepository;
 import com.dvproject.vertTerm.Model.Appointmentgroup;
 import com.dvproject.vertTerm.Model.Status;
 
+/**
+ * @author Joshua Müller
+ */
 public interface AppointmentgroupRepository extends MongoRepository<Appointmentgroup, String> {
 	Optional<Appointmentgroup> findById(String id);
 	

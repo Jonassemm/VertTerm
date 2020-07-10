@@ -154,7 +154,7 @@ export default function AppointmentPage({calendarStore, userStore}) {
         }
 
         //show modal
-        setShowPreferredAppointmentModal(true)
+        setShowPreferredAppointmentModal(true)  
     }
 
 
@@ -245,6 +245,7 @@ export default function AppointmentPage({calendarStore, userStore}) {
 
 
     const loadCalendarAppointments = async (month, year, UserID) => { 
+        /* var earliestAppointmentTime = null */ //for automatic scroll to this appointment
         const numberOfMonthsBefore = 2
         const numberOfMontsAfter = 2
         var response = []
@@ -291,8 +292,17 @@ export default function AppointmentPage({calendarStore, userStore}) {
         }
 
 
+
         //prepare response for calendar
         const evts = reducedData.map(item => {
+            //save the earliest time 
+            /* if(earliestAppointmentTime == null) {
+                earliestAppointmentTime = moment(item.plannedStarttime, "DD.MM.yyyy HH:mm").toDate()
+            }else{
+                if(moment(item.plannedStarttime, "DD.MM.yyyy HH:mm").toDate().getTime() < earliestAppointmentTime.getTime()){
+                    earliestAppointmentTime = moment(item.plannedStarttime, "DD.MM.yyyy HH:mm").toDate()
+                }
+            } */
             var title
             if(item.bookedCustomer != null && item.bookedProcedure != null){
                 if(item.bookedCustomer.firstName != null && item.bookedCustomer.lastName != null){
@@ -469,7 +479,7 @@ export default function AppointmentPage({calendarStore, userStore}) {
                     <div style={{ textAlign: "right" }}>
                         <Button onClick={() => setShowPreferredAppointmentModal(false)} variant="secondary">Nicht vorziehen</Button>
                         {preferredAppointment != null && preferredAppointmentStarttime != null &&
-                        <Link to={`/buchung/${preferredAppointment.id}/${preferredAppointmentStarttime}`}>
+                        <Link to={`/booking/${preferredAppointment.id}/${preferredAppointmentStarttime}`}>
                             <Button variant="success" style={{ marginLeft: "10px" }}>Terminumbuchung</Button>
                         </Link>
                         }

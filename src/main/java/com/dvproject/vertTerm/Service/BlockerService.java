@@ -8,5 +8,8 @@ import com.dvproject.vertTerm.Model.Blocker;
 public interface BlockerService extends BasicService<Blocker> {
 	List<Blocker> getBlockers(String[] id);
 	
+	/**
+	 * @author Joshua Müller
+	 */
 	boolean exists (String id);
 }

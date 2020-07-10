@@ -8,6 +8,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import com.dvproject.vertTerm.Model.Appointment;
 import com.dvproject.vertTerm.Model.Appointmentgroup;
 
+/**
+ * @author Joshua Müller
+ */
 public abstract class WarningServiceImpl {
 	@Autowired
 	private AppointmentgroupService appointmentgroupService;

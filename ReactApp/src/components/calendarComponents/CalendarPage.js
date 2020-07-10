@@ -45,6 +45,7 @@ function CalendarPage({
     const [loading, setLoading] = useState(false) //for loading appointments (could take some time)
     const [currentTimeView, setCurrentTimeView] = useState(views.month) //inital view
     const [referenceDateOfView, setReferenceDateOfView] = useState(new Date) //actual date for view 
+    const [earliestAppointmentDate, setEarliestAppointmentDate] = useState(null)
 
 
     useEffect(() => {
@@ -56,11 +57,26 @@ function CalendarPage({
 
     const handleCurrentTimeViewChange = (newView) =>{
         setCurrentTimeView(newView)
+
+        //set earliestAppointmentDate
+        if(newView == views.day){
+            setEarliestAppointmentDate(getEarliestDateOfDay(referenceDateOfView, null))
+        }else if(newView == views.week){
+            setEarliestAppointmentDate(getEarliestDateOfWeek(referenceDateOfView, null))
+        }
     }
 
 
     const handleNavigationChange = (newReferenceDate) => {
         setReferenceDateOfView(newReferenceDate)
+        
+        //set earliestAppointmentDate
+        if(currentTimeView == views.day){
+            setEarliestAppointmentDate(getEarliestDateOfDay(newReferenceDate, null))
+        }else if(currentTimeView == views.week){
+            setEarliestAppointmentDate(getEarliestDateOfWeek(newReferenceDate, null))
+        }
+        
         if(loadAppointments != undefined) {
             loadAppointments(newReferenceDate.getMonth(), newReferenceDate.getFullYear(), UserID)  
         }else
@@ -144,6 +160,7 @@ function CalendarPage({
     const refreshCalendarAppointments = () => {
         if(loadAppointments != undefined) {
             loadAppointments(referenceDateOfView.getMonth(), referenceDateOfView.getFullYear(), UserID)  
+            
         }else
         {
             loadCalendarEvents()
@@ -155,6 +172,66 @@ function CalendarPage({
     //-------------------------------Help-Funcitons-----------------------------------
     const hideModal = () => {
         setShowEditModal(false)
+    }
+
+
+    const getEarliestDateOfDay = (referenceDate, earliestDate) => {
+        var earliestTime = null 
+        var newTime = null
+        if(calendarStore.calendarEvents.length > 0 ){
+            calendarStore.calendarEvents.map(item => {
+            if(earliestDate == null){//initial early date
+                if(moment(item.plannedStarttime, "DD.MM.yyyy HH:mm").toDate().getDate() == referenceDate.getDate()){
+                    earliestDate = moment(item.plannedStarttime, "DD.MM.yyyy HH:mm").toDate()
+                }
+            }else{//new early date
+                earliestTime = earliestDate.getHours() * 60 + earliestDate.getMinutes()
+                newTime = (moment(item.plannedStarttime, "DD.MM.yyyy HH:mm").toDate().getHours() * 60) + moment(item.plannedStarttime, "DD.MM.yyyy HH:mm").toDate().getMinutes()
+                if(newTime < earliestTime){
+                    if(moment(item.plannedStarttime, "DD.MM.yyyy HH:mm").toDate().getDate() == referenceDate.getDate()){
+                        earliestDate = moment(item.plannedStarttime, "DD.MM.yyyy HH:mm").toDate()
+                    }
+                }
+            }
+            })
+        }
+        return earliestDate
+    }
+
+
+    const getEarliestDateOfWeek = (referenceDate, earliestDate) =>{
+        var referenceWeekDay = null
+        var newDate = new Date
+        newDate.setDate(referenceDate.getDate())
+        newDate.setMonth(referenceDate.getMonth())
+        newDate.setFullYear(referenceDate.getFullYear())
+
+        if(moment(referenceDateOfView, "DD.MM.yyyy HH:mm").toDate().getDay() != 0){
+            referenceWeekDay = moment(referenceDateOfView, "DD.MM.yyyy HH:mm").toDate().getDay()
+        }else{
+            referenceWeekDay = 7 //save sunday as 7 not as 0
+        }
+
+        //save all days of this week earlier than referenceDate
+        for(var i=referenceWeekDay-1; i>0; i--){
+            newDate.setDate(referenceDate.getDate() - (referenceWeekDay - i))
+            earliestDate = getEarliestDateOfDay(newDate, earliestDate) 
+        }
+
+        //reset
+        newDate.setDate(referenceDate.getDate())
+        newDate.setMonth(referenceDate.getMonth())
+        newDate.setFullYear(referenceDate.getFullYear())
+        //save the referenceDay
+        earliestDate = getEarliestDateOfDay(newDate, earliestDate) 
+
+        //save all days of this week later than referenceDate
+        for(var i=referenceWeekDay+1; i<8; i++){
+            newDate.setDate(referenceDate.getDate() + (i - referenceWeekDay))
+            earliestDate = getEarliestDateOfDay(newDate, earliestDate) 
+        }
+        setEarliestAppointmentDate(earliestDate)
+        return earliestDate
     }
 
 
@@ -194,6 +271,7 @@ function CalendarPage({
                 onNavigate={handleNavigationChange}
                 step={5}
                 timeslots={3}
+                scrollToTime={earliestAppointmentDate}
                 messages={{
                     previous: 'Zurück',
                     next: 'Weiter',

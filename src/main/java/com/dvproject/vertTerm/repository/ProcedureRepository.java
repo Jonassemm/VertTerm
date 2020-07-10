@@ -10,6 +10,9 @@ import org.springframework.data.mongodb.repository.Query;
 import com.dvproject.vertTerm.Model.Procedure;
 import com.dvproject.vertTerm.Model.Status;
 
+/**
+ * @author Joshua Müller
+ */
 public interface ProcedureRepository extends MongoRepository<Procedure, String> {
 	Optional<Procedure> findById (String id);
 	

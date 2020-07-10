@@ -5,10 +5,14 @@ import com.dvproject.vertTerm.repository.ProcedureRepository;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.rest.webmvc.ResourceNotFoundException;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
 
+/**
+ * @author Joshua Müller
+ */
 @Service
 public class ProcedureServiceImp extends WarningServiceImpl implements ProcedureService, AvailabilityService {
 	@Autowired
@@ -21,47 +25,33 @@ public class ProcedureServiceImp extends WarningServiceImpl implements Procedure
 	private AppointmentService appointmentService;
 
 	@Override
+	@PreAuthorize("hasAuthority('PROCEDURE_READ')")
 	public List<Procedure> getAll() {
 		return procedureRepository.findAll();
 	}
 
 	@Override
+	@PreAuthorize("hasAuthority('PROCEDURE_READ')")
 	public List<Procedure> getAll(Status status) {
 		return procedureRepository.findByStatus(status);
 	}
 
+	@Override
+	@PreAuthorize("hasAuthority('PROCEDURE_READ')")
 	public List<Procedure> getAll(Status status, boolean publicProcedure) {
 		return procedureRepository.findByStatusAndPublicProcedure(status, publicProcedure);
 	}
 
 	@Override
+	@PreAuthorize("hasAuthority('PROCEDURE_READ')")
 	public List<Procedure> getByIds(String[] ids) {
 		return procedureRepository.findByIds(ids);
 	}
 
 	@Override
+	@PreAuthorize("hasAuthority('PROCEDURE_READ')")
 	public Procedure getById(String id) {
 		return getProcedureFromDB(id);
-	}
-
-	@Override
-	public List<ProcedureRelation> getPrecedingProcedures(String id) {
-		return getProcedureFromDB(id).getPrecedingRelations();
-	}
-
-	@Override
-	public List<ProcedureRelation> getSubsequentProcedures(String id) {
-		return getProcedureFromDB(id).getSubsequentRelations();
-	}
-
-	@Override
-	public List<ResourceType> getNeededResourceTypes(String id) {
-		return this.getProcedureFromDB(id).getNeededResourceTypes();
-	}
-
-	@Override
-	public List<Position> getNeededPositions(String id) {
-		return this.getProcedureFromDB(id).getNeededEmployeePositions();
 	}
 
 	@Override
@@ -70,16 +60,12 @@ public class ProcedureServiceImp extends WarningServiceImpl implements Procedure
 	}
 
 	@Override
-	public List<Restriction> getProcedureRestrictions(String id) {
-		return this.getProcedureFromDB(id).getRestrictions();
-	}
-
-	@Override
 	public boolean isAvailableBetween(String id, Date startdate, Date enddate) {
 		return availabilityService.isAvailable(this.getProcedureFromDB(id).getAvailabilities(), startdate, enddate);
 	}
 
 	@Override
+	@PreAuthorize("hasAuthority('PROCEDURE_WRITE')")
 	public Procedure create(Procedure procedure) {
 		if (procedure.getId() == null) {
 			procedure.testAllReferenceValues();
@@ -95,6 +81,7 @@ public class ProcedureServiceImp extends WarningServiceImpl implements Procedure
 	}
 
 	@Override
+	@PreAuthorize("hasAuthority('PROCEDURE_WRITE')")
 	public Procedure update(Procedure procedure) {
 		String procedureId = procedure.getId();
 		Procedure oldProcedure = getProcedureFromDB(procedureId);
@@ -113,115 +100,7 @@ public class ProcedureServiceImp extends WarningServiceImpl implements Procedure
 	}
 
 	@Override
-	public Procedure updateProceduredata(Procedure procedure) {
-		String procedureId = procedure.getId();
-		Procedure oldProcedure = getProcedureFromDB(procedureId);
-		Procedure retVal = null;
-
-		procedure.testAllReferenceValues();
-		testUpdatebility(procedure.getStatus());
-
-		oldProcedure.setName(capitalize(procedure.getName()));
-		oldProcedure.setDescription(procedure.getDescription());
-		oldProcedure.setPricePerHour(procedure.getPricePerHour());
-		oldProcedure.setPricePerInvocation(procedure.getPricePerInvocation());
-		oldProcedure.setDuration(procedure.getDuration());
-
-		retVal = procedureRepository.save(oldProcedure);
-
-		testWarningsFor(procedureId);
-
-		return retVal;
-	}
-
-	@Override
-	public List<ProcedureRelation> updatePrecedingProcedures(String id, List<ProcedureRelation> precedingProcedures) {
-		Procedure procedure = getProcedureFromDB(id);
-
-		procedure.testAllRelations();
-		testUpdatebility(procedure.getStatus());
-
-		procedure.setPrecedingRelations(precedingProcedures);
-		procedureRepository.save(procedure);
-
-		testWarningsFor(id);
-
-		return getProcedureFromDB(id).getPrecedingRelations();
-	}
-
-	@Override
-	public List<ProcedureRelation> updateSubsequentProcedures(String id, List<ProcedureRelation> subsequentRelations) {
-		Procedure procedure = getProcedureFromDB(id);
-
-		procedure.testAllRelations();
-		testUpdatebility(procedure.getStatus());
-
-		procedure.setSubsequentRelations(subsequentRelations);
-		procedureRepository.save(procedure);
-
-		testWarningsFor(id);
-
-		return getProcedureFromDB(id).getSubsequentRelations();
-	}
-
-	@Override
-	public List<ResourceType> updateNeededResourceTypes(String id, List<ResourceType> resourceTypes) {
-		Procedure procedure = getProcedureFromDB(id);
-
-		procedure.testResourceTypes();
-		testUpdatebility(procedure.getStatus());
-
-		procedure.setNeededResourceTypes(resourceTypes);
-
-		procedureRepository.save(procedure);
-
-		testWarningsFor(id);
-
-		return getProcedureFromDB(id).getNeededResourceTypes();
-	}
-
-	@Override
-	public List<Position> updateNeededPositions(String id, List<Position> positions) {
-		Procedure procedure = getProcedureFromDB(id);
-
-		procedure.testPositions();
-		testUpdatebility(procedure.getStatus());
-
-		procedure.setNeededEmployeePositions(positions);
-
-		procedureRepository.save(procedure);
-
-		testWarningsFor(id);
-
-		return getProcedureFromDB(id).getNeededEmployeePositions();
-	}
-
-	@Override
-	public List<Availability> updateAvailabilities(String id, List<Availability> availabilities) {
-		Procedure procedure = getProcedureFromDB(id);
-
-		testUpdatebility(procedure.getStatus());
-		procedure.setAvailabilities(availabilities);
-		procedureRepository.save(procedure);
-
-		return getProcedureFromDB(id).getAvailabilities();
-	}
-
-	@Override
-	public List<Restriction> updateProcedureRestrictions(String id, List<Restriction> restrictions) {
-		Procedure procedure = getProcedureFromDB(id);
-
-		testUpdatebility(procedure.getStatus());
-		for (Restriction restr : restrictions) {
-			restr.setName(capitalize(restr.getName()));
-		}
-		procedure.setRestrictions(restrictions);
-		procedureRepository.save(procedure);
-
-		return getProcedureFromDB(id).getRestrictions();
-	}
-
-	@Override
+	@PreAuthorize("hasAuthority('PROCEDURE_WRITE')")
 	public boolean delete(String id) {
 		this.deleteFromDB(id);
 

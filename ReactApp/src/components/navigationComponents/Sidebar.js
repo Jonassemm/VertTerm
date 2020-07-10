@@ -3,9 +3,8 @@ import { Nav } from "react-bootstrap";
 import { withRouter } from "react-router";
 import { Link } from 'react-router-dom'
 import { hasRight, hasRole } from "../../auth"
-import {ownUserRights, userRights, positionRights, procedureRights, resourceRights, resourceTypeRights, roleRights} from "../Rights"
+import {ownUserRights, userRights, positionRights, procedureRights, resourceRights, resourceTypeRights, roleRights, adminRole} from "../Rights"
 
-const adminRole = "Admin_role"
 
 const Side = ({closeFunction, userStore}) => {
     return (
