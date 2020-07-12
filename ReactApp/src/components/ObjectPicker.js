@@ -1,6 +1,7 @@
+//author: Jonas Semmler
 import React, { useState, useEffect, forwardRef, useImperativeHandle } from "react"
 import { Typeahead } from "react-bootstrap-typeahead"
-import { getUsers, getEmployees, getCustomers, getProcedures, getRoles, getPositions, getResourceTypes, getResources, getAllRestrictions, getPublicProcedures } from "./requests"
+import { getUsers, getEmployees, getCustomers, getProcedures, getRoles, getPositions, getResourceTypes, getResources, getRestrictions, getPublicProcedures } from "./requests"
 import { getTranslatedWarning, kindOfWarningList } from "./Warnings"
 
 // when using this Object you have to give props:
@@ -8,11 +9,14 @@ import { getTranslatedWarning, kindOfWarningList } from "./Warnings"
 // setState: the setState method for the state in your Form
 // initial: an Array with the values which have to be initally selected
 // multiple: defining whether multiple values can be selected (as boolean)
-// exclude: the element which is removed from the selection
+// ident: a Object which just gets passed back with every change
+// filter: In some cases you can filter the queried results by a type (e.g. resources of a certain type)
+// status: specifies the desired system status of the selectable inputs
+// disabled: Boolean whether you can edit the Input
+
 
 const ObjectPicker = forwardRef((props, ref) => {
-    let { DbObject, setState, initial, multiple, ident, selectedItem, filter, status, disabled } = props
-    if (!selectedItem) selectedItem = { id: null }
+    let { DbObject, setState, initial, multiple, ident, filter, status, disabled } = props
     if(status) status = status.toUpperCase()
     const [options, setOptions] = useState([])
     const [labelKey, setLabelKey] = useState("")
@@ -166,7 +170,7 @@ const ObjectPicker = forwardRef((props, ref) => {
     }
 
     async function getRestrictionData() {
-        const {data} = await getAllRestrictions()
+        const {data} = await getRestrictions()
         setOptions(data)
         setLabelKey("name")
         setInit(true)

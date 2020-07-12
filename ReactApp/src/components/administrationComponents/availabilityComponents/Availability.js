@@ -5,7 +5,7 @@ import DatePicker from "react-datepicker"
 import "react-datepicker/dist/react-datepicker.css"
 import {setValidEndDateString, validateDates, renderAvailabilityTable} from "./AvailabilityHelpFunctions"
 import {setDate} from "../../TimeComponents/TimeFunctions"
-import {getOpeningHours} from "../openingHoursComponents/OpeningHoursRequests"
+import {getOpeningHours} from "../../requests"
 import { hasRight } from "../../../auth"
 import {ownAppointmentRights, availabilityRights} from "../../Rights"
 

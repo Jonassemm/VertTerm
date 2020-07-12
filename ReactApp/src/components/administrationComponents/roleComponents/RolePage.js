@@ -1,6 +1,7 @@
+//author: Jonas Semmler
 import React, { useState, useEffect } from "react"
 import {Button} from "react-bootstrap"
-import { getRoles } from "./RoleRequests"
+import { getRoles } from "../../requests"
 import RoleForm from "./RolesForm"
 import OverviewPage, {modalTypes} from "../../OverviewPage"
 
@@ -8,8 +9,10 @@ function RolePage({userStore}) {
     const [roles, setRoles] = useState([])
     
     async function prepareRoles() {
-        const res = await getRoles()
-        const result = res.data.map(item => {
+
+        const {data} = await getRoles("NOTDELETED")
+        // chainging the rights array of the role to a string with the names
+        const result = data.map(item => {
             const rightStrings = item.rights.map(item => {
                 return item['name']
             })

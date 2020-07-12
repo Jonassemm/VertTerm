@@ -1,3 +1,4 @@
+//author: Jonas Semmler
 module.exports = {
     presets: [
       [

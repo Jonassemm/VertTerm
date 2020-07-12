@@ -1,3 +1,4 @@
+//author: Jonas Semmler
 import {observable, action, decorate} from "mobx"
 
 class CalendarStore{

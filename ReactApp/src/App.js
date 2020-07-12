@@ -1,5 +1,6 @@
+//author: Jonas Semmler
 import React, { Suspense, useEffect } from 'react';
-import { HashRouter as Router, Switch, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Switch, Route } from 'react-router-dom';
 import { hasRight } from "./auth"
 import { managementRights, ownAppointmentRights, appointmentRights } from "./components/Rights"
 import { observer } from "mobx-react"
