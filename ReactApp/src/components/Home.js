@@ -1,3 +1,4 @@
+//author: Jonas Semmler
 import React from "react"
 import "./home.css"
 import {Button} from "react-bootstrap"
@@ -13,7 +14,6 @@ export default function Home() {
                     <h3>Jetzt Termin vereinbaren</h3>
                     <Button variant="primary" style={{marginTop:"20px"}} onClick={() => history.push("/booking")}>Buchen</Button>
                 </div>
-                
             </div>
     )
 }

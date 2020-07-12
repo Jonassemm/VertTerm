@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react"
 import OverviewPage, {modalTypes} from "../../OverviewPage"
 import ProcedureForm from "./ProcedureForm"
-import { getProcedures } from "./ProcedureRequests"
+import { getProcedures } from "../../requests"
 import {ExceptionModal} from "../../ExceptionModal"
 
 function ProcedurePage({userStore}) {
@@ -12,7 +12,7 @@ function ProcedurePage({userStore}) {
     const [showExceptionModal, setShowExceptionModal] = useState(false)
 
     async function prepareProcedures() {
-        const res = await getProcedures()
+        const res = await getProcedures("NOTDELETED")
         const result = res.data.map(item => {
             return { ...item }
         })

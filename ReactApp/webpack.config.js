@@ -6,7 +6,8 @@ const BrotliPlugin = require('brotli-webpack-plugin')
 module.exports = {
   entry: './src/index.js',
   output: {
-    path: path.join(__dirname, '../src/main/resources/static/build'),
+    //path: path.join(__dirname, '../src/main/resources/static/build'),
+    path: path.join(__dirname, '/dist'),
     filename: 'bundle.js',
     publicPath: '/',
   },

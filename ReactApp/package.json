@@ -1,5 +1,5 @@
 {
-	"name": "vertTerm",
+	"name": "betabook.me",
 	"version": "0.1.0",
 	"dependencies": {
 		"axios": "^0.19.2",
@@ -16,7 +16,6 @@
 		"react-datepicker": "^2.14.1",
 		"react-dom": "16.13.1",
 		"react-router": "^5.1.2",
-		"react-router-bootstrap": "^0.25.0",
 		"react-router-dom": "^5.1.2",
 		"react-scripts": "3.4.1",
 		"styled-components": "^5.1.0"
@@ -48,7 +47,6 @@
 		"babel-loader": "^8.1.0",
 		"css-loader": "^3.5.3",
 		"file-loader": "^6.0.0",
-		"html-loader": "^1.1.0",
 		"html-webpack-plugin": "^4.2.0",
 		"style-loader": "^1.2.0",
 		"webpack": "^4.43.0",

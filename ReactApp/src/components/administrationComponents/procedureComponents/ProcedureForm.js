@@ -114,15 +114,16 @@ function ProcedureForm({ onCancel,
     }
 
     const handleDelete = async () => {
-        if(hasRight(userStore, [rightName])){
-            try{
-                await  deleteProcedure(selected.id)
+        if (hasRight(userStore, [rightName])) {
+            try {
+                await deleteProcedure(selected.id)
                 userStore.setMessage("Prozedur erfolgreich gelöscht!")
-            } catch (error){
+            } catch (error) {
+                userStore.setErrorMessage(error.message)
                 console.log(Object.keys(error), error.message)
             }
         } else {//no rights!
-            userStore.setWarningMessage("Ihnen fehlt das Recht:\n"+ rightName)
+            userStore.setWarningMessage("Ihnen fehlt das Recht:\n" + rightName)
         }
         onCancel()
     }
@@ -296,7 +297,7 @@ function ProcedureForm({ onCancel,
                     const res = await editProcedure(selected.id, data)
                     if (res.headers.exception) {
                         setException(res.headers.exception)
-                    }else{
+                    } else {
                         userStore.setMessage("Prozedur erfolgreich geändert")
                     }
                 }
@@ -305,7 +306,7 @@ function ProcedureForm({ onCancel,
             }
             onCancel()
         } else {//no right to submit 
-            userStore.setWarningMessage("Ihnen fehlt das Recht:\n"+ rightName)
+            userStore.setWarningMessage("Ihnen fehlt das Recht:\n" + rightName)
         }
     }
 
@@ -426,7 +427,7 @@ function ProcedureForm({ onCancel,
                     </Tab>
                     <Tab eventKey="resources" title="Ressourcen" style={TabStyle}>
                         <Form.Label style={{ marginTop: "5px" }}>Benötigte Ressourcentypen:</Form.Label>
-                        <ObjectPicker DbObject="resourceType" initial={edit && resourceTypes} setState={setResourceTypesExt} multiple={true} />
+                        <ObjectPicker DbObject="resourceType" initial={edit && resourceTypes} setState={setResourceTypesExt} multiple={true} status="notdeleted"/>
                         {resourceTypes.map((item, index) => {
                             return (
                                 <Row style={{ marginTop: "5px" }}>
@@ -454,7 +455,7 @@ function ProcedureForm({ onCancel,
                             )
                         })}
                         <Form.Label style={{ marginTop: "10px" }}>Benötigte Positionen:</Form.Label>
-                        <ObjectPicker DbObject="position" initial={edit && positions} setState={setPositionsExt} multiple={true}></ObjectPicker>
+                        <ObjectPicker DbObject="position" initial={edit && positions} setState={setPositionsExt} multiple={true} status="notdeleted"></ObjectPicker>
                         {positions.map((item, index) => {
                             return (
                                 <Row style={{ marginTop: "5px" }}>
@@ -497,7 +498,7 @@ function ProcedureForm({ onCancel,
                         <Form.Label>Zwingende Vorläufer</Form.Label>
                         <Form.Row>
                             <Form.Group xs={6} as={Col}>
-                                <ObjectPicker ref={precedingRef} DbObject="procedure" setState={setSelectedPrecedingRelation} />
+                                <ObjectPicker ref={precedingRef} DbObject="procedure" status="notdeleted" setState={setSelectedPrecedingRelation} />
                             </Form.Group>
                             <Form.Group as={Col}>
                                 <Form.Control
@@ -557,7 +558,7 @@ function ProcedureForm({ onCancel,
                         <Form.Label>Zwingende Nachfolger</Form.Label>
                         <Form.Row>
                             <Form.Group xs={6} as={Col}>
-                                <ObjectPicker ref={subsequentRef} DbObject="procedure" setState={setSelectedSubsequentRelation} />
+                                <ObjectPicker ref={subsequentRef} DbObject="procedure" status="notdeleted" setState={setSelectedSubsequentRelation} />
                             </Form.Group>
                             <Form.Group as={Col}>
                                 <Form.Control
