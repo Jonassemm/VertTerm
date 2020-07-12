@@ -89,7 +89,7 @@ export default function OpeningHoursPage ({userStore}) {
                 <hr/>
                 <div style={{textAlign: "right"}}>
                     {edited ? 
-                        <Button variant="success" onClick={handleSubmit} type="submit" >Übernehmen</Button>:
+                        <Button variant="success" style={{marginBottom:"25px"}} onClick={handleSubmit} type="submit" >Übernehmen</Button>:
                         null
                     }
                 </div>
