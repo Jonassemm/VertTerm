@@ -8,9 +8,12 @@ import org.springframework.data.mongodb.repository.Query;
 
 import com.dvproject.vertTerm.Model.Customer;
 
-public interface CustomerRepository extends MongoRepository<Customer, String>{
+public interface CustomerRepository extends MongoRepository<Customer, String> {
 	static final String customerTest = "'_class' : 'com.dvproject.vertTerm.Model.Customer'";
 	
+	/**
+	 * @author Joshua Müller
+	 */
 	@Override
 	@Query("{" + customerTest + "}")
 	List<Customer> findAll();
@@ -24,9 +27,15 @@ public interface CustomerRepository extends MongoRepository<Customer, String>{
     @Query("{'systemStatus' : 'DELETED'," + customerTest + "}")
     List<Customer> findAllDeleted();
 	
+    /**
+     * @author Joshua Müller
+     */
     @Query("{'_id' : ?0, " + customerTest + "}")
     Optional<Customer> findById (String id);
     
+    /**
+     * @author Joshua Müller
+     */
     @Query("{'username' : ?0, " + customerTest + "}")
     Customer findByUsername (String username);
 }

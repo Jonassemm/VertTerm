@@ -22,6 +22,9 @@ public interface OptionalAttributesService extends BasicService<OptionalAttribut
 	List<OptionalAttribute> getOptionalAttributes(String id);
 	
 	
+	/**
+	 * @author Joshua Müller
+	 */
 	OptionalAttributes getByClassname(String classname);
 	void testMandatoryFields(String classname, List<OptionalAttribute> optionalAttributes);
 

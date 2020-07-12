@@ -11,7 +11,7 @@ import org.springframework.context.annotation.ComponentScan;
 import com.dvproject.vertTerm.Controller.HomeController;
 
 @SpringBootApplication
-@ComponentScan(basePackageClasses=HomeController.class)
+//@ComponentScan(basePackageClasses=HomeController.class)
 public class VertTermApplication extends SpringBootServletInitializer{
 	
     @Override

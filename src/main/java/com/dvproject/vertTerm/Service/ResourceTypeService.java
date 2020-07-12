@@ -11,6 +11,9 @@ public interface ResourceTypeService extends BasicService<ResourceType> {
 
     List<ResourceType> getResourceTypes(String[] ids);
  
+    /**
+     * @author Joshua Müller
+     */
     List<ResourceType> getAll(Status status);
 }
 

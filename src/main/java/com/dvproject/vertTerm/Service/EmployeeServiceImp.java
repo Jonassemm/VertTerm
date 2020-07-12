@@ -55,14 +55,14 @@ public class EmployeeServiceImp extends WarningServiceImpl implements EmployeeSe
 		return (users);
 	}
 
-	public List<Employee> getActiveEmployeesByPositionId(String positionId) {
+	public List<Employee> getEmployeesByPositionIdandStatus(String positionId,Status status) {
 
 		//get all Active Employees from position 
 
 		List<Employee> employees = new ArrayList<>();
 		List<Employee> AllEmployees = this.getAll(positionId);
 		for (Employee emp : AllEmployees) {
-			if (emp.getSystemStatus().equals(Status.ACTIVE)) {
+			if (emp.getSystemStatus().equals(status)) {
 				if (!employees.contains(emp))
 					employees.add(emp);
 
@@ -73,6 +73,10 @@ public class EmployeeServiceImp extends WarningServiceImpl implements EmployeeSe
 		return employees;
 	}
 
+	/**
+	 * @author Joshua Müller
+	 */
+	 @PreAuthorize("hasAuthority('EMPLOYEE_READ') and hasAuthority('POSITION_READ')")
 	public List<Employee> getAll(String positionId) {
 		return repo.findByPositionsId(positionId);
 	}
@@ -83,13 +87,21 @@ public class EmployeeServiceImp extends WarningServiceImpl implements EmployeeSe
 		return appointment.orElse(null);
 	}
 
+	/**
+	 * @author Joshua Müller
+	 */
 	@Override
+	 @PreAuthorize("hasAuthority('EMPLOYEE_READ')")
 	public Employee getByUsername(String username) {
 		Optional<Employee> appointment = repo.findByUsername(username);
 		return appointment.orElse(null);
 	}
 
+	/**
+	 * @author Joshua Müller
+	 */
 	@Override
+	 @PreAuthorize("hasAuthority('EMPLOYEE_READ')")
 	public List<Availability> getAllAvailabilities(String id) {
 		Employee employee = this.getById(id);
 
@@ -98,7 +110,11 @@ public class EmployeeServiceImp extends WarningServiceImpl implements EmployeeSe
 		return employee.getAvailabilities();
 	}
 
+	/**
+	 * @author Joshua Müller
+	 */
 	@Override
+	 @PreAuthorize("hasAuthority('EMPLOYEE_WRITE')")
 	public Employee create(Employee newInstance) {
 		if (newInstance.getId() == null) {
 			userService.testMandatoryFields(newInstance);
@@ -115,7 +131,11 @@ public class EmployeeServiceImp extends WarningServiceImpl implements EmployeeSe
 		return null;
 	}
 
+	/**
+	 * @author Joshua Müller
+	 */
 	@Override
+	 @PreAuthorize("hasAuthority('EMPLOYEE_WRITE')")
 	public Employee update(Employee updatedInstance) {
 		String employeeId = updatedInstance.getId();
 		Optional<Employee> employee = employeeId != null ? repo.findById(employeeId) : null;
@@ -137,7 +157,11 @@ public class EmployeeServiceImp extends WarningServiceImpl implements EmployeeSe
 		return retVal;
 	}
 
+	/**
+	 * @author Joshua Müller
+	 */
 	@Override
+	 @PreAuthorize("hasAuthority('EMPLOYEE_WRITE')")
 	public boolean delete(String id) {
 		Employee user = getById(id);
 
@@ -156,6 +180,9 @@ public class EmployeeServiceImp extends WarningServiceImpl implements EmployeeSe
 		return getById(id).getSystemStatus() == Status.DELETED;
 	}
 
+	/**
+	 * @author Joshua Müller
+	 */
 	@Override
 	public boolean isEmployeeAvailableBetween(String id, Date startdate, Date enddate) {
 		Employee Emp = getById(id);
@@ -169,6 +196,9 @@ public class EmployeeServiceImp extends WarningServiceImpl implements EmployeeSe
 
 	}
 
+	/**
+	 * @author Joshua Müller
+	 */
 	public void testAppointments(String id) {
 		List<Appointment> appointments = getPlannedAppointmentsWithId(id);
 
@@ -176,6 +206,9 @@ public class EmployeeServiceImp extends WarningServiceImpl implements EmployeeSe
 			throw new IllegalArgumentException("Employee can not be deleted because he is used as a bookedEmployee");
 	}
 
+	/**
+	 * @author Joshua Müller
+	 */
 	@Override
 	public List<Appointment> getPlannedAppointmentsWithId(String id) {
 		return appointmentService.getAppointmentsByEmployeeIdAndAppointmentStatus(id, AppointmentStatus.PLANNED);

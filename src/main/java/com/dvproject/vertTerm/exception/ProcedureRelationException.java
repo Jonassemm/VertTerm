@@ -2,6 +2,9 @@ package com.dvproject.vertTerm.exception;
 
 import com.dvproject.vertTerm.Model.ProcedureRelation;
 
+/**
+ * @author Joshua Müller
+ */
 public class ProcedureRelationException extends RuntimeException {
 	private static final long serialVersionUID = -2128588524530407610L;
 	

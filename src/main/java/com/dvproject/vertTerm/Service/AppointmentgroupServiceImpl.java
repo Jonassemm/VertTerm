@@ -1,16 +1,9 @@
 package com.dvproject.vertTerm.Service;
 
 import java.security.Principal;
-import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
+import java.time.*;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.List;
-import java.util.Optional;
-import java.util.TimeZone;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import javax.servlet.http.HttpServletResponse;
@@ -21,24 +14,9 @@ import org.springframework.data.rest.webmvc.ResourceNotFoundException;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 
-import com.dvproject.vertTerm.Model.Appointment;
-import com.dvproject.vertTerm.Model.AppointmentStatus;
-import com.dvproject.vertTerm.Model.Appointmentgroup;
-import com.dvproject.vertTerm.Model.BookingTester;
-import com.dvproject.vertTerm.Model.Employee;
-import com.dvproject.vertTerm.Model.NormalBookingTester;
-import com.dvproject.vertTerm.Model.OverrideBookingTester;
-import com.dvproject.vertTerm.Model.Procedure;
-import com.dvproject.vertTerm.Model.Resource;
-import com.dvproject.vertTerm.Model.Status;
-import com.dvproject.vertTerm.Model.TimeInterval;
-import com.dvproject.vertTerm.Model.User;
-import com.dvproject.vertTerm.Model.Warning;
-import com.dvproject.vertTerm.exception.BookedCustomerException;
-import com.dvproject.vertTerm.exception.ProcedureException;
-import com.dvproject.vertTerm.repository.AppointmentRepository;
-import com.dvproject.vertTerm.repository.AppointmentgroupRepository;
-import com.dvproject.vertTerm.repository.UserRepository;
+import com.dvproject.vertTerm.Model.*;
+import com.dvproject.vertTerm.exception.*;
+import com.dvproject.vertTerm.repository.*;
 
 /**
  * @author Joshua Müller
@@ -76,19 +54,19 @@ public class AppointmentgroupServiceImpl implements AppointmentgroupService {
 	private HttpServletResponse httpResponse;
 
 	@Override
-//	@PreAuthorize("hasAuthority('APPOINTMENT_READ')")
+	@PreAuthorize("hasAuthority('APPOINTMENT_READ')")
 	public List<Appointmentgroup> getAll() {
 		return appointmentgroupRepository.findAll();
 	}
 
 	@Override
-//	@PreAuthorize("hasAuthority('APPOINTMENT_READ')")
+	@PreAuthorize("hasAuthority('APPOINTMENT_READ')")
 	public List<Appointmentgroup> getAppointmentgroupsWithStatus(Status status) {
 		return appointmentgroupRepository.findByStatus(status);
 	}
 
 	@Override
-//	@PreAuthorize("hasAuthority('APPOINTMENT_READ')")
+	@PreAuthorize("hasAuthority('APPOINTMENT_READ')")
 	public Appointmentgroup getAppointmentgroupContainingAppointmentID(String id) {
 		if (id == null)
 			throw new NullPointerException("The id of the given appointment is null");
@@ -100,13 +78,13 @@ public class AppointmentgroupServiceImpl implements AppointmentgroupService {
 	}
 
 	@Override
-//	@PreAuthorize("hasAuthority('APPOINTMENT_READ')")
+	@PreAuthorize("hasAuthority('APPOINTMENT_READ')")
 	public Appointmentgroup getById(String id) {
 		return getAppointmentgroupInternal(id);
 	}
 
 	@Override
-//	@PreAuthorize("hasAuthority('APPOINTMENT_WRITE')")
+	@PreAuthorize("hasAuthority('APPOINTMENT_WRITE')")
 	public void testWarnings(String appointmentid) {
 		if (appointmentid != null) {
 			Appointmentgroup appointmentgroup = getUpdatableAppointmentgroupContainingAppointmentID(appointmentid);
@@ -115,7 +93,7 @@ public class AppointmentgroupServiceImpl implements AppointmentgroupService {
 	}
 
 	@Override
-//	@PreAuthorize("hasAuthority('APPOINTMENT_WRITE')")
+	@PreAuthorize("hasAuthority('APPOINTMENT_WRITE')")
 	public void testWarningsForAppointmentgroup(String appointmentgroupid) {
 		Appointmentgroup appointmentgroup = getAppointmentgroupInternal(appointmentgroupid);
 		BookingTester tester = new OverrideBookingTester(new ArrayList<>());
@@ -126,7 +104,7 @@ public class AppointmentgroupServiceImpl implements AppointmentgroupService {
 	}
 
 	@Override
-//	@PreAuthorize("hasAuthority('APPOINTMENT_WRITE')")
+	@PreAuthorize("hasAuthority('APPOINTMENT_WRITE')")
 	public void testWarningsForAppointments(List<Appointment> appointmentsToTest) {
 		appointmentsToTest = appointmentService.cleanseAppointmentsOfBlocker(appointmentsToTest);
 		List<String> appointmentIdsTested = new ArrayList<>();
@@ -175,18 +153,18 @@ public class AppointmentgroupServiceImpl implements AppointmentgroupService {
 
 		if (isPullable(appointment)) {
 			httpResponse.setHeader("appointmentid", appointment.getId());
-			httpResponse.setHeader("starttime", getStringRepresentationOf(appointment.getPlannedStarttime()));
+			httpResponse.setHeader("starttime", getStringRepresentation(appointment.getPlannedStarttime()));
 		}
 	}
 
 	@Override
 	public void setPullableAppointments(Appointment appointment) {
-		Date startdate = getDateOfNowRoundedUp();
-		List<Appointment> appointmentsToPull = getPullableAppointments(startdate, appointment);
+		Date starttime = getDateOfNowRoundedUp();
+		List<Appointment> appointmentsToPull = getPullableAppointments(starttime, appointment);
 		boolean listIsSet = appointmentsToPull != null && appointmentsToPull.size() > 0;
 
 		if (listIsSet) {
-			httpResponse.addHeader("starttime", getStringRepresentationOf(startdate));
+			httpResponse.addHeader("starttime", getStringRepresentation(starttime));
 			appointmentsToPull.forEach(app -> httpResponse.addHeader("appointmentid", app.getId()));
 		}
 	}
@@ -199,12 +177,12 @@ public class AppointmentgroupServiceImpl implements AppointmentgroupService {
 	 *                             conform to the conditions
 	 */
 	@Override
+	@PreAuthorize("hasAuthority('APPOINTMENT_WRITE')")
 	public String bookAppointmentgroup(String userid, Appointmentgroup appointmentgroup, boolean override) {
 		List<Appointment> appointments = appointmentgroup.getAppointments();
 		boolean noUserAttached = userid == null || userid.equals("");
 		User user = noUserAttached ? userService.getAnonymousUser() : userService.getById(userid);
 		boolean attachedUserNotActive = !noUserAttached && !user.getSystemStatus().isActive();
-		String link = null;
 		BookingTester tester = override ? new OverrideBookingTester(new ArrayList<>())
 				: new NormalBookingTester(new ArrayList<>());
 
@@ -225,11 +203,7 @@ public class AppointmentgroupServiceImpl implements AppointmentgroupService {
 		appointmentgroup.testProcedureRelations(override);
 		appointmentgroup.testBookability(restrictionService, appointmentService, tester);
 
-		if (noUserAttached) {
-			link = user.generateLoginLink();
-			userService.encodePassword(user);
-			userRepository.save(user);
-		}
+		String link = noUserAttached ? generateLoginLink(user) : null;
 
 		saveAppointmentgroupInternal(appointmentgroup);
 
@@ -237,7 +211,7 @@ public class AppointmentgroupServiceImpl implements AppointmentgroupService {
 	}
 
 	@Override
-//	@PreAuthorize("hasAuthority('APPOINTMENT_WRITE')")
+	@PreAuthorize("hasAuthority('APPOINTMENT_WRITE')")
 	public boolean startAppointment(String appointmentid) {
 		Appointment appointment = appointmentService.getById(appointmentid);
 
@@ -252,7 +226,7 @@ public class AppointmentgroupServiceImpl implements AppointmentgroupService {
 	}
 
 	@Override
-//	@PreAuthorize("hasAuthority('APPOINTMENT_WRITE')")
+	@PreAuthorize("hasAuthority('APPOINTMENT_WRITE')")
 	public boolean stopAppointment(String appointmentid) {
 		Appointment appointment = appointmentService.getById(appointmentid);
 
@@ -271,7 +245,7 @@ public class AppointmentgroupServiceImpl implements AppointmentgroupService {
 	}
 
 	@Override
-//	@PreAuthorize("hasAuthority('APPOINTMENT_WRITE')")
+	@PreAuthorize("hasAuthority('APPOINTMENT_WRITE')")
 	public boolean delete(String id) {
 		Appointmentgroup appointmentgroup = deleteAppointmentgroupInternal(id);
 
@@ -279,31 +253,29 @@ public class AppointmentgroupServiceImpl implements AppointmentgroupService {
 	}
 
 	@Override
-//	@PreAuthorize("hasAuthority('APPOINTMENT_WRITE')")
+	@PreAuthorize("hasAuthority('APPOINTMENT_WRITE')")
 	public boolean deleteAppointment(String id, boolean override) {
-		Appointmentgroup appointmentgroupOfAppointment = getAppointmentgroupContainingAppointmentID(id);
-		List<Appointment> appointmentsOfAppointmentgroup = appointmentgroupOfAppointment.getAppointments();
-		Appointment appointment = appointmentsOfAppointmentgroup.stream().filter(app -> app.getId().equals(id)).findAny()
+		Appointmentgroup appointmentgroup = getAppointmentgroupContainingAppointmentID(id);
+		List<Appointment> appointments = appointmentgroup.getAppointments();
+		Appointment appointment = appointments.stream().filter(app -> app.getId().equals(id)).findAny()
 				.get();
-		List<Appointment> appointmentsToTestWarningsFor = null;
-		boolean retVal = false;
 
-		appointmentsOfAppointmentgroup.remove(appointment);
+		appointments.remove(appointment);
 
 		if (override) {
-			testWarningsForAppointmentGroup(appointmentgroupOfAppointment);
+			testWarningsForAppointmentGroup(appointmentgroup);
 			appointment.setWarnings(new ArrayList<>());
-			saveAppointmentgroupInternal(appointmentgroupOfAppointment);
+			saveAppointmentgroupInternal(appointmentgroup);
 		} else {
-			appointmentgroupOfAppointment.testProcedureRelations(override);
+			appointmentgroup.testProcedureRelations(override);
 		}
 
-		retVal                        = appointmentService.delete(id);
+		boolean retVal                        = appointmentService.delete(id);
 
-		appointmentsToTestWarningsFor = appointmentService.getOverlappingAppointmentsInTimeInterval(
+		List<Appointment> appointmentsToTest = appointmentService.getOverlappingAppointmentsInTimeInterval(
 				appointment.getPlannedStarttime(), appointment.getPlannedEndtime(), AppointmentStatus.PLANNED);
 
-		testWarningsForAppointments(appointmentsToTestWarningsFor);
+		testWarningsForAppointments(appointmentsToTest);
 
 		setPullableAppointments(appointment);
 
@@ -505,11 +477,19 @@ public class AppointmentgroupServiceImpl implements AppointmentgroupService {
 		return cal;
 	}
 
-	private String getStringRepresentationOf(Date date) {
+	private String getStringRepresentation(Date date) {
 		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm");
 		LocalDateTime ldt = date.toInstant().atZone(ZoneId.of("UTC")).toLocalDateTime();
 
 		return formatter.format(ldt);
+	}
+	
+	private String generateLoginLink(User user) {
+		String link = user.generateLoginLink();
+		userService.encodePassword(user);
+		userRepository.save(user);
+		
+		return link;
 	}
 
 }

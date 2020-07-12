@@ -1,28 +1,16 @@
 package com.dvproject.vertTerm.Controller;
 
 import java.security.Principal;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 
 import com.dvproject.vertTerm.Model.*;
-import com.dvproject.vertTerm.Service.EmployeeService;
-import com.dvproject.vertTerm.Service.ResourceService;
+import com.dvproject.vertTerm.Service.*;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import com.dvproject.vertTerm.Service.AppointmentService;
 import com.dvproject.vertTerm.Service.AppointmentgroupService;
+import com.dvproject.vertTerm.security.AuthorityTester;
 
 @RestController
 @RequestMapping("/Appointmentgroups")
@@ -36,6 +24,9 @@ public class AppointmentgroupController {
 
 	@Autowired
 	EmployeeService employeeService;
+
+	@Autowired
+	UserService userService;
 
 	@Autowired
 	ResourceService resourceService;
@@ -59,7 +50,7 @@ public class AppointmentgroupController {
 	public Appointmentgroup getAppointmentGroupByAppointmentId(@PathVariable String id) {
 		return appointmentgroupService.getAppointmentgroupContainingAppointmentID(id);
 	}
-	
+
 	@PostMapping(value = {"/", "/{userid}"})
 	public String bookAppointments (
 			@PathVariable(required = false) String userid, 
@@ -71,12 +62,10 @@ public class AppointmentgroupController {
 	@PostMapping(value = { "/override/", "/override/{userid}" })
 	public String bookAppointmentsOverride(@PathVariable String userid, @RequestBody Appointmentgroup appointmentgroup,
 			Principal principal) {
-		Collection<? extends GrantedAuthority> auth = SecurityContextHolder.getContext().getAuthentication()
-				.getAuthorities();
-
+		AuthorityTester.containsAny("OVERRIDE");
 		return this.bookAppointmentgroup(userid, appointmentgroup, principal, true);
 	}
-	
+
 	@PutMapping("/{userid}")
 	public String updateAppointments(@PathVariable String userid, @RequestBody Appointmentgroup appointmentgroup,
 			Principal principal) {
@@ -86,6 +75,7 @@ public class AppointmentgroupController {
 	@PutMapping("/override/{userid}")
 	public String updateAppointmentsOverride(@PathVariable String userid,
 			@RequestBody Appointmentgroup appointmentgroup, Principal principal) {
+		AuthorityTester.containsAny("OVERRIDE");
 		return updateAppointmentgroupInternal(principal, userid, appointmentgroup, true);
 	}
 
@@ -117,6 +107,7 @@ public class AppointmentgroupController {
 
 	@DeleteMapping("/override/Appointment/{id}")
 	public boolean deleteAppointmentOverride(@PathVariable(name = "id") String appointmentId) {
+		AuthorityTester.containsAny("OVERRIDE");
 		return appointmentgroupService.deleteAppointment(appointmentId, true);
 	}
 
@@ -151,17 +142,26 @@ public class AppointmentgroupController {
 	}
 
 	@PostMapping("/Recommend/EarlyEnd/{index}")
-	public @ResponseBody Appointmentgroup recommendByEarlyEnd(@RequestBody Appointmentgroup appointments,
-			@PathVariable int index) {
-		try {
-			for (Appointment appointment : appointments.getAppointments()) {
-				appointment.setStatus(AppointmentStatus.OPEN);
-			}
-			appointments.optimizeAppointmentsForEarliestEnd(appointmentService, resourceService, employeeService,
-					appointments.getAppointments().get(index));
-		} catch (Exception error) {
-			error.printStackTrace();
+	public @ResponseBody Appointmentgroup recommendByEarlyEnd(@RequestBody Appointmentgroup appointments, @PathVariable int index) {
+		PopulateCustomer(appointments);
+		for (Appointment appointment : appointments.getAppointments()){
+			appointment.setStatus(AppointmentStatus.OPEN);
 		}
+		appointments.optimizeAppointmentsForEarliestEnd(appointmentService, resourceService, employeeService, appointments.getAppointments().get(index));
+		return appointments;
+	}
+
+	@PostMapping("/Recommend/LeastWaitingTime/{index}")
+	public @ResponseBody Appointmentgroup recommendByLeastWaitingTime(@RequestBody Appointmentgroup appointments, @PathVariable int index) {
+		PopulateCustomer(appointments);
+		appointments.optimizeForLeastWaitingTime(appointmentService, resourceService, employeeService, appointments.getAppointments().get(index));
+		return appointments;
+	}
+
+	@PostMapping("/Recommend/LeastDays/{index}")
+	public @ResponseBody Appointmentgroup recommendByLeastDays(@RequestBody Appointmentgroup appointments, @PathVariable int index) {
+		PopulateCustomer(appointments);
+		appointments.optimizeForLeastDays(appointmentService, resourceService, employeeService, appointments.getAppointments().get(index));
 		return appointments;
 	}
 
@@ -171,8 +171,23 @@ public class AppointmentgroupController {
 		for (Appointment appointment : appointments.getAppointments()) {
 			appointment.setStatus(AppointmentStatus.OPEN);
 		}
-		appointments.optimizeAppointmentsForLatestBeginning(appointmentService, resourceService, employeeService,
-				appointments.getAppointments().get(index));
+		PopulateCustomer(appointments);
+		appointments.optimizeAppointmentsForLatestBeginning(appointmentService, resourceService, employeeService, appointments.getAppointments().get(index));
 		return appointments;
+	}
+
+	private void PopulateCustomer(Appointmentgroup appointmentgroup){
+		Appointment firstAppointment = appointmentgroup.getAppointments().get(0);
+		User user = FindUserForAppointments(firstAppointment.getBookedCustomer());
+		for(Appointment appointment : appointmentgroup.getAppointments()){
+			appointment.setBookedCustomer(user);
+		}
+	}
+
+	private User FindUserForAppointments(User user){
+		if(user == null){
+			return userService.getAnonymousUser();
+		}
+		else return userService.getById(user.getId());
 	}
 }

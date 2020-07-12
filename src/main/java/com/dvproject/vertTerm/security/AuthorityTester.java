@@ -1,8 +1,6 @@
 package com.dvproject.vertTerm.security;
 
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import org.springframework.security.core.GrantedAuthority;

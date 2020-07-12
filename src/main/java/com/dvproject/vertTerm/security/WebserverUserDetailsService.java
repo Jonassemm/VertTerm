@@ -11,10 +11,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Component;
 
-import com.dvproject.vertTerm.Model.Right;
-import com.dvproject.vertTerm.Model.Role;
-import com.dvproject.vertTerm.Model.Status;
-import com.dvproject.vertTerm.Model.User;
+import com.dvproject.vertTerm.Model.*;
 import com.dvproject.vertTerm.repository.UserRepository;
 
 /**

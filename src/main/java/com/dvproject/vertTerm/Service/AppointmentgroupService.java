@@ -3,10 +3,11 @@ package com.dvproject.vertTerm.Service;
 import java.security.Principal;
 import java.util.List;
 
-import com.dvproject.vertTerm.Model.Appointment;
-import com.dvproject.vertTerm.Model.Appointmentgroup;
-import com.dvproject.vertTerm.Model.Status;
+import com.dvproject.vertTerm.Model.*;
 
+/**
+ * @author Joshua Müller
+ */
 public interface AppointmentgroupService {
 	// GET
 	List<Appointmentgroup> getAll();
@@ -29,14 +30,15 @@ public interface AppointmentgroupService {
 
 	void canBookAppointments(Principal user, Appointmentgroup appointmentgroup);
 
-	// PUT
+	// PUT / POST
 	String bookAppointmentgroup(String userid, Appointmentgroup appointmentgroup, boolean override);
-
+	
+	//PUT
 	boolean startAppointment(String appointmentid);
 
 	boolean stopAppointment(String appointmentid);
 
-	// delete
+	// DELETE
 	boolean delete(String id);
 	
 	boolean deleteAppointment(String appointmentid, boolean override);

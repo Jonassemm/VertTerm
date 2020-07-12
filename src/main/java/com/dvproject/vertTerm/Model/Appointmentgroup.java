@@ -1,5 +1,6 @@
 package com.dvproject.vertTerm.Model;
 
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -77,6 +78,35 @@ public class Appointmentgroup {
 	public boolean hasDistinctProcedures() {
 		return appointments.stream().map(app -> app.getBookedProcedure().getId()).distinct().count() == appointments
 				.size();
+	}
+
+	private Appointment findLatestAppointment(){
+		Appointment result = this.appointments.get(0);
+		for(Appointment appointment : this.getAppointments()){
+			if(appointment.getPlannedEndtime().after(result.getPlannedEndtime())){
+				result = appointment;
+			}
+		}
+		return result;
+	}
+
+	private Appointment findEarliestAppointment(){
+		Appointment result = this.appointments.get(0);
+		for(Appointment appointment : this.getAppointments()){
+			if(appointment.getPlannedEndtime().before(result.getPlannedEndtime())){
+				result = appointment;
+			}
+		}
+		return result;
+	}
+
+	private boolean allNeededBookablesFound() {
+		for (Appointment appointment : this.getAppointments()){
+			if(!appointment.allNeededBookablesFound()){
+				return false;
+			}
+		}
+		return true;
 	}
 
 	public void testProcedureRelations(boolean override) {
@@ -174,7 +204,7 @@ public class Appointmentgroup {
 
 	private Appointment getOrCreateAppointmentWithProcedure(Procedure procedure, User customer){
 		for(Appointment appointment : this.getAppointments()){
-			if(appointment.getBookedProcedure().equals(procedure)){
+			if(appointment.getBookedProcedure().getId().equals(procedure.getId())){
 				return appointment;
 			}
 		}
@@ -184,6 +214,52 @@ public class Appointmentgroup {
 		appointment.setStatus(AppointmentStatus.OPEN);
 		this.getAppointments().add(appointment);
 		return appointment;
+	}
+
+	private int DaysNeededForAppointments(Appointment appointment1, Appointment appointment2){
+		Calendar calendar = Calendar.getInstance();
+		calendar.setTime(appointment1.getPlannedStarttime());
+		int date1 = calendar.get(Calendar.DATE);
+		calendar.setTime(appointment2.getPlannedEndtime());
+		int date2 = calendar.get(Calendar.DATE);
+		return date2 - date1;
+	}
+
+	public void optimizeForLeastDays(AppointmentService appointmentService, ResourceService resourceService, EmployeeService employeeService, Appointment optimizationStart) {
+		this.optimizeForLeastWaitingTime(appointmentService, resourceService, employeeService, optimizationStart);
+
+		if(!this.allNeededBookablesFound()){
+			return;
+		}
+
+		Date optimum = null;
+		int days = DaysNeededForAppointments(this.findEarliestAppointment(), this.findLatestAppointment());
+		for (int i = 0; i < 10; i++) {
+			Calendar calendar = Calendar.getInstance();
+			calendar.setTime(optimizationStart.getPlannedStarttime());
+			calendar.set(Calendar.HOUR_OF_DAY, 0);
+			calendar.set(Calendar.MINUTE, 0);
+			calendar.set(Calendar.SECOND, 0);
+			optimizationStart.setPlannedStarttime(calendar.getTime());
+
+			this.optimizeForLeastWaitingTime(appointmentService, resourceService, employeeService, optimizationStart);
+
+			int newDays = DaysNeededForAppointments(this.findEarliestAppointment(), this.findLatestAppointment());
+			if(newDays < days && this.allNeededBookablesFound()){
+				optimum = optimizationStart.getPlannedStarttime();
+			}
+		}
+
+		optimizationStart.setPlannedStarttime(optimum);
+		this.optimizeForLeastWaitingTime(appointmentService, resourceService, employeeService, optimizationStart);
+	}
+
+	public void optimizeForLeastWaitingTime(AppointmentService appointmentService, ResourceService resourceService, EmployeeService employeeService, Appointment optimizationStart){
+		this.optimizeAppointmentsForEarliestEnd(appointmentService, resourceService, employeeService, optimizationStart);
+		for (Appointment appointment : this.getAppointments()) {
+			appointment.setStatus(AppointmentStatus.OPEN);
+		}
+		this.optimizeAppointmentsForLatestBeginning(appointmentService, resourceService, employeeService, this.findLatestAppointment());
 	}
 
 	public void optimizeAppointmentsForEarliestEnd(AppointmentService appointmentService, ResourceService resourceService, EmployeeService employeeService, Appointment optimizationStart) {

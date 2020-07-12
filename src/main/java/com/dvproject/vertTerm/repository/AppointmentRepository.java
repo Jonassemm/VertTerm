@@ -13,6 +13,9 @@ import com.dvproject.vertTerm.Model.AppointmentStatus;
 import com.dvproject.vertTerm.Model.Status;
 import com.dvproject.vertTerm.Model.Warning;
 
+/**
+ * @author Joshua Müller
+ */
 public interface AppointmentRepository extends MongoRepository<Appointment, String> {
 	static final String overlapsWithOtherAppointment = "'$or':[{'$and':[{'plannedStarttime' : {'$lte': ?1}}, {'plannedEndtime': {'$gt': ?1}}]}, {'$and':[{'plannedStarttime' : {'$lt': ?2}}, {'plannedEndtime': {'$gte': ?2}}]}, {'$and':[{'plannedStarttime' : {'$gte': ?1}}, {'plannedEndtime': {'$lte': ?2}}]}]";
 

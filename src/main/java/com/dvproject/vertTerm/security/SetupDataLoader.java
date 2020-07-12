@@ -1,10 +1,6 @@
 package com.dvproject.vertTerm.security;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationListener;
@@ -13,30 +9,18 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.dvproject.vertTerm.Model.Availability;
-import com.dvproject.vertTerm.Model.AvailabilityRhythm;
-import com.dvproject.vertTerm.Model.Customer;
-import com.dvproject.vertTerm.Model.Employee;
-import com.dvproject.vertTerm.Model.OpeningHours;
-import com.dvproject.vertTerm.Model.OptionalAttributes;
-import com.dvproject.vertTerm.Model.Right;
-import com.dvproject.vertTerm.Model.Role;
-import com.dvproject.vertTerm.Model.Status;
-import com.dvproject.vertTerm.Model.User;
+import com.dvproject.vertTerm.Model.*;
 import com.dvproject.vertTerm.Service.EmployeeService;
-import com.dvproject.vertTerm.repository.AvailabilityRepository;
-import com.dvproject.vertTerm.repository.CustomerRepository;
-import com.dvproject.vertTerm.repository.OpeningHoursRepository;
-import com.dvproject.vertTerm.repository.OptionalAttributesRepository;
-import com.dvproject.vertTerm.repository.RightRepository;
-import com.dvproject.vertTerm.repository.RoleRepository;
-import com.dvproject.vertTerm.repository.UserRepository;
+import com.dvproject.vertTerm.repository.*;
 
 /**
  * @author Joshua Müller
  */
 @Component
 public class SetupDataLoader implements ApplicationListener<ContextRefreshedEvent> {
+	public static final String ANONYMOUS_ROLE_NAME = "Anonymous_role";
+	public static final String ADMIN_ROLE_NAME = "Admin_role";
+	
 	private boolean alreadySetup = false;
 	private Map<String, Right> rights = new HashMap<>();
 
@@ -74,8 +58,8 @@ public class SetupDataLoader implements ApplicationListener<ContextRefreshedEven
 
 		setupRights();
 
-		Role adminRole = createRoleIfNotFound("Admin_role", setUpAdminRights());
-		Role userRole = createRoleIfNotFound("Anonymous_role", setUpAnonymusUserRights());
+		Role adminRole = createRoleIfNotFound(ADMIN_ROLE_NAME, setUpAdminRights());
+		Role userRole = createRoleIfNotFound(ANONYMOUS_ROLE_NAME, setUpAnonymusUserRights());
 
 		createEmployeeIfNotFound("admin", "password", Arrays.asList(adminRole));
 		createUserIfNotFound("anonymousUser", "password", Arrays.asList(userRole));
@@ -251,6 +235,10 @@ public class SetupDataLoader implements ApplicationListener<ContextRefreshedEven
 		// availability
 		setupRight("OWN_AVAILABILITY_WRITE", "Ändern der eigenen Verfügbarkeiten erlaubt");
 		setupRight("AVAILABILITY_WRITE", "Ändern aller Verfügbarkeiten erlaubt");
+		
+		// opening-hours
+		setupRight("OPENING_HOURS_READ", "Lesen aller Öffnungszeiten erlaubt");
+		setupRight("OPENING_HOURS_WRITE", "Ändern aller Öffnungszeiten erlaubt");
 
 		// appointment
 		setupRight("OWN_APPOINTMENT_READ", "Lesen der eigenen Termine erlaubt");

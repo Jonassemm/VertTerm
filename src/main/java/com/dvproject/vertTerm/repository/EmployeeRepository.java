@@ -11,6 +11,9 @@ import com.dvproject.vertTerm.Model.Employee;
 public interface EmployeeRepository extends MongoRepository<Employee, String>{	
 	static final String employeeTest = "'_class' : 'com.dvproject.vertTerm.Model.Employee'";
 	
+	/**
+	 * @author Joshua Müller
+	 */
 	@Override
 	@Query("{" + employeeTest + "}")
 	List<Employee> findAll();
@@ -24,11 +27,20 @@ public interface EmployeeRepository extends MongoRepository<Employee, String>{
     @Query("{'systemStatus' : 'DELETED', " + employeeTest + "}")
     List<Employee> findAllDeleted();
 	
+    /**
+     * @author Joshua Müller
+     */
     @Query("{'_id' : ?0, " + employeeTest + "}")
     Optional<Employee> findById (String id);
     
+    /**
+     * @author Joshua Müller
+     */
     @Query("{'username' : ?0, " + employeeTest + "}")
     Optional<Employee> findByUsername (String username);
     
+    /**
+     * @author Joshua Müller
+     */
     List<Employee> findByPositionsId(String id);
 }

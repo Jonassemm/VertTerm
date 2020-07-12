@@ -13,7 +13,6 @@ import java.util.stream.Collectors;
 import javax.validation.constraints.NotNull;
 
 import com.dvproject.vertTerm.Service.*;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -203,25 +202,21 @@ public class Appointment implements Serializable {
 	}
 
 	public boolean addWarnings(Warning... warnings) {
-		boolean noWarningAdded = false;
+		boolean warningAdded = false;
 
 		for (Warning warning : warnings) {
-			noWarningAdded |= addWarning(warning);
+			warningAdded |= addWarning(warning);
 		}
 
-		return !noWarningAdded;
+		return warningAdded;
 	}
 
 	public boolean addWarning(Warning warning) {
-		if (!warnings.contains(warning)) { return warnings.add(warning); }
-
-		return false;
+		return !warnings.contains(warning) ? warnings.add(warning) : false;
 	}
 
 	public boolean removeWarning(Warning warning) {
-		if (warnings.contains(warning)) { return warnings.remove(warning); }
-
-		return false;
+		return warnings.contains(warning) ? warnings.remove(warning) : false;
 	}
 
 	public boolean isCustomerIsWaiting() {
@@ -473,7 +468,7 @@ public class Appointment implements Serializable {
 					"An employee already has an appointment in the given time interval", this);
 	}
 
-	private boolean allNeededBookablesFound() {
+	public  boolean allNeededBookablesFound() {
 		for (Position needed : this.getBookedProcedure().getNeededEmployeePositions()) {
 			boolean found = false;
 			for (Employee present : this.getBookedEmployees()) {
@@ -583,6 +578,9 @@ public class Appointment implements Serializable {
 				if (this.getBookedResources().contains(resource)) {
 					continue;
 				}
+				if (resource.getStatus() == Status.ACTIVE) {
+					continue;
+				}
 				resource.populateAppointments(appointmentService);
 				Date temp = resource.getEarliestAvailableDate(this.getPlannedStarttime(),
 						this.getBookedProcedure().getDuration());
@@ -642,6 +640,9 @@ public class Appointment implements Serializable {
 			}
 			for (Employee employee : employeeService.getAll(position.getId())) {
 				if (this.getBookedEmployees().contains(employee)) {
+					continue;
+				}
+				if (employee.getSystemStatus() != Status.ACTIVE) {
 					continue;
 				}
 				employee.populateAppointments(appointmentService);
@@ -730,6 +731,9 @@ public class Appointment implements Serializable {
 				if (this.getBookedResources().contains(resource)) {
 					continue;
 				}
+				if (resource.getStatus() == Status.ACTIVE) {
+					continue;
+				}
 				resource.populateAppointments(appointmentService);
 				Date temp = resource.getLatestAvailableDate(this.getPlannedStarttime(),
 						this.getBookedProcedure().getDuration());
@@ -788,6 +792,9 @@ public class Appointment implements Serializable {
 			}
 			for (Employee employee : employeeService.getAll(position.getId())) {
 				if (this.getBookedEmployees().contains(employee)) {
+					continue;
+				}
+				if (employee.getSystemStatus() != Status.ACTIVE) {
 					continue;
 				}
 				employee.populateAppointments(appointmentService);

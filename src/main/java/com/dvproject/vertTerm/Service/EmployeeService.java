@@ -16,5 +16,5 @@ public interface EmployeeService extends BasicService<Employee>{
     //List<Employee> getAll(Position position);
      List<Availability> getAllAvailabilities(String id);
      boolean isEmployeeAvailableBetween(String id, Date startdate, Date enddate);
-     List<Employee> getActiveEmployeesByPositionId(String positionId);
+     List<Employee>  getEmployeesByPositionIdandStatus(String positionId,Status status);
 }

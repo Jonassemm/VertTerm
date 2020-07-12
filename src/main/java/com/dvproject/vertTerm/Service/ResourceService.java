@@ -23,8 +23,9 @@ public interface ResourceService extends BasicService<Resource> {
 	List<Availability> getAllAvailabilities(String id);
 
 	List<ResourceType> getResourceTypes(String id);
+
+	List<Resource> getResourcesbyResourceTypeandStatus(String RTid,Status status);
 	
-	List<Resource> getActiveResourcesbyResourceType(ResourceType type) ;
 	List<Resource> getResources(String ResTid);
 	
 	//update

@@ -6,6 +6,8 @@ import com.dvproject.vertTerm.Model.User;
 import com.dvproject.vertTerm.repository.RightRepository;
 import com.dvproject.vertTerm.repository.RoleRepository;
 import com.dvproject.vertTerm.repository.UserRepository;
+import com.dvproject.vertTerm.security.SetupDataLoader;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.rest.webmvc.ResourceNotFoundException;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -243,8 +245,8 @@ public class RoleServiceImp implements RoleService {
 	private void testRoleData (Role role) {
 		String roleId = role.getId();
 		String roleName = role.getName();
-		Role adminRole = RoleRepo.findByName("Admin_role");
-		Role anonymousRole = RoleRepo.findByName("Anonymous_role");
+		Role adminRole = RoleRepo.findByName(SetupDataLoader.ADMIN_ROLE_NAME);
+		Role anonymousRole = RoleRepo.findByName(SetupDataLoader.ANONYMOUS_ROLE_NAME);
 		
 		if (roleId.equals(adminRole.getId()) && !roleName.equals(adminRole.getName()))
 			throw new IllegalArgumentException("Can not change the name of the admin-role");

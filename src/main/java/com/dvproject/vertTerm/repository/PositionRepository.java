@@ -8,8 +8,10 @@ import org.springframework.data.mongodb.repository.MongoRepository;
 import com.dvproject.vertTerm.Model.Position;
 import com.dvproject.vertTerm.Model.Status;
 
-public interface PositionRepository extends MongoRepository<Position, String>
-{
+/**
+ * @author Joshua Müller
+ */
+public interface PositionRepository extends MongoRepository<Position, String>{
     Optional<Position> findById (String id);
     
     Position save (Position position);

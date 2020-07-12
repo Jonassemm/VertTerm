@@ -26,6 +26,8 @@ public class ResourceServiceImp extends WarningServiceImpl implements ResourceSe
 	@Autowired
 	private AvailabilityServiceImpl availabilityService;
 	@Autowired
+	private ResourceTypeService  RestypeService;
+	@Autowired
 	private AppointmentService appointmentService;
 
 	// @PreAuthorize("hasAuthority('RESOURCE_READ')")
@@ -78,11 +80,8 @@ public class ResourceServiceImp extends WarningServiceImpl implements ResourceSe
 			testCorrectDependencies(res);
 			availabilityService.loadAllAvailabilitiesOfEntity(res.getAvailabilities(), res, this);
 			res.setName(capitalize(res.getName()));
-
-			retVal                = ResRepo.save(res);
-
+			retVal = ResRepo.save(res);
 			testWarningsFor(resId);
-
 			return retVal;
 		} else {
 			throw new ResourceNotFoundException("Resource with the given id :" + res.getId() + "not found");
@@ -195,19 +194,21 @@ public class ResourceServiceImp extends WarningServiceImpl implements ResourceSe
 		return Resources;
 	}
 
+
 	// @PreAuthorize("hasAuthority('RESOURCE_READ')")
-	public List<Resource> getActiveResourcesbyResourceType(ResourceType type) {
-		// get all Active resources from type
-		List<Resource> Resources = new ArrayList<>();
-		List<Resource> AllResources = this.getAll(type);
-		for (Resource res : AllResources) {
-			if (res.getStatus().equals(Status.ACTIVE)) {
-				if (!Resources.contains(res))
-					Resources.add(res);
+		public List<Resource> getResourcesbyResourceTypeandStatus(String RTid,Status status) {
+			// get all resources of a specific resource type and status
+			List<Resource> Resources = new ArrayList<>();
+			ResourceType type= RestypeService.getById(RTid);
+			List<Resource> AllResources = this.getAll(type);
+			for (Resource res : AllResources) {
+				if (res.getStatus().equals(status)) {
+					if (!Resources.contains(res))
+						Resources.add(res);
+				}
 			}
+			return Resources;
 		}
-		return Resources;
-	}
 
 	// @PreAuthorize("hasAuthority('RESOURCE_READ')")
 	public boolean isResourceAvailableBetween(String id, Date startdate, Date enddate) {
