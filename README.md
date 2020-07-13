@@ -1,9 +1,22 @@
 # VertTerm
 DV-Projekt Verteilte- Termin und Ressourcenplanung
 
+#Prerequisites
+MongoDb,
+Maven,
+JavaSDK 11, 
+recommended: an IDE like IntelliJ or Eclipse
+
+The needed structures for the MongoDB are self-initializing.
+
+# Compile and run backend
+To compile and run the program, run "mvn spring-boot:run".
+
+#Run backend
+If a new compile is unnecessary, the application can be started with "mvn spring.boot:start".
+
 # Run only frontend
 /ReactApp> npm start
-
 
 # Test frontend with backend
 Run frontend: /ReactApp> npm start
