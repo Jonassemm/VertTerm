@@ -16,7 +16,7 @@ function PositionPage({userStore}) {
     //----------------------------------LOAD-------------------------------
     const loadPositions = async () => {
         try{ 
-          const {data} = await getPositions("notdeleted");
+          const {data} = await getPositions("NOTDELETED");
           setPositions(data);
         }catch (error) {
           console.log(Object.keys(error), error.message)

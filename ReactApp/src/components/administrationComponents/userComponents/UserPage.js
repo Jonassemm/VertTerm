@@ -35,6 +35,7 @@ export default function UserPage({ userStore, userType }) {
                     const CustomerData = await getCustomers("NOTDELETED");
                     response = CustomerData.data
             }
+            console.log(response)
             setUserList(response)
         } catch (error) {
             console.log(Object.keys(error), error.message)
