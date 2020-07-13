@@ -24,7 +24,8 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-//author Amar Alkhankan
+
+/** author Amar Alkhankan **/
 @RestController
 @RequestMapping(value= "/OptionalAttributes")
 public class OptionalAttributesController {

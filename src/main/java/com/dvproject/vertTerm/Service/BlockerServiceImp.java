@@ -14,17 +14,20 @@ import com.dvproject.vertTerm.Model.Employee;
 import com.dvproject.vertTerm.Model.NormalBookingTester;
 import com.dvproject.vertTerm.Model.OverrideBookingTester;
 import com.dvproject.vertTerm.Model.Resource;
+import com.dvproject.vertTerm.Model.TimeInterval;
 import com.dvproject.vertTerm.Model.Warning;
 import com.dvproject.vertTerm.exception.AppointmentException;
 import com.dvproject.vertTerm.exception.AppointmentTimeException;
 import com.dvproject.vertTerm.repository.AppointmentRepository;
 import com.dvproject.vertTerm.repository.BlockerRepository;
 
+import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
-//author Amar Alkhankan
+/** author Amar Alkhankan **/
 @Service
 @Transactional
 public class BlockerServiceImp implements BlockerService {
@@ -38,30 +41,33 @@ public class BlockerServiceImp implements BlockerService {
 	private AppointmentService appointmentService;
 	@Autowired
 	private AppointmentServiceImpl appointmentServiceImp;
+	
 
 	// @PreAuthorize("hasAuthority('')")
 	public Blocker create(Blocker blocker) {
-		// create new blocker if not exist
-//		if (blocker.getName() != null || blocker.getName().equals("")) 
-//		blocker.setName(capitalize(blocker.getName()));
+		// create new blocker 
+		
+		// Test blocker Start-Time and End-Time 
+		if (blocker.getPlannedStarttime().after(blocker.getPlannedEndtime()))
+			throw new ResourceNotFoundException("The planned starttime is after the planned endtime");
+		if (blocker.getPlannedStarttime().before(Date.from(Instant.now())))
+			throw new ResourceNotFoundException("The planned starttime is in the past");	
+		
 		blockerRepo.save(blocker);
 		SetOrRemoveWarningFlag(blocker.getId(), "SET");
 		return blocker;
-
-//			else {
-//			throw new ResourceNotFoundException(
-//					"Blocker with the given name :" + blocker.getName() + " already exsist");
-//		}
 
 	}
 
 	public void SetOrRemoveWarningFlag(String id, String SetorRemove) {
 		// get Blocker by ID from DB
 		Optional<Blocker> BlockerDb = this.blockerRepo.findById(id);
+
 		// if Blocker exists
 		if (BlockerDb.isPresent()) {
 			Blocker blocker = BlockerDb.get();
 			List<Appointment> appointments = new ArrayList<>();
+		
 			// for each employee in Blocker's BookedEmployees List
 			// get all appointments from the employee in the time interval of the blocker
 			// and add them to the appointments-List

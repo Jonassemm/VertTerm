@@ -14,8 +14,8 @@ import org.springframework.stereotype.Service;
 import com.dvproject.vertTerm.repository.RessourceRepository;
 import com.dvproject.vertTerm.repository.RestrictionRepository;
 
-//author Amar Alkhankan 
-//testCorrectDependencies Methode ?
+
+/**  author Amar Alkhankan  **/
 @Service
 public class ResourceServiceImp extends WarningServiceImpl implements ResourceService, AvailabilityService {
 

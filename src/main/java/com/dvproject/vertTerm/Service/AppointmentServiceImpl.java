@@ -18,6 +18,9 @@ import java.util.stream.Collectors;
 
 import org.bson.types.ObjectId;
 
+
+/** nur Methode "getAvailableResourcesAndEmployees" : author Amar Alkhankan  **/
+
 @Service
 public class AppointmentServiceImpl implements AppointmentService {
 
@@ -120,6 +123,7 @@ public class AppointmentServiceImpl implements AppointmentService {
 		return getById(id).getStatus() == AppointmentStatus.DELETED;
 	}
 
+	/** author Amar Alkhankan  **/
 	public Appointmentgroup getAvailableResourcesAndEmployees(Appointmentgroup group) {
 		List<Employee> Employees = new ArrayList<>();
 		List<Resource> Resources = new ArrayList<>();

@@ -14,6 +14,7 @@ public interface AppointmentService extends BasicService<Appointment> {
 	// GET
 	List<Appointment> getAll(Bookable bookable);
 
+	/** author Amar Alkhankan **/
 	// Buchungoption2 get available Resources and Employees
 	public Appointmentgroup getAvailableResourcesAndEmployees(Appointmentgroup group);
 

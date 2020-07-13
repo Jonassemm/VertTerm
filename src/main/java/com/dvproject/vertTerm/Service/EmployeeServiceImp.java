@@ -18,6 +18,8 @@ import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
+/** nur Methode "getEmployeesByPositionIdandStatus" und "capitalize" : author Amar Alkhankan  **/
+
 @Service
 public class EmployeeServiceImp extends WarningServiceImpl implements EmployeeService, AvailabilityService {
 
@@ -55,6 +57,7 @@ public class EmployeeServiceImp extends WarningServiceImpl implements EmployeeSe
 		return (users);
 	}
 
+	/** author Amar Alkhankan  **/
 	public List<Employee> getEmployeesByPositionIdandStatus(String positionId,Status status) {
 
 		//get all Active Employees from position 
@@ -189,6 +192,7 @@ public class EmployeeServiceImp extends WarningServiceImpl implements EmployeeSe
 		return availabilityService.isAvailable(Emp.getAvailabilities(), startdate, enddate);
 	}
 
+	//author Amar Alkhankan
 	public static String capitalize(String str) {
 		if (str == null)
 			return str;

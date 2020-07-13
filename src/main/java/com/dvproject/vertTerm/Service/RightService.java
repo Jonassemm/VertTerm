@@ -5,7 +5,8 @@ import com.dvproject.vertTerm.Model.User;
 
 import java.util.List;
 
-//author Amar Alkhankan
+
+/**  author Amar Alkhankan  **/
 public interface RightService {
 
 		
