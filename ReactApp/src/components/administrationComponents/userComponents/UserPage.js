@@ -5,9 +5,9 @@ import UserForm from "./UserForm"
 import {ExceptionModal} from "../../ExceptionModal"
 
 import {
-    getEmployeeList,
-    getCustomerList
-  } from "./UserRequests";
+    getEmployees,
+    getCustomers
+} from "../../requests"
 
 
 export default function UserPage({userStore, userType}) {
@@ -33,7 +33,7 @@ export default function UserPage({userStore, userType}) {
         switch(userType) {
             case "employee":
                 try {
-                    const response = await getEmployeeList();
+                    const response = await getEmployees();
                     data = response.data.map(user => {
                         return {
                             ...user,
@@ -45,7 +45,7 @@ export default function UserPage({userStore, userType}) {
             break;
             case "customer":
                 try {
-                    const response = await getCustomerList();
+                    const response = await getCustomers();
                     data = response.data.map(user => {
                         return {
                             ...user,
