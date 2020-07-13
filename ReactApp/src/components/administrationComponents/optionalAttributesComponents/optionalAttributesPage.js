@@ -1,6 +1,6 @@
 //author: Patrick Venturini
 import React, { useState, useEffect } from "react"
-import {getAllOptionalAttributes} from "./optionalAttributesRequests"
+import {getOptionalAttributes} from  "../../requests"
 import OptionalAttributesForm from "./optionalAttributesForm"
 import OverviewPage from "../../OverviewPage"
 
@@ -16,14 +16,13 @@ function optionalAttributesPage({userStore}) {
 
     //----------------------------------------LOAD-----------------------------------
     const loadOptionalAttributes = async () => {
-        var data = [];
         try{ 
-          const response = await getAllOptionalAttributes();
-          data = response.data;
+          const {data} = await getOptionalAttributes();
+          setOptionalAttributeLists(data)
         }catch (error) {
           console.log(Object.keys(error), error.message)
         }
-        setOptionalAttributeLists(data)
+      
     };
 
 

@@ -2,9 +2,8 @@
 import React, { useState, useEffect } from "react"
 import OverviewPage, {modalTypes} from "../../OverviewPage"
 import ResourceForm from "./ResourceForm"
-import {getAllResources} from "./ResourceRequests"
+import {getResources} from "../../requests"
 import {ExceptionModal} from "../../ExceptionModal"
-
 
 function ResourcePage({userStore}) {
     const [resources, setResources] = useState([])
@@ -26,24 +25,13 @@ function ResourcePage({userStore}) {
 
     //---------------------------------LOAD-----------------------------------
     const loadResources= async () => {
-        var data = [];
         try{ 
-            const response = await getAllResources();
-            data = response.data;
+            const {data} = await getResources("NOTDELETED");
+            setResources(data);
         }catch (error) {
             console.log(Object.keys(error), error.message)
         }
-        
-        //don't save object with status="deleted"
-        var reducedData = []
-        data.map((singleResource) => {
-            if(singleResource.status != "deleted") {
-                reducedData.push(singleResource)
-            }
-          })
-        setResources(reducedData);
     }
-
 
     //------------------------OverviewPage-Components--------------------------
     const tableBody =

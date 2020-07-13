@@ -291,7 +291,6 @@ export default function AppointmentPage({calendarStore, userStore}) {
             }
         }
 
-
         //don't save object with status="deleted"
         var reducedData = []
         if(response.data != undefined) {
@@ -301,8 +300,6 @@ export default function AppointmentPage({calendarStore, userStore}) {
                 }
             })
         }
-
-
 
         //prepare response for calendar
         const evts = reducedData.map(item => {

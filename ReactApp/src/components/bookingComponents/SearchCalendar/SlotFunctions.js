@@ -1,5 +1,5 @@
 'use strict'
-
+//author: Jonas Semmler
 import moment from "moment"
 
 export function checkSlotTouch(Slot1, Slot2) {

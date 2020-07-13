@@ -3,8 +3,8 @@ import React ,{useState, useEffect, useRef} from 'react'
 import Availability from "../availabilityComponents/Availability"
 import {Style} from "../../OverviewPage"
 import { Container, Row, Col, Button, Table, Modal } from "react-bootstrap"
-import {getOpeningHours, updateOpeningHours} from "./OpeningHoursRequests"
-
+import {updateOpeningHours} from "./OpeningHoursRequests"
+import {getOpeningHours} from "../../requests"
 
 export default function OpeningHoursPage ({userStore}) {
     const [edited, setEdited] = useState(false)

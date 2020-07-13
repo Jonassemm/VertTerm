@@ -1,3 +1,4 @@
+//author: Jonas Semmler
 import React, { Component } from 'react'
 
 export default class Arrow extends Component {

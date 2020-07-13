@@ -1,5 +1,6 @@
+//author: Jonas Semmler
 import React, { Suspense, useEffect } from 'react';
-import { HashRouter as Router, Switch, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Switch, Route } from 'react-router-dom';
 import { hasRight } from "./auth"
 import { managementRights, ownAppointmentRights, appointmentRights } from "./components/Rights"
 import { observer } from "mobx-react"
@@ -12,13 +13,11 @@ import NavBar from './components/navigationComponents/NavBar'
 import Footer from './components/navigationComponents/Footer';
 // preloaded pages
 import Home from "./components/Home"
-import BookingForm from "./components/calendarComponents/BookingForm"
+import BookingForm from "./components/bookingComponents/BookingForm"
 import AdminPage from "./components/navigationComponents/AdminPage"
 import AppointmentPage from "./components/appointmentComponents/AppointmentPage"
 import AppointmentWarningPage from "./components/administrationComponents/appointmentWarningComponents/AppointmentWarningPage"
-import { TestComponent } from './components/TestComponent';
-import AppointmentQR from './components/calendarComponents/AppointmentQR';
-import AnonymousLogin from './components/navigationComponents/AnonymousLogin';
+import AppointmentQR from './components/bookingComponents/QRCode';
 import { getCurrentUser } from "./components/requests"
 
 export default observer(function App({ userStore, calendarStore }) {
@@ -30,10 +29,10 @@ export default observer(function App({ userStore, calendarStore }) {
       userStore.setLoggedIn(true)
     }
   }
-  
+
   useEffect(() => {
     refreshLogin()
-  },[])
+  }, [])
 
   return (
     <Router>
@@ -57,8 +56,6 @@ export default observer(function App({ userStore, calendarStore }) {
             {hasRight(userStore, ownAppointmentRights.concat(appointmentRights)) &&
               <Route exact path="/warning/:initialWarning" component={(initialWarning) => <AppointmentWarningPage userStore={userStore} warning={initialWarning.match.params.initialWarning} />} />
             }
-            <Route exact path="/test" component={TestComponent} />
-            <Route exact path="/apts/:credString" component={(credString) => <AnonymousLogin userStore={userStore} credString={credString.match.params.credString} />} />
             <Route exact path="/qr" component={AppointmentQR} />
           </Switch>
         </div>
