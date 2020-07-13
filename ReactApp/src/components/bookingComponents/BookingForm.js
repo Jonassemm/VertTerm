@@ -6,7 +6,7 @@ import { Container, Form, Col, Row, Button, Modal, Spinner } from "react-bootstr
 import ObjectPicker from "../ObjectPicker"
 import "./BookingForm.css"
 import DatePicker from "react-datepicker"
-import { addAppointmentGroup, addAppointmentGroupAnyOverride, addAppointmentGroupOverride,getAppointmentGroupByApt,editAppointmentGroup, editAppointmentGroupOverride, addAppointmentGroupAny, getAppointment, searchAppointmentGroup, addBlocker, OptimizeEarlyEnd } from "../requests"
+import { addAppointmentGroup, addAppointmentGroupAnyOverride, addAppointmentGroupOverride,getAppointmentGroupByApt,editAppointmentGroup, editAppointmentGroupOverride, addAppointmentGroupAny, getAppointment, searchAppointmentGroup, addBlocker, OptimizeEarlyEnd } from "./bookingRequests"
 import { useHistory } from "react-router-dom"
 import { getErrorMessage } from "./bookingErrors"
 import SearchAptCalendar from "./SearchCalendar/SearchAptCalendar"
@@ -283,7 +283,7 @@ function BookingForm({editData,userStore}) {
 
     async function optimizeAppointment() {
         const aptGroup = buildFinalData()
-        const res = await OptimizeEarlyEnd(aptGroup)
+        const res = await OptimizeEarlyEnd(aptGroup,0)
     }
 
     async function searchAppointment() {
