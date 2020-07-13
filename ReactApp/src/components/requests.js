@@ -1,9 +1,6 @@
+//author: Jonas Semmler
 import axios from "axios"
 import { APIURL } from "../APIConfig"
-import { getRoles } from "./administrationComponents/roleComponents/RoleRequests"
-import { getAllPositions } from "./administrationComponents/positionComponents/PositionRequests"
-import { getAllResourceTypes } from "./administrationComponents/resourceTypeComponents/ResourceTypeRequests"
-import { getAllRestrictions } from "./administrationComponents/restrictionComponents/RestrictionRequests"
 
 export const getAppointment = (id) => axios.get(`${APIURL}/api/Appointments/${id}`)
 export const addBlocker = data => axios.post(`${APIURL}/api/Blocker`, data)
@@ -23,6 +20,15 @@ function filterDeleted(list) {
     return { data: list.data.filter(item => item.status != "deleted") }
 }
 
+//Optional Attributes
+export const getOptionalAttributes = () => axios.get(`${APIURL}/api/OptionalAttributes`)
+
+//Opening Hours API Calls
+export const getOpeningHours = () => axios.get(`${APIURL}/api/OpeningHours/`)
+
+//Waring API CAlls
+export const getAllAppointmentWarnings = () => axios.get(`${APIURL}/api/Appointments/warnings`)
+
 //User API calls
 export const getCurrentUser = () => axios.get(`${APIURL}/api/Users/Own`)
 export const getUsers = async (status) => {
@@ -33,20 +39,32 @@ export const getUsers = async (status) => {
     return axios.get(`${APIURL}/api/Customers`)
 }
 export const getCustomers = (status) => {
-    if (status) return axios.get(`${APIURL}/api/Customers?status=${status}`)
+    if (status) {
+        if(status == "NOTDELETED") return filterDeleted(axios.get(`${APIURL}/api/Customers`))
+        return axios.get(`${APIURL}/api/Customers?status=${status}`)
+    }
     return axios.get(`${APIURL}/api/Customers`)
 }
 export const getEmployees = (status, filter) => {
-    if (status && !filter) return axios.get(`${APIURL}/api/Employees?status=${status}`)
+    if (status && !filter)
+        if (status != "NOTDELETED") return axios.get(`${APIURL}/api/Employees?status=${status}`)
+        else return filterDeleted(axios.get(`${APIURL}/api/Employees`))
     if (filter && !status) return axios.get(`${APIURL}/api/Employees?position=${filter}`)
-    if (filter && status) return axios.get(`${APIURL}/api/Employees?status=${status}?position=${filter}`)
+    if (filter && status) 
+        if(status != "NOTDELETED") return axios.get(`${APIURL}/api/Employees?status=${status}?position=${filter}`)
+        else return filterDeleted(axios.get(`${APIURL}/api/Employees?position=${filter}`))
     return axios.get(`${APIURL}/api/Employees`)
 }
 
-//pass through other API Calls
-export { getRoles }
-export { getAllPositions }
-export { getAllRestrictions }
+//Role/Right API Calls
+export const getRights = () => axios.get(`${APIURL}/api/Rights/`)
+export const getRoles = (status) => {
+    if(status == "NOTDELETED") return filterDeleted(axios.get(`${APIURL}/api/Roles`))
+    return axios.get(`${APIURL}/api/Roles`)
+}
+
+//Restriciton API Calls
+export const getRestrictions = () => axios.get(`${APIURL}/api/Restrictions`)
 
 //Position API Calls
 export const getPositions = async (status) => {
@@ -71,6 +89,7 @@ export const getResources = (status, type) => {
     if (status && type) return axios.get(`${APIURL}/api/Resources/restyp/${type}`)
     return axios.get(`${APIURL}/api/Resources`)
 }
+export const getConsumables = () => axios.get(`${APIURL}/api/Consumables`)
 
 //Procedure API Calls
 export const getProcedures = async (status) => {

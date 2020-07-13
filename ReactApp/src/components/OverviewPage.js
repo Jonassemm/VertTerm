@@ -1,3 +1,4 @@
+//author: Jonas Semmler, Patrick Venturini
 import React, { useState } from "react"
 import styled from "styled-components"
 import { Container, Row, Col, Button, Table, Modal } from "react-bootstrap"

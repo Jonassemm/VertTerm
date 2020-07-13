@@ -14,9 +14,7 @@ import {
   updateCustomer,
   deleteCustomer
 } from "./UserRequests";
-import {
-  getAllOptionalAttributes
-} from "../optionalAttributesComponents/optionalAttributesRequests"
+import {getOptionalAttributes} from "../../requests"
 
 
 function UserForm({onCancel, 
@@ -212,7 +210,7 @@ function UserForm({onCancel,
   const loadOptionalAttributes = async () => {
     var data = [];
     try{ 
-      const response = await getAllOptionalAttributes();
+      const response = await getOptionalAttributes();
       data = response.data;
     }catch (error) {
       console.log(Object.keys(error), error.message)

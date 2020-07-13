@@ -1,24 +1,19 @@
 //author: Patrick Venturini
-import React, {useState, useEffect} from 'react'
-import OverviewPage, {modalTypes} from "../../OverviewPage"
+import React, { useState, useEffect } from 'react'
+import OverviewPage, { modalTypes } from "../../OverviewPage"
 import UserForm from "./UserForm"
-import {ExceptionModal} from "../../ExceptionModal"
+import { ExceptionModal } from "../../ExceptionModal"
+import { getEmployees, getCustomers } from "../../requests";
 
-import {
-    getEmployees,
-    getCustomers
-} from "../../requests"
-
-
-export default function UserPage({userStore, userType}) {
+export default function UserPage({ userStore, userType }) {
     const [userList, setUserList] = useState([])
     const [exception, setException] = useState(null)
     const [showExceptionModal, setShowExceptionModal] = useState(false)
 
 
-    useEffect( () => {
+    useEffect(() => {
         loadUserList()
-    },[])
+    }, [])
 
 
     const handleExceptionChange = (newException) => {
@@ -29,59 +24,38 @@ export default function UserPage({userStore, userType}) {
 
     //---------------------------------LOAD---------------------------------
     const loadUserList = async () => {
-        var data = []
-        switch(userType) {
-            case "employee":
-                try {
-                    const response = await getEmployees();
-                    data = response.data.map(user => {
-                        return {
-                            ...user,
-                        }
-                    })
-                }catch (error) {
-                    console.log(Object.keys(error), error.message)
-                }
-            break;
-            case "customer":
-                try {
-                    const response = await getCustomers();
-                    data = response.data.map(user => {
-                        return {
-                            ...user,
-                        }
-                    })
-                }catch (error) {
-                    console.log(Object.keys(error), error.message)
-                }
-            break;
-          }
-
-        //don't save object with status="deleted"
-        var reducedData = []
-        data.map((singleUser) => {
-            if(singleUser.systemStatus != "deleted") {
-                reducedData.push(singleUser)
+        var response = []
+        try {
+            switch (userType) {
+                case "employee":
+                    const EmployeeData = await getEmployees("NOTDELETED");
+                    response = EmployeeData.data
+                    break;
+                case "customer":
+                    const CustomerData = await getCustomers("NOTDELETED");
+                    response = CustomerData.data
             }
-        })
-        setUserList(reducedData)
+            setUserList(response)
+        } catch (error) {
+            console.log(Object.keys(error), error.message)
+        }
     }
 
 
     //------------------------OverviewPage-Components-----------------------
-    const tableBody = 
-        userList.map((item, index) => { 
+    const tableBody =
+        userList.map((item, index) => {
             var status //translated status
-            switch(item.systemStatus) {
+            switch (item.systemStatus) {
                 case "active":
                     status = "Aktiviert"
-                break;
+                    break;
                 case "inactive":
                     status = "Deaktiviert"
-                break;
+                    break;
                 case "deleted":
                     status = "Gelöscht"
-                break;
+                    break;
                 default: status = "UNDIFINED"
             }
             return ([
@@ -94,70 +68,41 @@ export default function UserPage({userStore, userType}) {
         })
 
 
-    const modalEmployee = (onCancel,edit,selectedItem) => {
+    const modal = (onCancel, edit, selectedItem) => {
         return (
-            <UserForm //EmployeeForm
+            <UserForm
                 onCancel={onCancel}
                 edit={edit}
                 selected={selectedItem}
-                type={"employee"}
+                type={userType == "employee" ? "employee" : "customer"}
                 setException={handleExceptionChange}
                 userStore={userStore}
             />
         )
     }
-
-
-    const modalCustomer = (onCancel,edit,selectedItem) => {
-        return (
-            <UserForm //CustomerForm
-                onCancel={onCancel}
-                edit={edit}
-                selected={selectedItem}
-                type={"customer"}
-                setException={handleExceptionChange}
-                userStore={userStore}
-            />
-        )
-    }
-
 
     return (
         <React.Fragment>
-            {exception != null && 
+            <OverviewPage
+                pageTitle={userType == "employee" ? "Mitarbeiter" : "Kunden"}
+                newItemText={userType == "employee" ? "Neuer Mitarbeiter" : "Neuer Kunde"}
+                tableHeader={["#", "Benutzername", "Nachname", "Vorname", "Status"]}
+                tableBody={tableBody}
+                modal={modal}
+                data={userList}
+                modalSize="xl"
+                refreshData={loadUserList}
+                userStore={userStore}
+                modalType={modalTypes.user}
+            />
+            {exception != null &&
                 <ExceptionModal
-                    showExceptionModal={showExceptionModal} 
-                    setShowExceptionModal={setShowExceptionModal} 
+                    showExceptionModal={showExceptionModal}
+                    setShowExceptionModal={setShowExceptionModal}
                     exception={exception}
                     warning={"AvailabilityWarning"}
                 />
             }
-            {userType == "employee" ? 
-                <OverviewPage
-                    pageTitle="Mitarbeiter"
-                    newItemText="Neuer Mitarbeiter"
-                    tableHeader={["#", "Benutzername", "Nachname", "Vorname", "Status"]}
-                    tableBody={tableBody}
-                    modal={modalEmployee}
-                    data={userList}
-                    modalSize="xl"
-                    refreshData={loadUserList}
-                    userStore={userStore}
-                    modalType={modalTypes.user}
-                /> :
-                <OverviewPage
-                    pageTitle="Kunden"
-                    newItemText="Neuer Kunde"
-                    tableHeader={["#", "Benutzername", "Nachname", "Vorname", "Status"]}
-                    tableBody={tableBody}
-                    modal={modalCustomer}
-                    data={userList}
-                    modalSize="xl"
-                    refreshData={loadUserList}
-                    userStore={userStore}
-                    modalType={modalTypes.user}
-                />
-            }
         </React.Fragment>
-   )
+    )
 }

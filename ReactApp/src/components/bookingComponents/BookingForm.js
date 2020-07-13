@@ -10,7 +10,7 @@ import { addAppointmentGroup, addAppointmentGroupAnyOverride, addAppointmentGrou
 import { useHistory } from "react-router-dom"
 import { getErrorMessage } from "./bookingErrors"
 import SearchAptCalendar from "./SearchCalendar/SearchAptCalendar"
-import AppointmentQR from "./AppointmentQR"
+import QRCode from "./QRCode"
 import BlockerForm from "./BlockerForm"
 
 const localizer = momentLocalizer(moment)
@@ -643,7 +643,7 @@ function BookingForm({editData,userStore}) {
                         }
                         {showMode &&
                             <Col>
-                                <AppointmentQR userStore={userStore} cred={QRCred}/>      
+                                <QRCode userStore={userStore} cred={QRCred}/>      
                             </Col>
                         }
                     </Row>

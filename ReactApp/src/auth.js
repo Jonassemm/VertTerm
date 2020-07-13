@@ -1,3 +1,4 @@
+//author: Jonas Semmler
 export const isAuthenticated = userID => !!userID;
 
 export const hasRight = (userStore, rights) => {

@@ -1,9 +1,10 @@
+//author: Jonas Semmler
 import React from "react"
 import { APIURL } from "../../APIConfig"
 import QRCode from "qrcode.react"
 import { Container, Card } from "react-bootstrap"
 
-export default function AppointmentQR({cred,userStore}) {
+export default function QRCode({cred,userStore}) {
     const credString = cred
     //const link = APIURL + `/apts/${credString}`
     const link = `${APIURL}/api/${credString}`
