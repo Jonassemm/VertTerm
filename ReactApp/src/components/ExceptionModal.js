@@ -1,7 +1,7 @@
 //author: Patrick Venturini
 import React from 'react'
 import {Form, Col, Button, Modal} from "react-bootstrap"
-import {getErrorMessage} from "./calendarComponents/bookingErrors"
+import {getErrorMessage} from "./bookingComponents/bookingErrors"
 import {Link} from 'react-router-dom';
 
 /*================================USAGE===========================*/
