@@ -28,7 +28,7 @@ public class SetupDataLoader implements ApplicationListener<ContextRefreshedEven
 	private UserRepository userRepository;
 
 	@Autowired
-	private EmployeeService employeeService;
+	private EmployeeRepository employeeService;
 
 	@Autowired
 	private CustomerRepository customerRepository;
@@ -156,7 +156,7 @@ public class SetupDataLoader implements ApplicationListener<ContextRefreshedEven
 
 	@Transactional
 	private Employee createEmployeeIfNotFound(String username, String password, List<Role> roles) {
-		Employee user = employeeService.getByUsername(username);
+		Employee user = employeeService.findByUsername(username).orElse(null);
 
 		if (user == null) {
 			user = new Employee();

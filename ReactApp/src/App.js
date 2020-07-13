@@ -18,7 +18,6 @@ import AdminPage from "./components/navigationComponents/AdminPage"
 import AppointmentPage from "./components/appointmentComponents/AppointmentPage"
 import AppointmentWarningPage from "./components/administrationComponents/appointmentWarningComponents/AppointmentWarningPage"
 import AppointmentQR from './components/bookingComponents/QRCode';
-//import AnonymousLogin from './components/navigationComponents/AnonymousLogin';
 import { getCurrentUser } from "./components/requests"
 
 export default observer(function App({ userStore, calendarStore }) {
@@ -30,10 +29,10 @@ export default observer(function App({ userStore, calendarStore }) {
       userStore.setLoggedIn(true)
     }
   }
-  
+
   useEffect(() => {
     refreshLogin()
-  },[])
+  }, [])
 
   return (
     <Router>
@@ -57,7 +56,6 @@ export default observer(function App({ userStore, calendarStore }) {
             {hasRight(userStore, ownAppointmentRights.concat(appointmentRights)) &&
               <Route exact path="/warning/:initialWarning" component={(initialWarning) => <AppointmentWarningPage userStore={userStore} warning={initialWarning.match.params.initialWarning} />} />
             }
-            {/* <Route exact path="/apts/:credString" component={(credString) => <AnonymousLogin userStore={userStore} credString={credString.match.params.credString} />} /> */}
             <Route exact path="/qr" component={AppointmentQR} />
           </Switch>
         </div>

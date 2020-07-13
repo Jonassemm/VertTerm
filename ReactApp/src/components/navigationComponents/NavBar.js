@@ -6,9 +6,6 @@ import LoginForm from "./LoginForm"
 import { observer } from "mobx-react"
 import { hasRight, hasRole } from "../../auth"
 import { managementRights, ownAppointmentRights, appointmentRights, adminRole } from "../Rights"
-//import "./toastStyles.css"
-
-
 
 function NavBar({ userStore }) {
     function getToastStyle(type) {
