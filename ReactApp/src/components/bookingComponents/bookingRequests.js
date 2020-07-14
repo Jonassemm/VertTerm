@@ -19,4 +19,8 @@ export const editAppointmentGroupOverride = (data, userID) => axios.put(`${APIUR
 export const searchAppointmentGroup = (data) => axios.post(`${APIURL}/api/Appointments/ResEmp`, data)
 
 export const getAppointment = (id) => axios.get(`${APIURL}/api/Appointments/${id}`)
+
+//Blocker API Calls 
 export const addBlocker = data => axios.post(`${APIURL}/api/Blocker`, data)
+export const editBlocker = (data, id) => axios.put(`${APIURL}/api/Blocker/${id}`, data)
+export const isBlocker = id => axios.get(`${APIURL}/api/Blocker/exists/${id}`)

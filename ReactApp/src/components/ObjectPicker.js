@@ -95,7 +95,6 @@ const ObjectPicker = forwardRef((props, ref) => {
             case 'customer': res = await getCustomers(status); break;
             case 'employee': res = await getEmployees(status,filter); break;
         }
-        console.log(res)
         //attach labelKey
         const result = res.data.map(item => {
             return {
