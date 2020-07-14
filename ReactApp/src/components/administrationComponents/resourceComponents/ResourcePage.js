@@ -5,6 +5,7 @@ import ResourceForm from "./ResourceForm"
 import {getResources} from "../../requests"
 import {ExceptionModal} from "../../ExceptionModal"
 
+
 function ResourcePage({userStore}) {
     const [resources, setResources] = useState([])
     const [exception, setException] = useState(null)

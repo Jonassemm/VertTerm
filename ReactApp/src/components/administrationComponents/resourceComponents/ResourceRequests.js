@@ -7,7 +7,6 @@ export const addResource = data => axios.post(`${APIURL}/api/Resources`,data)
 export const deleteResource = id => axios.delete(`${APIURL}/api/Resources/${id}`)
 export const editResource = (id, data) => axios.put(`${APIURL}/api/Resources/${id}`,data)
 
-
 //Consumables
 export const addConsumable = data => axios.post(`${APIURL}/api/Consumables`,data)
 export const deleteConsumable = id => axios.delete(`${APIURL}/api/Consumables/${id}`)

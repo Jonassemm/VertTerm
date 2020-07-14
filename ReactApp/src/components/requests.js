@@ -14,7 +14,9 @@ export const getOptionalAttributes = () => axios.get(`${APIURL}/api/OptionalAttr
 export const getOpeningHours = () => axios.get(`${APIURL}/api/OpeningHours/`)
 
 //Waring API CAlls
-export const getAllAppointmentWarnings = () => axios.get(`${APIURL}/api/Appointments/warnings`)
+export const getAllAppointmentsWithWarnings = () => axios.get(`${APIURL}/api/Appointments/warnings`)
+export const getAppointmentWithWarning = (warningList) => axios.get(`${APIURL}/api/Appointments/warnings?warnings=${warningList}`)
+
 
 //User API calls
 export const getCurrentUser = () => axios.get(`${APIURL}/api/Users/Own`)

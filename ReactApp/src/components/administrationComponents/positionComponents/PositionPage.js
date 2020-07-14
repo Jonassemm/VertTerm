@@ -1,8 +1,9 @@
 //author: Patrick Venturini
 import React, { useState, useEffect } from "react"
-import {getPositions } from "../../requests"
+import {getPositions} from "../../requests"
 import PositionForm from "./PositionForm"
 import OverviewPage, {modalTypes} from "../../OverviewPage"
+
 
 function PositionPage({userStore}) {
     const [positions, setPositions] = useState([])

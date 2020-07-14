@@ -16,7 +16,6 @@ function RestrictionPage({userStore}) {
 
     //--------------------------------LOAD----------------------------------
     const loadRestrictions = async () => {
-        var data = [];
         try{ 
           const {data} = await getRestrictions();
           setRestrictions(data);
