@@ -139,7 +139,7 @@ const ObjectPicker = forwardRef((props, ref) => {
     async function getProcedureData() {
         let result = []
         if(filter == "public"){
-            const {data} = await getPublicProcedures()
+            const {data} = await getPublicProcedures(status)
             result = data
         }else{
             const {data} = await getProcedures(status)

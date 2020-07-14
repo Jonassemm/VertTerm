@@ -1,6 +1,6 @@
 'use strict'
 //author: Jonas Semmler
-import { getResources, getEmployees, getProcedureAvailability, getResourceAppointments, getEmployeeAppointments } from "./SearchCalendarRequests"
+import { getResources, getEmployees, getResourceAppointments, getEmployeeAppointments } from "./SearchCalendarRequests"
 import { checkSlotOverlap, checkSlotTouch, getSlotCompression, subtractTimeslots, getOverlapSlot } from "./SlotFunctions"
 import moment from "moment"
 

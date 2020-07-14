@@ -13,6 +13,8 @@ import SearchAptCalendar from "./SearchCalendar/SearchAptCalendar"
 import QRCode from "./QRCode"
 import BlockerForm from "./BlockerForm"
 import { secondsToMinutes } from "../TimeComponents/TimeFunctions"
+import { overrideRight, procedureRights, appointmentRights } from "../Rights"
+import { hasRight } from "../../auth"
 
 const localizer = momentLocalizer(moment)
 
@@ -51,7 +53,7 @@ function BookingForm({ editData, userStore }) {
             const appointmentID = editData.match.params.appointmentID
             //checking if Appointment is Blocker
             if (await isBlocker(appointmentID)) {
-                const {data} = await getAppointment(appointmentID)
+                const { data } = await getAppointment(appointmentID)
                 setCustomApt(data)
                 setCustom(true)
                 setEditApt(appointmentID)
@@ -69,7 +71,6 @@ function BookingForm({ editData, userStore }) {
                 })
                 const tempApt = await getAppointment(appointmentID)
                 if (editData.match.params.startTime) {
-                    console.log("yes Start Time")
                     validateTime({ date: editData.match.params.startTime, ident: "start", ref: tempApt })
 
                     userStore.setInfoMessage("Optimal Zeit wurde bereits übernommen!")
@@ -84,7 +85,6 @@ function BookingForm({ editData, userStore }) {
 
     //function for setting the times and checking if they are valid
     function validateTime(data) {
-        console.log(data)
         //calculating the current date rounded to 5 minutes
         let currentDate = new Date()
         let mod = currentDate.getMinutes() % 10
@@ -296,7 +296,6 @@ function BookingForm({ editData, userStore }) {
         try {
             let { data } = await searchAppointmentGroup(aptGroup)
             data = data.appointments
-            console.log(data)
             const temp = apts.map((apt, index) => {
                 return {
                     ...apt,
@@ -304,7 +303,6 @@ function BookingForm({ editData, userStore }) {
                     bookedResources: data[index].bookedResources
                 }
             })
-            console.log(temp)
             setApts(temp)
         } catch (error) {
             userStore.setErrorMessage("Keine Ressourcen/Mitarbeiter gefunden")
@@ -314,11 +312,13 @@ function BookingForm({ editData, userStore }) {
     //prepairing the objekt which is send to the backend
     function buildFinalData() {
         let aptGroup = null
+        //normal Appointment Group
         if (!custom) {
             let finalData = apts.map(item => {
                 return {
                     ...item,
-                    bookedProcedure: item.bookedProcedure,
+                    //bookedProcedure: item.bookedProcedure,
+                    bookedProcedure: { id: item.bookedProcedure.id, ref: "procedure" },
                     bookedEmployees: item.bookedEmployees.map(item => {
                         if (item) return { id: item.id, ref: "user" }
                         else return { ...item }
@@ -341,6 +341,7 @@ function BookingForm({ editData, userStore }) {
             }
             aptGroup = { appointments: finalData, status: "active" }
         } else {
+            //Blocker
             aptGroup = {
                 name: customApt.name,
                 bookedResources: customApt.bookedResources.map(item => {
@@ -392,16 +393,15 @@ function BookingForm({ editData, userStore }) {
     async function handleSubmit(event) {
         event.preventDefault()
         const aptGroup = buildFinalData()
-        console.log(aptGroup)
         try {
             if (editMode) {
                 //case editing an normal appointment
-                if(!custom){
+                if (!custom) {
                     await editAppointmentGroup(aptGroup, selectedCustomer[0].id)
                     userStore.setMessage("Termin erfolgreich geändert!")
                     history.push("/appointment")
-                //case editing a blocker
-                }else{
+                    //case editing a blocker
+                } else {
                     await editBlocker(aptGroup, editApt)
                     userStore.setMessage("Blocker erfolgreich geändert!")
                     history.push("/appointment")
@@ -418,7 +418,7 @@ function BookingForm({ editData, userStore }) {
                     await addAppointmentGroup(aptGroup, selectedCustomer[0].id)
                     userStore.setMessage("Termin erfolgreich gebucht!")
                     history.push("/appointment")
-                //adding a new Appointment without a customer
+                    //adding a new Appointment without a customer
                 } else {
                     const res = await addAppointmentGroupAny(aptGroup)
                     const data = btoa(res.data)
@@ -457,7 +457,7 @@ function BookingForm({ editData, userStore }) {
                             </Col>
                         }
                     </Row>
-                    {custom && <BlockerForm apt={customApt} setApt={setCustomApt} edit={editMode}/>}
+                    {custom && <BlockerForm apt={customApt} setApt={setCustomApt} edit={editMode} />}
                     {!custom &&
                         <React.Fragment>
                             <hr />
@@ -469,9 +469,9 @@ function BookingForm({ editData, userStore }) {
                                     <Form.Group as={Col}>
                                         <ObjectPicker
                                             DbObject="user"
-                                            initial={editMode && selectedCustomer}
+                                            initial={(editMode && selectedCustomer) || (!hasRight(userStore, [appointmentRights[1]]) && [userStore.user])}
                                             status="notdeleted"
-                                            disabled={editMode}
+                                            disabled={editMode || !hasRight(userStore, [appointmentRights[1]])}
                                             setState={setSelectedCustomer} />
                                     </Form.Group>
                                 </Form.Row>
@@ -499,6 +499,7 @@ function BookingForm({ editData, userStore }) {
                                             initial={editMode && selectedProcedures}
                                             DbObject="procedure"
                                             status="active"
+                                            filter={!hasRight(userStore, [procedureRights[0]]) && "public"}
                                             disabled={editMode}
                                             setState={setProcedures}
                                             multiple={true} />
@@ -622,7 +623,7 @@ function BookingForm({ editData, userStore }) {
                                                         </div>
                                                     </div>
                                                     <div style={{ textAlign: "right" }}>
-                                                        {!showMode && <Button style={{ marginTop: "10px", width: "40%", padding: "2px" }} onClick={e => handleSearchApt(apt.bookedProcedure)}>Zeit suchen</Button>}
+                                                        {!showMode && hasRight(userStore, [appointmentRights[0]]) && <Button style={{ marginTop: "10px", width: "40%", padding: "2px" }} onClick={e => handleSearchApt(apt.bookedProcedure)}>Zeit suchen</Button>}
                                                     </div>
                                                 </div>
                                             </div>
@@ -634,7 +635,7 @@ function BookingForm({ editData, userStore }) {
                     }
                     <hr />
                     <Row>
-                        {!editMode && !showMode && !custom && (selectedProcedures.length != 0) &&
+                        {!editMode && hasRight(userStore, [appointmentRights[0]]) && !showMode && !custom && (selectedProcedures.length != 0) &&
                             <Col xs={7} style={{ textAlign: "left", display: "flex", alignItems: "baseline", justifyContent: "space-between" }}>
                                 <Form.Control style={{ width: "50%" }} as="select">
                                     <option>Frühstes Ende</option>
@@ -655,7 +656,7 @@ function BookingForm({ editData, userStore }) {
                             <Col style={{ textAlign: "right" }}>
                                 {(custom || selectedProcedures.length != 0) && (formComplete ?
                                     <Button variant="success" type="submit" style={{ marginLeft: "5px" }}>{editMode ? "Speichern" : "Buchen"}</Button> :
-                                    (formEmpty && !custom && <Button onClick={searchAppointment} style={{ marginLeft: "5px" }}>Suchen</Button>)
+                                    (formEmpty && !custom && hasRight(userStore, [appointmentRights[0]]) && <Button onClick={searchAppointment} style={{ marginLeft: "5px" }}>Suchen</Button>)
                                 )}
                             </Col>
                         }
@@ -681,7 +682,8 @@ function BookingForm({ editData, userStore }) {
                     <span>{exceptionMessage}</span>
                 </Modal.Body>
                 <Modal.Footer>
-                    {exception != "customer" && <Button variant="danger" onClick={overrideSubmit}>Trotzdem buchen</Button>}
+                    {console.log(hasRight(userStore, [overrideRight[0]]))}
+                    {exception != "customer" && hasRight(userStore, [overrideRight[0]]) && <Button variant="danger" onClick={overrideSubmit}>Trotzdem buchen</Button>}
                     <Button onClick={() => setShowExceptionModal(false)} variant="secondary">OK</Button>
                 </Modal.Footer>
             </Modal>
