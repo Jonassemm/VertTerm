@@ -36,13 +36,16 @@ public class UserServiceImp extends WarningServiceImpl implements UserService {
 	@Autowired
 	private PasswordEncoder passwordEncoder;
 
-	// @PreAuthorize("hasAuthority('USERS_DATA_READ')")
+	@PreAuthorize("hasAuthority('USERS_DATA_READ')")
 	public List<User> getAll() {
 		List<User> users = repo.findAll();
 		return obfuscatePassword(users);
 	}
 
-	// @PreAuthorize("hasAuthority('USERS_DATA_READ')")
+	/**
+	 * @author Robert Schulz
+	 */
+	@PreAuthorize("hasAuthority('USERS_DATA_READ')")
 	public List<User> getAll(Status status) {
 		List<User> users = null;
 		switch (status) {
@@ -59,13 +62,16 @@ public class UserServiceImp extends WarningServiceImpl implements UserService {
 		return (users);
 	}
 
-	// @PreAuthorize("hasAuthority('USERS_DATA_READ')")
+	@PreAuthorize("hasAuthority('USERS_DATA_READ')")
 	@Override
 	public User getById(String id) {
 		Optional<User> user = repo.findById(id);
 		return user.map(this::obfuscatePassword).orElse(null);
 	}
 
+	/**
+	 * @author Robert Schulz
+	 */
 	@Override
 	public User create(User newInstance) {
 		if (newInstance.getId() == null) {

@@ -41,6 +41,11 @@ public class Availability {
 		this.id = id;
 	}
 
+	/**
+	 * @author Robert Schulz
+	 *
+	 * Finds the first available date after the specified date while being available for the duration.
+	 */
 	public Date getEarliestAvailability(Date date, Duration duration) {
 		if (this.getRhythm() == AvailabilityRhythm.ALWAYS) { return date; }
 		if ((endDate.getTime() - startDate.getTime()) < duration.toMillis()) { return null; }
@@ -92,6 +97,11 @@ public class Availability {
 		return null;
 	}
 
+	/**
+	 * @author Robert Schulz
+	 *
+	 * Finds the last available date before the specified date while being available for the duration.
+	 */
 	public Date getLatestAvailability(Date date, Duration duration){
 		if(this.getRhythm() == AvailabilityRhythm.ALWAYS){
 			return date;

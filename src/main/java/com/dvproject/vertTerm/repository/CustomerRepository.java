@@ -18,12 +18,21 @@ public interface CustomerRepository extends MongoRepository<Customer, String> {
 	@Query("{" + customerTest + "}")
 	List<Customer> findAll();
 
+    /**
+     * @author Robert Schulz
+     */
     @Query("{'systemStatus' : 'ACTIVE', " + customerTest + "}")
     List<Customer> findAllActive();
 
+    /**
+     * @author Robert Schulz
+     */
     @Query("{'systemStatus' : 'INACTIVE', " + customerTest + "}")
     List<Customer> findAllInactive();
 
+    /**
+     * @author Robert Schulz
+     */
     @Query("{'systemStatus' : 'DELETED'," + customerTest + "}")
     List<Customer> findAllDeleted();
 	

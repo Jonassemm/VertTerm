@@ -29,22 +29,34 @@ public class AppointmentController {
 	@Autowired
 	private UserService userService;
 
+	/**
+	 * @author Robert Schulz
+	 */
 	@GetMapping()
 	public @ResponseBody List<Appointment> get() {
 		return service.getAll();
 	}
 
+	/**
+	 * @author Robert Schulz
+	 */
 	@GetMapping("/{id}")
 	public @ResponseBody Appointment get(@PathVariable String id) {
 		return service.getById(id);
 	}
 
+	/**
+	 * @author Robert Schulz
+	 */
 	@PostMapping("/Recommend/EarlyEnd")
 	public @ResponseBody Appointment recommendByEarlyEnd(@RequestBody Appointment appointment) {
 		appointment.optimizeAndPopulateForEarliestEnd(service, resourceService, employeeService);
 		return appointment;
 	}
 
+	/**
+	 * @author Robert Schulz
+	 */
 	@PostMapping("/Recommend/LateBeginning")
 	public @ResponseBody Appointment recommendByLateBeginning(@RequestBody Appointment appointment) {
 		appointment.optimizeAndPopulateForLatestBeginning(service, resourceService, employeeService);
@@ -139,21 +151,33 @@ public class AppointmentController {
 		return service.getAvailableResourcesAndEmployees(group);
 	}
 
+	/**
+	 * @author Robert Schulz
+	 */
 	@PostMapping()
 	public @ResponseBody Appointment create(@RequestBody Appointment newAppointment) {
 		return service.create(newAppointment);
 	}
 
+	/**
+	 * @author Robert Schulz
+	 */
 	@PutMapping("/{id}")
 	public Appointment UpdateAppointment(@RequestBody Appointment newAppointment) {
 		return service.update(newAppointment);
 	}
 
+	/**
+	 * @author Robert Schulz
+	 */
 	@PutMapping("/{id}/{customerIsWaiting}")
 	public boolean setCustomerIsWaiting(@PathVariable String id, @PathVariable boolean customerIsWaiting) {
 		return service.setCustomerIsWaiting(id, customerIsWaiting);
 	}
 
+	/**
+	 * @author Robert Schulz
+	 */
 	@DeleteMapping("/{id}")
 	public boolean DeleteAppointment(@PathVariable String id) {
 		return service.delete(id);

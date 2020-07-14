@@ -29,15 +29,6 @@ public class ProcedureController {
 			@RequestParam(required = false) Boolean publicProcedure) {
 		return publicProcedure != null ? procedureService.getAll(status, publicProcedure) : procedureService.getAll(status);
 	}
-
-	@GetMapping("/{id}/Recommendation/EarlyEnd")
-	public List<Appointment> getAppointmentRecommendationByEarliestEnd (@PathVariable String id,
-											   @RequestParam(value = "status", required = false) Date date,
-											   @RequestParam(value = "status", required = false) Customer customer) {
-		Procedure procedure = procedureService.getById(id);
-
-		return procedure == null ? null : procedure.getAppointmentRecommendationByEarliestEnd(date, customer, appointmentService);
-	}
 	
 	@GetMapping("/{id}")
 	public List<Procedure> getProcedure (@PathVariable String id){

@@ -11,8 +11,12 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+/**
+ * @author Robert Schulz
+ *
+ * Base class for all classes whose entities are bookable for Appointments.
+ */
 public abstract class Bookable {
-
     protected Bookable(){
         this.availabilities = new ArrayList<>();
         this.appointments = new ArrayList<>();

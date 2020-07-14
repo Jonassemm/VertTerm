@@ -8,14 +8,12 @@ import com.dvproject.vertTerm.Model.User;
 import java.security.Principal;
 import java.util.List;
 
+/**
+ * @author Robert Schulz
+ */
 public interface UserService extends BasicService<User> {
     User getOwnUser(Principal principal);
     List<User> getAll(Status status);
-    List<Role> getOwnUserRoles (Principal principal);
-    List<Right> getOwnUserRights (Principal principal);
-    List<User> getUsersWithUsernames (String [] usernames);
-    List<Role> getUserRolesWithId (String id);
-    List<Right> getUserRightsWithId (String id);
     
     /**
      * @author Joshua Müller

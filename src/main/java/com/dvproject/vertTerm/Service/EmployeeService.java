@@ -9,6 +9,9 @@ import com.dvproject.vertTerm.Model.User;
 import java.util.Date;
 import java.util.List;
 
+/**
+ * @author Robert Schulz
+ */
 public interface EmployeeService extends BasicService<Employee>{
     List<Employee> getAll(Status status);
     List<Employee> getAll(String positionId);

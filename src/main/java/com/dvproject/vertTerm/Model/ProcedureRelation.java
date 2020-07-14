@@ -45,12 +45,6 @@ public class ProcedureRelation {
 		this.procedure = procedure;
 	}
 
-	public List<Appointment> getAppointmentRecommendationByEarliestEnd(Date date, Customer customer,
-			AppointmentServiceImpl appointmentService) {
-		return this.getProcedure().getAppointmentRecommendationByEarliestEnd(
-				new Date(date.getTime() + this.getMinDifference().toMillis()), customer, appointmentService);
-	}
-
 	public boolean testConformatyOfDates(Calendar endDate, Calendar startDate) {
 		// calculate the time between endDate and startDate
 		Duration timeBetween = Duration.between(endDate.toInstant(), startDate.toInstant());

@@ -8,6 +8,9 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+/**
+ * @author Robert Schulz
+ */
 @RestController
 @RequestMapping("/Customers")
 public class CustomerController {

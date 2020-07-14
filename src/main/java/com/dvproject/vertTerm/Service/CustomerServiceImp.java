@@ -26,12 +26,15 @@ public class CustomerServiceImp implements CustomerService {
     @Autowired
     private UserService userService;
 
+    /**
+     * @author Robert Schulz
+     */
     @Override
     public List<Customer> getAll() {
         return repo.findAll();
     }
 
-    //@PreAuthorize("hasAuthority('USERS_DATA_READ')")
+    @PreAuthorize("hasAuthority('USERS_DATA_READ')")
     public List<Customer> getAll(Status status) {
         List<Customer> users = null;
         switch(status){

@@ -12,15 +12,27 @@ import org.springframework.data.mongodb.repository.Query;
 public interface UserRepository extends MongoRepository<User, String>
 {
 
+	/**
+	 * @author Robert Schulz
+	 */
 	@Query("{'systemStatus' : 'ACTIVE'}")
 	List<User> findAllActive();
 
+	/**
+	 * @author Robert Schulz
+	 */
 	@Query("{'systemStatus' : 'INACTIVE'}")
 	List<User> findAllInactive();
 
+	/**
+	 * @author Robert Schulz
+	 */
 	@Query("{'systemStatus' : 'DELETED'}")
 	List<User> findAllDeleted();
 
+	/**
+	 * @author Robert Schulz
+	 */
 	Optional<User> findById (String id);
 	
 	List<User> findByLastName(String lastname);

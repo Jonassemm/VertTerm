@@ -1,6 +1,5 @@
 package com.dvproject.vertTerm.Model;
 
-import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -202,6 +201,11 @@ public class Appointmentgroup {
 		return calendar;
 	}
 
+	/**
+	 * @author Robert Schulz
+	 *
+	 * Finds an appointment in this appointmentgroup with the matching procedure, or creates a new one.
+	 */
 	private Appointment getOrCreateAppointmentWithProcedure(Procedure procedure, User customer){
 		for(Appointment appointment : this.getAppointments()){
 			if(appointment.getBookedProcedure().getId().equals(procedure.getId())){
@@ -216,6 +220,11 @@ public class Appointmentgroup {
 		return appointment;
 	}
 
+	/**
+	 * @author Robert Schulz
+	 *
+	 * Counts the amount of days needed between two appointments
+	 */
 	private int DaysNeededForAppointments(Appointment appointment1, Appointment appointment2){
 		Calendar calendar = Calendar.getInstance();
 		calendar.setTime(appointment1.getPlannedStarttime());
@@ -225,6 +234,12 @@ public class Appointmentgroup {
 		return date2 - date1;
 	}
 
+	/**
+	 * @author Robert Schulz
+	 *
+	 * Generates a recommendation for each appointment to end the appointments on as few different days as possible.
+	 * Because of performance reasons only interates 10 times.
+	 */
 	public void optimizeForLeastDays(AppointmentService appointmentService, ResourceService resourceService, EmployeeService employeeService, Appointment optimizationStart) {
 		this.optimizeForLeastWaitingTime(appointmentService, resourceService, employeeService, optimizationStart);
 
@@ -254,6 +269,13 @@ public class Appointmentgroup {
 		this.optimizeForLeastWaitingTime(appointmentService, resourceService, employeeService, optimizationStart);
 	}
 
+	/**
+	 * @author Robert Schulz
+	 *
+	 * Generates a recommendation for each appointment to end the appointments with as few Waiting time
+	 * between Appointments as possiblie.
+	 * Because of performance reasons calls optimizeForEarliestEnd and -LateBeginning.
+	 */
 	public void optimizeForLeastWaitingTime(AppointmentService appointmentService, ResourceService resourceService, EmployeeService employeeService, Appointment optimizationStart){
 		this.optimizeAppointmentsForEarliestEnd(appointmentService, resourceService, employeeService, optimizationStart);
 		for (Appointment appointment : this.getAppointments()) {
@@ -262,6 +284,11 @@ public class Appointmentgroup {
 		this.optimizeAppointmentsForLatestBeginning(appointmentService, resourceService, employeeService, this.findLatestAppointment());
 	}
 
+	/**
+	 * @author Robert Schulz
+	 *
+	 * Generates a recommendation for each appointment to end as early as possible after the specified times.
+	 */
 	public void optimizeAppointmentsForEarliestEnd(AppointmentService appointmentService, ResourceService resourceService, EmployeeService employeeService, Appointment optimizationStart) {
 		optimizationStart.optimizeAndPopulateForEarliestEnd(appointmentService, resourceService, employeeService);
 		for (ProcedureRelation relation : optimizationStart.getBookedProcedure().getSubsequentRelations()) {
@@ -308,6 +335,11 @@ public class Appointmentgroup {
 		}
 	}
 
+	/**
+	 * @author Robert Schulz
+	 *
+	 * Generates a recommendation for each appointment to end as late as possible ahead of the specified times
+	 */
 	public void optimizeAppointmentsForLatestBeginning(AppointmentService appointmentService, ResourceService resourceService, EmployeeService employeeService, Appointment optimizationStart){
 		optimizationStart.optimizeAndPopulateForLatestBeginning(appointmentService, resourceService, employeeService);
 		optimizationStart.setStatus(AppointmentStatus.RECOMMENDED);

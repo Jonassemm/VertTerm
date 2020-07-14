@@ -110,6 +110,9 @@ public class Appointment implements Serializable {
 		return enddate.getTime();
 	}
 
+	/**
+	 * @author Robert Schulz
+	 */
 	public boolean blocksBookedEntities() {
 		return this.getStatus() == AppointmentStatus.DONE || this.getStatus() == AppointmentStatus.PLANNED;
 	}
@@ -468,6 +471,11 @@ public class Appointment implements Serializable {
 					"An employee already has an appointment in the given time interval", this);
 	}
 
+	/**
+	 * @author Robert Schulz
+	 *
+	 * Tests if all needed entities defined in the procedure are present.
+	 */
 	public  boolean allNeededBookablesFound() {
 		for (Position needed : this.getBookedProcedure().getNeededEmployeePositions()) {
 			boolean found = false;
@@ -529,6 +537,12 @@ public class Appointment implements Serializable {
 		return !appointments.isEmpty() && (appointments.size() != 1 || !appointments.get(0).getId().equals(id));
 	}
 
+	/**
+	 * @author Robert Schulz
+	 *
+	 * Searches for a date where all needed bookables of the procedure are found and populates them.
+	 * It will use the first date after the defined PlannedStartTime.
+	 */
 	public void optimizeAndPopulateForEarliestEnd(AppointmentService appointmentService, ResourceService resourceService,
 			EmployeeService employeeService) {
 		if (this.getBookedProcedure() == null) { return; }
@@ -682,6 +696,12 @@ public class Appointment implements Serializable {
 		}
 	}
 
+	/**
+	 * @author Robert Schulz
+	 *
+	 * Searches for a date where all needed bookables of the procedure are found and populates them.
+	 * It will use the last date before the defined PlannedStartTime.
+	 */
 	public void optimizeAndPopulateForLatestBeginning(AppointmentService appointmentService,
 			ResourceService resourceService, EmployeeService employeeService) {
 		if (this.getBookedProcedure() == null) { return; }

@@ -6,6 +6,9 @@ import java.util.Date;
 
 import org.springframework.data.mongodb.core.mapping.Document;
 
+/**
+ * @author Robert Schulz
+ */
 @Document("user")
 public class Customer extends User implements Serializable
 {

@@ -141,6 +141,9 @@ public class AppointmentgroupController {
 		return appointmentgroupService.bookAppointmentgroup(userid, appointmentgroup, override);
 	}
 
+	/**
+	 * @author Robert Schulz
+	 */
 	@PostMapping("/Recommend/EarlyEnd/{index}")
 	public @ResponseBody Appointmentgroup recommendByEarlyEnd(@RequestBody Appointmentgroup appointments, @PathVariable int index) {
 		PopulateCustomer(appointments);
@@ -151,6 +154,9 @@ public class AppointmentgroupController {
 		return appointments;
 	}
 
+	/**
+	 * @author Robert Schulz
+	 */
 	@PostMapping("/Recommend/LeastWaitingTime/{index}")
 	public @ResponseBody Appointmentgroup recommendByLeastWaitingTime(@RequestBody Appointmentgroup appointments, @PathVariable int index) {
 		PopulateCustomer(appointments);
@@ -158,6 +164,9 @@ public class AppointmentgroupController {
 		return appointments;
 	}
 
+	/**
+	 * @author Robert Schulz
+	 */
 	@PostMapping("/Recommend/LeastDays/{index}")
 	public @ResponseBody Appointmentgroup recommendByLeastDays(@RequestBody Appointmentgroup appointments, @PathVariable int index) {
 		PopulateCustomer(appointments);
@@ -165,6 +174,9 @@ public class AppointmentgroupController {
 		return appointments;
 	}
 
+	/**
+	 * @author Robert Schulz
+	 */
 	@PostMapping("/Recommend/LateBeginning/{index}")
 	public @ResponseBody Appointmentgroup recommendByLateBeginning(@RequestBody Appointmentgroup appointments,
 			@PathVariable int index) {
@@ -176,6 +188,9 @@ public class AppointmentgroupController {
 		return appointments;
 	}
 
+	/**
+	 * @author Robert Schulz
+	 */
 	private void PopulateCustomer(Appointmentgroup appointmentgroup){
 		Appointment firstAppointment = appointmentgroup.getAppointments().get(0);
 		User user = FindUserForAppointments(firstAppointment.getBookedCustomer());
@@ -184,6 +199,9 @@ public class AppointmentgroupController {
 		}
 	}
 
+	/**
+	 * @author Robert Schulz
+	 */
 	private User FindUserForAppointments(User user){
 		if(user == null){
 			return userService.getAnonymousUser();

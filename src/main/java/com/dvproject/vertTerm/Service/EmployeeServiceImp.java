@@ -38,7 +38,10 @@ public class EmployeeServiceImp extends WarningServiceImpl implements EmployeeSe
 		return repo.findAll();
 	}
 
-	// @PreAuthorize("hasAuthority('USERS_DATA_READ')")
+	/**
+	 * @author Robert Schulz
+	 */
+	@PreAuthorize("hasAuthority('USERS_DATA_READ')")
 	public List<Employee> getAll(Status status) {
 		List<Employee> users = null;
 		switch (status) {
@@ -81,6 +84,9 @@ public class EmployeeServiceImp extends WarningServiceImpl implements EmployeeSe
 		return repo.findByPositionsId(positionId);
 	}
 
+	/**
+	 * @author Robert Schulz
+	 */
 	@Override
 	public Employee getById(String id) {
 		Optional<Employee> appointment = repo.findById(id);

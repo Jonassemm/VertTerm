@@ -64,12 +64,18 @@ public class AppointmentServiceImpl implements AppointmentService {
 		return result;
 	}
 
+	/**
+	 * @author Robert Schulz
+	 */
 	@Override
 	public Appointment getById(String id) {
 		Optional<Appointment> appointment = repo.findById(id);
 		return appointment.orElse(null);
 	}
 
+	/**
+	 * @author Robert Schulz
+	 */
 	@Override
 	public Appointment create(Appointment newInstance) {
 		if (newInstance.getId() == null) { return repo.save(newInstance); }
@@ -80,6 +86,9 @@ public class AppointmentServiceImpl implements AppointmentService {
 		return null;
 	}
 
+	/**
+	 * @author Robert Schulz
+	 */
 	@Override
 	public Appointment update(Appointment updatedInstance) {
 		if (updatedInstance.getId() != null && repo.findById(updatedInstance.getId()).isPresent()) {
