@@ -2,6 +2,7 @@ package com.dvproject.vertTerm.security;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.GrantedAuthority;
@@ -25,22 +26,37 @@ public class WebserverUserDetailsService implements UserDetailsService {
 
 	@Override
 	public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-		User user = userRepository.findByUsername(username);
+		User user = findUserInDataBase(username);
 
-		if (user == null) { throw new UsernameNotFoundException("No user with the given username"); }
-
-		return new org.springframework.security.core.userdetails.User(user.getUsername(), user.getPassword(),
-				user.getSystemStatus() == Status.ACTIVE && !user.isAnonymousUser(), true, true, true,
+		return new org.springframework.security.core.userdetails.User(
+				user.getUsername(), 
+				user.getPassword(),
+				user.getSystemStatus().isActive() && !user.isAnonymousUser(), 
+				true, 
+				true, 
+				true,
 				getAuthorities(user.getRoles()));
 	}
 
 	public UserDetails loadAnonymousUserByUsername(String username) throws UsernameNotFoundException {
+		User user = findUserInDataBase(username);
+
+		return new org.springframework.security.core.userdetails.User(
+				user.getUsername(), 
+				user.getPassword(),
+				user.getSystemStatus().isActive(), 
+				true, 
+				true, 
+				true, 
+				getAuthorities(user.getRoles()));
+	}
+	
+	public User findUserInDataBase(String username) {
 		User user = userRepository.findByUsername(username);
 
 		if (user == null) { throw new UsernameNotFoundException("No user with the given username"); }
-
-		return new org.springframework.security.core.userdetails.User(user.getUsername(), user.getPassword(),
-				user.getSystemStatus() == Status.ACTIVE, true, true, true, getAuthorities(user.getRoles()));
+		
+		return user;
 	}
 
 	public List<? extends GrantedAuthority> getAuthorities(List<Role> roles) {
@@ -48,24 +64,18 @@ public class WebserverUserDetailsService implements UserDetailsService {
 	}
 
 	private List<String> getRights(List<Role> roles) {
-		List<String> rights = new ArrayList<String>();
-		List<Right> collection = new ArrayList<Right>();
-		for (Role role : roles) {
-			collection.addAll(role.getRights());
-		}
-		for (Right item : collection) {
-			rights.add(item.getName());
-		}
+		List<String> rightIdentifier = new ArrayList<>();
+		List<Right> rights = new ArrayList<>();
 
-		return rights;
+		roles.forEach(role -> rights.addAll(role.getRights()));
+		rights.forEach(right -> rightIdentifier.add(right.getName()));
+
+		return rightIdentifier;
 	}
 
 	private List<GrantedAuthority> getGrantedAuthorities(List<String> rights) {
-		List<GrantedAuthority> authorities = new ArrayList<GrantedAuthority>();
-		for (String right : rights) {
-			authorities.add(new SimpleGrantedAuthority(right));
-		}
-
-		return authorities;
+		return rights.stream()
+						.map(right -> new SimpleGrantedAuthority(right))
+						.collect(Collectors.toList());
 	}
 }

@@ -52,8 +52,9 @@ public class OpeningHoursServiceImp implements OpeningHoursService {
 
 		for (Availability availability : openingHoursAvailabilities) {
 			Availability updatedAvailability = updatedAvailabilities.get(availability.getId());
-			if (updatedAvailability != null && availability.getEndOfSeries() == null
-					&& updatedAvailability.getEndOfSeries() != null)
+			if (updatedAvailability != null 
+					&& (availability.getEndOfSeries() == null
+					&& updatedAvailability.getEndOfSeries() != null))
 				availability.setEndOfSeries(updatedAvailability.getEndOfSeries());
 		}
 		
@@ -71,8 +72,8 @@ public class OpeningHoursServiceImp implements OpeningHoursService {
 		Date now = new Date();
 
 		openingHours.setAvailabilities(openingHoursAvailabilities.stream()
-				.filter(avail -> avail.getEndOfSeries() == null || avail.getEndOfSeries().after(now))
-				.collect(Collectors.toList()));
+					.filter(avail -> avail.getEndOfSeries() == null || avail.getEndOfSeries().after(now))
+					.collect(Collectors.toList()));
 
 		openingHoursRepository.save(openingHours);
 	}

@@ -13,6 +13,4 @@ public interface RightRepository extends MongoRepository<Right, String>{
     Optional<Right> findById(String id);
     
     Right findByName(String name);
-
-    Right save(Right entity);
 }

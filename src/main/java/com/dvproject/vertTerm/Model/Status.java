@@ -2,6 +2,9 @@ package com.dvproject.vertTerm.Model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+/**
+ * @author Joshua Müller
+ */
 public enum Status {
 	/**
 	 * can be used

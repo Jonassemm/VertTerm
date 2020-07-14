@@ -12,6 +12,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
@@ -73,9 +74,7 @@ public class PositionServiceImp implements PositionService {
 	public List<Position> getPositions(String[] ids) {
 		List<Position> positions = new ArrayList<>();
 
-		for (String id : ids) {
-			positions.add(this.getPositionsInternal(id));
-		}
+		Arrays.asList(ids).forEach(id -> positions.add(getPositionsInternal(id)));
 
 		return positions;
 	}
@@ -117,17 +116,18 @@ public class PositionServiceImp implements PositionService {
 	}
 	
 	private boolean isUpdatble(Position position) {
-		return position.getId() != null && positionRepository.findById(position.getId()).isPresent()
+		return position.getId() != null 
+				&& positionRepository.findById(position.getId()).isPresent()
 				&& StatusService.isUpdateable(position.getStatus());
 	}
 	
 	private void removeResourceTypeFromProcedures(String positionId) {
 		List<Procedure> procedureToUpdate = procedureRepository.findByNeededEmployeePositions(positionId);
-		
-		procedureToUpdate.forEach(procedure -> {
+
+		for (Procedure procedure : procedureToUpdate) {
 			List<Position> positionsOfProcedure = procedure.getNeededEmployeePositions();
 			positionsOfProcedure.removeIf(pos -> pos.getId().equals(positionId));
 			procedureRepository.save(procedure);
-		});
+		}
 	}
 }

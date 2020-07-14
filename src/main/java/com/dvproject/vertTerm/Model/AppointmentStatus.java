@@ -8,6 +8,9 @@ import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+/**
+ * @author Joshua Müller
+ */
 public enum AppointmentStatus {
 	/**
 	 * appointment has been completed, actual times have been set
@@ -57,7 +60,9 @@ public enum AppointmentStatus {
 	}
 
 	public static List<AppointmentStatus> enumOf(List<String> values) {
-		return values.stream().map(value -> enumOf(value)).collect(Collectors.toList());
+		return values.stream()
+				.map(value -> enumOf(value))
+				.collect(Collectors.toList());
 	}
 
 	public static List<AppointmentStatus> getAll() {

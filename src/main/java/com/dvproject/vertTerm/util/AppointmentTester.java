@@ -7,6 +7,9 @@ import com.dvproject.vertTerm.Model.TimeInterval;
 import com.dvproject.vertTerm.Service.AppointmentService;
 import com.dvproject.vertTerm.Service.RestrictionService;
 
+/**
+ * @author Joshua Müller
+ */
 public abstract class AppointmentTester {
 	protected Appointment appointment;
 	private List<TimeInterval> timeIntervallsOfAppointments;
@@ -22,18 +25,22 @@ public abstract class AppointmentTester {
 		this(appointment);
 		this.timeIntervallsOfAppointments = timeIntervallsOfAppointments;
 	}
+	
+	public AppointmentTester (List<TimeInterval> timeIntervallsOfAppointments) {
+		this.timeIntervallsOfAppointments = timeIntervallsOfAppointments;
+	}
 
 	public void testAppointment(AppointmentService appointmentService, RestrictionService restrictionService,
 			List<TimeInterval> timeIntervallsOfAppointments) {
-		this.testAppointmentTimes(timeIntervallsOfAppointments);
-		this.testEmployees();
-		this.testProcedurePositions();
-		this.testResources();
-		this.testProcedureResourceTypes();
-		this.testProcedure();
-		this.testAvailabilities();
-		this.testRestrictions(restrictionService);
-		this.testAppointment(appointmentService);
+		testAppointmentTimes(timeIntervallsOfAppointments);
+		testEmployees();
+		testProcedurePositions();
+		testResources();
+		testProcedureResourceTypes();
+		testProcedure();
+		testAvailabilities();
+		testRestrictions(restrictionService);
+		testAppointment(appointmentService);
 	}
 
 	public void testAppointment(Appointment appointment, AppointmentService appointmentService,

@@ -1,21 +1,15 @@
 package com.dvproject.vertTerm.Service;
 
 import com.dvproject.vertTerm.Model.Customer;
-import com.dvproject.vertTerm.Model.Employee;
-import com.dvproject.vertTerm.Model.OptionalAttribute;
 import com.dvproject.vertTerm.Model.Status;
-import com.dvproject.vertTerm.Model.User;
 import com.dvproject.vertTerm.repository.CustomerRepository;
-import com.dvproject.vertTerm.repository.EmployeeRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.rest.webmvc.ResourceNotFoundException;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
 
 @Service
 public class CustomerServiceImp implements CustomerService {
@@ -63,17 +57,19 @@ public class CustomerServiceImp implements CustomerService {
     @Override
 //	 @PreAuthorize("hasAuthority('CUSTOMER_WRITE')")
     public Customer create(Customer newInstance) {
+   	 Customer retVal = null;
+   	 
         if (newInstance.getId() == null) {
         	userService.testMandatoryFields(newInstance);
         	userService.encodePassword(newInstance);
         	newInstance.setFirstName(capitalize(newInstance.getFirstName()));
         	newInstance.setLastName(capitalize(newInstance.getLastName()));
-            return repo.save(newInstance);
+        	retVal = repo.save(newInstance);
         }
-        if (repo.findById(newInstance.getId()).isPresent()) {
+        if (repo.findById(newInstance.getId()).isPresent())
             throw new ResourceNotFoundException("Instance with the given id (" + newInstance.getId() + ") exists on the database. Use the update method.");
-        }
-        return null;
+        
+        return retVal;
     }
 
     /**
@@ -93,6 +89,7 @@ public class CustomerServiceImp implements CustomerService {
         	
         	userService.testWarningsFor(updatedInstance.getId());
         }
+        
         return retVal;
     }
 

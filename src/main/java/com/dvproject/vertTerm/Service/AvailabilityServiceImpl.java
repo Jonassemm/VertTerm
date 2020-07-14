@@ -125,12 +125,13 @@ public class AvailabilityServiceImpl {
 
 		// id -> Availability
 		Map<String, Availability> availabilitiesMap = availabilities.stream()
-				.collect(Collectors.toMap(Availability::getId, availability -> availability));
+							.collect(Collectors.toMap(Availability::getId, availability -> availability));
 		List<Availability> availabilitiesFromDB = availabilityService.getAllAvailabilities(entity.getId());
 
 		// Load all availabilities from db
-		availabilities.addAll(availabilitiesFromDB.stream().filter(avail -> !availabilitiesMap.containsKey(avail.getId()))
-				.collect(Collectors.toList()));
+		availabilities.addAll(availabilitiesFromDB.stream()
+						.filter(avail -> !availabilitiesMap.containsKey(avail.getId()))
+						.collect(Collectors.toList()));
 	}
 
 	public void loadAllAvailablitiesOfEntityViaId(List<Availability> availabilities, String id,
@@ -178,7 +179,9 @@ public class AvailabilityServiceImpl {
 									.collect(Collectors.toList());
 		
 		int nonNullIdsCount = notNullIds.size();
-		int uniqueNotNullIdsCount = (int) notNullIds.stream().distinct().count();
+		int uniqueNotNullIdsCount = (int) notNullIds.stream()
+															.distinct()
+															.count();
 		
 		return uniqueNotNullIdsCount != nonNullIdsCount;
 	}

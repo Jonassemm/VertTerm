@@ -1,7 +1,6 @@
 package com.dvproject.vertTerm.Controller;
 
 import com.dvproject.vertTerm.Model.*;
-import com.dvproject.vertTerm.Service.AppointmentServiceImpl;
 import com.dvproject.vertTerm.Service.ProcedureService;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,14 +8,15 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.*;
 
+/**
+ * @author Joshua Müller
+ */
 @RestController
 @RequestMapping("/Procedures")
 @ResponseBody
 public class ProcedureController {
 	@Autowired
 	private ProcedureService procedureService;
-	@Autowired
-	private AppointmentServiceImpl appointmentService;
 	
 	@GetMapping("")
 	public List<Procedure> getAllProcedures () {

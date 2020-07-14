@@ -14,6 +14,9 @@ import com.dvproject.vertTerm.Model.User;
 import com.dvproject.vertTerm.repository.UserRepository;
 import com.dvproject.vertTerm.security.WebserverUserDetailsService;
 
+/**
+ * @author Joshua Müller
+ */
 @Controller
 public class HomeController {
 	@Autowired

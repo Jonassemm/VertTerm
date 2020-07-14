@@ -8,6 +8,9 @@ import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+/**
+ * @author Joshua Müller
+ */
 public enum Warning {
 	@JsonProperty("AppointmenttimeWarning")
 	APPOINTMENT_TIME_WARNING("AppointmenttimeWarning"),
@@ -61,7 +64,9 @@ public enum Warning {
 	}
 	
 	public static List<Warning> enumOf(List<String> values) {
-		return values.stream().map(value -> enumOf(value)).collect(Collectors.toList());
+		return values.stream()
+				.map(value -> enumOf(value))
+				.collect(Collectors.toList());
 	}
 	
 	public static List<Warning> getAll() {

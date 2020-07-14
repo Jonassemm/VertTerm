@@ -2,33 +2,23 @@ package com.dvproject.vertTerm.Model;
 
 import java.io.Serializable;
 import java.time.Duration;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 import javax.validation.constraints.NotNull;
 
 import com.dvproject.vertTerm.Service.AppointmentService;
-import com.dvproject.vertTerm.Service.AppointmentServiceImpl;
-import com.dvproject.vertTerm.Service.EmployeeService;
-import com.dvproject.vertTerm.Service.ResourceService;
-import com.dvproject.vertTerm.exception.AvailabilityException;
-import com.dvproject.vertTerm.exception.PositionException;
-import com.dvproject.vertTerm.exception.ResourceTypeException;
+import com.dvproject.vertTerm.exception.*;
 import com.fasterxml.jackson.annotation.JsonFormat;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.DBRef;
 
+/**
+ * @author Joshua Müller
+ */
 public class Procedure implements Serializable, Available {
 	private static final long serialVersionUID = 1758602258863163151L;
-
-	@Autowired
-	private ResourceService resourceService;
-	@Autowired
-	private EmployeeService employeeService;
 
 	@Id
 	private String id;
@@ -55,11 +45,11 @@ public class Procedure implements Serializable, Available {
 	@DBRef
 	private List<Availability> availabilities;
 
-	public Procedure(){
+	public Procedure () {
 		this.neededEmployeePositions = new ArrayList<>();
-		this.neededResourceTypes = new ArrayList<>();
-		this.subsequentRelations = new ArrayList<>();
-		this.precedingRelations = new ArrayList<>();
+		this.neededResourceTypes     = new ArrayList<>();
+		this.subsequentRelations     = new ArrayList<>();
+		this.precedingRelations      = new ArrayList<>();
 	}
 
 	public String getId() {
@@ -183,7 +173,7 @@ public class Procedure implements Serializable, Available {
 
 		retVal = retVal
 				&& precedingRelations.stream().allMatch(entity -> entity.getProcedure().getStatus() == Status.ACTIVE);
-		
+
 		retVal = retVal
 				&& subsequentRelations.stream().allMatch(entity -> entity.getProcedure().getStatus() == Status.ACTIVE);
 
@@ -195,7 +185,7 @@ public class Procedure implements Serializable, Available {
 			throw new AvailabilityException("No availability for the procedure " + name);
 	}
 
-	public void testAllRelations() {
+	public void testRelationsForCycle() {
 		precedingRelations.forEach(this::testProcedureRelation);
 		subsequentRelations.forEach(this::testProcedureRelation);
 	}
@@ -210,14 +200,14 @@ public class Procedure implements Serializable, Available {
 	}
 
 	public void testAllReferenceValues() {
-		testAllRelations();
+		testRelationsForCycle();
 		testPositions();
 		testResourceTypes();
 	}
 
 	public void testResourceTypes() {
 		ResourceType failedResourceType = neededResourceTypes.stream()
-				.filter(resourceType -> resourceType.getStatus() == Status.DELETED).findAny().orElse(null);
+				.filter(resourceType -> resourceType.getStatus().isDeleted()).findAny().orElse(null);
 
 		if (failedResourceType != null)
 			throw new ResourceTypeException("ResourceType is deleted", failedResourceType);
@@ -225,14 +215,14 @@ public class Procedure implements Serializable, Available {
 
 	public void testPositions() {
 		Position failedposition = neededEmployeePositions.stream()
-				.filter(position -> position.getStatus() == Status.DELETED).findAny().orElse(null);
+				.filter(position -> position.getStatus().isDeleted()).findAny().orElse(null);
 
 		if (failedposition != null)
 			throw new PositionException("Position is deleted", failedposition);
 	}
 
 	private void testProcedureRelation(ProcedureRelation procedureRelation) {
-		if (procedureRelation.getProcedure().getId().equals(this.getId()))
+		if (procedureRelation.getProcedure().getId().equals(id))
 			throw new IllegalArgumentException("Procedure can have no relation to itself");
 	}
 }

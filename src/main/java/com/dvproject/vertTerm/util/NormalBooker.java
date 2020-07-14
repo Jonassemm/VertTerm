@@ -7,6 +7,9 @@ import com.dvproject.vertTerm.Model.*;
 import com.dvproject.vertTerm.Service.AppointmentService;
 import com.dvproject.vertTerm.Service.RestrictionService;
 
+/**
+ * @author Joshua Müller
+ */
 public class NormalBooker extends Booker {
 	public NormalBooker () {
 		super();

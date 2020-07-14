@@ -41,7 +41,8 @@ public abstract class WarningServiceImpl {
 	}
 
 	<T> boolean haveChanged(List<T> oldEntities, List<T> newEntities) {
-		return oldEntities.stream().allMatch(oldEntity -> newEntities.contains(oldEntity));
+		return oldEntities.stream()
+				.allMatch(oldEntity -> newEntities.contains(oldEntity));
 	}
 
 }

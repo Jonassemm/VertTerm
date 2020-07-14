@@ -1,14 +1,8 @@
 package com.dvproject.vertTerm.Model;
 
 import java.io.Serializable;
-import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
-import java.time.Duration;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.List;
-import java.util.Random;
-import java.util.TimeZone;
+import java.util.*;
 
 import javax.validation.constraints.NotNull;
 
@@ -17,10 +11,12 @@ import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+/**
+ * @author Joshua Müller
+ */
 @Document("user")
-public class User extends Bookable implements Serializable
-{
-    private static final long serialVersionUID = -5252169753921361843L;
+public class User extends Bookable implements Serializable {
+	private static final long serialVersionUID = -5252169753921361843L;
 
 	@Indexed(unique = true)
 	private String username;
@@ -40,39 +36,39 @@ public class User extends Bookable implements Serializable
 	private List<Restriction> restrictions;
 
 	@PersistenceConstructor
-	public User(String id, String username, String password, String firstName, String lastName, Status systemStatus, List<Role> roles,
-			List<OptionalAttributeWithValue> optionalAttributes, List<Restriction> restrictions) {
+	public User (String id, String username, String password, String firstName, String lastName, Status systemStatus,
+			List<Role> roles, List<OptionalAttributeWithValue> optionalAttributes, List<Restriction> restrictions) {
 		super(id);
-		this.username = username;
-		this.password = password;
-		this.firstName = firstName;
-		this.lastName = lastName;
-		this.roles = roles;
-		this.systemStatus = systemStatus;
+		this.username           = username;
+		this.password           = password;
+		this.firstName          = firstName;
+		this.lastName           = lastName;
+		this.roles              = roles;
+		this.systemStatus       = systemStatus;
 		this.optionalAttributes = optionalAttributes;
-		this.restrictions = restrictions;
+		this.restrictions       = restrictions;
 	}
 
-	public User(String id, String username, String password, String firstName, String lastName, List<Role> roles) {
+	public User (String id, String username, String password, String firstName, String lastName, List<Role> roles) {
 		super(id);
 		this.setCreationDate();
 		this.systemStatus = Status.ACTIVE;
-		this.username = username;
-		this.password = password;
-		this.firstName = firstName;
-		this.lastName = lastName;
-		this.roles = roles;
+		this.username     = username;
+		this.password     = password;
+		this.firstName    = firstName;
+		this.lastName     = lastName;
+		this.roles        = roles;
 	}
 
-	public User() {
+	public User () {
 		super();
-		this.setCreationDate();
-		this.systemStatus = Status.ACTIVE;
+		setCreationDate();
+		systemStatus = Status.ACTIVE;
 	}
 
 	@Override
 	public String toString() {
-		return "User [id=" + this.getId() + ", firstName=" + firstName + ", lastName=" + lastName + "]";
+		return "User [id=" + getId() + ", firstName=" + firstName + ", lastName=" + lastName + "]";
 	}
 
 	public String getFirstName() {
@@ -118,7 +114,7 @@ public class User extends Bookable implements Serializable
 	public Date getCreationDate() {
 		return creationDate;
 	}
-	
+
 	public Status getSystemStatus() {
 		return systemStatus;
 	}
@@ -152,7 +148,7 @@ public class User extends Bookable implements Serializable
 	public void setCreationDate(Date creationDate) {
 		this.creationDate = creationDate;
 	}
-	
+
 	public void setAnonymousUser(boolean anonymousUser) {
 		this.anonymousUser = anonymousUser;
 	}
@@ -162,31 +158,31 @@ public class User extends Bookable implements Serializable
 	}
 
 	public void obfuscate() {
-	    byte[] array = new byte[15];
-	    Random random = new Random(System.currentTimeMillis());
-	    
-	   random.nextBytes(array);
+		byte[] array = new byte[15];
+		Random random = new Random(System.currentTimeMillis());
+
+		random.nextBytes(array);
 		username = getRandomString(array);
 		password = null;
 		random.nextBytes(array);
 		lastName = getRandomString(array);
 		random.nextBytes(array);
-		firstName = getRandomString(array);
+		firstName          = getRandomString(array);
 		optionalAttributes = null;
 	}
-	
+
 	public String generateLoginLink() {
 		String loginLink = null;
-		
+
 		if (isAnonymousUser()) {
 			String password = this.password.substring(6);
-			loginLink =  username + "," + password;
+			loginLink = username + "," + password;
 		}
-		
+
 		return loginLink;
 	}
-	
-	private String getRandomString(byte [] array) {
+
+	private String getRandomString(byte[] array) {
 		return new String(array, StandardCharsets.UTF_8);
 	}
 }

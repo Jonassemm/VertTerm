@@ -1,5 +1,8 @@
 package com.dvproject.vertTerm.Model;
 
+/**
+ * @author Joshua Müller
+ */
 public class OptionalAttributeWithValue extends OptionalAttribute {
 	
 	private String value;

@@ -12,6 +12,9 @@ import org.springframework.data.mongodb.core.mapping.Document;
 import com.dvproject.vertTerm.Service.AppointmentService;
 import com.dvproject.vertTerm.exception.AvailabilityException;
 
+/**
+ * @author Joshua Müller
+ */
 @Document("resource")
 public class Resource extends Bookable implements Serializable, Available {
 	private static final long serialVersionUID = 7443614129275947603L;

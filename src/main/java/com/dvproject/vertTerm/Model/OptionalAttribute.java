@@ -1,5 +1,8 @@
 package com.dvproject.vertTerm.Model;
 
+/**
+ * @author Joshua Müller
+ */
 public class OptionalAttribute {
 	private String name;
 	private boolean mandatoryField;

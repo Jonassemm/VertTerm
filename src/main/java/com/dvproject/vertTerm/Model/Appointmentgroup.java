@@ -15,6 +15,10 @@ import com.dvproject.vertTerm.exception.ProcedureRelationException;
 import com.dvproject.vertTerm.repository.UserRepository;
 import com.dvproject.vertTerm.util.OverrideBooker;
 
+/**
+ * Everything not otherwise specified by Robert Schulz
+ * @author Joshua Müller
+ */
 public class Appointmentgroup {
 	@Id
 	private String id;
@@ -35,11 +39,13 @@ public class Appointmentgroup {
 	}
 
 	public boolean hasNoAppointmentIdSet() {
-		return appointments.stream().noneMatch(Appointment::hasId);
+		return appointments.stream()
+				.noneMatch(Appointment::hasId);
 	}
 
 	public boolean hasAllAppointmentidsSet() {
-		return appointments.stream().allMatch(Appointment::hasId);
+		return appointments.stream()
+				.allMatch(Appointment::hasId);
 	}
 
 	public Status getStatus() {
@@ -63,22 +69,27 @@ public class Appointmentgroup {
 	}
 
 	public boolean hasDistinctProcedures() {
-		return appointments.stream().map(app -> app.getBookedProcedure().getId()).distinct().count() == appointments
-				.size();
+		return appointments.stream()
+						.map(app -> app.getBookedProcedure().getId())
+						.distinct()
+						.count() == appointments.size();
 	}
 
 	public void changeBookedCustomer(User bookedCustomer) {
 		if (!bookedCustomer.getSystemStatus().isActive())
 			throw new IllegalArgumentException("User is not active");
 
-		appointments.stream()
-			.forEach(app -> app.setBookedCustomer(bookedCustomer));
+		appointments.forEach(app -> app.setBookedCustomer(bookedCustomer));
 	}
 
 	public void testWarnings(AppointmentServiceImpl appointmentService, RestrictionService restrictionService, UserRepository userRepository) {
 		new OverrideBooker(this).bookable(appointmentService, restrictionService, userRepository);
 	}
 
+	/**
+	 * Tests, whether a given user is allowed to book the appointment of the appointmentgroup
+	 * i.e. all appointments have public procedures or at least one procedure is private and the user is an employee
+	 */
 	public void canBookProcedures(User user) {
 		List<Procedure> procedures = appointments
 										.stream()
@@ -97,6 +108,11 @@ public class Appointmentgroup {
 					privateProcedure);
 	}
 
+	/**
+	 * Tests the procedure relations of the appointments
+	 * if override is true and there is a conflict in the relations, then a warning is added to the appointment
+	 * if override is false and there is a conflict in the relations, then an exception is thrown
+	 */
 	public void testProcedureRelations(boolean override) {
 		// procedure.id -> appointment
 		Map<String, Appointment> appointmentsMap = new HashMap<>();
@@ -131,12 +147,15 @@ public class Appointmentgroup {
 
 		if (override) {
 			appointmentsWithProblem.forEach(appointment -> appointment.addWarning(Warning.PROCEDURE_RELATION_WARNING));
-		} else {
+		} else 
 			if (pre != null)
 				throw pre;
-		}
 	}
 
+	/**
+	 * Test method of {@link #testProcedureRelations} that determines whether the appointmentgroup contains
+	 * all needed appointments to satisfy the procedure relations of the given appointment
+	 */
 	public void testProcedureRelationOfAppointment(Appointment appointment, Map<String, Appointment> appointmentsMap,
 			Map<String, Procedure> proceduresMap) {
 		Procedure procedure = proceduresMap.get(appointment.getBookedProcedure().getId());

@@ -9,6 +9,9 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+/**
+ * @author Joshua Müller
+ */
 @Document
 public class OptionalAttributes implements Serializable {
 	private static final long serialVersionUID = 7741132277124076940L;
@@ -47,6 +50,9 @@ public class OptionalAttributes implements Serializable {
 		this.classOfOptionalAttribut = classOfOptionalAttribut;
 	}
 
+	/**
+	 * Tests whether the given list of optional attributes contains all the mandatory optional attributes
+	 */
 	public void testMandatoryFields(List<OptionalAttribute> attributesToTest) {
 		for (OptionalAttribute optionalAttribute : optionalAttributes) {
 			if (optionalAttribute.isMandatoryField()

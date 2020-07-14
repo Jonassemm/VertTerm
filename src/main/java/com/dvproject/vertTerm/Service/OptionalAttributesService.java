@@ -2,13 +2,8 @@ package com.dvproject.vertTerm.Service;
 
 import com.dvproject.vertTerm.Model.OptionalAttribute;
 import com.dvproject.vertTerm.Model.OptionalAttributes;
-import com.dvproject.vertTerm.Model.Restriction;
-import com.dvproject.vertTerm.Model.Role;
 
 import java.util.List;
-import java.util.Optional;
-
-import org.springframework.data.mongodb.repository.Query;
 
 /**  author Amar Alkhankan  **/
 

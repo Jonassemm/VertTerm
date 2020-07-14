@@ -1,5 +1,8 @@
 package com.dvproject.vertTerm.Model;
 
+/**
+ * @author Joshua Müller
+ */
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 public enum AvailabilityRhythm {

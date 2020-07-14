@@ -95,10 +95,9 @@ public class UserServiceImp extends WarningServiceImpl implements UserService {
 			this.testMandatoryFields(updatedInstance);
 			this.encodePassword(updatedInstance);
 			retVal = repo.save(updatedInstance);
-
-			return retVal;
 		}
-		return null;
+		
+		return retVal;
 	}
 
 	@Override
@@ -168,9 +167,8 @@ public class UserServiceImp extends WarningServiceImpl implements UserService {
 
 		for (Role role : user.getRoles()) {
 			for (Right right : role.getRights()) {
-				if (!rights.contains(right)) {
+				if (!rights.contains(right))
 					rights.add(right);
-				}
 			}
 		}
 
@@ -178,13 +176,14 @@ public class UserServiceImp extends WarningServiceImpl implements UserService {
 	}
 
 	private List<User> obfuscatePassword(List<User> users) {
-		return users.stream().map(user -> obfuscatePassword(user)).collect(Collectors.toList());
+		return users.stream()
+				.map(user -> obfuscatePassword(user))
+				.collect(Collectors.toList());
 	}
 
 	private User obfuscatePassword(User user) {
-		if (user != null) {
+		if (user != null)
 			user.setPassword("");
-		}
 
 		return user;
 	}

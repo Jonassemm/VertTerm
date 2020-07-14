@@ -11,6 +11,10 @@ import javax.validation.constraints.NotNull;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.PersistenceConstructor;
 
+/**
+ * Everything not otherwise specified by Robert Schulz
+ * @author Joshua Müller
+ */
 public class Availability {
 
 	@Id
@@ -240,6 +244,12 @@ public class Availability {
 		this.frequency = frequency;
 	}
 
+	/**
+	 * @author Joshua Müller
+	 * 
+	 * Tests, whether a timinterval (represented by startdate and enddate) falls in this availability
+	 * The method accounts for the rhythm, frequency and value of endOfSeries.
+	 */
 	public boolean isAvailableBetween(Date startdate, Date enddate) {
 		if (startDate.after(startdate) || (endOfSeries != null && enddate.after(endOfSeries))) { return false; }
 

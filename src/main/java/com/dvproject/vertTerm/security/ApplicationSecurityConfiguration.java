@@ -100,9 +100,7 @@ public class ApplicationSecurityConfiguration extends WebSecurityConfigurerAdapt
 			rights = anonymousRole.getRights();
 		}
 
-		for (Right right : rights) {
-			authorities.add(new SimpleGrantedAuthority(right.getName()));
-		}
+		rights.forEach(right -> authorities.add(new SimpleGrantedAuthority(right.getName())));
 
 		return authorities;
 	}

@@ -5,6 +5,9 @@ import java.util.List;
 
 import org.springframework.data.annotation.Id;
 
+/**
+ * @author Joshua Müller
+ */
 public class OpeningHours{
 	@Id
 	private String id;

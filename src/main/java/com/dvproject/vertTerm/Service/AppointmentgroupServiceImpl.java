@@ -73,6 +73,7 @@ public class AppointmentgroupServiceImpl implements AppointmentgroupService {
 	@Override
 	public void loadAppointmentgroupWithOverride(Appointmentgroup appointmentgroupToLoad) {
 		List<Appointment> appointmentsToTest = appointmentgroupToLoad.getAppointments();
+		
 		if (appointmentsToTest == null || appointmentsToTest.size() == 0)
 			throw new IllegalArgumentException("No Appointment to load");
 
@@ -90,6 +91,7 @@ public class AppointmentgroupServiceImpl implements AppointmentgroupService {
 	@Override
 	public void loadAppointmentgroup(Appointmentgroup appointmentgroupToLoad) {
 		List<Appointment> appointmentsToTest = appointmentgroupToLoad.getAppointments();
+		
 		if (appointmentsToTest == null || appointmentsToTest.size() == 0)
 			throw new IllegalArgumentException("No Appointment to load");
 
@@ -198,7 +200,10 @@ public class AppointmentgroupServiceImpl implements AppointmentgroupService {
 		String appointmentid = appointment.getId();
 		Appointmentgroup appointmentgroup = getAppointmentgroupContainingAppointmentID(appointmentid);
 		List<Appointment> appointments = appointmentgroup.getAppointments();
-		appointment = appointments.stream().filter(app -> app.hasSameIdAs(appointmentid)).findAny().get();
+		appointment = appointments.stream()
+									.filter(app -> app.hasSameIdAs(appointmentid))
+									.findAny()
+									.get();
 
 		appointment.setStatus(AppointmentStatus.DELETED);
 
@@ -269,16 +274,6 @@ public class AppointmentgroupServiceImpl implements AppointmentgroupService {
 
 		return appointmentsToTest;
 	}
-
-//	private Appointmentgroup getUpdatableAppointmentgroupContainingAppointmentID(String appointmentid) {
-//		Appointmentgroup appointmentgroup = getAppointmentgroupContainingAppointmentID(appointmentid);
-//		List<Appointment> appointments = appointmentgroup.getAppointments();
-//		boolean isUpdateble = appointmentgroup.getStatus().isActive();
-//
-//		isUpdateble &= appointments.stream().noneMatch(app -> app.notStartedOrEnded() && app.getStatus().isDeleted());
-//
-//		return isUpdateble ? appointmentgroup : null;
-//	}
 
 	private Date getDateOfNow() {
 		LocalDateTime nowInOtherTimeZone = LocalDateTime.ofInstant(Instant.now(), ZoneId.of("CET"));

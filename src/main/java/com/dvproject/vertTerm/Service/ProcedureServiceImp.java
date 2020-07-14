@@ -55,28 +55,30 @@ public class ProcedureServiceImp extends WarningServiceImpl implements Procedure
 
 	@Override
 	public List<Availability> getAllAvailabilities(String id) {
-		return this.getProcedureFromDB(id).getAvailabilities();
+		return getProcedureFromDB(id).getAvailabilities();
 	}
 
 	@Override
 	public boolean isAvailableBetween(String id, Date startdate, Date enddate) {
-		return availabilityService.isAvailable(this.getProcedureFromDB(id).getAvailabilities(), startdate, enddate);
+		return availabilityService.isAvailable(getProcedureFromDB(id).getAvailabilities(), startdate, enddate);
 	}
 
 	@Override
 	@PreAuthorize("hasAuthority('PROCEDURE_WRITE')")
 	public Procedure create(Procedure procedure) {
+		Procedure retVal = null;
+		
 		if (procedure.getId() == null) {
 			procedure.testAllReferenceValues();
 			availabilityService.update(procedure.getAvailabilities(), procedure);
 			procedure.setName(capitalize(procedure.getName()));
-			return procedureRepository.save(procedure);
+			retVal = procedureRepository.save(procedure);
 		}
-		if (procedureRepository.findById(procedure.getId()).isPresent()) {
+		if (procedureRepository.findById(procedure.getId()).isPresent())
 			throw new IllegalArgumentException("Procedure with the given id (" + procedure.getId()
 					+ ") exists on the database. Use the update method.");
-		}
-		return procedure;
+			
+		return retVal;
 	}
 
 	@Override

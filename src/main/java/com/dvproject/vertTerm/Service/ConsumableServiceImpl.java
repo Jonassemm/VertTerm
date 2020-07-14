@@ -64,6 +64,7 @@ public class ConsumableServiceImpl implements ConsumableService, AvailabilitySer
 	@PreAuthorize("hasAuthority('RESOURCE_WRITE')")
 	public Consumable update(Consumable updatedInstance) {
 		Optional<Consumable> Consumable = consumableRepository.findById(updatedInstance.getId());
+		
 		if (Consumable.isPresent()) {
 			availabilityService.loadAllAvailabilitiesOfEntity(updatedInstance.getAvailabilities(), updatedInstance,
 					this);
@@ -76,9 +77,9 @@ public class ConsumableServiceImpl implements ConsumableService, AvailabilitySer
 	@Override
 	@PreAuthorize("hasAuthority('RESOURCE_WRITE')")
 	public boolean delete(String id) {
-		this.deleteFromDB(id);
+		deleteFromDB(id);
 
-		return this.getConsumableFromDB(id).getStatus().isDeleted();
+		return getConsumableFromDB(id).getStatus().isDeleted();
 	}
 
 	private Consumable getConsumableFromDB(String id) {

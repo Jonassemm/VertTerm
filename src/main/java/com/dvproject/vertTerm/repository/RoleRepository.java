@@ -13,6 +13,4 @@ public interface RoleRepository extends MongoRepository<Role, String> {
 	Role findByName(String name);
 
 	Optional<Role> findById(String id);
-
-	Role save(Role entity);
 }

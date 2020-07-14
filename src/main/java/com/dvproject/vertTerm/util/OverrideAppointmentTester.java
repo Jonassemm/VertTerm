@@ -9,6 +9,9 @@ import com.dvproject.vertTerm.Model.Warning;
 import com.dvproject.vertTerm.Service.*;
 import com.dvproject.vertTerm.exception.*;
 
+/**
+ * @author Joshua Müller
+ */
 public class OverrideAppointmentTester extends AppointmentTester {
 
 	public OverrideAppointmentTester () {
@@ -16,7 +19,7 @@ public class OverrideAppointmentTester extends AppointmentTester {
 	}
 
 	public OverrideAppointmentTester (List<TimeInterval> timeIntervallsOfAppointments) {
-		super(null, timeIntervallsOfAppointments);
+		super(timeIntervallsOfAppointments);
 	}
 
 	@Override
@@ -108,9 +111,9 @@ public class OverrideAppointmentTester extends AppointmentTester {
 								.filter(app -> app.getBookedProcedure() != null)
 								.collect(Collectors.toList());
 
-			failedAppointments.forEach(app -> {
-				app.addWarnings(Warning.APPOINTMENT_WARNING);
-				appointmentService.update(app);
+			failedAppointments.forEach(appointment -> {
+				appointment.addWarnings(Warning.APPOINTMENT_WARNING);
+				appointmentService.update(appointment);
 			});
 		}
 	}

@@ -5,6 +5,9 @@ import java.util.List;
 
 import com.dvproject.vertTerm.Service.AppointmentService;
 
+/**
+ * @author Joshua Müller
+ */
 public interface Available {
 	List<Appointment> getAppointmentsAfterDate(AppointmentService appointmentService, Date startdate);
 	

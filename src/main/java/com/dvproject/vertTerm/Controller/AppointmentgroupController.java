@@ -37,29 +37,46 @@ public class AppointmentgroupController {
 	@Autowired
 	ResourceService resourceService;
 
+	/**
+	 * @author Joshua Müller
+	 */
 	@GetMapping("")
 	public List<Appointmentgroup> getAllAppointmentgroups() {
 		return appointmentgroupService.getAll();
 	}
 
+	/**
+	 * @author Joshua Müller
+	 */
 	@GetMapping("/Status/{status}")
 	public List<Appointmentgroup> getAllAppointmentgroupsWithStatus(@PathVariable Status status) {
 		return appointmentgroupService.getAppointmentgroupsWithStatus(status);
 	}
 
+	/**
+	 * @author Joshua Müller
+	 */
 	@GetMapping("/{id}")
 	public Appointmentgroup getAppointmentGroup(@PathVariable String id) {
 		return appointmentgroupService.getById(id);
 	}
 
+	/**
+	 * @author Joshua Müller
+	 */
 	@GetMapping("/Appointment/{id}")
 	public Appointmentgroup getAppointmentGroupByAppointmentId(@PathVariable String id) {
 		return appointmentgroupService.getAppointmentgroupContainingAppointmentID(id);
 	}
 
+	/**
+	 * @author Joshua Müller
+	 */
 	@PostMapping(value = { "/", "/{userid}" })
-	public String bookAppointments(@PathVariable(required = false) String userid,
-			@RequestBody Appointmentgroup appointmentgroup) {
+	public String bookAppointments(
+			@PathVariable(required = false) String userid,
+			@RequestBody Appointmentgroup appointmentgroup) 
+	{
 		boolean customerAttached = userid != null && !userid.equals("");
 		User bookedCustomer = customerAttached ? userService.getById(userid) : userService.getAnonymousUser();
 
@@ -77,6 +94,9 @@ public class AppointmentgroupController {
 		return login;
 	}
 
+	/**
+	 * @author Joshua Müller
+	 */
 	@PostMapping(value = { "/override/", "/override/{userid}" })
 	public String bookAppointmentsOverride(
 			@PathVariable String userid,
@@ -101,6 +121,9 @@ public class AppointmentgroupController {
 		return login;
 	}
 
+	/**
+	 * @author Joshua Müller
+	 */
 	@PutMapping("/{userid}")
 	public void updateAppointments(
 			@PathVariable String userid,
@@ -112,6 +135,9 @@ public class AppointmentgroupController {
 
 	}
 
+	/**
+	 * @author Joshua Müller
+	 */
 	@PutMapping("/override/{userid}")
 	public void updateAppointmentsOverride(
 			@PathVariable String userid,
@@ -124,12 +150,18 @@ public class AppointmentgroupController {
 		updateAppointmentgroup(userid, appointmentgroup, new OverrideBooker(appointmentgroup));
 	}
 
+	/**
+	 * @author Joshua Müller
+	 */
 	@PutMapping("/start/{appointmentId}")
 	public boolean startAppointment(@PathVariable String appointmentId) {
 		Appointment appointmentToStart = appointmentService.getById(appointmentId);
 		return appointmentgroupService.startAppointment(appointmentToStart);
 	}
 
+	/**
+	 * @author Joshua Müller
+	 */
 	@PutMapping("/stop/{appointmentId}")
 	public boolean stopAppointment(@PathVariable String appointmentId) {
 		Appointment appointmentToStop = appointmentService.getById(appointmentId);
@@ -141,6 +173,9 @@ public class AppointmentgroupController {
 		return retVal;
 	}
 
+	/**
+	 * @author Joshua Müller
+	 */
 	@PutMapping("/test/{appointmentid}")
 	public List<Warning> testWarningsofAppointment(@PathVariable String appointmentid) {
 		Appointmentgroup appointmentgroup = appointmentgroupService
@@ -154,11 +189,17 @@ public class AppointmentgroupController {
 		return appointmentService.getById(appointmentid).getWarnings();
 	}
 
+	/**
+	 * @author Joshua Müller
+	 */
 	@DeleteMapping("/{id}")
 	public boolean deleteAppointmentGroup(@PathVariable(name = "id") String appointmentGroupId) {
 		return appointmentgroupService.delete(appointmentGroupId);
 	}
 
+	/**
+	 * @author Joshua Müller
+	 */
 	@DeleteMapping("/Appointment/{id}")
 	public boolean deleteAppointment(@PathVariable(name = "id") String appointmentId) {
 		Appointment appointment = appointmentService.getById(appointmentId);
@@ -174,6 +215,9 @@ public class AppointmentgroupController {
 		return retVal;
 	}
 
+	/**
+	 * @author Joshua Müller
+	 */
 	@DeleteMapping("/override/Appointment/{id}")
 	public boolean deleteAppointmentOverride(@PathVariable(name = "id") String appointmentId) {
 		Appointment appointment = appointmentService.getById(appointmentId);
@@ -190,6 +234,9 @@ public class AppointmentgroupController {
 		return retVal;
 	}
 
+	/**
+	 * @author Joshua Müller
+	 */
 	private void updateAppointmentgroup(String userid, Appointmentgroup appointmentgroup, Booker booker) {
 		Appointmentgroup appointmentgroupFromDB = null;
 		String appointmentgroupid = appointmentgroup.getId();
@@ -289,6 +336,9 @@ public class AppointmentgroupController {
 			return userService.getById(user.getId());
 	}
 
+	/**
+	 * @author Joshua Müller
+	 */
 	private String generateLogin(User user) {
 		String link = user.generateLoginLink();
 		userService.encodePassword(user);
@@ -297,6 +347,9 @@ public class AppointmentgroupController {
 		return link;
 	}
 
+	/**
+	 * @author Joshua Müller
+	 */
 	private void testWarningsForAppointmentsInTimeInterval(Appointmentgroup appointmentgroupToTestAppointments) {
 		List<Appointment> appointmentsToTest = new ArrayList<>();
 
@@ -310,6 +363,9 @@ public class AppointmentgroupController {
 	}
 
 
+	/**
+	 * @author Joshua Müller
+	 */
 	private void testWarningsForAppointmentsInTimeInterval(Appointment appointment) {
 		List<Appointment> appointmentsToTest = appointmentService.getOverlappingAppointmentsInTimeInterval(
 				appointment.getPlannedStarttime(), appointment.getPlannedEndtime(), AppointmentStatus.PLANNED);
@@ -319,6 +375,9 @@ public class AppointmentgroupController {
 		appointmentgroupService.setPullableAppointments(appointment);
 	}
 
+	/**
+	 * @author Joshua Müller
+	 */
 	private void testCallersRights(User userToTest) {
 		if (AuthorityTester.isLoggedInUser(userToTest)) {
 			AuthorityTester.containsAny("OWN_APPOINTMENT_WRITE");

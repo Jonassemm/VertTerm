@@ -9,6 +9,9 @@ import com.dvproject.vertTerm.Model.User;
 import com.dvproject.vertTerm.Service.AppointmentService;
 import com.dvproject.vertTerm.Service.RestrictionService;
 
+/**
+ * @author Joshua Müller
+ */
 public class OverrideBooker extends Booker {
 	public OverrideBooker () {
 		super();

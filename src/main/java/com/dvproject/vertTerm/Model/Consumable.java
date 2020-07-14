@@ -4,6 +4,9 @@ import java.io.Serializable;
 
 import org.springframework.data.mongodb.core.mapping.Document;
 
+/**
+ * @author Joshua Müller
+ */
 @Document("resource")
 public class Consumable extends Resource implements Serializable {
 	private static final long serialVersionUID = -6141132277124076940L;

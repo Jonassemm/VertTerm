@@ -8,6 +8,9 @@ import com.dvproject.vertTerm.Service.AppointmentService;
 import com.dvproject.vertTerm.Service.RestrictionService;
 import com.dvproject.vertTerm.repository.UserRepository;
 
+/**
+ * @author Joshua Müller
+ */
 public abstract class Booker {
 	protected Appointmentgroup appointmentgroupToBook;
 	private org.springframework.security.core.userdetails.User logedInUser;
@@ -29,7 +32,9 @@ public abstract class Booker {
 	public void bookable(AppointmentService appointmentService,
 			RestrictionService restrictionService, UserRepository userRepository) {
 		User booker = userRepository.findByUsername(logedInUser.getUsername());
+		
 		appointmentgroupToBook.resetAllWarnings();
+		
 		if (!appointmentgroupToBook.hasDistinctProcedures())
 			throw new IllegalArgumentException("Appointments contain duplicate procedures or procedures with id == null");
 		

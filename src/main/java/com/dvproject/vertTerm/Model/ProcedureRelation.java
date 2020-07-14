@@ -2,16 +2,16 @@ package com.dvproject.vertTerm.Model;
 
 import java.time.Duration;
 import java.util.Calendar;
-import java.util.Date;
-import java.util.List;
 
 import javax.validation.constraints.NotNull;
 
-import com.dvproject.vertTerm.Service.AppointmentServiceImpl;
 import org.springframework.data.mongodb.core.mapping.DBRef;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 
+/**
+ * @author Joshua Müller
+ */
 public class ProcedureRelation {
 	@JsonFormat(shape = JsonFormat.Shape.NUMBER)
 	private Duration minDifference;
@@ -45,6 +45,9 @@ public class ProcedureRelation {
 		this.procedure = procedure;
 	}
 
+	/**
+	 * Tests, whether the given dates correspond with the differences
+	 */
 	public boolean testConformatyOfDates(Calendar endDate, Calendar startDate) {
 		// calculate the time between endDate and startDate
 		Duration timeBetween = Duration.between(endDate.toInstant(), startDate.toInstant());

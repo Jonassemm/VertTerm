@@ -3,14 +3,15 @@ package com.dvproject.vertTerm.util;
 import java.util.List;
 
 import com.dvproject.vertTerm.Model.Appointment;
-import com.dvproject.vertTerm.Model.Appointmentgroup;
 import com.dvproject.vertTerm.Model.TimeInterval;
 import com.dvproject.vertTerm.Service.AppointmentService;
-import com.dvproject.vertTerm.Service.AppointmentServiceImpl;
 import com.dvproject.vertTerm.Service.RestrictionService;
 import com.dvproject.vertTerm.exception.AppointmentException;
 import com.dvproject.vertTerm.exception.AppointmentInternalException;
 
+/**
+ * @author Joshua Müller
+ */
 public class NormalAppointmentTester extends AppointmentTester {
 
 	public NormalAppointmentTester () {
@@ -18,7 +19,7 @@ public class NormalAppointmentTester extends AppointmentTester {
 	}
 
 	public NormalAppointmentTester (List<TimeInterval> timeIntervallsOfAppointments) {
-		super(null, timeIntervallsOfAppointments);
+		super(timeIntervallsOfAppointments);
 	}
 
 	public NormalAppointmentTester (Appointment appointment) {

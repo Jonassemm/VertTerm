@@ -125,19 +125,21 @@ public class EmployeeServiceImp extends WarningServiceImpl implements EmployeeSe
 	@Override
 	 @PreAuthorize("hasAuthority('EMPLOYEE_WRITE')")
 	public Employee create(Employee newInstance) {
+		Employee retVal = null;
+		
 		if (newInstance.getId() == null) {
 			userService.testMandatoryFields(newInstance);
 			userService.encodePassword(newInstance);
 			newInstance.setFirstName(capitalize(newInstance.getFirstName()));
 			newInstance.setLastName(capitalize(newInstance.getLastName()));
 			availabilityService.update(newInstance.getAvailabilities(), newInstance);
-			return repo.save(newInstance);
+			retVal = repo.save(newInstance);
 		}
-		if (repo.findById(newInstance.getId()).isPresent()) {
+		if (repo.findById(newInstance.getId()).isPresent())
 			throw new ResourceNotFoundException("Instance with the given id (" + newInstance.getId()
 					+ ") exists on the database. Use the update method.");
-		}
-		return null;
+		
+		return retVal;
 	}
 
 	/**
@@ -186,7 +188,7 @@ public class EmployeeServiceImp extends WarningServiceImpl implements EmployeeSe
 			appointmentService.update(app);
 		});
 
-		return getById(id).getSystemStatus() == Status.DELETED;
+		return getById(id).getSystemStatus().isDeleted();
 	}
 
 	/**

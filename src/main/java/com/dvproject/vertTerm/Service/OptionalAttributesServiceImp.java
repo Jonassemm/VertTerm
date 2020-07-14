@@ -205,9 +205,7 @@ public class OptionalAttributesServiceImp implements OptionalAttributesService {
 	/**
 	 * @author Joshua Müller
 	 */
-	//@PreAuthorize("hasAuthority('')")
 	public OptionalAttributes getByClassname(String classname) {
-		// get OptionalAttributes by the given classname
 		return OptionalAttributesRepo.findByClass(classname);
 	}
 

@@ -28,6 +28,10 @@ import com.dvproject.vertTerm.exception.ResourceException;
 import com.dvproject.vertTerm.exception.ResourceTypeException;
 import com.dvproject.vertTerm.exception.RestrictionException;
 
+/**
+ * Everything not otherwise specified by Robert Schulz
+ * @author Joshua Müller
+ */
 @Document("appointment")
 public class Appointment implements Serializable {
 	private static final long serialVersionUID = 2862268218236152790L;
@@ -96,6 +100,11 @@ public class Appointment implements Serializable {
 		return plannedEndtime;
 	}
 
+	/**
+	 * @author Joshua Müller
+	 * 
+	 * Generates the new plannedEndtime of this appointment when trying to pull it forward in time
+	 */
 	public Date generatePlannedEndtime(Date starttime) {
 		Calendar enddate = Calendar.getInstance(TimeZone.getDefault());
 		int proceduredDurationInMinutesInt = 0;
@@ -114,13 +123,6 @@ public class Appointment implements Serializable {
 		} while (procedureDurationInMinutesLong > 0);
 
 		return enddate.getTime();
-	}
-
-	/**
-	 * @author Robert Schulz
-	 */
-	public boolean blocksBookedEntities() {
-		return this.getStatus() == AppointmentStatus.DONE || this.getStatus() == AppointmentStatus.PLANNED;
 	}
 
 	public void setPlannedEndtime(Date plannedEndtime) {
@@ -194,8 +196,9 @@ public class Appointment implements Serializable {
 	}
 
 	public List<Employee> retrieveNotActiveEmployees() {
-		return bookedEmployees.stream().filter(employee -> !employee.getSystemStatus().isActive())
-				.collect(Collectors.toList());
+		return bookedEmployees.stream()
+					.filter(employee -> !employee.getSystemStatus().isActive())
+					.collect(Collectors.toList());
 	}
 
 	public List<ObjectId> idsOfEmployees(){
@@ -211,11 +214,15 @@ public class Appointment implements Serializable {
 	}
 
 	public List<Resource> retrieveNotActiveResources() {
-		return bookedResources.stream().filter(resource -> !resource.getStatus().isActive()).collect(Collectors.toList());
+		return bookedResources.stream()
+					.filter(resource -> !resource.getStatus().isActive())
+					.collect(Collectors.toList());
 	}
 
 	public List<ObjectId> idsOfResources () {
-		return bookedResources.stream().map(res -> new ObjectId(res.getId())).collect(Collectors.toList());
+		return bookedResources.stream()
+					.map(res -> new ObjectId(res.getId()))
+					.collect(Collectors.toList());
 	}
 
 	public void setBookedResources(List<Resource> bookedResources) {
@@ -256,6 +263,13 @@ public class Appointment implements Serializable {
 		this.customerIsWaiting = customerIsWaiting;
 	}
 
+	/**
+	 * @author Joshua Müller
+	 * 
+	 * Tests whether the planned times in this appointment overlap with any TimeInterval in the list.
+	 * If it does, then two of the appointments in the appointmentgroup that is being tested overlap.
+	 * see AppointmentTester
+	 */
 	public void testOverlapping(List<TimeInterval> timeIntervallsOfAppointments) {
 		boolean errorOccured = timeIntervallsOfAppointments.stream()
 				.anyMatch(interval -> interval.isInTimeInterval(plannedStarttime, plannedEndtime));
@@ -266,6 +280,11 @@ public class Appointment implements Serializable {
 			throw new AppointmentTimeException("An appointment overlaps with annother appointment", this);
 	}
 
+	/**
+	 * @author Joshua Müller
+	 * 
+	 * Tests the appointment for restrictions of the resource/procedure that correspond to a restriction of the user
+	 */
 	public void testRestrictions(RestrictionService restrictionService) {
 		List<Restriction> restrictionsToTest;
 		List<Restriction> userRestrictions = bookedCustomer.getRestrictions();
@@ -314,6 +333,11 @@ public class Appointment implements Serializable {
 		bookedResources.forEach(res -> res.isAvailable(plannedStarttime, plannedEndtime));
 	}
 
+	/**
+	 * @author Joshua Müller
+	 * 
+	 * Tests, whether the employees of the appointment satisfy the conditions of the positions of the procedure
+	 */
 	public void testBookedEmployeesAgainstPositionsOfProcedure() {
 		List<Position> procedurePositions = bookedProcedure.getNeededEmployeePositions();
 
@@ -355,6 +379,11 @@ public class Appointment implements Serializable {
 			throw new EmployeeException("Employee of the appointment is not active", notActiveEmployees.get(0));
 	}
 
+	/**
+	 * @author Joshua Müller
+	 * 
+	 * Tests, whether the resources of the appointment satisfy the conditions of the resourcetypes of the procedure
+	 */
 	public void testBookedResourcesAgainstResourceTypesOfProcedure() {
 		List<ResourceType> procedureResourceTypes = bookedProcedure.getNeededResourceTypes();
 
@@ -425,6 +454,12 @@ public class Appointment implements Serializable {
 			throw new EmployeeException("The same employee is beeing used twice: ", employee);
 	}
 
+	/**
+	 * 
+	 * @author Joshua Müller
+	 * 
+	 * generic Method to test whether all availables (interface) are distinct
+	 */
 	public <T extends Available> T getNotDistinctAvailable(List<T> availables) {
 		List<String> availableIds = new ArrayList<>();
 
@@ -442,10 +477,17 @@ public class Appointment implements Serializable {
 
 	public void hasDistinctBookedCustomer() {
 		String bookedCustomerid = bookedCustomer.getId();
-		if (bookedEmployees.stream().anyMatch(emp -> emp.getId().equals(bookedCustomerid)))
+		if (bookedEmployees.stream()
+					.anyMatch(emp -> emp.getId().equals(bookedCustomerid)))
 			throw new EmployeeException("The bookedCustomer can not be a used employee at the same time", null);
 	}
 
+	/**
+	 * 
+	 * @author Joshua Müller
+	 * 
+	 * Tests, whether any other appointment with a resource, employee or user in the database overlaps with this one
+	 */
 	public void testBlockage(AppointmentService appointmentService) throws AppointmentInternalException {
 		List<Appointment> failedAppointments = new ArrayList<>();
 		String message = null;
@@ -475,6 +517,12 @@ public class Appointment implements Serializable {
 			throw new AppointmentInternalException(failedAppointments, message, this);
 	}
 
+	/**
+	 * 
+	 * @author Joshua Müller
+	 * 
+	 * Tests, whether any other appointment with an employee in the database overlaps with this one
+	 */
 	private void testEmployeeAppointments(AppointmentService appointmentService) throws AppointmentInternalException {
 		List<Appointment> failedAppointments = new ArrayList<>();
 		List<Appointment> appointmentsOfEmployee = null;
@@ -490,12 +538,74 @@ public class Appointment implements Serializable {
 
 			if (isNotEmptyAndDoesNotOnlyContainThisAppointment(appointmentsOfEmployee))
 				failedAppointments.addAll(
-						appointmentsOfEmployee.stream().filter(app -> !app.getId().equals(id)).collect(Collectors.toList()));
+						appointmentsOfEmployee.stream()
+									.filter(app -> !app.getId().equals(id))
+									.collect(Collectors.toList()));
 		}
 
 		if (failedAppointments.size() != 0)
 			throw new AppointmentInternalException(failedAppointments,
 					"An employee already has an appointment in the given time interval", this);
+	}
+
+	/**
+	 * 
+	 * @author Joshua Müller
+	 * 
+	 * Tests, whether any other appointment with a resources in the database overlaps with this one
+	 */
+	private void testResourceAppointments(AppointmentService appointmentService) throws AppointmentInternalException {
+		List<Appointment> failedAppointments = new ArrayList<>();
+
+		for (Resource resource : bookedResources) {
+			List<Appointment> appointmentsOfResource = appointmentService.getAppointmentsOfBookedResourceInTimeinterval(
+					resource.getId(), plannedStarttime, plannedEndtime, AppointmentStatus.PLANNED);
+
+			if (isNotEmptyAndDoesNotOnlyContainThisAppointment(appointmentsOfResource))
+				failedAppointments.addAll(
+						appointmentsOfResource.stream()
+								.filter(app -> !app.getId().equals(id))
+								.collect(Collectors.toList()));
+		}
+
+		if (failedAppointments.size() != 0)
+			throw new AppointmentInternalException(failedAppointments,
+					"A resource already has an appointment in the given time interval", this);
+	}
+
+	/**
+	 * 
+	 * @author Joshua Müller
+	 * 
+	 * Tests, whether any other appointment with the user in the database overlaps with this one
+	 */
+	private void testCustomerAppointments(AppointmentService appointmentService) throws AppointmentInternalException {
+		try {
+			List<Appointment> appointmentsOfCustomer = appointmentService.getAppointmentsOfBookedCustomerInTimeinterval(
+					bookedCustomer.getId(), plannedStarttime, plannedEndtime, AppointmentStatus.PLANNED);
+
+			if (isNotEmptyAndDoesNotOnlyContainThisAppointment(appointmentsOfCustomer)) {
+				throw new AppointmentInternalException(
+						appointmentsOfCustomer.stream()
+								.filter(app -> !app.getId().equals(id))
+								.collect(Collectors.toList()),
+						"The customer already has an appointment in the given time interval", this);
+			}
+		} catch (NullPointerException ex) {
+			if (!bookedCustomer.getUsername().contains("anonymousUser"))
+				throw ex;
+		}
+	}
+
+	private boolean isNotEmptyAndDoesNotOnlyContainThisAppointment(List<Appointment> appointments) {
+		return !appointments.isEmpty() && (appointments.size() != 1 || !appointments.get(0).getId().equals(id));
+	}
+	
+	/**
+	 * @author Robert Schulz
+	 */
+	public boolean blocksBookedEntities() {
+		return this.getStatus() == AppointmentStatus.DONE || this.getStatus() == AppointmentStatus.PLANNED;
 	}
 
 	/**
@@ -525,43 +635,6 @@ public class Appointment implements Serializable {
 			if (!found) { return false; }
 		}
 		return true;
-	}
-
-	private void testResourceAppointments(AppointmentService appointmentService) throws AppointmentInternalException {
-		List<Appointment> failedAppointments = new ArrayList<>();
-
-		for (Resource resource : bookedResources) {
-			List<Appointment> appointmentsOfResource = appointmentService.getAppointmentsOfBookedResourceInTimeinterval(
-					resource.getId(), plannedStarttime, plannedEndtime, AppointmentStatus.PLANNED);
-
-			if (isNotEmptyAndDoesNotOnlyContainThisAppointment(appointmentsOfResource))
-				failedAppointments.addAll(
-						appointmentsOfResource.stream().filter(app -> !app.getId().equals(id)).collect(Collectors.toList()));
-		}
-
-		if (failedAppointments.size() != 0)
-			throw new AppointmentInternalException(failedAppointments,
-					"A resource already has an appointment in the given time interval", this);
-	}
-
-	private void testCustomerAppointments(AppointmentService appointmentService) throws AppointmentInternalException {
-		try {
-			List<Appointment> appointmentsOfCustomer = appointmentService.getAppointmentsOfBookedCustomerInTimeinterval(
-					bookedCustomer.getId(), plannedStarttime, plannedEndtime, AppointmentStatus.PLANNED);
-
-			if (isNotEmptyAndDoesNotOnlyContainThisAppointment(appointmentsOfCustomer)) {
-				throw new AppointmentInternalException(
-						appointmentsOfCustomer.stream().filter(app -> !app.getId().equals(id)).collect(Collectors.toList()),
-						"The customer already has an appointment in the given time interval", this);
-			}
-		} catch (NullPointerException ex) {
-			if (!bookedCustomer.getUsername().contains("anonymousUser"))
-				throw ex;
-		}
-	}
-
-	private boolean isNotEmptyAndDoesNotOnlyContainThisAppointment(List<Appointment> appointments) {
-		return !appointments.isEmpty() && (appointments.size() != 1 || !appointments.get(0).getId().equals(id));
 	}
 
 	/**

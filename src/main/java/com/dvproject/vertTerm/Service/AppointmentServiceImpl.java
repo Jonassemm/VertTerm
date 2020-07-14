@@ -134,7 +134,7 @@ public class AppointmentServiceImpl implements AppointmentService {
 
 		repo.save(appointment);
 
-		return getById(id).getStatus() == AppointmentStatus.DELETED;
+		return getById(id).getStatus().isDeleted();
 	}
 
 	/** author Amar Alkhankan  **/
@@ -249,9 +249,12 @@ public class AppointmentServiceImpl implements AppointmentService {
 		boolean hasOneWarning = warnings.size() == 1;
 
 		if (isUseridEmpty) {
-			return hasOneWarning ? getAppointmentsByWarning(warnings.get(0)) : getAppointmentsByWarnings(warnings);
+			return hasOneWarning 
+					? getAppointmentsByWarning(warnings.get(0)) 
+							: getAppointmentsByWarnings(warnings);
 		} else {
-			return hasOneWarning ? getAppointmentsByWarningAndId(userid, warnings.get(0))
+			return hasOneWarning 
+					? getAppointmentsByWarningAndId(userid, warnings.get(0))
 					: getAppointmentsByWarningsAndId(userid, warnings);
 		}
 	}
@@ -259,28 +262,35 @@ public class AppointmentServiceImpl implements AppointmentService {
 	@Override
 	@PreAuthorize("hasAuthority('APPOINTMENT_READ')")
 	public List<Appointment> getAppointmentsByUserIdAndAppointmentStatus(String userid, AppointmentStatus status) {
-		return status == null ? getAppointmentsByUserid(userid) : getAppointmentsByUserid(userid, status);
+		return status == null 
+				? getAppointmentsByUserid(userid) 
+				: getAppointmentsByUserid(userid, status);
 	}
 
 	@Override
 	@PreAuthorize("hasAuthority('APPOINTMENT_READ')")
 	public List<Appointment> getAppointmentsByEmployeeIdAndAppointmentStatus(String employeeid,
 			AppointmentStatus status) {
-		return status == null ? getAppointmentsByEmployeeid(employeeid) : getAppointmentsByEmployeeid(employeeid, status);
+		return status == null 
+				? getAppointmentsByEmployeeid(employeeid) 
+				: getAppointmentsByEmployeeid(employeeid, status);
 	}
 
 	@Override
 	@PreAuthorize("hasAuthority('APPOINTMENT_READ')")
 	public List<Appointment> getAppointmentsByResourceIdAndAppointmentStatus(String resourceid,
 			AppointmentStatus status) {
-		return status == null ? getAppointmentsByResourceid(resourceid) : getAppointmentsByResourceid(resourceid, status);
+		return status == null 
+				? getAppointmentsByResourceid(resourceid) 
+				: getAppointmentsByResourceid(resourceid, status);
 	}
 
 	@Override
 //	@PreAuthorize("hasAuthority('APPOINTMENT_READ')")
 	public List<Appointment> getAppointmentsByProcedureIdAndAppointmentStatus(String procedureid,
 			AppointmentStatus status) {
-		return status == null ? repo.findByBookedProcedureId(procedureid)
+		return status == null 
+				? repo.findByBookedProcedureId(procedureid)
 				: repo.findByBookedProcedureIdAndStatus(procedureid, status);
 	}
 
@@ -288,7 +298,8 @@ public class AppointmentServiceImpl implements AppointmentService {
 	@PreAuthorize("hasAuthority('APPOINTMENT_READ')")
 	public List<Appointment> getAppointmentsOfBookedEmployeeInTimeinterval(String employeeid, Date starttime,
 			Date endtime, AppointmentStatus status) {
-		return status == null ? repo.findAppointmentsByBookedEmployeeInTimeinterval(employeeid, starttime, endtime)
+		return status == null 
+				? repo.findAppointmentsByBookedEmployeeInTimeinterval(employeeid, starttime, endtime)
 				: repo.findAppointmentsByBookedEmployeeInTimeintervalWithStatus(employeeid, starttime, endtime, status);
 	}
 
@@ -296,7 +307,8 @@ public class AppointmentServiceImpl implements AppointmentService {
 	@PreAuthorize("hasAuthority('APPOINTMENT_READ')")
 	public List<Appointment> getAppointmentsOfBookedResourceInTimeinterval(String resourceid, Date starttime,
 			Date endtime, AppointmentStatus status) {
-		return status == null ? repo.findAppointmentsByBookedResourceInTimeinterval(resourceid, starttime, endtime)
+		return status == null 
+				? repo.findAppointmentsByBookedResourceInTimeinterval(resourceid, starttime, endtime)
 				: repo.findAppointmentsByBookedResourceInTimeintervalWithStatus(resourceid, starttime, endtime, status);
 	}
 
@@ -304,7 +316,8 @@ public class AppointmentServiceImpl implements AppointmentService {
 	@PreAuthorize("hasAuthority('APPOINTMENT_READ')")
 	public List<Appointment> getAppointmentsOfBookedCustomerInTimeinterval(String userid, Date starttime, Date endtime,
 			AppointmentStatus status) {
-		return status == null ? repo.findAppointmentsByBookedCustomerInTimeinterval(userid, starttime, endtime)
+		return status == null 
+				? repo.findAppointmentsByBookedCustomerInTimeinterval(userid, starttime, endtime)
 				: repo.findAppointmentsByBookedCustomerInTimeintervalWithStatus(userid, starttime, endtime, status);
 	}
 
@@ -333,7 +346,8 @@ public class AppointmentServiceImpl implements AppointmentService {
 	@PreAuthorize("hasAuthority('APPOINTMENT_READ')")
 	public List<Appointment> getAppointmentsInTimeIntervalAndStatus(Date starttime, Date endtime,
 			AppointmentStatus status) {
-		return status == null ? getAppointmentsInTimeInterval(starttime, endtime)
+		return status == null 
+				? getAppointmentsInTimeInterval(starttime, endtime)
 				: getAppointmentsInTimeIntervalWithStatus(starttime, endtime, status);
 	}
 
@@ -419,8 +433,8 @@ public class AppointmentServiceImpl implements AppointmentService {
 
 	public List<Appointment> cleanseAppointmentsOfBlocker(List<Appointment> appointments) {
 		return appointments.stream()
-				.filter(appointment -> appointment.getBookedProcedure() != null)
-				.collect(Collectors.toList());
+						.filter(appointment -> appointment.getBookedProcedure() != null)
+						.collect(Collectors.toList());
 	}
 
 	public void loadAppointment(Appointment appointmentToLoad) {
@@ -433,11 +447,13 @@ public class AppointmentServiceImpl implements AppointmentService {
 		User customer = bookedCustomer.getId() != null ? userService.getById(bookedCustomer.getId()) : null;
 
 		// populate list of employees
-		appointmentToLoad.getBookedEmployees().stream().filter(employee -> employee.getId() != null)
-				.forEach(employee -> employees.add(EmpSer.getById(employee.getId())));
+		appointmentToLoad.getBookedEmployees().stream()
+						.filter(employee -> employee.getId() != null)
+						.forEach(employee -> employees.add(EmpSer.getById(employee.getId())));
 		// populate list of resources
-		appointmentToLoad.getBookedResources().stream().filter(resource -> resource.getId() != null)
-				.forEach(resource -> resources.add(ResSer.getById(resource.getId())));
+		appointmentToLoad.getBookedResources().stream()
+						.filter(resource -> resource.getId() != null)
+						.forEach(resource -> resources.add(ResSer.getById(resource.getId())));
 
 		appointmentToLoad.setBookedEmployees(employees);
 		appointmentToLoad.setBookedResources(resources);

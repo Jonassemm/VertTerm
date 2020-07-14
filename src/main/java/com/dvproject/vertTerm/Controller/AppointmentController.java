@@ -64,12 +64,18 @@ public class AppointmentController {
 		return appointment;
 	}
 
+	/**
+	 * @author Joshua Müller
+	 */
 	@GetMapping("/pull/{id}")
 	public void testPullability(@PathVariable String id) {
 		Appointment appointment = service.getById(id);
 		appointmentgroupService.setPullableAppointment(appointment);
 	}
 
+	/**
+	 * @author Joshua Müller
+	 */
 	@GetMapping("/Own")
 	public @ResponseBody List<Appointment> getOwnAppointments(Principal principal) {
 		AuthorityTester.containsAny("OWN_APPOINTMENT_READ");
@@ -84,12 +90,16 @@ public class AppointmentController {
 		return appointments;
 	}
 
+	/**
+	 * @author Joshua Müller
+	 */
 	@GetMapping("/Resources/{resourceId}")
 	public @ResponseBody List<Appointment> getByResourceId(
 			@PathVariable String resourceId,
 			@RequestParam(required = false) Date starttime,
 			@RequestParam(required = false) Date endtime,
-			@RequestParam(required = false, name = "status") String statusString) {
+			@RequestParam(required = false, name = "status") String statusString) 
+	{
 		List<Appointment> appointments = null;
 		AppointmentStatus status = AppointmentStatus.enumOf(statusString);
 
@@ -104,12 +114,16 @@ public class AppointmentController {
 		return appointments;
 	}
 
+	/**
+	 * @author Joshua Müller
+	 */
 	@GetMapping("/user/{userid}")
 	public List<Appointment> getAppointmentsWithUserInTimeInterval(
 			@PathVariable String userid,
 			@RequestParam(required = false) Date starttime, 
 			@RequestParam(required = false) Date endtime,
-			@RequestParam(required = false, name = "status") String statusString) {
+			@RequestParam(required = false, name = "status") String statusString) 
+	{
 		List<Appointment> appointments = new ArrayList<>();
 		boolean isEmployee = userService.getById(userid) instanceof Employee;
 		AppointmentStatus appointmentStatus = AppointmentStatus.enumOf(statusString);
@@ -132,10 +146,14 @@ public class AppointmentController {
 		return appointments;
 	}
 
+	/**
+	 * @author Joshua Müller
+	 */
 	@GetMapping("/warnings")
 	public List<Appointment> getAppointmentsWithWarnings(
 			@RequestParam(required = false) String userid,
-			@RequestParam(required = false, name = "warnings") List<String> warningStrings) {
+			@RequestParam(required = false, name = "warnings") List<String> warningStrings) 
+	{
 		List<Warning> warnings = null;
 		boolean areWarningStringsEmpty = warningStrings == null || warningStrings.isEmpty();
 
@@ -144,11 +162,15 @@ public class AppointmentController {
 		return service.getAllAppointmentsByUseridAndWarnings(userid, warnings);
 	}
 
+	/**
+	 * @author Joshua Müller
+	 */
 	@GetMapping({ "/status/{status}", "/status/" })
 	public List<Appointment> getAppointmentsInTimeInterval(
 			@PathVariable(required = false) AppointmentStatus status,
 			@RequestParam Date starttime, 
-			@RequestParam Date endtime) {
+			@RequestParam Date endtime) 
+	{
 		return service.getAppointmentsInTimeIntervalAndStatus(starttime, endtime, status);
 	}
 

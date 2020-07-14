@@ -12,6 +12,9 @@ import org.springframework.web.bind.annotation.RestController;
 import com.dvproject.vertTerm.Model.OpeningHours;
 import com.dvproject.vertTerm.Service.OpeningHoursService;
 
+/**
+ * @author Joshua Müller
+ */
 @RestController
 @RequestMapping("/OpeningHours")
 @ResponseBody

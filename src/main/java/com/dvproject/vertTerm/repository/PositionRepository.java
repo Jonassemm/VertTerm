@@ -14,7 +14,5 @@ import com.dvproject.vertTerm.Model.Status;
 public interface PositionRepository extends MongoRepository<Position, String>{
     Optional<Position> findById (String id);
     
-    Position save (Position position);
-    
     List<Position> findByStatus(Status status);
 }
