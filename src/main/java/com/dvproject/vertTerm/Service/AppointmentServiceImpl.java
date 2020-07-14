@@ -2,8 +2,11 @@ package com.dvproject.vertTerm.Service;
 
 import com.dvproject.vertTerm.Model.*;
 import com.dvproject.vertTerm.exception.AppointmentTimeException;
+import com.dvproject.vertTerm.exception.ProcedureException;
 import com.dvproject.vertTerm.repository.AppointmentRepository;
 import com.dvproject.vertTerm.repository.AppointmentgroupRepository;
+import com.dvproject.vertTerm.util.AppointmentTester;
+import com.dvproject.vertTerm.util.NormalAppointmentTester;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.rest.webmvc.ResourceNotFoundException;
@@ -17,6 +20,9 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.bson.types.ObjectId;
+
+
+/** nur Methode "getAvailableResourcesAndEmployees" : author Amar Alkhankan  **/
 
 @Service
 public class AppointmentServiceImpl implements AppointmentService {
@@ -37,6 +43,8 @@ public class AppointmentServiceImpl implements AppointmentService {
 	private AppointmentgroupService appointmentgroupService;
 	@Autowired
 	private ProcedureService procedureServie;
+	@Autowired
+	private UserService userService;
 
 	@Override
 	public List<Appointment> getAll() {
@@ -129,6 +137,7 @@ public class AppointmentServiceImpl implements AppointmentService {
 		return getById(id).getStatus() == AppointmentStatus.DELETED;
 	}
 
+	/** author Amar Alkhankan  **/
 	public Appointmentgroup getAvailableResourcesAndEmployees(Appointmentgroup group) {
 		List<Employee> Employees = new ArrayList<>();
 		List<Resource> Resources = new ArrayList<>();
@@ -141,7 +150,7 @@ public class AppointmentServiceImpl implements AppointmentService {
 		group.testProcedureRelations(false);
 		List<TimeInterval> timelist = new ArrayList<>();
 		try {
-			appointments.forEach(app -> new NormalBookingTester(app).testAppointmentTimes(timelist));
+			appointments.forEach(app -> new NormalAppointmentTester(app).testAppointmentTimes(timelist));
 		} catch (RuntimeException ex) {
 
 		}
@@ -188,7 +197,7 @@ public class AppointmentServiceImpl implements AppointmentService {
 			if (Positions.size() > 0)
 				for (Position pos : Positions) {
 					// boolean Employeefound = false;
-					for (Employee employee : EmpSer.getEmployeesByPositionIdandStatus(pos.getId(),Status.ACTIVE)) {
+					for (Employee employee : EmpSer.getEmployeesByPositionIdandStatus(pos.getId(), Status.ACTIVE)) {
 						List<Appointment> EmpApps = this.getAppointmentsOfBookedEmployeeInTimeinterval(employee.getId(),
 								appointment.getPlannedStarttime(), appointment.getActualEndtime(), AppointmentStatus.PLANNED);
 						boolean containedinEmployees = Employees.stream()
@@ -213,7 +222,7 @@ public class AppointmentServiceImpl implements AppointmentService {
 			Resources = new ArrayList<>();
 			appointment.setBookedProcedure(procedureOfAppointment);
 			// test Availabilities Of (Procedur/Employees/Resources)
-			BookingTester tester = new NormalBookingTester();
+			AppointmentTester tester = new NormalAppointmentTester();
 			try {
 				tester.testAvailabilities();
 			} catch (Exception ex) {}
@@ -228,7 +237,7 @@ public class AppointmentServiceImpl implements AppointmentService {
 		// appgrouprepo.save(group);
 		return group;
 	}
-	
+
 	// Everything below @author Joshua Müller
 	@Override
 	@PreAuthorize("hasAuthority('APPOINTMENT_READ')")
@@ -401,7 +410,7 @@ public class AppointmentServiceImpl implements AppointmentService {
 
 	private List<Appointment> getAppointmentsInTimeIntervalWithStatus(Date starttime, Date endtime,
 			AppointmentStatus status) {
-		return repo.findAppointmentsByTimeintervalAndStatus(starttime, endtime, status);
+		return repo.findAppointmentsByTimeintervalAndStatus(status, starttime, endtime);
 	}
 
 	private List<Appointment> getAppointmentsInTimeInterval(Date starttime, Date endtime) {
@@ -409,7 +418,35 @@ public class AppointmentServiceImpl implements AppointmentService {
 	}
 
 	public List<Appointment> cleanseAppointmentsOfBlocker(List<Appointment> appointments) {
-		return appointments.stream().filter(appointment -> appointment.getBookedProcedure() != null)
+		return appointments.stream()
+				.filter(appointment -> appointment.getBookedProcedure() != null)
 				.collect(Collectors.toList());
+	}
+
+	public void loadAppointment(Appointment appointmentToLoad) {
+		Procedure bookedProcedure = appointmentToLoad.getBookedProcedure();
+		User bookedCustomer = appointmentToLoad.getBookedCustomer();
+		
+		List<Employee> employees = new ArrayList<>();
+		List<Resource> resources = new ArrayList<>();
+		Procedure procedure = procedureServie.getById(bookedProcedure.getId());
+		User customer = bookedCustomer.getId() != null ? userService.getById(bookedCustomer.getId()) : null;
+
+		// populate list of employees
+		appointmentToLoad.getBookedEmployees().stream().filter(employee -> employee.getId() != null)
+				.forEach(employee -> employees.add(EmpSer.getById(employee.getId())));
+		// populate list of resources
+		appointmentToLoad.getBookedResources().stream().filter(resource -> resource.getId() != null)
+				.forEach(resource -> resources.add(ResSer.getById(resource.getId())));
+
+		appointmentToLoad.setBookedEmployees(employees);
+		appointmentToLoad.setBookedResources(resources);
+		appointmentToLoad.setBookedProcedure(procedure);
+		appointmentToLoad.setBookedCustomer(customer);
+		
+		appointmentToLoad.setStatus(AppointmentStatus.PLANNED);
+
+		if (appointmentToLoad.notStartedOrEnded())
+			throw new ProcedureException("Appointment of an procedure contains actual times", procedure);
 	}
 }

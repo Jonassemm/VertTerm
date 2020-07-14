@@ -10,7 +10,6 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.dvproject.vertTerm.Model.*;
-import com.dvproject.vertTerm.Service.EmployeeService;
 import com.dvproject.vertTerm.repository.*;
 
 /**

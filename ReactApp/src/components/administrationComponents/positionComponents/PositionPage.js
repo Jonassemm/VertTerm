@@ -1,8 +1,9 @@
 //author: Patrick Venturini
 import React, { useState, useEffect } from "react"
-import {getPositions } from "../../requests"
+import {getPositions} from "../../requests"
 import PositionForm from "./PositionForm"
 import OverviewPage, {modalTypes} from "../../OverviewPage"
+
 
 function PositionPage({userStore}) {
     const [positions, setPositions] = useState([])
@@ -16,7 +17,7 @@ function PositionPage({userStore}) {
     //----------------------------------LOAD-------------------------------
     const loadPositions = async () => {
         try{ 
-          const {data} = await getPositions("notdeleted");
+          const {data} = await getPositions("NOTDELETED");
           setPositions(data);
         }catch (error) {
           console.log(Object.keys(error), error.message)

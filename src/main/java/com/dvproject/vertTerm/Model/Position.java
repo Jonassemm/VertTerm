@@ -52,5 +52,9 @@ public class Position {
 	public void setStatus(Status status) {
 		this.status = status;
 	}
+	
+	public boolean sameAs(Position position) {
+		return id.equals(position.getId());
+	}
 
 }

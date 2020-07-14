@@ -9,7 +9,6 @@ import javax.validation.constraints.NotNull;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
-import org.springframework.data.rest.webmvc.ResourceNotFoundException;
 import com.dvproject.vertTerm.Service.AppointmentService;
 import com.dvproject.vertTerm.exception.AvailabilityException;
 
@@ -22,8 +21,6 @@ public class Resource extends Bookable implements Serializable, Available {
 	private String description;
 	@NotNull
 	private Status status;
-	@DBRef
-	private List<Resource> childResources;
 	@DBRef
 	private List<Restriction> restrictions;
 	@DBRef
@@ -51,14 +48,6 @@ public class Resource extends Bookable implements Serializable, Available {
 
 	public void setStatus(Status status) {
 		this.status = status;
-	}
-
-	public List<Resource> getChildResources() {
-		return childResources;
-	}
-
-	public void setChildResources(List<Resource> childResources) {
-		this.childResources = childResources;
 	}
 
 	public List<Restriction> getRestrictions() {

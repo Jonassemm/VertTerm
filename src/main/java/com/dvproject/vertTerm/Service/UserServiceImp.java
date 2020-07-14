@@ -5,6 +5,7 @@ import com.dvproject.vertTerm.repository.RoleRepository;
 import com.dvproject.vertTerm.repository.UserRepository;
 import com.dvproject.vertTerm.security.SetupDataLoader;
 
+import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.rest.webmvc.ResourceNotFoundException;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -210,6 +211,7 @@ public class UserServiceImp extends WarningServiceImpl implements UserService {
 		User newUser = new User();
 
 		// create unique username
+		newUser.setId(new ObjectId().toHexString());
 		newUser.setUsername(username + repo.count());
 		newUser.setPassword(UUID.randomUUID().toString());
 		newUser.setSystemStatus(Status.ACTIVE);

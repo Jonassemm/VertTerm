@@ -4,6 +4,7 @@ import "./BookingForm.css"
 import ObjectPicker from "../ObjectPicker"
 import {Form} from "react-bootstrap"
 import DatePicker from "react-datepicker"
+import moment from "moment"
 
 export default function BlockerForm({ edit, apt, setApt}) {
     const [name, setName] = useState("")
@@ -14,16 +15,17 @@ export default function BlockerForm({ edit, apt, setApt}) {
 
     function setupEdit() {
         if (edit) {
+            setName(apt.name)
             setEmployees(apt.bookedEmployees)
             setResources(apt.bookedResources)
-            setStartTime(apt.bookedStartTime)
-            setEndTime(apt.plannedEndtime)
+            setStartTime(moment(apt.plannedStarttime, "DD.MM.YYYY HH:mm").toDate())
+            setEndTime(moment(apt.plannedEndtime,"DD.MM.YYYY HH:mm").toDate())
         }
     }
 
     useEffect(() => {
         setupEdit()
-    }, [])
+    },[])
 
     useEffect(() => {
         setApt(buildApt())
@@ -69,6 +71,7 @@ export default function BlockerForm({ edit, apt, setApt}) {
                             <ObjectPicker
                                 className="input"
                                 DbObject="employee"
+                                initial={edit && employees}
                                 multiple={true}
                                 setState={setEmployees} />
                         </div>
@@ -82,6 +85,7 @@ export default function BlockerForm({ edit, apt, setApt}) {
                             <ObjectPicker
                                 className="input"
                                 DbObject="resource"
+                                initial={edit && resources}
                                 multiple={true}
                                 setState={setResources} />
                         </div>
@@ -98,7 +102,10 @@ export default function BlockerForm({ edit, apt, setApt}) {
                                 popperPlacement="left"
                                 className="input"
                                 selected={startTime}
-                                onChange={e => setStartTime(e)}
+                                onChange={e => {
+                                    setStartTime(e)
+                                    if(e > endTime) setEndTime(e)
+                                }}
                                 showTimeSelect
                                 timeFormat="HH:mm"
                                 timeIntervals={5}
@@ -117,7 +124,10 @@ export default function BlockerForm({ edit, apt, setApt}) {
                                 className="input"
                                 popperPlacement="left"
                                 selected={endTime}
-                                onChange={e => setEndTime(e)}
+                                onChange={e => {
+                                    if(e > startTime) setEndTime(e)
+                                    else setEndTime(startTime)
+                                }}
                                 showTimeSelect
                                 timeFormat="HH:mm"
                                 timeIntervals={5}

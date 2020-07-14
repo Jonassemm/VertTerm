@@ -13,6 +13,8 @@ import java.util.stream.Collectors;
 import javax.validation.constraints.NotNull;
 
 import com.dvproject.vertTerm.Service.*;
+
+import org.bson.types.ObjectId;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -64,6 +66,10 @@ public class Appointment implements Serializable {
 
 	public void setId(String id) {
 		this.id = id;
+	}
+
+	public boolean hasSameIdAs(String appointmentid) {
+		return id.equals(appointmentid);
 	}
 
 	public boolean hasId() {
@@ -155,6 +161,18 @@ public class Appointment implements Serializable {
 		this.actualEndtime = actualEndtime;
 	}
 
+	public boolean ended() {
+		return actualStarttime != null && actualEndtime != null;
+	}
+
+	public boolean started() {
+		return actualStarttime != null && actualEndtime == null;
+	}
+
+	public boolean notStartedOrEnded() {
+		return actualStarttime != null || actualEndtime != null;
+	}
+
 	public Procedure getBookedProcedure() {
 		return bookedProcedure;
 	}
@@ -180,6 +198,10 @@ public class Appointment implements Serializable {
 				.collect(Collectors.toList());
 	}
 
+	public List<ObjectId> idsOfEmployees(){
+		return bookedEmployees.stream().map(emp -> new ObjectId(emp.getId())).collect(Collectors.toList());
+	}
+
 	public void setBookedEmployees(List<Employee> bookedEmployees) {
 		this.bookedEmployees = bookedEmployees;
 	}
@@ -190,6 +212,10 @@ public class Appointment implements Serializable {
 
 	public List<Resource> retrieveNotActiveResources() {
 		return bookedResources.stream().filter(resource -> !resource.getStatus().isActive()).collect(Collectors.toList());
+	}
+
+	public List<ObjectId> idsOfResources () {
+		return bookedResources.stream().map(res -> new ObjectId(res.getId())).collect(Collectors.toList());
 	}
 
 	public void setBookedResources(List<Resource> bookedResources) {
@@ -292,25 +318,26 @@ public class Appointment implements Serializable {
 		List<Position> procedurePositions = bookedProcedure.getNeededEmployeePositions();
 
 		if (procedurePositions.size() != bookedEmployees.size()) {
+			// must be override -> set Warning
 			addWarnings(Warning.EMPLOYEE_WARNING);
 			return;
 		}
 
 		for (int i = 0; i < bookedEmployees.size(); i++) {
 			boolean correctPositionsForEmployees = false;
-			boolean allResourceTypesNotDeleted = false;
+			boolean positionsActive = false;
 			Employee employee = bookedEmployees.get(i);
 			Position positionOfProcedure = procedurePositions.get(i);
 
 			List<Position> positionsOfEmployee = employee.getPositions();
 
-			allResourceTypesNotDeleted   = positionsOfEmployee.stream()
-					.noneMatch(position -> position.getStatus() == Status.DELETED);
+			positionsActive              = positionsOfEmployee.stream()
+					.allMatch(position -> position.getStatus().isActive());
 
 			correctPositionsForEmployees = positionsOfEmployee.stream()
-					.anyMatch(position -> position.getId().equals(positionOfProcedure.getId()));
+					.anyMatch(position -> position.sameAs(positionOfProcedure));
 
-			if (!allResourceTypesNotDeleted)
+			if (!positionsActive)
 				throw new PositionException("Position deleted", positionOfProcedure);
 
 			if (!correctPositionsForEmployees)
@@ -332,28 +359,28 @@ public class Appointment implements Serializable {
 		List<ResourceType> procedureResourceTypes = bookedProcedure.getNeededResourceTypes();
 
 		if (procedureResourceTypes.size() != bookedResources.size()) {
+			// must be override -> set Warning
 			addWarnings(Warning.RESOURCE_WARNING);
 			return;
 		}
 
 		for (int i = 0; i < bookedResources.size(); i++) {
-			boolean correctResourcesForResourceTypes = false;
-			boolean allResourceTypesNotDeleted = false;
+			boolean correctResourceTypes = false;
+			boolean resourceTypesActive = false;
 			Resource resource = bookedResources.get(i);
 			ResourceType resourceTypeOfProcedure = procedureResourceTypes.get(i);
-
 			List<ResourceType> resourceTypesOfEmployee = resource.getResourceTypes();
 
-			allResourceTypesNotDeleted       = resourceTypesOfEmployee.stream()
-					.noneMatch(resourcetype -> resourcetype.getStatus() == Status.DELETED);
+			resourceTypesActive  = resourceTypesOfEmployee.stream()
+					.allMatch(resourcetype -> resourcetype.getStatus().isActive());
 
-			correctResourcesForResourceTypes = resourceTypesOfEmployee.stream()
-					.anyMatch(resourcetype -> resourcetype.getId().equals(resourceTypeOfProcedure.getId()));
+			correctResourceTypes = resourceTypesOfEmployee.stream()
+					.anyMatch(resourcetype -> resourcetype.sameAs(resourceTypeOfProcedure));
 
-			if (!allResourceTypesNotDeleted)
+			if (!resourceTypesActive)
 				throw new ResourceTypeException("ResourceType deleted", resourceTypeOfProcedure);
 
-			if (!correctResourcesForResourceTypes)
+			if (!correctResourceTypes)
 				throw new ResourceTypeException("Missing resource for position", resourceTypeOfProcedure);
 		}
 	}
@@ -419,7 +446,7 @@ public class Appointment implements Serializable {
 			throw new EmployeeException("The bookedCustomer can not be a used employee at the same time", null);
 	}
 
-	public void testBlockage(AppointmentServiceImpl appointmentService) {
+	public void testBlockage(AppointmentService appointmentService) throws AppointmentInternalException {
 		List<Appointment> failedAppointments = new ArrayList<>();
 		String message = null;
 
@@ -448,7 +475,7 @@ public class Appointment implements Serializable {
 			throw new AppointmentInternalException(failedAppointments, message, this);
 	}
 
-	private void testEmployeeAppointments(AppointmentServiceImpl appointmentService) {
+	private void testEmployeeAppointments(AppointmentService appointmentService) throws AppointmentInternalException {
 		List<Appointment> failedAppointments = new ArrayList<>();
 		List<Appointment> appointmentsOfEmployee = null;
 
@@ -476,7 +503,7 @@ public class Appointment implements Serializable {
 	 *
 	 * Tests if all needed entities defined in the procedure are present.
 	 */
-	public  boolean allNeededBookablesFound() {
+	public boolean allNeededBookablesFound() {
 		for (Position needed : this.getBookedProcedure().getNeededEmployeePositions()) {
 			boolean found = false;
 			for (Employee present : this.getBookedEmployees()) {
@@ -500,7 +527,7 @@ public class Appointment implements Serializable {
 		return true;
 	}
 
-	private void testResourceAppointments(AppointmentServiceImpl appointmentService) {
+	private void testResourceAppointments(AppointmentService appointmentService) throws AppointmentInternalException {
 		List<Appointment> failedAppointments = new ArrayList<>();
 
 		for (Resource resource : bookedResources) {
@@ -517,7 +544,7 @@ public class Appointment implements Serializable {
 					"A resource already has an appointment in the given time interval", this);
 	}
 
-	private void testCustomerAppointments(AppointmentServiceImpl appointmentService) {
+	private void testCustomerAppointments(AppointmentService appointmentService) throws AppointmentInternalException {
 		try {
 			List<Appointment> appointmentsOfCustomer = appointmentService.getAppointmentsOfBookedCustomerInTimeinterval(
 					bookedCustomer.getId(), plannedStarttime, plannedEndtime, AppointmentStatus.PLANNED);

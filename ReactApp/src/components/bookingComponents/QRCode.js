@@ -6,8 +6,7 @@ import { Container, Card } from "react-bootstrap"
 
 export default function QRCode({cred,userStore}) {
     const credString = cred
-    //const link = APIURL + `/apts/${credString}`
-    const link = `${APIURL}/api/${credString}`
+    const link = `${APIURL}/api/login/${credString}`
 
     function handleQRClick() {
         //userStore.setMessage(null)

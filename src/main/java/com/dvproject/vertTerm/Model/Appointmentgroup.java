@@ -1,26 +1,19 @@
 package com.dvproject.vertTerm.Model;
 
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.TimeZone;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 
-import com.dvproject.vertTerm.Controller.RessourceController;
 import com.dvproject.vertTerm.Service.*;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.DBRef;
 
-import com.dvproject.vertTerm.Service.AppointmentServiceImpl;
-import com.dvproject.vertTerm.Service.RestrictionService;
 import com.dvproject.vertTerm.exception.ProcedureException;
 import com.dvproject.vertTerm.exception.ProcedureRelationException;
+import com.dvproject.vertTerm.repository.UserRepository;
+import com.dvproject.vertTerm.util.OverrideBooker;
 
 public class Appointmentgroup {
 	@Id
@@ -45,7 +38,7 @@ public class Appointmentgroup {
 		return appointments.stream().noneMatch(Appointment::hasId);
 	}
 
-	public boolean hasAllAppointmentIdSet() {
+	public boolean hasAllAppointmentidsSet() {
 		return appointments.stream().allMatch(Appointment::hasId);
 	}
 
@@ -69,43 +62,39 @@ public class Appointmentgroup {
 		appointments.forEach(app -> app.setWarnings(new ArrayList<Warning>()));
 	}
 
-	public void testBookability(RestrictionService restrictionService, AppointmentServiceImpl appointmentService,
-			BookingTester bookingTester) {
-		appointments.forEach(appointment -> bookingTester.testAll(appointment, appointmentService, restrictionService));
-	}
-
 	public boolean hasDistinctProcedures() {
 		return appointments.stream().map(app -> app.getBookedProcedure().getId()).distinct().count() == appointments
 				.size();
 	}
 
-	private Appointment findLatestAppointment(){
-		Appointment result = this.appointments.get(0);
-		for(Appointment appointment : this.getAppointments()){
-			if(appointment.getPlannedEndtime().after(result.getPlannedEndtime())){
-				result = appointment;
-			}
-		}
-		return result;
+	public void changeBookedCustomer(User bookedCustomer) {
+		if (!bookedCustomer.getSystemStatus().isActive())
+			throw new IllegalArgumentException("User is not active");
+
+		appointments.stream()
+			.forEach(app -> app.setBookedCustomer(bookedCustomer));
 	}
 
-	private Appointment findEarliestAppointment(){
-		Appointment result = this.appointments.get(0);
-		for(Appointment appointment : this.getAppointments()){
-			if(appointment.getPlannedEndtime().before(result.getPlannedEndtime())){
-				result = appointment;
-			}
-		}
-		return result;
+	public void testWarnings(AppointmentServiceImpl appointmentService, RestrictionService restrictionService, UserRepository userRepository) {
+		new OverrideBooker(this).bookable(appointmentService, restrictionService, userRepository);
 	}
 
-	private boolean allNeededBookablesFound() {
-		for (Appointment appointment : this.getAppointments()){
-			if(!appointment.allNeededBookablesFound()){
-				return false;
-			}
-		}
-		return true;
+	public void canBookProcedures(User user) {
+		List<Procedure> procedures = appointments
+										.stream()
+										.map(Appointment::getBookedProcedure)
+										.collect(Collectors.toList());
+		Procedure privateProcedure = procedures.stream()
+										.filter(Procedure::isPublicProcedure)
+										.findAny()
+										.orElse(null);
+		boolean isEmployee = user != null && user instanceof Employee;
+		boolean notBookable = !isEmployee && privateProcedure != null;
+
+		if (notBookable)
+			throw new ProcedureException(
+					"At least one appointment contains a non-public procedure that a non-employee tries to book",
+					privateProcedure);
 	}
 
 	public void testProcedureRelations(boolean override) {
@@ -115,7 +104,8 @@ public class Appointmentgroup {
 		Map<String, Procedure> proceduresMap = new HashMap<>();
 
 		List<Appointment> appointments = this.appointments.stream()
-				.filter(app -> app.getStatus() != AppointmentStatus.DELETED).collect(Collectors.toList());
+							.filter(app -> app.getStatus() != AppointmentStatus.DELETED)
+							.collect(Collectors.toList());
 
 		List<Appointment> appointmentsWithProblem = new ArrayList<>();
 		ProcedureRelationException pre = null;
@@ -206,6 +196,35 @@ public class Appointmentgroup {
 	 *
 	 * Finds an appointment in this appointmentgroup with the matching procedure, or creates a new one.
 	 */
+	private Appointment findLatestAppointment(){
+		Appointment result = this.appointments.get(0);
+		for(Appointment appointment : this.getAppointments()){
+			if(appointment.getPlannedEndtime().after(result.getPlannedEndtime())){
+				result = appointment;
+			}
+		}
+		return result;
+	}
+
+	private Appointment findEarliestAppointment(){
+		Appointment result = this.appointments.get(0);
+		for(Appointment appointment : this.getAppointments()){
+			if(appointment.getPlannedEndtime().before(result.getPlannedEndtime())){
+				result = appointment;
+			}
+		}
+		return result;
+	}
+
+	private boolean allNeededBookablesFound() {
+		for (Appointment appointment : this.getAppointments()){
+			if(!appointment.allNeededBookablesFound()){
+				return false;
+			}
+		}
+		return true;
+	}
+
 	private Appointment getOrCreateAppointmentWithProcedure(Procedure procedure, User customer){
 		for(Appointment appointment : this.getAppointments()){
 			if(appointment.getBookedProcedure().getId().equals(procedure.getId())){

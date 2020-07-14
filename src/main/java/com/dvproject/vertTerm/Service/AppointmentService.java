@@ -14,6 +14,7 @@ public interface AppointmentService extends BasicService<Appointment> {
 	// GET
 	List<Appointment> getAll(Bookable bookable);
 
+	/** author Amar Alkhankan **/
 	// Buchungoption2 get available Resources and Employees
 	public Appointmentgroup getAvailableResourcesAndEmployees(Appointmentgroup group);
 
@@ -60,6 +61,8 @@ public interface AppointmentService extends BasicService<Appointment> {
 	List<Appointment> getAppointmentsOf(Procedure procedure, Date startdate);
 
 	List<Appointment> getAppointmentsOf(Resource resource, Date startdate);
+	
+	void loadAppointment(Appointment appointment);
 
 	// PUT
 	boolean setCustomerIsWaiting(String id, boolean customerIsWaiting);

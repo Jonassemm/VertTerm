@@ -6,6 +6,7 @@ import { Container, Row, Col, Button, Table, Modal } from "react-bootstrap"
 import {updateOpeningHours} from "./OpeningHoursRequests"
 import {getOpeningHours} from "../../requests"
 
+
 export default function OpeningHoursPage ({userStore}) {
     const [edited, setEdited] = useState(false)
     const [availabilities, setAvailabilities] = useState([])

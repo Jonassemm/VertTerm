@@ -10,7 +10,8 @@ import java.util.Optional;
 
 import org.springframework.data.mongodb.repository.Query;
 
-//author Amar Alkhankan
+/**  author Amar Alkhankan  **/
+
 public interface OptionalAttributesService extends BasicService<OptionalAttributes> {
 
 	List<OptionalAttribute> addOptionalAttribute(String id, OptionalAttribute opatt);

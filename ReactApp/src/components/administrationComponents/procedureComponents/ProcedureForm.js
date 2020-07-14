@@ -7,6 +7,7 @@ import Availability from "../availabilityComponents/Availability"
 import "./ProcedureStyles.css"
 import { hasRight } from "../../../auth"
 import { procedureRights } from "../../Rights"
+import { secondsToMinutes, minutesToSeconds } from "../../TimeComponents/TimeFunctions"
 
 function ProcedureForm({ onCancel,
     edit,
@@ -49,15 +50,7 @@ function ProcedureForm({ onCancel,
         if (initialized.current >= 2) {
             setEdited(true)
         } else { initialized.current = initialized.current + 1 }
-    }, [name, publicProcedure, description, duration, status, precedingRelations, subsequentRelations, positions, resourceTypes, availabilities, pricePerHour, pricePerInvocation, restrictions, resourceTypesCount, positionsCount])
-
-    const secondsToMinutes = (time) => {
-        if (time === null) {
-            return null
-        } else {
-            return (time / 60)
-        }
-    }
+    }, [name, publicProcedure, description, duration, status, precedingRelations.length, subsequentRelations.length, positions, resourceTypes, availabilities, pricePerHour, pricePerInvocation, restrictions, resourceTypesCount, positionsCount])
 
     function buildInitialValues() {
         if (edit) {
@@ -65,8 +58,20 @@ function ProcedureForm({ onCancel,
             setDescription(selected.description)
             setDuration(secondsToMinutes(selected.duration))
             setStatus(selected.status)
-            setPrecedingRelations(selected.precedingRelations)
-            setSubsequentRelations(selected.subsequentRelations)
+            setPrecedingRelations(selected.precedingRelations.map(item => {
+                return {
+                    ...item,
+                    minDifference: secondsToMinutes(item.minDifference),
+                    maxDifference: secondsToMinutes(item.maxDifference)
+                }
+            }))
+            setSubsequentRelations(selected.subsequentRelations.map(item => {
+                return {
+                    ...item,
+                    minDifference: secondsToMinutes(item.minDifference),
+                    maxDifference: secondsToMinutes(item.maxDifference)
+                }
+            }))
             setResourceTypes(selected.neededResourceTypes)
             setAvailabilities(selected.availabilities)
             setPricePerHour(selected.pricePerHour)
@@ -121,7 +126,6 @@ function ProcedureForm({ onCancel,
                 userStore.setMessage("Prozedur erfolgreich gelöscht!")
             } catch (error) {
                 userStore.setErrorMessage(error.message)
-                console.log(Object.keys(error), error.message)
             }
         } else {//no rights!
             userStore.setWarningMessage("Ihnen fehlt das Recht:\n" + rightName)
@@ -192,9 +196,8 @@ function ProcedureForm({ onCancel,
                 minDifference: precedingRelationTime[0],
                 maxDifference: precedingRelationTime[1]
             }
-            const temp = precedingRelations.map(item => { return { ...item } })
-            temp.push(relation)
-            setPrecedingRelations(temp)
+            precedingRelations.push(relation)
+            setPrecedingRelations(precedingRelations)
         } else {
             const relation = {
                 procedure: selectedSubsequentRelation[0],
@@ -227,13 +230,6 @@ function ProcedureForm({ onCancel,
         event.preventDefault()
 
         if (hasRight(userStore, [rightName])) {
-            const transformTimes = (timeString) => {
-                if (timeString === null) {
-                    return null
-                } else {
-                    return Number(timeString) * 60
-                }
-            }
 
             //combines the selected positions with the count
             let extendedPositions = []
@@ -253,16 +249,16 @@ function ProcedureForm({ onCancel,
             let reducedPrecedingRelations = precedingRelations.map(item => {
                 return {
                     procedure: { id: item.procedure.id, ref: "procedure" },
-                    maxDifference: transformTimes(item.maxDifference),
-                    minDifference: transformTimes(item.minDifference)
+                    maxDifference: minutesToSeconds(item.maxDifference),
+                    minDifference: minutesToSeconds(item.minDifference)
                 }
             })
 
             let reducedSubsequentRelations = subsequentRelations.map(item => {
                 return {
                     procedure: { id: item.procedure.id, ref: "procedure" },
-                    maxDifference: transformTimes(item.maxDifference),
-                    minDifference: transformTimes(item.minDifference)
+                    maxDifference: minutesToSeconds(item.maxDifference),
+                    minDifference: minutesToSeconds(item.minDifference)
                 }
             })
 
@@ -276,12 +272,12 @@ function ProcedureForm({ onCancel,
             const data = {
                 name: name,
                 description: description,
-                duration: transformTimes(duration),
+                duration: minutesToSeconds(duration),
                 pricePerInvocation: pricePerInvocation,
                 pricePerHour: pricePerHour,
                 status: status,
                 precedingRelations: reducedPrecedingRelations,
-                subsequentRelations: subsequentRelations,
+                subsequentRelations: reducedSubsequentRelations,
                 neededResourceTypes: extendedResourceTypes,
                 neededEmployeePositions: extendedPositions,
                 restrictions: restrictionsRef,
@@ -303,7 +299,7 @@ function ProcedureForm({ onCancel,
                     }
                 }
             } catch (error) {
-                userStore.setMessage("Error!")
+                userStore.setErrorMessage("Prozedur konnte nicht gespeichert werden!")
             }
             onCancel()
         } else {//no right to submit 
@@ -428,7 +424,7 @@ function ProcedureForm({ onCancel,
                     </Tab>
                     <Tab eventKey="resources" title="Ressourcen" style={TabStyle}>
                         <Form.Label style={{ marginTop: "5px" }}>Benötigte Ressourcentypen:</Form.Label>
-                        <ObjectPicker DbObject="resourceType" initial={edit && resourceTypes} setState={setResourceTypesExt} multiple={true} status="notdeleted"/>
+                        <ObjectPicker DbObject="resourceType" initial={edit && resourceTypes} setState={setResourceTypesExt} multiple={true} status="notdeleted" />
                         {resourceTypes.map((item, index) => {
                             return (
                                 <Row style={{ marginTop: "5px" }}>
@@ -509,7 +505,9 @@ function ProcedureForm({ onCancel,
                                     placeholder="Mindestabstand"
                                     value={precedingRelationTime[0] || null}
                                     onChange={e => setPrecedingRelationTime(precedingRelationTime.map((item, index) => {
-                                        if (index == 0) return e.target.value
+                                        if (index == 0) {
+                                            return e.target.value
+                                        }
                                         return item
                                     }))}
                                 />
@@ -540,10 +538,10 @@ function ProcedureForm({ onCancel,
                                                     {item.procedure.name}
                                                 </td>
                                                 <td style={{ width: "23%" }}>
-                                                    {secondsToMinutes(item.minDifference)}
+                                                    {item.minDifference}
                                                 </td>
                                                 <td style={{ width: "23%" }}>
-                                                    {secondsToMinutes(item.maxDifference)}
+                                                    {item.maxDifference}
                                                 </td>
                                                 <td className="buttonCol">
                                                     <Button style={{ width: "35px" }} variant="danger" onClick={e => handleRelationDeletion(e, "p")}>-</Button>
@@ -600,10 +598,10 @@ function ProcedureForm({ onCancel,
                                                     {item.procedure.name}
                                                 </td>
                                                 <td style={{ width: "23%" }}>
-                                                    {secondsToMinutes(item.minDifference)}
+                                                    {item.minDifference}
                                                 </td>
                                                 <td style={{ width: "23%" }}>
-                                                    {secondsToMinutes(item.maxDifference)}
+                                                    {item.maxDifference}
                                                 </td>
                                                 <td className="buttonCol">
                                                     <Button style={{ width: "35px" }} variant="danger" onClick={e => handleRelationDeletion(e, "s")}>-</Button>

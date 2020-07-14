@@ -49,7 +49,7 @@ function NavBar({ userStore }) {
                     </Nav.Item>
                     <LoginForm userStore={userStore} />
                 </Navbar>
-            <Toast show={userStore.message} onClose={() => userStore.setMessage(null)} style={{ height: "60px", border: "none", position: "fixed", zIndex: "100003", top: "30px", left: "40%" }} delay={5000} autohide>
+            <Toast show={userStore.message} onClose={() => userStore.setMessage(null)} style={{ height: "60px", border: "none", position: "fixed", zIndex: "100003", top: "30px", left: "40%" }} delay={Math.PI*1000} autohide>
                 <Toast.Header className="justify-content-md-center" style={userStore.message && Object.assign({ height: "60px", textAlign: "center" }, getToastStyle(userStore.message.type))}>
                     <h5 style={userStore.message && Object.assign({ margin: "0px", padding: "0px", color: "black" },getToastTextStyle(userStore.message.type))}>{userStore.message && userStore.message.message}</h5>
                 </Toast.Header>

@@ -10,17 +10,23 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.dvproject.vertTerm.Model.Procedure;
 import com.dvproject.vertTerm.Model.ResourceType;
 import com.dvproject.vertTerm.Model.Status;
+import com.dvproject.vertTerm.repository.ProcedureRepository;
 import com.dvproject.vertTerm.repository.ResourceTypeRepository;
 
-//author Amar Alkhankan
+
+/**  author Amar Alkhankan  **/
 @Service
 @Transactional
 public class ResourceTypeServiceImp implements ResourceTypeService {
 
 	@Autowired
 	private ResourceTypeRepository ResourceTypeRepo;
+	
+	@Autowired
+	private ProcedureRepository procedureRepository;
 
 	// @PreAuthorize("hasAuthority('RESOURCE_TYPE_READ')")
 	public List<ResourceType> getAll() {
@@ -82,6 +88,7 @@ public class ResourceTypeServiceImp implements ResourceTypeService {
 			ResourceType resourcetype = getById(id);
 			resourcetype.setStatus(Status.DELETED);
 			ResourceTypeRepo.save(resourcetype);
+			removeResourceTypeFromProcedures(id);
 		} else {
 			throw new ResourceNotFoundException("ResourceType with the given id : " + id + " not found ");
 		}
@@ -106,6 +113,16 @@ public class ResourceTypeServiceImp implements ResourceTypeService {
 			return str;
 		return str.substring(0, 1).toUpperCase() + str.substring(1).toLowerCase();
 
+	}
+	
+	private void removeResourceTypeFromProcedures(String resourceTypeId) {
+		List<Procedure> procedureToUpdate = procedureRepository.findByNeededResourceTypesId(resourceTypeId);
+
+		procedureToUpdate.forEach(procedure -> {
+			List<ResourceType> resourceTypesOfProcedure = procedure.getNeededResourceTypes();
+			resourceTypesOfProcedure.removeIf(resT -> resT.getId().equals(resourceTypeId));
+			procedureRepository.save(procedure);
+		});
 	}
 
 }

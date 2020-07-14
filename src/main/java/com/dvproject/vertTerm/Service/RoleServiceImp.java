@@ -11,6 +11,7 @@ import com.dvproject.vertTerm.security.SetupDataLoader;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.rest.webmvc.ResourceNotFoundException;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -18,7 +19,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-//author Amar Alkhankan
+/**  author Amar Alkhankan  **/
 @Service
 @Transactional
 public class RoleServiceImp implements RoleService {
@@ -29,6 +30,9 @@ public class RoleServiceImp implements RoleService {
 	private UserRepository userRepo;
 	@Autowired
 	private RightRepository rightRepo;
+	
+	@Autowired
+	private WebSecurityConfigurerAdapter configure;
 
 	// @PreAuthorize("hasAuthority('ROLE_WRITE')")
 	public Role create(Role role) {

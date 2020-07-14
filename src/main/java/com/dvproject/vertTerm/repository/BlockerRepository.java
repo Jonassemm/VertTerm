@@ -7,7 +7,8 @@ import org.springframework.data.mongodb.repository.Query;
 
 import com.dvproject.vertTerm.Model.Blocker;
 
-//author Amar Alkhankan
+
+/** author Amar Alkhankan **/
 public interface BlockerRepository extends MongoRepository<Blocker, String>{
 	 @Query("{'_id' : ?0, '_class' : 'com.dvproject.vertTerm.Model.Blocker'}")
 	 Optional<Blocker> findById (String id);

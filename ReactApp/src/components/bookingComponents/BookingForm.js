@@ -1,26 +1,27 @@
 //author: Jonas Semmler
 import React, { useState, useEffect } from "react"
-import {momentLocalizer } from "react-big-calendar"
+import { momentLocalizer } from "react-big-calendar"
 import moment from "moment"
 import { Container, Form, Col, Row, Button, Modal, Spinner } from "react-bootstrap"
 import ObjectPicker from "../ObjectPicker"
 import "./BookingForm.css"
 import DatePicker from "react-datepicker"
-import { addAppointmentGroup, addAppointmentGroupAnyOverride, addAppointmentGroupOverride,getAppointmentGroupByApt,editAppointmentGroup, editAppointmentGroupOverride, addAppointmentGroupAny, getAppointment, searchAppointmentGroup, addBlocker, OptimizeEarlyEnd } from "../requests"
+import { addAppointmentGroup, addAppointmentGroupAnyOverride, addAppointmentGroupOverride, getAppointmentGroupByApt, editAppointmentGroup, editAppointmentGroupOverride, addAppointmentGroupAny, getAppointment, searchAppointmentGroup, addBlocker, isBlocker, editBlocker, OptimizeEarlyEnd, OptimizeLeastDays, OptimizeLeastWaitingTime } from "./bookingRequests"
 import { useHistory } from "react-router-dom"
 import { getErrorMessage } from "./bookingErrors"
 import SearchAptCalendar from "./SearchCalendar/SearchAptCalendar"
 import QRCode from "./QRCode"
 import BlockerForm from "./BlockerForm"
+import { secondsToMinutes } from "../TimeComponents/TimeFunctions"
 
 const localizer = momentLocalizer(moment)
 
-function BookingForm({editData,userStore}) {
+function BookingForm({ editData, userStore }) {
     const [selectedProcedures, setSelectedProcedures] = useState([])
     const [selectedCustomer, setSelectedCustomer] = useState([])
     const [custom, setCustom] = useState(false)
     const [apts, setApts] = useState([])
-    const [customApt, setCustomApt] = useState({bookedCustomer: []})
+    const [customApt, setCustomApt] = useState({ bookedCustomer: [] })
     const [formComplete, setFormComplete] = useState(false)
     const [formEmpty, setFormEmpty] = useState(true)
     const [exception, setException] = useState("")
@@ -46,39 +47,41 @@ function BookingForm({editData,userStore}) {
 
     async function setupEdit() {
         if (editData) {
-            console.log(editData)
             setEditMode(true)
             const appointmentID = editData.match.params.appointmentID
-            let {data} = await getAppointmentGroupByApt(appointmentID)
-            data = data.appointments.map(item => {
-                return {...item,
-                plannedStarttime: moment(item.plannedStarttime,  "DD.MM.YYYY HH:mm").toDate(),
-                plannedEndtime: moment(item.plannedEndtime,  "DD.MM.YYYY HH:mm").toDate()}
-            })
-            const tempProcedures = data.map(item => {
-                return item.bookedProcedure
-            })
-            const tempApt = await getAppointment(appointmentID)
-            if(editData.match.params.startTime){
-                console.log("yes Start Time")
-                validateTime({date: editData.match.params.startTime, ident: "start", ref: tempApt})
-                
-                userStore.setInfoMessage("Optimal Zeit wurde bereits übernommen!")
+            //checking if Appointment is Blocker
+            if (await isBlocker(appointmentID)) {
+                const {data} = await getAppointment(appointmentID)
+                setCustomApt(data)
+                setCustom(true)
+                setEditApt(appointmentID)
+            } else {
+                let { data } = await getAppointmentGroupByApt(appointmentID)
+                data = data.appointments.map(item => {
+                    return {
+                        ...item,
+                        plannedStarttime: moment(item.plannedStarttime, "DD.MM.YYYY HH:mm").toDate(),
+                        plannedEndtime: moment(item.plannedEndtime, "DD.MM.YYYY HH:mm").toDate()
+                    }
+                })
+                const tempProcedures = data.map(item => {
+                    return item.bookedProcedure
+                })
+                const tempApt = await getAppointment(appointmentID)
+                if (editData.match.params.startTime) {
+                    console.log("yes Start Time")
+                    validateTime({ date: editData.match.params.startTime, ident: "start", ref: tempApt })
+
+                    userStore.setInfoMessage("Optimal Zeit wurde bereits übernommen!")
+                }
+                setEditApt(tempApt.data)
+                setSelectedProcedures(tempProcedures)
+                setSelectedCustomer([data[0].bookedCustomer])
+                setApts(data)
             }
-            setEditApt(tempApt.data)
-            setSelectedProcedures(tempProcedures)
-            setSelectedCustomer([data[0].bookedCustomer])
-            setApts(data)
         }
     }
 
-    const secondsToMinutes = (time) => {
-        if (time === null) {
-            return null
-        } else {
-            return (time / 60)
-        }
-    }
     //function for setting the times and checking if they are valid
     function validateTime(data) {
         console.log(data)
@@ -217,7 +220,7 @@ function BookingForm({editData,userStore}) {
     //checking if all necessary field are filled --> for booking function
     function checkCompletion() {
         let complete = false
-        if(!custom){
+        if (!custom) {
             apts.forEach((item) => {
                 if ((item.bookedEmployees.length != item.bookedProcedure.neededEmployeePositions.length) ||
                     (item.bookedResources.length != item.bookedProcedure.neededResourceTypes.length) ||
@@ -235,8 +238,8 @@ function BookingForm({editData,userStore}) {
                     }
                 }
             })
-        }else {
-            if((customApt.plannedStarttime != null) && (customApt.plannedEndtime != null)) complete = true
+        } else {
+            if ((customApt.plannedStarttime != null) && (customApt.plannedEndtime != null)) complete = true
         }
         setFormComplete(complete)
     }
@@ -261,38 +264,40 @@ function BookingForm({editData,userStore}) {
         setFormEmpty(empty)
     }
 
-    function setSelectedTime(procedure, timeslot){
+    //setting a time selected with the search Calendar
+    function setSelectedTime(procedure, timeslot) {
         setApts(apts.map(apt => {
-            if(apt.bookedProcedure.id == procedure.id){
-                if(apt.bookedProcedure.duration != null){
+            if (apt.bookedProcedure.id == procedure.id) {
+                if (apt.bookedProcedure.duration != null) {
                     return {
                         ...apt,
                         plannedStarttime: timeslot.start,
-                        plannedEndtime: moment(timeslot.start).add(apt.bookedProcedure.duration,"seconds").toDate()
+                        plannedEndtime: moment(timeslot.start).add(apt.bookedProcedure.duration, "seconds").toDate()
                     }
-                }else 
-                return {
-                    ...apt,
-                    plannedStarttime: timeslot.start,
-                    plannedEndtime: timeslot.end
-                }
-            }else return {...apt}
+                } else
+                    return {
+                        ...apt,
+                        plannedStarttime: timeslot.start,
+                        plannedEndtime: timeslot.end
+                    }
+            } else return { ...apt }
         }))
         setShowSelectCalendarModal(false)
     }
 
     async function optimizeAppointment() {
         const aptGroup = buildFinalData()
-        const res = await OptimizeEarlyEnd(aptGroup)
+        const res = await OptimizeEarlyEnd(aptGroup, 0)
     }
 
+    //searching resources and employees for the defined appointments with given times
     async function searchAppointment() {
         const aptGroup = buildFinalData()
-        try{
-            let {data} = await searchAppointmentGroup(aptGroup)
+        try {
+            let { data } = await searchAppointmentGroup(aptGroup)
             data = data.appointments
             console.log(data)
-            const temp = apts.map((apt,index) => {
+            const temp = apts.map((apt, index) => {
                 return {
                     ...apt,
                     bookedEmployees: data[index].bookedEmployees,
@@ -301,66 +306,69 @@ function BookingForm({editData,userStore}) {
             })
             console.log(temp)
             setApts(temp)
-        }catch(error){
+        } catch (error) {
             userStore.setErrorMessage("Keine Ressourcen/Mitarbeiter gefunden")
         }
     }
 
+    //prepairing the objekt which is send to the backend
     function buildFinalData() {
         let aptGroup = null
-        if(!custom){
-        let finalData = apts.map(item => {
-            return {
-                ...item,
-                bookedProcedure: item.bookedProcedure,
-                bookedEmployees: item.bookedEmployees.map(item => {
-                    if(item) return { id: item.id, ref: "user" }
-                    else return {...item}
-                }),
-                bookedResources: item.bookedResources.map(item => {
-                    if(item) return { id: item.id, ref: "resource" }
-                    else return {...item}
-                }),
-                plannedEndtime: item.plannedEndtime && moment(item.plannedEndtime).format("DD.MM.YYYY HH:mm").toString(),
-                plannedStarttime: item.plannedStarttime && moment(item.plannedStarttime).format("DD.MM.YYYY HH:mm").toString(),
-            }
-        })
-        if(selectedCustomer.length != 0){
-            finalData = finalData.map(item => {
+        if (!custom) {
+            let finalData = apts.map(item => {
                 return {
                     ...item,
-                    bookedCustomer: selectedCustomer[0],
+                    bookedProcedure: item.bookedProcedure,
+                    bookedEmployees: item.bookedEmployees.map(item => {
+                        if (item) return { id: item.id, ref: "user" }
+                        else return { ...item }
+                    }),
+                    bookedResources: item.bookedResources.map(item => {
+                        if (item) return { id: item.id, ref: "resource" }
+                        else return { ...item }
+                    }),
+                    plannedEndtime: item.plannedEndtime && moment(item.plannedEndtime).format("DD.MM.YYYY HH:mm").toString(),
+                    plannedStarttime: item.plannedStarttime && moment(item.plannedStarttime).format("DD.MM.YYYY HH:mm").toString(),
                 }
             })
-        }
-        aptGroup = { appointments: finalData, status: "active" }
-    }else{
-        aptGroup = {
-            name: customApt.name,
-            bookedResources: customApt.bookedResources.map(item => {
-                return {id: item.id, ref:"resource"}
-            }),
-            bookedEmployees: customApt.bookedEmployees.map(item => {
-                return {id: item.id, ref:"user"}
-            }),
-            plannedEndtime: moment(customApt.plannedEndtime).format("DD.MM.YYYY HH:mm").toString(),
-            plannedStarttime: moment(customApt.plannedStarttime).format("DD.MM.YYYY HH:mm").toString(),
-            status: "planned"
+            if (selectedCustomer.length != 0) {
+                finalData = finalData.map(item => {
+                    return {
+                        ...item,
+                        bookedCustomer: selectedCustomer[0],
+                    }
+                })
             }
-    }
+            aptGroup = { appointments: finalData, status: "active" }
+        } else {
+            aptGroup = {
+                name: customApt.name,
+                bookedResources: customApt.bookedResources.map(item => {
+                    return { id: item.id, ref: "resource" }
+                }),
+                bookedEmployees: customApt.bookedEmployees.map(item => {
+                    return { id: item.id, ref: "user" }
+                }),
+                plannedEndtime: moment(customApt.plannedEndtime).format("DD.MM.YYYY HH:mm").toString(),
+                plannedStarttime: moment(customApt.plannedStarttime).format("DD.MM.YYYY HH:mm").toString(),
+                status: "planned"
+            }
+        }
         return aptGroup
     }
 
+    //displaying the searchCalendar for a given Appointment
     function handleSearchApt(procedure) {
         setSearchProcedureApt(procedure)
         setShowSelectCalendarModal(true)
     }
 
+    //using the override booking function
     async function overrideSubmit() {
-            const aptGroup = buildFinalData()
-            try{
-            if(!editMode){
-                if(selectedCustomer.length != 0){
+        const aptGroup = buildFinalData()
+        try {
+            if (!editMode) {
+                if (selectedCustomer.length != 0) {
                     await addAppointmentGroupOverride(aptGroup, selectedCustomer[0].id)
                     userStore.setMessage("Termin erfolgreich gebucht!")
                     history.push("/appointment")
@@ -371,35 +379,46 @@ function BookingForm({editData,userStore}) {
                     setQRCred(data)
                     setShowMode(true)
                 }
-            }else{
+            } else {
                 await editAppointmentGroupOverride(aptGroup, selectedCustomer[0].id)
                 userStore.setMessage("Termin erfolgreich geändert!")
             }
             history.push("/appointment")
-        }catch(error){
+        } catch (error) {
             userStore.setMessage("Error!")
         }
     }
 
-
     async function handleSubmit(event) {
         event.preventDefault()
-            const aptGroup = buildFinalData()
-            console.log(aptGroup)
-            try {
-            if(editMode){
-                await editAppointmentGroup(aptGroup, selectedCustomer[0].id)
-                userStore.setMessage("Termin erfolgreich gebucht!")
-                history.push("/appointment")
-            }else if(custom){
+        const aptGroup = buildFinalData()
+        console.log(aptGroup)
+        try {
+            if (editMode) {
+                //case editing an normal appointment
+                if(!custom){
+                    await editAppointmentGroup(aptGroup, selectedCustomer[0].id)
+                    userStore.setMessage("Termin erfolgreich geändert!")
+                    history.push("/appointment")
+                //case editing a blocker
+                }else{
+                    await editBlocker(aptGroup, editApt)
+                    userStore.setMessage("Blocker erfolgreich geändert!")
+                    history.push("/appointment")
+                }
+                //case adding a new blocker
+            } else if (custom) {
                 await addBlocker(aptGroup)
-                userStore.setMessage("Termin erfolgreich gebucht!")
+                userStore.setMessage("Blocker erfolgreich gebucht!")
                 history.push("/appointment")
-            }else {
-                if(selectedCustomer.length != 0){
+                //adding a new Appointment
+            } else {
+                //adding a new Appointment with a customer
+                if (selectedCustomer.length != 0) {
                     await addAppointmentGroup(aptGroup, selectedCustomer[0].id)
                     userStore.setMessage("Termin erfolgreich gebucht!")
                     history.push("/appointment")
+                //adding a new Appointment without a customer
                 } else {
                     const res = await addAppointmentGroupAny(aptGroup)
                     const data = btoa(res.data)
@@ -415,7 +434,7 @@ function BookingForm({editData,userStore}) {
         }
     }
 
-    const selectedAptStyle = {padding:"2px",backgroundColor:"#FFEEC7"}
+    const selectedAptStyle = { padding: "2px", backgroundColor: "#FFEEC7" }
 
     return (
         <div className="page">
@@ -423,227 +442,226 @@ function BookingForm({editData,userStore}) {
                 <Form onSubmit={handleSubmit}>
                     <Row style={{ alignItems: "baseline" }}>
                         <Col>
-                            <h1>{editMode? "Termin ändern" : showMode ? "betabook.me Terminbestätigung" : "Termin Buchen"}</h1>
+                            <h1>{editMode ? "Termin ändern" : showMode ? "betabook Terminbestätigung" : "Termin Buchen"}</h1>
                         </Col>
                         {!editMode && !showMode &&
-                        <Col className="selectType">
-                            <Form.Check
-                                type="switch"
-                                id="custom-switch"
-                                label="Benutzerdefinierte Eingabe"
-                                value={custom || 0}
-                                onChange={e => setCustom(!custom)}
-                                checked={custom || false}
-                            />
-                        </Col>
+                            <Col className="selectType">
+                                <Form.Check
+                                    type="switch"
+                                    id="custom-switch"
+                                    label="Benutzerdefinierte Eingabe"
+                                    value={custom || 0}
+                                    onChange={e => setCustom(!custom)}
+                                    checked={custom || false}
+                                />
+                            </Col>
                         }
                     </Row>
-                    
-                    {custom && <BlockerForm apt={customApt} setApt={setCustomApt} edit={editMode} customer={selectedCustomer}/>}
+                    {custom && <BlockerForm apt={customApt} setApt={setCustomApt} edit={editMode}/>}
                     {!custom &&
-                    <React.Fragment>
-                    <hr />
-                    {!showMode && !editMode &&
-                        <Form.Row>
-                            <Form.Group xs={2} as={Col} style={{ textAlign: "bottom" }}>
-                                <Form.Label>Kunde:</Form.Label>
-                            </Form.Group>
-                            <Form.Group as={Col}>
-                                <ObjectPicker
-                                    DbObject="user"
-                                    initial={editMode && selectedCustomer}
-                                    status="notdeleted"
-                                    disabled={editMode}
-                                    setState={setSelectedCustomer} />
-                            </Form.Group>
-                        </Form.Row>
-                    }
-                    {editMode &&
-                        <Form.Row>
-                        <Form.Group xs={2} as={Col} style={{ textAlign: "bottom" }}>
-                            <Form.Label>Kunde:</Form.Label>
-                        </Form.Group>
-                        <Form.Group as={Col}>
-                            <Form.Control
-                                type="text"
-                                value={selectedCustomer[0] && (`${selectedCustomer[0].firstName} ${selectedCustomer[0].lastName}`)}
-                            />
-                        </Form.Group>
-                    </Form.Row>
-                    }
-                    <React.Fragment>
-                    <Form.Row>
-                        <Form.Group xs={2} as={Col} style={{ textAlign: "bottom" }}>
-                            <Form.Label>Prozeduren:</Form.Label>
-                        </Form.Group>
-                        <Form.Group as={Col}>
-                            <ObjectPicker
-                                initial={editMode && selectedProcedures}
-                                DbObject="procedure"
-                                status="active"
-                                disabled={editMode}
-                                setState={setProcedures}
-                                multiple={true} />
-                        </Form.Group>
-                    </Form.Row>
-                    {apts.map(apt => {
-                        return (
+                        <React.Fragment>
+                            <hr />
+                            {!showMode && !editMode &&
+                                <Form.Row>
+                                    <Form.Group xs={2} as={Col} style={{ textAlign: "bottom" }}>
+                                        <Form.Label>Kunde:</Form.Label>
+                                    </Form.Group>
+                                    <Form.Group as={Col}>
+                                        <ObjectPicker
+                                            DbObject="user"
+                                            initial={editMode && selectedCustomer}
+                                            status="notdeleted"
+                                            disabled={editMode}
+                                            setState={setSelectedCustomer} />
+                                    </Form.Group>
+                                </Form.Row>
+                            }
+                            {editMode &&
+                                <Form.Row>
+                                    <Form.Group xs={2} as={Col} style={{ textAlign: "bottom" }}>
+                                        <Form.Label>Kunde:</Form.Label>
+                                    </Form.Group>
+                                    <Form.Group as={Col}>
+                                        <Form.Control
+                                            type="text"
+                                            value={selectedCustomer[0] && (`${selectedCustomer[0].firstName} ${selectedCustomer[0].lastName}`)}
+                                        />
+                                    </Form.Group>
+                                </Form.Row>
+                            }
                             <React.Fragment>
-                                <hr />
-                                <div className="parent" style={editMode ? (apt.bookedProcedure.id == editApt.bookedProcedure.id) ? selectedAptStyle : null : null}>
-                                    <div className="namebox">
-                                        <h4>{apt.bookedProcedure.name}</h4>
-                                        {apt.bookedProcedure.duration != null && <p>{secondsToMinutes(apt.bookedProcedure.duration)} Minuten Dauer</p>}
-                                    </div>
-                                    <div className="box wrap">
-                                        <div className="middleBox" id={apt.bookedProcedure.id}>
-                                            <div className="middleBoxLeft">
-                                                <span>Beschreibung</span>
-                                            </div>
-                                            <div className="middleBoxRight">
-                                                <Form.Control
-                                                    type="text"
-                                                    value={apt.description || ""}
-                                                    placeholder="Beschreibung"
-                                                    onChange={e => {
-                                                        setApts(apts.map(innerItem => {
-                                                            if (innerItem.bookedProcedure.id == e.target.parentElement.parentElement.id)
-                                                                return {
-                                                                    ...innerItem,
-                                                                    description: e.target.value
-                                                                }
-                                                            else
-                                                                return { ...innerItem }
+                                <Form.Row>
+                                    <Form.Group xs={2} as={Col} style={{ textAlign: "bottom" }}>
+                                        <Form.Label>Prozeduren:</Form.Label>
+                                    </Form.Group>
+                                    <Form.Group as={Col}>
+                                        <ObjectPicker
+                                            initial={editMode && selectedProcedures}
+                                            DbObject="procedure"
+                                            status="active"
+                                            disabled={editMode}
+                                            setState={setProcedures}
+                                            multiple={true} />
+                                    </Form.Group>
+                                </Form.Row>
+                                {apts.map(apt => {
+                                    return (
+                                        <React.Fragment>
+                                            <hr />
+                                            <div className="parent" style={editMode ? (apt.bookedProcedure.id == editApt.bookedProcedure.id) ? selectedAptStyle : null : null}>
+                                                <div className="namebox">
+                                                    <h4>{apt.bookedProcedure.name}</h4>
+                                                    {apt.bookedProcedure.duration != null && <p>{secondsToMinutes(apt.bookedProcedure.duration)} Minuten Dauer</p>}
+                                                </div>
+                                                <div className="box wrap">
+                                                    <div className="middleBox" id={apt.bookedProcedure.id}>
+                                                        <div className="middleBoxLeft">
+                                                            <span>Beschreibung</span>
+                                                        </div>
+                                                        <div className="middleBoxRight">
+                                                            <Form.Control
+                                                                type="text"
+                                                                value={apt.description || ""}
+                                                                placeholder="Beschreibung"
+                                                                onChange={e => {
+                                                                    setApts(apts.map(innerItem => {
+                                                                        if (innerItem.bookedProcedure.id == e.target.parentElement.parentElement.id)
+                                                                            return {
+                                                                                ...innerItem,
+                                                                                description: e.target.value
+                                                                            }
+                                                                        else
+                                                                            return { ...innerItem }
 
-                                                        }))
-                                                    }}
-                                                />
-                                                <hr />
-                                            </div>
-                                        </div>
-                                        {/* all ObjectPickers for needed Employees */}
-                                        {apt.bookedProcedure.neededEmployeePositions && apt.bookedProcedure.neededEmployeePositions.map((innerItem, index) => {
-                                            return (
-                                                <div className="middleBox">
-                                                    <div className="middleBoxLeft" style={{paddingTop: "7px"}}>
-                                                        <span style={{}}>{innerItem.name}</span>
+                                                                    }))
+                                                                }}
+                                                            />
+                                                            <hr />
+                                                        </div>
                                                     </div>
-                                                    <div className="middleBoxRight">
-                                                        <ObjectPicker
-                                                            className="input"
-                                                            ident={{ "ident": apt.bookedProcedure.name, "ix": index }}
-                                                            initial = {[apt.bookedEmployees[index]]}
-                                                            filter={innerItem.id}
-                                                            status="active"
-                                                            DbObject="employee"
-                                                            setState={handleChange} />
+                                                    {/* all ObjectPickers for needed Employees */}
+                                                    {apt.bookedProcedure.neededEmployeePositions && apt.bookedProcedure.neededEmployeePositions.map((innerItem, index) => {
+                                                        return (
+                                                            <div className="middleBox">
+                                                                <div className="middleBoxLeft" style={{ paddingTop: "7px" }}>
+                                                                    <span style={{}}>{innerItem.name}</span>
+                                                                </div>
+                                                                <div className="middleBoxRight">
+                                                                    <ObjectPicker
+                                                                        className="input"
+                                                                        ident={{ "ident": apt.bookedProcedure.name, "ix": index }}
+                                                                        initial={[apt.bookedEmployees[index]]}
+                                                                        filter={innerItem.id}
+                                                                        status="active"
+                                                                        DbObject="employee"
+                                                                        setState={handleChange} />
+                                                                </div>
+                                                            </div>
+                                                        )
+                                                    })}
+                                                    {/* all ObjectPickers for needed resources */}
+                                                    {apt.bookedProcedure.neededResourceTypes && apt.bookedProcedure.neededResourceTypes.map((innerItem, index) => {
+                                                        return (
+                                                            <div className="middleBox">
+                                                                <div className="middleBoxLeft" style={{ paddingTop: "7px" }}>
+                                                                    <span>{innerItem.name}</span>
+                                                                </div>
+                                                                <div className="middleBoxRight">
+                                                                    <ObjectPicker
+                                                                        className="input"
+                                                                        initial={[apt.bookedResources[index]]}
+                                                                        ident={{ "ident": apt.bookedProcedure.name, "ix": index }}
+                                                                        filter={innerItem.id}
+                                                                        status="active"
+                                                                        DbObject="resource"
+                                                                        setState={handleChange} />
+                                                                </div>
+                                                            </div>
+                                                        )
+                                                    })}
+                                                </div>
+                                                <div className="box rightBox">
+                                                    <div className="rightBoxTop">
+                                                        <div className="rightBoxLeft">
+                                                            <span>Start</span>
+                                                        </div>
+                                                        <div className="rightBoxRight">
+                                                            <DatePicker
+                                                                required
+                                                                popperPlacement="left"
+                                                                className="input"
+                                                                selected={apt.plannedStarttime}
+                                                                onChange={date => validateTime({ date: date, ident: "start", ref: apt })}
+                                                                showTimeSelect
+                                                                timeFormat="HH:mm"
+                                                                timeIntervals={5}
+                                                                timeCaption="Uhrzeit"
+                                                                dateFormat="dd.M.yyyy / HH:mm"
+                                                            />
+                                                        </div>
+                                                    </div>
+                                                    <div className="rightBoxBottom">
+                                                        <div className="rightBoxLeft">
+                                                            <span>Ende</span>
+                                                        </div>
+                                                        <div className="rightBoxRight">
+                                                            <DatePicker
+                                                                required
+                                                                className="input"
+                                                                popperPlacement="left"
+                                                                selected={apt.plannedEndtime}
+                                                                onChange={date => {
+                                                                    validateTime({ date: date, ident: "end", ref: apt })
+                                                                }}
+                                                                showTimeSelect
+                                                                timeFormat="HH:mm"
+                                                                timeIntervals={5}
+                                                                timeCaption="Uhrzeit"
+                                                                dateFormat="dd.M.yyyy / HH:mm"
+                                                            />
+                                                        </div>
+                                                    </div>
+                                                    <div style={{ textAlign: "right" }}>
+                                                        {!showMode && <Button style={{ marginTop: "10px", width: "40%", padding: "2px" }} onClick={e => handleSearchApt(apt.bookedProcedure)}>Zeit suchen</Button>}
                                                     </div>
                                                 </div>
-                                            )
-                                        })}
-                                        {/* all ObjectPickers for needed resources */}
-                                        {apt.bookedProcedure.neededResourceTypes && apt.bookedProcedure.neededResourceTypes.map((innerItem, index) => {
-                                            return (
-                                                <div className="middleBox">
-                                                    <div className="middleBoxLeft" style={{paddingTop: "7px"}}>
-                                                        <span>{innerItem.name}</span>
-                                                    </div>
-                                                    <div className="middleBoxRight">
-                                                        <ObjectPicker
-                                                            className="input"
-                                                            initial={[apt.bookedResources[index]]}
-                                                            ident={{ "ident": apt.bookedProcedure.name, "ix": index }}
-                                                            filter={innerItem.id}
-                                                            status="active"
-                                                            DbObject="resource"
-                                                            setState={handleChange} />
-                                                    </div>
-                                                </div>
-                                            )
-                                        })}
-                                    </div>
-                                    <div className="box rightBox">
-                                        <div className="rightBoxTop">
-                                            <div className="rightBoxLeft">
-                                                <span>Start</span>
                                             </div>
-                                            <div className="rightBoxRight">
-                                                <DatePicker
-                                                    required
-                                                    popperPlacement="left"
-                                                    className="input"
-                                                    selected={apt.plannedStarttime}
-                                                    onChange={date => validateTime({ date: date, ident: "start", ref: apt })}
-                                                    showTimeSelect
-                                                    timeFormat="HH:mm"
-                                                    timeIntervals={5}
-                                                    timeCaption="Uhrzeit"
-                                                    dateFormat="dd.M.yyyy / HH:mm"
-                                                />
-                                            </div>
-                                        </div>
-                                        <div className="rightBoxBottom">
-                                            <div className="rightBoxLeft">
-                                                <span>Ende</span>
-                                            </div>
-                                            <div className="rightBoxRight">
-                                                <DatePicker
-                                                    required
-                                                    className="input"
-                                                    popperPlacement="left"
-                                                    selected={apt.plannedEndtime}
-                                                    onChange={date => {
-                                                        validateTime({ date: date, ident: "end", ref: apt })
-                                                    }}
-                                                    showTimeSelect
-                                                    timeFormat="HH:mm"
-                                                    timeIntervals={5}
-                                                    timeCaption="Uhrzeit"
-                                                    dateFormat="dd.M.yyyy / HH:mm"
-                                                />
-                                            </div>
-                                        </div>
-                                        <div style={{ textAlign: "right" }}>
-                                            {!showMode && <Button style={{ marginTop: "10px", width: "40%", padding:"2px" }} onClick={e => handleSearchApt(apt.bookedProcedure)}>Zeit suchen</Button>}
-                                        </div>
-                                    </div>
-                                </div>
+                                        </React.Fragment>
+                                    )
+                                })}
                             </React.Fragment>
-                        )
-                    })}
-                    </React.Fragment>
-                    </React.Fragment>
+                        </React.Fragment>
                     }
                     <hr />
                     <Row>
                         {!editMode && !showMode && !custom && (selectedProcedures.length != 0) &&
-                        <Col xs={7} style={{ textAlign: "left", display: "flex", alignItems: "baseline", justifyContent: "space-between" }}>
-                            <Form.Control style={{ width: "50%" }} as="select">
-                                <option>Frühstes Ende</option>
-                                <option>Wenig Wartezeit</option>
-                                <option>Wenige Teiltermine</option>
-                            </Form.Control>
-                            <DatePicker
-                                className="endDate"
-                                selected={new Date()}
-                                timeFormat="HH:mm"
-                                dateFormat="dd.M.yyyy"
-                            />
-                            <Button onClick={optimizeAppointment}>Terminvorschlag</Button>
-                        </Col>
-                        }     
-                    
+                            <Col xs={7} style={{ textAlign: "left", display: "flex", alignItems: "baseline", justifyContent: "space-between" }}>
+                                <Form.Control style={{ width: "50%" }} as="select">
+                                    <option>Frühstes Ende</option>
+                                    <option>Wenig Wartezeit</option>
+                                    <option>Wenige Teiltermine</option>
+                                </Form.Control>
+                                <DatePicker
+                                    className="endDate"
+                                    selected={new Date()}
+                                    timeFormat="HH:mm"
+                                    dateFormat="dd.M.yyyy"
+                                />
+                                <Button onClick={optimizeAppointment}>Terminvorschlag</Button>
+                            </Col>
+                        }
+
                         {!showMode &&
-                        <Col style={{ textAlign: "right" }}>
-                            {(custom || selectedProcedures.length != 0) && (formComplete ?
-                                <Button variant="success" type="submit" style={{ marginLeft: "5px" }}>{editMode ? "Speichern" : "Buchen"}</Button> :
-                                (formEmpty && !custom && <Button onClick={searchAppointment} style={{ marginLeft: "5px" }}>Suchen</Button>)
-                            )}
-                        </Col>
+                            <Col style={{ textAlign: "right" }}>
+                                {(custom || selectedProcedures.length != 0) && (formComplete ?
+                                    <Button variant="success" type="submit" style={{ marginLeft: "5px" }}>{editMode ? "Speichern" : "Buchen"}</Button> :
+                                    (formEmpty && !custom && <Button onClick={searchAppointment} style={{ marginLeft: "5px" }}>Suchen</Button>)
+                                )}
+                            </Col>
                         }
                         {showMode &&
                             <Col>
-                                <QRCode userStore={userStore} cred={QRCred}/>      
+                                <QRCode userStore={userStore} cred={QRCred} />
                             </Col>
                         }
                     </Row>
@@ -659,7 +677,7 @@ function BookingForm({editData,userStore}) {
                 </Modal.Header>
                 <Modal.Body>
                     {getErrorMessage(exception)}
-                    <hr/>
+                    <hr />
                     <span>{exceptionMessage}</span>
                 </Modal.Body>
                 <Modal.Footer>
@@ -672,23 +690,21 @@ function BookingForm({editData,userStore}) {
                 <Modal.Header>
                     <Modal.Title>
                         Termin suchen
-                       
                     </Modal.Title>
-                    {loading && 
-                    <Spinner animation="border" role="status">
+                    {loading &&
+                        <Spinner animation="border" role="status">
                             <span className="sr-only">Loading...</span>
                         </Spinner>
-                    } 
+                    }
                 </Modal.Header>
                 <Modal.Body>
-                    <SearchAptCalendar procedure={searchProcedureApt} 
-                    neededPositions={searchProcedureApt.neededEmployeePositions} 
-                    neededResourceTypes={searchProcedureApt.neededResourceTypes} 
-                    setLoading={setLoading} 
-                    setSelectedTime={setSelectedTime}/>
+                    <SearchAptCalendar procedure={searchProcedureApt}
+                        neededPositions={searchProcedureApt.neededEmployeePositions}
+                        neededResourceTypes={searchProcedureApt.neededResourceTypes}
+                        setLoading={setLoading}
+                        setSelectedTime={setSelectedTime} />
                 </Modal.Body>
             </Modal>
-
         </div >
     )
 }

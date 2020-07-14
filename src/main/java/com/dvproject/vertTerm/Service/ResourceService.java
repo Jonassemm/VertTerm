@@ -9,7 +9,8 @@ import com.dvproject.vertTerm.Model.ResourceType;
 import java.util.Date;
 import java.util.List;
 
-//author Amar Alkhankan
+
+/**  author Amar Alkhankan  **/
 public interface ResourceService extends BasicService<Resource> {
 	// get
 	List<Resource> getResources(String[] ids);

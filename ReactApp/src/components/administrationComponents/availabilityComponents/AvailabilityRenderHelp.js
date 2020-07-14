@@ -23,42 +23,6 @@ function availabilityRhythmGE(rhythm) {
 }
 
 
-export function setValidEndDateString(startDateString) {
-    var validEndDate = moment(startDateString, "DD.MM.yyyy HH:mm").toDate()
-    var startEndDifference = 5
-    validEndDate.setMinutes(validEndDate.getMinutes() + startEndDifference)
-    return moment(validEndDate).format("DD.MM.YYYY HH:mm").toString()
-}
-
-
-export function validateDates(startDateString, endDateString, endOfSeriesString) {
-    var validation = false
-    var startDate = moment(startDateString, "DD.MM.yyyy HH:mm").toDate();
-    var endDate = moment(endDateString, "DD.MM.yyyy HH:mm").toDate();
-
-    if(startDate > endDate) {
-        alert("Ungültiges Ende! Das Ende darf nicht vor dem Start sein!")
-        return false
-    }else if(startDate.getTime() == endDate.getTime()) {
-        alert("Ungültiges Ende! Das Ende darf nicht gleich dem Start sein!")
-        return false
-    } else {
-        validation = true
-    }
-
-    if(endOfSeriesString != null) {
-        var endOfSeries = moment(endOfSeriesString, "DD.MM.yyyy HH:mm").toDate();
-        if(endOfSeries.getTime() <= startDate.getTime() || endOfSeries.getTime() < endDate.getTime()) {
-            alert("Ungültiges Serienende! Das Serienende darf nicht vor dem Star und vor dem Ende einer Verfügbarkeit sein!")
-            return false
-        }
-    } else {
-        validation = true
-    }
-    return validation;
-}
-
-
 //-----------------------------------------------------------RENDERING---------------------------------------------------------------------
 export function renderAvailabilityTable(allAvailabilities, 
     addedAvailabilitiesLength, 
@@ -105,4 +69,5 @@ export function renderAvailabilityTable(allAvailabilities,
         })
       );
     }
-  };
+};
+

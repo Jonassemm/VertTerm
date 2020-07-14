@@ -47,9 +47,8 @@ public class ConsumableServiceImpl implements ConsumableService, AvailabilitySer
 	public List<Availability> getAllAvailabilities(String id) {
 		Consumable consumable = getById(id);
 
-		if (consumable == null) {
+		if (consumable == null)
 			throw new IllegalArgumentException("No consumable with the given id");
-		}
 		
 		return consumable.getAvailabilities();
 	}
@@ -79,7 +78,7 @@ public class ConsumableServiceImpl implements ConsumableService, AvailabilitySer
 	public boolean delete(String id) {
 		this.deleteFromDB(id);
 
-		return this.getConsumableFromDB(id).getStatus() == Status.DELETED;
+		return this.getConsumableFromDB(id).getStatus().isDeleted();
 	}
 
 	private Consumable getConsumableFromDB(String id) {
