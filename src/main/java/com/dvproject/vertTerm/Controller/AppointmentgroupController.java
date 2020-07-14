@@ -62,6 +62,9 @@ public class AppointmentgroupController {
 			@RequestBody Appointmentgroup appointmentgroup) {
 		boolean customerAttached = userid != null && !userid.equals("");
 		User bookedCustomer = customerAttached ? userService.getById(userid) : userService.getAnonymousUser();
+		
+		testCallersRights(bookedCustomer);
+		
 		appointmentgroupService.loadAppointmentgroup(appointmentgroup);
 		appointmentgroup.changeBookedCustomer(bookedCustomer);
 
@@ -83,6 +86,9 @@ public class AppointmentgroupController {
 
 		boolean customerAttached = userid != null && !userid.equals("");
 		User bookedCustomer = customerAttached ? userService.getById(userid) : userService.getAnonymousUser();
+		
+		testCallersRights(bookedCustomer);
+		
 		appointmentgroupService.loadAppointmentgroup(appointmentgroup);
 		appointmentgroup.changeBookedCustomer(bookedCustomer);
 
@@ -100,6 +106,8 @@ public class AppointmentgroupController {
 			@PathVariable String userid,
 			@RequestBody Appointmentgroup appointmentgroup)
 	{
+		User user = userRepository.findById(userid).orElse(new User());
+		testCallersRights(user);
 		updateAppointmentgroup(userid, appointmentgroup, new NormalBooker(appointmentgroup));
 
 	}
@@ -110,6 +118,8 @@ public class AppointmentgroupController {
 			@RequestBody Appointmentgroup appointmentgroup) 
 	{
 		AuthorityTester.containsAny("OVERRIDE");
+		User user = userRepository.findById(userid).orElse(new User());
+		testCallersRights(user);
 
 		updateAppointmentgroup(userid, appointmentgroup, new OverrideBooker(appointmentgroup));
 	}
@@ -152,6 +162,11 @@ public class AppointmentgroupController {
 	@DeleteMapping("/Appointment/{id}")
 	public boolean deleteAppointment(@PathVariable(name = "id") String appointmentId) {
 		Appointment appointment = appointmentService.getById(appointmentId);
+		
+		String userid = appointment.getBookedCustomer().getId();
+		User user = userRepository.findById(userid).orElse(new User());
+		testCallersRights(user);
+		
 		boolean retVal = appointmentgroupService.deleteAppointment(appointment, new NormalBooker());
 		
 		testWarningsForAppointmentsInTimeInterval(appointment);
@@ -161,8 +176,13 @@ public class AppointmentgroupController {
 
 	@DeleteMapping("/override/Appointment/{id}")
 	public boolean deleteAppointmentOverride(@PathVariable(name = "id") String appointmentId) {
-		AuthorityTester.containsAny("OVERRIDE");
 		Appointment appointment = appointmentService.getById(appointmentId);
+		
+		AuthorityTester.containsAny("OVERRIDE");
+		String userid = appointment.getBookedCustomer().getId();
+		User user = userRepository.findById(userid).orElse(new User());
+		testCallersRights(user);
+		
 		boolean retVal = appointmentgroupService.deleteAppointment(appointment, new OverrideBooker());
 		
 		testWarningsForAppointmentsInTimeInterval(appointment);
@@ -279,5 +299,13 @@ public class AppointmentgroupController {
 		appointmentgroupService.testWarningsForAppointments(appointmentsToTest);
 
 		appointmentgroupService.setPullableAppointments(appointment);
+	}
+	
+	private void testCallersRights(User userToTest) {
+		if (AuthorityTester.isLoggedInUser(userToTest)) {
+			AuthorityTester.containsAny("OWN_APPOINTMENT_WRITE");
+		} else {
+			AuthorityTester.containsAny("APPOINTMENT_WRITE");
+		}
 	}
 }

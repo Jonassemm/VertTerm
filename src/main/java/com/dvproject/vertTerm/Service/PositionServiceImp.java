@@ -1,8 +1,11 @@
 package com.dvproject.vertTerm.Service;
 
 import com.dvproject.vertTerm.Model.Position;
+import com.dvproject.vertTerm.Model.Procedure;
 import com.dvproject.vertTerm.Model.Status;
 import com.dvproject.vertTerm.repository.PositionRepository;
+import com.dvproject.vertTerm.repository.ProcedureRepository;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.rest.webmvc.ResourceNotFoundException;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -19,6 +22,9 @@ import java.util.Optional;
 public class PositionServiceImp implements PositionService {
 	@Autowired
 	private PositionRepository positionRepository;
+	
+	@Autowired
+	private ProcedureRepository procedureRepository;
 
 	@Override
 	@PreAuthorize("hasAuthority('POSITION_READ')")
@@ -42,12 +48,14 @@ public class PositionServiceImp implements PositionService {
 	@Override
 	@PreAuthorize("hasAuthority('POSITION_WRITE')")
 	public Position update(Position position) {
-		if (position.getId() != null && positionRepository.findById(position.getId()).isPresent()
-				&& StatusService.isUpdateable(position.getStatus())) {
+		Position retVal = null;
+		
+		if (isUpdatble(position)) {
 			position.setName(capitalize(position.getName()));
-			return positionRepository.save(position);
+			retVal = positionRepository.save(position);
 		}
-		return null;
+		
+		return retVal;
 	}
 
 	@Override
@@ -56,7 +64,8 @@ public class PositionServiceImp implements PositionService {
 		Position position = this.getPositionsInternal(id);
 		position.setStatus(Status.DELETED);
 		positionRepository.save(position);
-		return this.getPositionsInternal(id).getStatus() == Status.DELETED;
+		removeResourceTypeFromProcedures(id);
+		return getPositionsInternal(id).getStatus().isDeleted();
 	}
 
 	@Override
@@ -74,16 +83,19 @@ public class PositionServiceImp implements PositionService {
 	@Override
 	@PreAuthorize("hasAuthority('POSITION_WRITE')")
 	public Position create(Position position) {
+		Position retVal = null;
+		
 		if (position.getId() == null) {
 			position.setName(capitalize(position.getName()));
 			position.setStatus(Status.ACTIVE);
-			return positionRepository.save(position);
+			retVal =  positionRepository.save(position);
 		}
-		if (positionRepository.findById(position.getId()).isPresent()) {
+		
+		if (positionRepository.findById(position.getId()).isPresent())
 			throw new ResourceNotFoundException(
 					"Procedure with the given id (" + position.getId() + ") exists on the database. Use the update method.");
-		}
-		return null;
+		
+		return retVal;
 	}
 
 	private Position getPositionsInternal(String id) {
@@ -102,5 +114,20 @@ public class PositionServiceImp implements PositionService {
 			return str;
 		return str.substring(0, 1).toUpperCase() + str.substring(1).toLowerCase();
 
+	}
+	
+	private boolean isUpdatble(Position position) {
+		return position.getId() != null && positionRepository.findById(position.getId()).isPresent()
+				&& StatusService.isUpdateable(position.getStatus());
+	}
+	
+	private void removeResourceTypeFromProcedures(String positionId) {
+		List<Procedure> procedureToUpdate = procedureRepository.findByNeededEmployeePositions(positionId);
+		
+		procedureToUpdate.forEach(procedure -> {
+			List<Position> positionsOfProcedure = procedure.getNeededEmployeePositions();
+			positionsOfProcedure.removeIf(pos -> pos.getId().equals(positionId));
+			procedureRepository.save(procedure);
+		});
 	}
 }

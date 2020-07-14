@@ -1,9 +1,6 @@
 package com.dvproject.vertTerm.Service;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import javax.servlet.http.HttpServletResponse;
@@ -11,10 +8,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.dvproject.vertTerm.Model.Appointment;
-import com.dvproject.vertTerm.Model.Availability;
-import com.dvproject.vertTerm.Model.Available;
-import com.dvproject.vertTerm.Model.Warning;
+import com.dvproject.vertTerm.Model.*;
 import com.dvproject.vertTerm.exception.AvailabilityException;
 import com.dvproject.vertTerm.repository.AvailabilityRepository;
 import com.dvproject.vertTerm.util.AppointmentTester;
@@ -165,7 +159,7 @@ public class AvailabilityServiceImpl {
 					entity.isAvailable(startdate, enddate);
 				}
 			} catch (AvailabilityException ex) {
-				hasChanged    = appointment.addWarnings(Warning.AVAILABILITY_WARNING);
+				hasChanged     = appointment.addWarnings(Warning.AVAILABILITY_WARNING);
 				hasNewWarning |= hasChanged;
 			} finally {
 				if (hasChanged)
@@ -178,20 +172,14 @@ public class AvailabilityServiceImpl {
 	}
 
 	private boolean hasNotUniqueIds(List<Availability> availabilities) {
-		List<String> availIds = new ArrayList<>();
+		List<String> notNullIds = availabilities.stream()
+									.filter(avail -> avail.getId() != null)
+									.map(avail -> avail.getId())
+									.collect(Collectors.toList());
 		
-		for (Availability availability : availabilities) {
-			String id = availability.getId();
-			
-			if (id == null)
-				continue;
-			
-			if (availIds.contains(id))
-				return true;
-			
-			availIds.add(id);
-		}
+		int nonNullIdsCount = notNullIds.size();
+		int uniqueNotNullIdsCount = (int) notNullIds.stream().distinct().count();
 		
-		return false;
+		return uniqueNotNullIdsCount != nonNullIdsCount;
 	}
 }
