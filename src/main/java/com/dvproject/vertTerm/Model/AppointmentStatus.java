@@ -67,4 +67,8 @@ public enum AppointmentStatus {
 	public boolean isDeleted () {
 		return this == DELETED;
 	}
+	
+	public boolean isDone () {
+		return this == DONE;
+	}
 }

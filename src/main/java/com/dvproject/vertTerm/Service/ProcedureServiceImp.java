@@ -37,7 +37,6 @@ public class ProcedureServiceImp extends WarningServiceImpl implements Procedure
 	}
 
 	@Override
-	@PreAuthorize("hasAuthority('PROCEDURE_READ')")
 	public List<Procedure> getAll(Status status, boolean publicProcedure) {
 		return procedureRepository.findByStatusAndPublicProcedure(status, publicProcedure);
 	}

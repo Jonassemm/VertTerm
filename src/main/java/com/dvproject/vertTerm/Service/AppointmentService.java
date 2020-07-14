@@ -60,6 +60,8 @@ public interface AppointmentService extends BasicService<Appointment> {
 	List<Appointment> getAppointmentsOf(Procedure procedure, Date startdate);
 
 	List<Appointment> getAppointmentsOf(Resource resource, Date startdate);
+	
+	void loadAppointment(Appointment appointment);
 
 	// PUT
 	boolean setCustomerIsWaiting(String id, boolean customerIsWaiting);

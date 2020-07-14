@@ -1,23 +1,27 @@
-package com.dvproject.vertTerm.Model;
+package com.dvproject.vertTerm.util;
 
 import java.util.List;
 
+import com.dvproject.vertTerm.Model.Appointment;
+import com.dvproject.vertTerm.Model.Appointmentgroup;
+import com.dvproject.vertTerm.Model.TimeInterval;
+import com.dvproject.vertTerm.Service.AppointmentService;
 import com.dvproject.vertTerm.Service.AppointmentServiceImpl;
 import com.dvproject.vertTerm.Service.RestrictionService;
 import com.dvproject.vertTerm.exception.AppointmentException;
 import com.dvproject.vertTerm.exception.AppointmentInternalException;
 
-public class NormalBookingTester extends BookingTester {
+public class NormalAppointmentTester extends AppointmentTester {
 
-	public NormalBookingTester () {
+	public NormalAppointmentTester () {
 		super();
 	}
 
-	public NormalBookingTester (List<TimeInterval> timeIntervallsOfAppointments) {
+	public NormalAppointmentTester (List<TimeInterval> timeIntervallsOfAppointments) {
 		super(null, timeIntervallsOfAppointments);
 	}
 
-	public NormalBookingTester (Appointment appointment) {
+	public NormalAppointmentTester (Appointment appointment) {
 		super(appointment);
 	}
 
@@ -64,7 +68,7 @@ public class NormalBookingTester extends BookingTester {
 	}
 
 	@Override
-	public void testAppointment(AppointmentServiceImpl appointmentService) {
+	public void testAppointment(AppointmentService appointmentService) {
 		appointment.testDistinctBookedAttributes();
 		try {
 			appointment.testBlockage(appointmentService);

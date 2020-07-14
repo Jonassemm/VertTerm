@@ -14,11 +14,11 @@ import org.springframework.stereotype.Service;
 import com.dvproject.vertTerm.Model.Appointment;
 import com.dvproject.vertTerm.Model.Availability;
 import com.dvproject.vertTerm.Model.Available;
-import com.dvproject.vertTerm.Model.BookingTester;
-import com.dvproject.vertTerm.Model.NormalBookingTester;
 import com.dvproject.vertTerm.Model.Warning;
 import com.dvproject.vertTerm.exception.AvailabilityException;
 import com.dvproject.vertTerm.repository.AvailabilityRepository;
+import com.dvproject.vertTerm.util.AppointmentTester;
+import com.dvproject.vertTerm.util.NormalAppointmentTester;
 
 /**
  * @author Joshua Müller
@@ -145,7 +145,7 @@ public class AvailabilityServiceImpl {
 	}
 
 	private void testAppointmentsOfAvailable(Available entity, Date startdateOfTest) {
-		BookingTester bookingTester = new NormalBookingTester();
+		AppointmentTester bookingTester = new NormalAppointmentTester();
 		List<Appointment> appointmentsToTest = entity.getAppointmentsAfterDate(appointmentService, startdateOfTest);
 		boolean hasNewWarning = false;
 

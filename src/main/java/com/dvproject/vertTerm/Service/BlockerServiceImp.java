@@ -9,16 +9,16 @@ import org.springframework.transaction.annotation.Transactional;
 import com.dvproject.vertTerm.Model.Appointment;
 import com.dvproject.vertTerm.Model.AppointmentStatus;
 import com.dvproject.vertTerm.Model.Blocker;
-import com.dvproject.vertTerm.Model.BookingTester;
 import com.dvproject.vertTerm.Model.Employee;
-import com.dvproject.vertTerm.Model.NormalBookingTester;
-import com.dvproject.vertTerm.Model.OverrideBookingTester;
 import com.dvproject.vertTerm.Model.Resource;
 import com.dvproject.vertTerm.Model.Warning;
 import com.dvproject.vertTerm.exception.AppointmentException;
 import com.dvproject.vertTerm.exception.AppointmentTimeException;
 import com.dvproject.vertTerm.repository.AppointmentRepository;
 import com.dvproject.vertTerm.repository.BlockerRepository;
+import com.dvproject.vertTerm.util.AppointmentTester;
+import com.dvproject.vertTerm.util.NormalAppointmentTester;
+import com.dvproject.vertTerm.util.OverrideAppointmentTester;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -120,7 +120,7 @@ public class BlockerServiceImp implements BlockerService {
 	}
 
 	public void RemoveWarning(List<Appointment> appointments) {
-		BookingTester tester = new OverrideBookingTester();
+		AppointmentTester tester = new OverrideAppointmentTester();
 		// test appointment , remove "AppointmentWarning" Flag and
 		// save changed to DB
 		for (Appointment app : appointments) {

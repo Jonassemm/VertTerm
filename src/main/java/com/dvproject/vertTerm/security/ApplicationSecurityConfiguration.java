@@ -18,12 +18,14 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.HttpStatusEntryPoint;
 import org.springframework.validation.beanvalidation.LocalValidatorFactoryBean;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
+import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 import com.dvproject.vertTerm.Model.*;
@@ -68,7 +70,10 @@ public class ApplicationSecurityConfiguration extends WebSecurityConfigurerAdapt
 		http.exceptionHandling().authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED));
 
 		http.logout().logoutUrl("/logout")
-				.logoutSuccessHandler((request, response, authentication) -> response.setStatus(200))
+				.logoutSuccessHandler((request, response, authentication) -> { 
+						SecurityContextHolder.getContext().setAuthentication(null);
+						response.setStatus(200); 
+					})
 				.deleteCookies("JSESSIONID").clearAuthentication(true).invalidateHttpSession(true);
 
 		http.csrf().disable();
@@ -119,10 +124,16 @@ public class ApplicationSecurityConfiguration extends WebSecurityConfigurerAdapt
 
 	@Bean
 	public WebMvcConfigurer corsConfigurer() {
-		return new WebMvcConfigurer() {
+		return new WebMvcConfigurer()
+		{
 			@Override
 			public void addCorsMappings(CorsRegistry registry) {
 				registry.addMapping("/**").allowedHeaders("*").allowedOrigins("*").allowedMethods("*");
+			}
+
+			@Override
+			public void addResourceHandlers(ResourceHandlerRegistry registry) {
+				registry.addResourceHandler("/").addResourceLocations("/index.html");
 			}
 		};
 	}

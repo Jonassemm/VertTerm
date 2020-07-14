@@ -6,12 +6,17 @@ import java.util.stream.Collectors;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.User;
 
 /**
  * @author Joshua Müller
  */
 
 public class AuthorityTester {
+	
+	public static boolean isLoggedInUser(com.dvproject.vertTerm.Model.User user) {
+		return user.getUsername().equals(getLoggedInUser().getUsername());
+	}
 
 	public static void containsAll(String... neededAuthorities) {
 		List<GrantedAuthority> grantedAuthorities = createSimpleAuthorities(Arrays.asList(neededAuthorities));
@@ -53,6 +58,10 @@ public class AuthorityTester {
 
 	private static Collection<? extends GrantedAuthority> getAuthoritiesOfSession() {
 		return SecurityContextHolder.getContext().getAuthentication().getAuthorities();
+	}
+	
+	private static User getLoggedInUser(){
+		return (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 	}
 
 }

@@ -77,7 +77,6 @@ public class ResourceServiceImp extends WarningServiceImpl implements ResourceSe
 		Resource retVal = null;
 
 		if (resId != null && resource.isPresent()) {
-			testCorrectDependencies(res);
 			availabilityService.loadAllAvailabilitiesOfEntity(res.getAvailabilities(), res, this);
 			res.setName(capitalize(res.getName()));
 			retVal = ResRepo.save(res);
@@ -214,47 +213,6 @@ public class ResourceServiceImp extends WarningServiceImpl implements ResourceSe
 	public boolean isResourceAvailableBetween(String id, Date startdate, Date enddate) {
 		Resource Res = getById(id);
 		return availabilityService.isAvailable(Res.getAvailabilities(), startdate, enddate);
-	}
-
-	/**
-	 * 
-	 * @param newInstance resource to update
-	 * 
-	 * @throws RuntimeException if a cyclical dependency has been found
-	 */
-	private void testCorrectDependencies(Resource newInstance) {
-		List<Resource> oldInstanceChildResources;
-		List<Resource> resourcesToTest = new ArrayList<>();
-
-		if (newInstance.getChildResources() == null) { return; }
-
-		try {
-			oldInstanceChildResources = this.getById(newInstance.getId()).getChildResources();
-		} catch (ResourceNotFoundException ex) {
-			// if there is no resource with the corresponding id in the db, there can be no
-			// cycical dependency
-			return;
-		}
-
-		for (Resource resource : newInstance.getChildResources()) {
-			if (!oldInstanceChildResources.contains(resource)) {
-				resourcesToTest.add(resource);
-			}
-		}
-
-		while (!resourcesToTest.isEmpty()) {
-			Resource resource = resourcesToTest.get(0);
-			List<Resource> childResources = resource.getChildResources();
-
-			if (resource.getId().equals(newInstance.getId())) {
-				throw new RuntimeException("Cyclical dependencies found");
-			}
-			if (childResources != null) {
-				resourcesToTest.addAll(0, childResources);
-			}
-
-			resourcesToTest.remove(0);
-		}
 	}
 
 	// capitalize first letter of a string

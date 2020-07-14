@@ -1,9 +1,9 @@
 package com.dvproject.vertTerm.Service;
 
-import java.security.Principal;
 import java.util.List;
 
 import com.dvproject.vertTerm.Model.*;
+import com.dvproject.vertTerm.util.Booker;
 
 /**
  * @author Joshua Müller
@@ -22,24 +22,22 @@ public interface AppointmentgroupService {
 
 	void setPullableAppointments(Appointment appointment);
 
-	void testWarningsForAppointmentgroup(String id);
-
-	void testWarnings(String appointmentid);
-
 	void testWarningsForAppointments(List<Appointment> appointmentsToTest);
-
-	void canBookAppointments(Principal user, Appointmentgroup appointmentgroup);
+	
+	void loadAppointmentgroup(Appointmentgroup appointmentgroupToLoad);
+	
+	void loadAppointmentgroupWithOverride(Appointmentgroup appointmentgroupToLoad);
 
 	// PUT / POST
-	String bookAppointmentgroup(String userid, Appointmentgroup appointmentgroup, boolean override);
+	void saveAppointmentgroup(Appointmentgroup appointmentgroup);
 	
 	//PUT
-	boolean startAppointment(String appointmentid);
+	boolean startAppointment(Appointment appointment);
 
-	boolean stopAppointment(String appointmentid);
+	boolean stopAppointment(Appointment appointment);
 
 	// DELETE
 	boolean delete(String id);
 	
-	boolean deleteAppointment(String appointmentid, boolean override);
+	boolean deleteAppointment(Appointment appointment, Booker booker);
 }

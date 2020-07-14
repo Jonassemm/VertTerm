@@ -2,6 +2,7 @@ package com.dvproject.vertTerm.Controller;
 
 import com.dvproject.vertTerm.Model.*;
 import com.dvproject.vertTerm.Service.*;
+import com.dvproject.vertTerm.security.AuthorityTester;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.GrantedAuthority;
@@ -59,9 +60,7 @@ public class AppointmentController {
 
 	@GetMapping("/Own")
 	public @ResponseBody List<Appointment> getOwnAppointments(Principal principal) {
-		Collection<? extends GrantedAuthority> auth = SecurityContextHolder.getContext().getAuthentication()
-				.getAuthorities();
-		// TODO: test authority
+		AuthorityTester.containsAny("OWN_APPOINTMENT_READ");
 		if (principal == null) { throw new IllegalArgumentException("No principal available"); }
 
 		User user = userService.getOwnUser(principal);
@@ -74,8 +73,10 @@ public class AppointmentController {
 	}
 
 	@GetMapping("/Resources/{resourceId}")
-	public @ResponseBody List<Appointment> getByResourceId(@PathVariable String resourceId,
-			@RequestParam(required = false) Date starttime, @RequestParam(required = false) Date endtime,
+	public @ResponseBody List<Appointment> getByResourceId(
+			@PathVariable String resourceId,
+			@RequestParam(required = false) Date starttime,
+			@RequestParam(required = false) Date endtime,
 			@RequestParam(required = false, name = "status") String statusString) {
 		List<Appointment> appointments = null;
 		AppointmentStatus status = AppointmentStatus.enumOf(statusString);
@@ -92,8 +93,10 @@ public class AppointmentController {
 	}
 
 	@GetMapping("/user/{userid}")
-	public List<Appointment> getAppointmentsWithUserInTimeInterval(@PathVariable String userid,
-			@RequestParam(required = false) Date starttime, @RequestParam(required = false) Date endtime,
+	public List<Appointment> getAppointmentsWithUserInTimeInterval(
+			@PathVariable String userid,
+			@RequestParam(required = false) Date starttime, 
+			@RequestParam(required = false) Date endtime,
 			@RequestParam(required = false, name = "status") String statusString) {
 		List<Appointment> appointments = new ArrayList<>();
 		boolean isEmployee = userService.getById(userid) instanceof Employee;
@@ -118,7 +121,8 @@ public class AppointmentController {
 	}
 
 	@GetMapping("/warnings")
-	public List<Appointment> getAppointmentsWithWarnings(@RequestParam(required = false) String userid,
+	public List<Appointment> getAppointmentsWithWarnings(
+			@RequestParam(required = false) String userid,
 			@RequestParam(required = false, name = "warnings") List<String> warningStrings) {
 		List<Warning> warnings = null;
 		boolean areWarningStringsEmpty = warningStrings == null || warningStrings.isEmpty();
@@ -129,8 +133,10 @@ public class AppointmentController {
 	}
 
 	@GetMapping({ "/status/{status}", "/status/" })
-	public List<Appointment> getAppointmentsInTimeInterval(@PathVariable(required = false) AppointmentStatus status,
-			@RequestParam Date starttime, @RequestParam Date endtime) {
+	public List<Appointment> getAppointmentsInTimeInterval(
+			@PathVariable(required = false) AppointmentStatus status,
+			@RequestParam Date starttime, 
+			@RequestParam Date endtime) {
 		return service.getAppointmentsInTimeIntervalAndStatus(starttime, endtime, status);
 	}
 

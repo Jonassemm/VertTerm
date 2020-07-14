@@ -1,9 +1,6 @@
 package com.dvproject.vertTerm.Controller;
 
 import java.util.Base64;
-import java.util.Base64.Decoder;
-
-import javax.servlet.http.HttpServletRequest;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -28,14 +25,9 @@ public class HomeController {
 	@Autowired
 	private PasswordEncoder passwordEncoder;
 
-	@GetMapping("/")
-	public String index() {
-		return "index";
-	}
-
-	@GetMapping("/login/{login}")
-	public String login(HttpServletRequest request, @PathVariable String login) {
-		LoginInformation loginInformation = new LoginInformation(login);
+	@GetMapping("/login/{base64Login}")
+	public String login(@PathVariable String base64Login) {
+		LoginInformation loginInformation = new LoginInformation(base64Login);
 		
 		String username = loginInformation.getUsername();
 		String password = loginInformation.getPassword();
@@ -49,7 +41,7 @@ public class HomeController {
 				username, null, manager.getAuthorities(user.getRoles()));
 		SecurityContextHolder.getContext().setAuthentication(authenticationToken);
 
-		return "index";
+		return "redirect:/";
 	}
 	
 	private static class LoginInformation {
@@ -57,9 +49,8 @@ public class HomeController {
 		private String password;
 		
 		public LoginInformation(String base64String) {
-			Decoder base64Decoder = Base64.getDecoder();
-			String loginString = base64Decoder.decode(base64String.getBytes()).toString();
-			
+			String loginString = new String (Base64.getDecoder().decode(base64String));
+
 			String [] loginInformation = loginString.split(",");
 			
 			if (loginInformation.length != 2)

@@ -92,8 +92,8 @@ public interface AppointmentRepository extends MongoRepository<Appointment, Stri
 	@Query("{" + overlapsWithOtherAppointment + ", 'status': ?0}")
 	List<Appointment> findAllOverlappingAppointmentsWithStatus(AppointmentStatus status, Date starttime, Date endtime);
 
-	@Query("{'$and':[{'plannedStarttime': {'$gte': ?0}}, {'plannedEndtime': {'$lte': ?1}}, {'status': ?2}]}")
-	List<Appointment> findAppointmentsByTimeintervalAndStatus(Date starttime, Date endtime, AppointmentStatus status);
+	@Query("{'status': ?0," + overlapsWithOtherAppointment + "}")
+	List<Appointment> findAppointmentsByTimeintervalAndStatus(AppointmentStatus status, Date starttime, Date endtime);
 
 	@Query("{'$and':[{'bookedCustomer.$id': ObjectId(?0)}, {'plannedStarttime': {'$gte': ?1}}, {'plannedEndtime': {'$lte': ?2}}]}")
 	List<Appointment> findAppointmentsByBookedUserAndTimeinterval(String userid, Date starttime, Date endtime);

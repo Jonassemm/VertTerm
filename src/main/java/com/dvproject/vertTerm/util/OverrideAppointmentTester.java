@@ -1,27 +1,21 @@
-package com.dvproject.vertTerm.Model;
+package com.dvproject.vertTerm.util;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
-import com.dvproject.vertTerm.Service.AppointmentServiceImpl;
-import com.dvproject.vertTerm.Service.RestrictionService;
-import com.dvproject.vertTerm.exception.AppointmentException;
-import com.dvproject.vertTerm.exception.AppointmentTimeException;
-import com.dvproject.vertTerm.exception.AppointmentInternalException;
-import com.dvproject.vertTerm.exception.AvailabilityException;
-import com.dvproject.vertTerm.exception.EmployeeException;
-import com.dvproject.vertTerm.exception.PositionException;
-import com.dvproject.vertTerm.exception.ProcedureException;
-import com.dvproject.vertTerm.exception.ResourceException;
-import com.dvproject.vertTerm.exception.ResourceTypeException;
-import com.dvproject.vertTerm.exception.RestrictionException;
+import com.dvproject.vertTerm.Model.Appointment;
+import com.dvproject.vertTerm.Model.TimeInterval;
+import com.dvproject.vertTerm.Model.Warning;
+import com.dvproject.vertTerm.Service.*;
+import com.dvproject.vertTerm.exception.*;
 
-public class OverrideBookingTester extends BookingTester {
+public class OverrideAppointmentTester extends AppointmentTester {
 
-	public OverrideBookingTester () {
+	public OverrideAppointmentTester () {
 		super();
 	}
 
-	public OverrideBookingTester (List<TimeInterval> timeIntervallsOfAppointments) {
+	public OverrideAppointmentTester (List<TimeInterval> timeIntervallsOfAppointments) {
 		super(null, timeIntervallsOfAppointments);
 	}
 
@@ -100,7 +94,7 @@ public class OverrideBookingTester extends BookingTester {
 	}
 
 	@Override
-	public void testAppointment(AppointmentServiceImpl appointmentService) {
+	public void testAppointment(AppointmentService appointmentService) {
 		try {
 			appointment.testDistinctBookedAttributes();
 			appointment.testBlockage(appointmentService);
@@ -108,11 +102,17 @@ public class OverrideBookingTester extends BookingTester {
 			appointment.addWarnings(Warning.APPOINTMENT_WARNING);
 		} catch (AppointmentInternalException ex) {
 			appointment.addWarnings(Warning.APPOINTMENT_WARNING);
-			
-			ex.getAppointments().forEach(app -> { 
-				app.addWarnings(Warning.APPOINTMENT_WARNING); 
+
+			List<Appointment> failedAppointments = ex.getAppointments()
+								.stream()
+								.filter(app -> app.getBookedProcedure() != null)
+								.collect(Collectors.toList());
+
+			failedAppointments.forEach(app -> {
+				app.addWarnings(Warning.APPOINTMENT_WARNING);
 				appointmentService.update(app);
 			});
 		}
 	}
+
 }

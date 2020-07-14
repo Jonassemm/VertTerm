@@ -1,27 +1,29 @@
-package com.dvproject.vertTerm.Model;
+package com.dvproject.vertTerm.util;
 
 import java.util.List;
 
-import com.dvproject.vertTerm.Service.AppointmentServiceImpl;
+import com.dvproject.vertTerm.Model.Appointment;
+import com.dvproject.vertTerm.Model.TimeInterval;
+import com.dvproject.vertTerm.Service.AppointmentService;
 import com.dvproject.vertTerm.Service.RestrictionService;
 
-public abstract class BookingTester {
+public abstract class AppointmentTester {
 	protected Appointment appointment;
 	private List<TimeInterval> timeIntervallsOfAppointments;
 
-	public BookingTester () {}
+	public AppointmentTester () {}
 
-	public BookingTester (Appointment appointment) {
+	public AppointmentTester (Appointment appointment) {
 		this();
 		setAppointment(appointment);
 	}
 
-	public BookingTester (Appointment appointment, List<TimeInterval> timeIntervallsOfAppointments) {
+	public AppointmentTester (Appointment appointment, List<TimeInterval> timeIntervallsOfAppointments) {
 		this(appointment);
 		this.timeIntervallsOfAppointments = timeIntervallsOfAppointments;
 	}
 
-	public void testAll(AppointmentServiceImpl appointmentService, RestrictionService restrictionService,
+	public void testAppointment(AppointmentService appointmentService, RestrictionService restrictionService,
 			List<TimeInterval> timeIntervallsOfAppointments) {
 		this.testAppointmentTimes(timeIntervallsOfAppointments);
 		this.testEmployees();
@@ -34,15 +36,15 @@ public abstract class BookingTester {
 		this.testAppointment(appointmentService);
 	}
 
-	public void testAll(Appointment appointment, AppointmentServiceImpl appointmentService,
+	public void testAppointment(Appointment appointment, AppointmentService appointmentService,
 			RestrictionService restrictionService, List<TimeInterval> timeIntervallsOfAppointments) {
 		setAppointment(appointment);
-		testAll(appointmentService, restrictionService, timeIntervallsOfAppointments);
+		testAppointment(appointmentService, restrictionService, timeIntervallsOfAppointments);
 	}
 
-	public Appointment testAll(Appointment appointment, AppointmentServiceImpl appointmentService,
+	public Appointment testAppointment(Appointment appointment, AppointmentService appointmentService,
 			RestrictionService restrictionService) {
-		testAll(appointment, appointmentService, restrictionService, timeIntervallsOfAppointments);
+		testAppointment(appointment, appointmentService, restrictionService, timeIntervallsOfAppointments);
 		return appointment;
 	}
 
@@ -66,5 +68,6 @@ public abstract class BookingTester {
 
 	public abstract void testRestrictions(RestrictionService restrictionService);
 
-	public abstract void testAppointment(AppointmentServiceImpl appointmentService);
+	public abstract void testAppointment(AppointmentService appointmentService);
+
 }

@@ -17,6 +17,9 @@ import com.dvproject.vertTerm.Model.Consumable;
 import com.dvproject.vertTerm.Model.Status;
 import com.dvproject.vertTerm.Service.ConsumableService;
 
+/**
+ * @author Joshua Müller
+ */
 @RestController
 @RequestMapping("/Consumables")
 @ResponseBody
@@ -29,8 +32,8 @@ public class ConsumableController {
 		return consumableService.getAll();
 	}
 	
-	@GetMapping("/Status")
-	public List<Consumable> getAllConsumablesWithStatus (@RequestBody Status status){
+	@GetMapping("/Status/{status}")
+	public List<Consumable> getAllConsumablesWithStatus (@PathVariable Status status){
 		return consumableService.getAllWithStatus(status);
 	}
 	
