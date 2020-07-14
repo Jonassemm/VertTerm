@@ -40,7 +40,7 @@ export const getEmployees = async (status, filter) => {
         else return filterDeleted(await axios.get(`${APIURL}/api/Employees`))
     if (filter && !status) return axios.get(`${APIURL}/api/Employees?position=${filter}`)
     if (filter && status)
-        if (status != "NOTDELETED") return axios.get(`${APIURL}/api/Employees?status=${status}?position=${filter}`)
+        if (status != "NOTDELETED") return axios.get(`${APIURL}/api/Employees?status=${status}&position=${filter}`)
         else return filterDeleted(await axios.get(`${APIURL}/api/Employees?position=${filter}`))
     return axios.get(`${APIURL}/api/Employees`)
 }
@@ -80,7 +80,7 @@ export const getResources = async (status, type) => {
     }
     if (status && type) {
         if (status == "NOTDELETED") return filterDeleted(await axios.get(`${APIURL}/api/Resources/restyp/${type}`))
-        return axios.get(`${APIURL}/api/Resources/ResbyRTandStatus?status=${status}?RTid=${type}`)
+        return axios.get(`${APIURL}/api/Resources/ResbyRTandStatus?status=${status}&RTid=${type}`)
     }
     return axios.get(`${APIURL}/api/Resources`)
 }
