@@ -1,12 +1,28 @@
 //author: Patrick Venturini
-var moment = require('moment'); 
+var moment = require('moment');
 
- /*--------------------String/Date - Translation-----------------------
+/*--------------------String/Date - Translation-----------------------
 
-    var string = "13.01.2003 13:45";
-    var date = moment(string, "DD.MM.yyyy HH:mm").toDate();
-    var dateString = moment(date).format("DD.MM.YYYY HH:mm").toString();
+   var string = "13.01.2003 13:45";
+   var date = moment(string, "DD.MM.yyyy HH:mm").toDate();
+   var dateString = moment(date).format("DD.MM.YYYY HH:mm").toString();
 */
+
+export function minutesToSeconds(time) {
+    if (time === null) {
+        return null
+    } else {
+        return Number(time) * 60
+    }
+}
+
+export function secondsToMinutes(time) {
+    if (time === null) {
+        return null
+    } else {
+        return Number(time) / 60
+    }
+}
 
 export function setDate() {
     const date = new Date();

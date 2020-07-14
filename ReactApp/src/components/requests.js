@@ -3,7 +3,6 @@ import axios from "axios"
 import { APIURL } from "../APIConfig"
 
 function filterDeleted(list) {
-    console.log(list)
     return { data: list.data.filter(item => item.status != "deleted") }
 }
 
