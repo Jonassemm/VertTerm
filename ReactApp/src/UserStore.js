@@ -1,6 +1,6 @@
 //author: Patrick Venturini, Jonas Semmler
 import { observable, action, decorate } from "mobx"
-import { getUserData } from "./components/navigationComponents/ActiveUserRequests"
+import { getCurrentUser } from "./components/navigationComponents/ActiveUserRequests"
 
 class UserStore {
     user = null
@@ -68,7 +68,7 @@ class UserStore {
     }
 
     async getData() {
-        const res = await getUserData(this.userID)
+        const res = await getCurrentUser()
         this.setRoles(res.data.roles.map(item => {
                     return (item.name)
 

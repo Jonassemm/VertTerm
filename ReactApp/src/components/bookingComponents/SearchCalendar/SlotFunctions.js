@@ -11,7 +11,6 @@ export function checkSlotOverlap(Slot1, Slot2) {
 
 }
 
-
 export function getOverlapSlot(Slot1, Slot2) {
     if (Slot1.startDate >= Slot2.startDate) {
         if (Slot1.endDate <= Slot2.endDate) return { startDate: Slot1.startDate, endDate: Slot1.endDate }
