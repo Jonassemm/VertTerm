@@ -19,7 +19,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-//author Amar Alkhankan
+/**  author Amar Alkhankan  **/
 @Service
 @Transactional
 public class RoleServiceImp implements RoleService {

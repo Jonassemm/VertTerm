@@ -80,8 +80,15 @@ export default function AppointmentPage({calendarStore, userStore}) {
 
 
     useEffect( () => {
+        if(appointmentsOf ==  loadMode.foreign){
+            loadAppointments(appointmentsOf)
+        }
+    },[appointmentsOf])
+
+
+    useEffect( () => {
         loadAppointments(appointmentsOf)
-    },[appointmentsOf, tabKey])
+    },[tabKey])
 
 
     useEffect( () => {
@@ -227,16 +234,16 @@ export default function AppointmentPage({calendarStore, userStore}) {
             var today = new Date
             if(selection == loadMode.own){ //own
                 if(userStore.user != null) {
-                    loadCalendarAppointments(today.getMonth(), today.getFullYear(), userStore.userID)
+                    loadCalendarAppointments(today, userStore.userID)
                 }else{
                     setLoading(false)
                 }
             }else if (selection == loadMode.foreign) { //foreign
                 if(selectedUser.length > 0) {
-                    loadCalendarAppointments(today.getMonth(), today.getFullYear(), selectedUser[0].id)
+                    loadCalendarAppointments(today, selectedUser[0].id)
                 }
             }else if(selection == loadMode.all){ //all
-                loadCalendarAppointments(today.getMonth(), today.getFullYear(), null)
+                loadCalendarAppointments(today, null)
             }else {
                 setLoading(false)
             }
@@ -244,17 +251,21 @@ export default function AppointmentPage({calendarStore, userStore}) {
     }
 
 
-    const loadCalendarAppointments = async (month, year, UserID) => { 
-        /* var earliestAppointmentTime = null */ //for automatic scroll to this appointment
-        const numberOfMonthsBefore = 2
-        const numberOfMontsAfter = 2
+    const loadCalendarAppointments = async (refereceDate, UserID) => { 
+        const numberOfMonthsBefore = 1
+        const numberOfMontsAfter = 1
+        const numberOfDaysBefore = 6
+        const numberOfDaysAfter = 6
         var response = []
         var startDate = new Date
         var endDate = new Date
-        startDate.setMonth(month - numberOfMonthsBefore)
-        startDate.setFullYear(year)
-        endDate.setMonth(month + numberOfMontsAfter)
-        endDate.setFullYear(year)
+        //28 is the min of days a month can have
+        startDate.setDate(28 - numberOfDaysBefore)
+        startDate.setMonth(refereceDate.getMonth() - numberOfMonthsBefore)
+        startDate.setFullYear(refereceDate.getFullYear())
+        endDate.setDate(numberOfDaysAfter)
+        endDate.setMonth(refereceDate.getMonth() + numberOfMontsAfter)
+        endDate.setFullYear(refereceDate.getFullYear())
         const startDateString = moment(startDate).format("DD.MM.YYYY HH:mm").toString();
         const endDateString =  moment(endDate).format("DD.MM.YYYY HH:mm").toString();
         if(UserID == null){//case all appointments
@@ -280,7 +291,6 @@ export default function AppointmentPage({calendarStore, userStore}) {
             }
         }
 
-
         //don't save object with status="deleted"
         var reducedData = []
         if(response.data != undefined) {
@@ -291,18 +301,8 @@ export default function AppointmentPage({calendarStore, userStore}) {
             })
         }
 
-
-
         //prepare response for calendar
         const evts = reducedData.map(item => {
-            //save the earliest time 
-            /* if(earliestAppointmentTime == null) {
-                earliestAppointmentTime = moment(item.plannedStarttime, "DD.MM.yyyy HH:mm").toDate()
-            }else{
-                if(moment(item.plannedStarttime, "DD.MM.yyyy HH:mm").toDate().getTime() < earliestAppointmentTime.getTime()){
-                    earliestAppointmentTime = moment(item.plannedStarttime, "DD.MM.yyyy HH:mm").toDate()
-                }
-            } */
             var title
             if(item.bookedCustomer != null && item.bookedProcedure != null){
                 if(item.bookedCustomer.firstName != null && item.bookedCustomer.lastName != null){

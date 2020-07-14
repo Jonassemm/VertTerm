@@ -1,18 +1,23 @@
+//author: Jonas Semmler
 import React, { useState, useEffect, forwardRef, useImperativeHandle } from "react"
 import { Typeahead } from "react-bootstrap-typeahead"
-import { getUsers, getEmployees, getCustomers, getProcedures, getRoles, getPositions, getResourcetypes, getResources, getRestrictions, getActiveUsers, getResourcesOfType, getEmployeesOfPosition, getWarnings } from "./requests"
+import { getUsers, getEmployees, getCustomers, getProcedures, getRoles, getPositions, getResourceTypes, getResources, getRestrictions, getPublicProcedures } from "./requests"
 import { getTranslatedWarning, kindOfWarningList } from "./Warnings"
 
-// when using this Object you have to give 4 props:
+// when using this Object you have to give props:
 // DbObject: defining what Object you want to pick (select out of predefined list below)
 // setState: the setState method for the state in your Form
 // initial: an Array with the values which have to be initally selected
 // multiple: defining whether multiple values can be selected (as boolean)
-// exclude: the element which is removed from the selection
+// ident: a Object which just gets passed back with every change
+// filter: In some cases you can filter the queried results by a type (e.g. resources of a certain type)
+// status: specifies the desired system status of the selectable inputs
+// disabled: Boolean whether you can edit the Input
+
 
 const ObjectPicker = forwardRef((props, ref) => {
-    let { DbObject, setState, initial, multiple, ident, selectedItem, filter, disabled } = props
-    if (!selectedItem) selectedItem = { id: null }
+    let { DbObject, setState, initial, multiple, ident, filter, status, disabled } = props
+    if(status) status = status.toUpperCase()
     const [options, setOptions] = useState([])
     const [labelKey, setLabelKey] = useState("")
     const [selected, setSelected] = useState([])
@@ -37,7 +42,6 @@ const ObjectPicker = forwardRef((props, ref) => {
         switch (DbObject) {
             case 'user':
             case 'employee':
-            case 'activeUser':
             case 'customer': getUserData(); break;
             case 'procedure': getProcedureData(); break;
             case 'resource': getResourceData(); break;
@@ -86,91 +90,62 @@ const ObjectPicker = forwardRef((props, ref) => {
 
     async function getUserData() {
         let res = []
-        let finalResult = []
         switch (DbObject) {
-            case 'user': res = await getUsers(); break;
-            case 'customer': res = await getCustomers(); break;
-            case 'employee': {
-                if (filter) {
-                    res = await getEmployeesOfPosition(filter)
-                } else {
-                    res = await getEmployees()
-                }; break;
-            }
-            case 'activeUser': res = await getActiveUsers()
+            case 'user': res = await getUsers(status); break;
+            case 'customer': res = await getCustomers(status); break;
+            case 'employee': res = await getEmployees(status,filter); break;
         }
+        console.log(res)
+        //attach labelKey
         const result = res.data.map(item => {
             return {
                 ...item,
                 labelKey: item.firstName + " " + item.lastName
             }
         })
-        //filter for Anonymous and Admin user
+        //filter for Anonymous and Admin users
         for (let i = 0; i < result.length; i++) {
-            if ((result[i].username == "admin") || (result[i].username == "anonymousUser") || (result[i].firstName === null)) {
+            if (result[i].firstName === null) {
                 result.splice(i, 1)
                 i -= 1
             }
         }
-        //reduce the selection
-        result.map((item) => {
-            if (item.id != selectedItem.id && item.systemStatus != "deleted") {
-                finalResult.push(item)
-            }
-        })
-        setOptions(finalResult)
+        setOptions(result)
         setLabelKey("labelKey")
         setInit(true)
     }
 
 
     async function getResourceData() {
-        let res = {}
-        if (filter) {
-            res = await getResourcesOfType(filter)
-        } else {
-            res = await getResources()
-        }
-        const result = res.data.map(item => {
-            return { ...item }
-        })
-        setOptions(result)
+        const {data} = await getResources(status,filter)
+        setOptions(data)
         setLabelKey("name")
         setInit(true)
     }
 
     async function getResourceTypeData() {
-        const res = await getResourcetypes()
-        const result = res.data.map((item) => {
-            return {
-                ...item
-            }
-        })
-        setOptions(result)
+        const {data} = await getResourceTypes(status)
+        setOptions(data)
         setLabelKey("name")
         setInit(true)
     }
 
     async function getPositionData() {
-        const res = await getPositions()
-        const result = res.data.map((item) => {
-            return {
-                ...item
-            }
-        })
-        setOptions(result)
+        const {data} = await getPositions(status)
+        setOptions(data)
         setLabelKey("name")
         setInit(true)
     }
 
     async function getProcedureData() {
-        const res = await getProcedures()
-        const result = res.data.map(item => {
-            return {
-                ...item,
-                labelKey: item.name
-            }
-        })
+        let result = []
+        if(filter == "public"){
+            const {data} = await getPublicProcedures()
+            result = data
+        }else{
+            const {data} = await getProcedures(status)
+            result = data
+        }
         setOptions(result)
         setLabelKey("name")
         setInit(true)
@@ -195,13 +170,8 @@ const ObjectPicker = forwardRef((props, ref) => {
     }
 
     async function getRestrictionData() {
-        const res = await getRestrictions()
-        const result = res.data.map(item => {
-            return {
-                ...item
-            }
-        })
-        setOptions(result)
+        const {data} = await getRestrictions()
+        setOptions(data)
         setLabelKey("name")
         setInit(true)
     }

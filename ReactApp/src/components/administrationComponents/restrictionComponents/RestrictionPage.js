@@ -1,6 +1,6 @@
 //author: Patrick Venturini
 import React, { useState, useEffect } from "react"
-import { getAllRestrictions } from "./RestrictionRequests"
+import {getRestrictions } from "../../requests"
 import RestrictionForm from "./RestrictionForm"
 import OverviewPage from "../../OverviewPage"
 
@@ -16,14 +16,12 @@ function RestrictionPage({userStore}) {
 
     //--------------------------------LOAD----------------------------------
     const loadRestrictions = async () => {
-        var data = [];
         try{ 
-          const response = await getAllRestrictions();
-          data = response.data;
+          const {data} = await getRestrictions();
+          setRestrictions(data);
         }catch (error) {
           console.log(Object.keys(error), error.message)
         }
-        setRestrictions(data);
     };
 
 

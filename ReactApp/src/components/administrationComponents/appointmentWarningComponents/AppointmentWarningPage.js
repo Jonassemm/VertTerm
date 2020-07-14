@@ -8,9 +8,10 @@ import AppointmentWarningForm from "./AppointmentWarningForm"
 import {appointmentStatus} from "../../appointmentComponents/AppointmentStatus"
 import {getTranslatedWarning, creatWarningList} from "../../Warnings"
 import {ExceptionModal} from "../../ExceptionModal"
+
 import {
-    getAppointmentsWithWarning, 
-    getAllAppointmentsWithWarning} from "./AppointmentWarningRequests";
+    getAllAppointmentsWithWarnings, 
+    getAppointmentWithWarning} from "../../requests"
 import {
     deleteOverrideAppointment,
     getAppointmentsByID} from "../../appointmentComponents/AppointmentRequests";
@@ -101,9 +102,9 @@ export default function AppointmentWarningPage({userStore, warning}) {
 
         try {
             if(initialWarning == undefined || selectedKindOfWarning.length == 0) {
-                response = await getAllAppointmentsWithWarning()
+                response = await getAllAppointmentsWithWarnings()
             }else {
-                response = await getAppointmentsWithWarning(creatWarningList(selectedKindOfWarning))
+                response = await getAppointmentWithWarning(creatWarningList(selectedKindOfWarning))
             }
             data = response.data
             setInitialWarning(false)

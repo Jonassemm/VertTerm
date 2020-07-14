@@ -1,8 +1,10 @@
+//author: Jonas Semmler
 import React, { useState, useEffect } from "react"
 import { Form, Table } from "react-bootstrap"
 import { Container, Button } from "react-bootstrap"
-import { getRights, addRole, deleteRole, editRole } from "./RoleRequests"
-import { hasRight } from "../../../auth"
+import {addRole, deleteRole, editRole } from "./RoleRequests"
+import {getRights} from "../../requests"
+import {hasRight} from "../../../auth"
 import {roleRights} from "../../Rights"
 
 const RolesForm = ({ onCancel, edit, selected, userStore }) => {

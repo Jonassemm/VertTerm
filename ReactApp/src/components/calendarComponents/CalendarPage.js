@@ -78,7 +78,7 @@ function CalendarPage({
         }
         
         if(loadAppointments != undefined) {
-            loadAppointments(newReferenceDate.getMonth(), newReferenceDate.getFullYear(), UserID)  
+            loadAppointments(newReferenceDate, UserID)  
         }else
         {
             loadCalendarEvents()
@@ -95,13 +95,18 @@ function CalendarPage({
     //--------------------------------------LOAD-------------------------------------
     const loadCalendarEvents = async () => { 
         setLoading(true)
-        const numberOfMonthsBefore = 2
-        const numberOfMontsAfter = 2
+        const numberOfMonthsBefore = 1
+        const numberOfMontsAfter = 1
+        const numberOfDaysBefore = 6
+        const numberOfDaysAfter = 6
         var response = []
         var startDate = new Date
         var endDate = new Date
+        //28 is the min of days a month can have
+        startDate.setDate(28 - numberOfDaysBefore)
         startDate.setMonth(referenceDateOfView.getMonth() - numberOfMonthsBefore)
         startDate.setFullYear(referenceDateOfView.getFullYear())
+        endDate.setDate(numberOfDaysAfter)
         endDate.setMonth(referenceDateOfView.getMonth() + numberOfMontsAfter)
         endDate.setFullYear(referenceDateOfView.getFullYear())
         const startDateString = moment(startDate).format("DD.MM.YYYY HH:mm").toString();
@@ -159,7 +164,7 @@ function CalendarPage({
 
     const refreshCalendarAppointments = () => {
         if(loadAppointments != undefined) {
-            loadAppointments(referenceDateOfView.getMonth(), referenceDateOfView.getFullYear(), UserID)  
+            loadAppointments(referenceDateOfView, UserID)  
             
         }else
         {
@@ -319,5 +324,4 @@ function CalendarPage({
     )
 
 }
-
 export default observer(CalendarPage)

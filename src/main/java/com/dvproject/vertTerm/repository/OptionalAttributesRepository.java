@@ -8,7 +8,8 @@ import org.springframework.data.mongodb.repository.Query;
 
 import com.dvproject.vertTerm.Model.OptionalAttributes;
 
-//author Amar Alkhankan
+
+/** author Amar Alkhankan **/
 public interface OptionalAttributesRepository extends MongoRepository<OptionalAttributes, String>{
 
 	@Query("{'_id' : ?0, '_class' : 'com.dvproject.vertTerm.Model.OptionalAttributes'}")

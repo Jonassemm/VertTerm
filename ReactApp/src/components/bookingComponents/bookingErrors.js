@@ -1,3 +1,4 @@
+//author: Jonas Semmler
 export function getErrorMessage(exceptionType) {
     switch (exceptionType) {
         case 'Resource': return "Zu wenige/viele Ressourcen für einen der Termine"; break;

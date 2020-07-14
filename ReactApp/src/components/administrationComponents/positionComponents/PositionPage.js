@@ -1,6 +1,6 @@
 //author: Patrick Venturini
 import React, { useState, useEffect } from "react"
-import { getAllPositions } from "./PositionRequests"
+import {getPositions} from "../../requests"
 import PositionForm from "./PositionForm"
 import OverviewPage, {modalTypes} from "../../OverviewPage"
 
@@ -16,24 +16,13 @@ function PositionPage({userStore}) {
 
     //----------------------------------LOAD-------------------------------
     const loadPositions = async () => {
-        var data = [];
         try{ 
-          const response = await getAllPositions();
-          data = response.data;
+          const {data} = await getPositions("NOTDELETED");
+          setPositions(data);
         }catch (error) {
           console.log(Object.keys(error), error.message)
         }
-
-        //don't save object with status="deleted"
-        var reducedData = []
-        data.map((singlePosition) => {
-            if(singlePosition.status != "deleted") {
-                reducedData.push(singlePosition)
-            }
-        })
-        setPositions(reducedData);
     };
-
 
     //--------------------------OverviewPage-Components--------------------
     const tableBody =

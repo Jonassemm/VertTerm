@@ -1,3 +1,4 @@
+//author: Jonas Semmler
 import React, { useState, useEffect } from "react"
 import {momentLocalizer } from "react-big-calendar"
 import moment from "moment"
@@ -5,17 +6,16 @@ import { Container, Form, Col, Row, Button, Modal, Spinner } from "react-bootstr
 import ObjectPicker from "../ObjectPicker"
 import "./BookingForm.css"
 import DatePicker from "react-datepicker"
-import { addAppointmentGroup, addAppointmentGroupAnyOverride, addAppointmentGroupOverride,getAppointmentGroupByApt,editAppointmentGroup, editAppointmentGroupOverride, addAppointmentGroupAny, getAppointment, searchAppointmentGroup, addBlocker, OptimizeEarlyEnd } from "../requests"
+import { addAppointmentGroup, addAppointmentGroupAnyOverride, addAppointmentGroupOverride,getAppointmentGroupByApt,editAppointmentGroup, editAppointmentGroupOverride, addAppointmentGroupAny, getAppointment, searchAppointmentGroup, addBlocker, OptimizeEarlyEnd } from "./bookingRequests"
 import { useHistory } from "react-router-dom"
 import { getErrorMessage } from "./bookingErrors"
 import SearchAptCalendar from "./SearchCalendar/SearchAptCalendar"
-import AppointmentQR from "./AppointmentQR"
+import QRCode from "./QRCode"
 import BlockerForm from "./BlockerForm"
 
 const localizer = momentLocalizer(moment)
 
 function BookingForm({editData,userStore}) {
-    const [calendarEvents, setCalendarEvents] = useState([])
     const [selectedProcedures, setSelectedProcedures] = useState([])
     const [selectedCustomer, setSelectedCustomer] = useState([])
     const [custom, setCustom] = useState(false)
@@ -283,23 +283,27 @@ function BookingForm({editData,userStore}) {
 
     async function optimizeAppointment() {
         const aptGroup = buildFinalData()
-        const res = await OptimizeEarlyEnd(aptGroup)
+        const res = await OptimizeEarlyEnd(aptGroup,0)
     }
 
     async function searchAppointment() {
         const aptGroup = buildFinalData()
-        let {data} = await searchAppointmentGroup(aptGroup)
-        data = data.appointments
-        console.log(data)
-        const temp = apts.map((apt,index) => {
-            return {
-                ...apt,
-                bookedEmployees: data[index].bookedEmployees,
-                bookedResources: data[index].bookedResources
-            }
-        })
-        console.log(temp)
-        setApts(temp)
+        try{
+            let {data} = await searchAppointmentGroup(aptGroup)
+            data = data.appointments
+            console.log(data)
+            const temp = apts.map((apt,index) => {
+                return {
+                    ...apt,
+                    bookedEmployees: data[index].bookedEmployees,
+                    bookedResources: data[index].bookedResources
+                }
+            })
+            console.log(temp)
+            setApts(temp)
+        }catch(error){
+            userStore.setErrorMessage("Keine Ressourcen/Mitarbeiter gefunden")
+        }
     }
 
     function buildFinalData() {
@@ -441,13 +445,14 @@ function BookingForm({editData,userStore}) {
                     <hr />
                     {!showMode && !editMode &&
                         <Form.Row>
-                            <Form.Group as={Col} style={{ textAlign: "bottom" }}>
+                            <Form.Group xs={2} as={Col} style={{ textAlign: "bottom" }}>
                                 <Form.Label>Kunde:</Form.Label>
                             </Form.Group>
                             <Form.Group as={Col}>
                                 <ObjectPicker
-                                    DbObject="activeUser"
+                                    DbObject="user"
                                     initial={editMode && selectedCustomer}
+                                    status="notdeleted"
                                     disabled={editMode}
                                     setState={setSelectedCustomer} />
                             </Form.Group>
@@ -455,7 +460,7 @@ function BookingForm({editData,userStore}) {
                     }
                     {editMode &&
                         <Form.Row>
-                        <Form.Group as={Col} style={{ textAlign: "bottom" }}>
+                        <Form.Group xs={2} as={Col} style={{ textAlign: "bottom" }}>
                             <Form.Label>Kunde:</Form.Label>
                         </Form.Group>
                         <Form.Group as={Col}>
@@ -468,13 +473,14 @@ function BookingForm({editData,userStore}) {
                     }
                     <React.Fragment>
                     <Form.Row>
-                        <Form.Group as={Col} style={{ textAlign: "bottom" }}>
+                        <Form.Group xs={2} as={Col} style={{ textAlign: "bottom" }}>
                             <Form.Label>Prozeduren:</Form.Label>
                         </Form.Group>
                         <Form.Group as={Col}>
                             <ObjectPicker
                                 initial={editMode && selectedProcedures}
                                 DbObject="procedure"
+                                status="active"
                                 disabled={editMode}
                                 setState={setProcedures}
                                 multiple={true} />
@@ -528,6 +534,7 @@ function BookingForm({editData,userStore}) {
                                                             ident={{ "ident": apt.bookedProcedure.name, "ix": index }}
                                                             initial = {[apt.bookedEmployees[index]]}
                                                             filter={innerItem.id}
+                                                            status="active"
                                                             DbObject="employee"
                                                             setState={handleChange} />
                                                     </div>
@@ -544,9 +551,10 @@ function BookingForm({editData,userStore}) {
                                                     <div className="middleBoxRight">
                                                         <ObjectPicker
                                                             className="input"
-                                                            filter={innerItem.id}
                                                             initial={[apt.bookedResources[index]]}
                                                             ident={{ "ident": apt.bookedProcedure.name, "ix": index }}
+                                                            filter={innerItem.id}
+                                                            status="active"
                                                             DbObject="resource"
                                                             setState={handleChange} />
                                                     </div>
@@ -635,7 +643,7 @@ function BookingForm({editData,userStore}) {
                         }
                         {showMode &&
                             <Col>
-                                <AppointmentQR cred={QRCred}/>      
+                                <QRCode userStore={userStore} cred={QRCred}/>      
                             </Col>
                         }
                     </Row>

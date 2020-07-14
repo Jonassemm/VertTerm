@@ -14,7 +14,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-//author Amar Alkhankan
+
+/**  author Amar Alkhankan  **/
 @Service
 public class RightServiceImp implements RightService {
 

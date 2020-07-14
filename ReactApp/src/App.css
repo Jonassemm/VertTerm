@@ -1,3 +1,4 @@
+/* author: Jonas Semmler */
 .page {
   padding: 10px;
 }
@@ -5,4 +6,8 @@
 body {
   padding: 0;
   margin: 0;
+}
+
+.navbarItem{
+    margin-left: 5px;
 }

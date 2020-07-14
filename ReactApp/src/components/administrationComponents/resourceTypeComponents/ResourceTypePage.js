@@ -1,38 +1,25 @@
 //author: Patrick Venturini
 import React, { useState, useEffect } from "react"
-import { getAllResourceTypes } from "./ResourceTypeRequests"
+import {getResourceTypes } from "../../requests"
 import ResourceTypeForm from "./ResourceTypeForm"
 import OverviewPage, {modalTypes} from "../../OverviewPage"
 
-
 function ResourceTypePage({userStore}) {
     const [resourceTypes, setResourceTypes] = useState([])
-
 
     useEffect(() => {
         loadResourceTypes()
     }, [])
 
-
     //--------------------------------LOAD-----------------------------
     const loadResourceTypes = async () => {
-        var data = [];
         try{ 
-          const response = await getAllResourceTypes();
-          data = response.data;
+          const {data} = await getResourceTypes("NOTDELETED");
+          setResourceTypes(data);
         }catch (error) {
           console.log(Object.keys(error), error.message)
         }
-
-        //don't save object with status="deleted"
-        var reducedData = []
-        data.map((singleType) => {
-            if(singleType.status != "deleted") {
-                reducedData.push(singleType)
-            }
-        })
-        setResourceTypes(reducedData);
-    };
+    }
 
 
     //----------------------OverviewPage-Components---------------------

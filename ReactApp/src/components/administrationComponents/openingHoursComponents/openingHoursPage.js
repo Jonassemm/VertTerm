@@ -3,7 +3,8 @@ import React ,{useState, useEffect, useRef} from 'react'
 import Availability from "../availabilityComponents/Availability"
 import {Style} from "../../OverviewPage"
 import { Container, Row, Col, Button, Table, Modal } from "react-bootstrap"
-import {getOpeningHours, updateOpeningHours} from "./OpeningHoursRequests"
+import {updateOpeningHours} from "./OpeningHoursRequests"
+import {getOpeningHours} from "../../requests"
 
 
 export default function OpeningHoursPage ({userStore}) {
@@ -89,7 +90,7 @@ export default function OpeningHoursPage ({userStore}) {
                 <hr/>
                 <div style={{textAlign: "right"}}>
                     {edited ? 
-                        <Button variant="success" onClick={handleSubmit} type="submit" >Übernehmen</Button>:
+                        <Button variant="success" style={{marginBottom:"25px"}} onClick={handleSubmit} type="submit" >Übernehmen</Button>:
                         null
                     }
                 </div>

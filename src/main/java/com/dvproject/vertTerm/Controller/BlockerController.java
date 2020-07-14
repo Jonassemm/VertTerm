@@ -18,7 +18,8 @@ import org.springframework.web.bind.annotation.RestController;
 import com.dvproject.vertTerm.Model.Blocker;
 import com.dvproject.vertTerm.Service.BlockerService;
 
-//author Amar Alkhankan
+
+/** author Amar Alkhankan **/
 @RestController
 @RequestMapping(value= "/Blocker")
 public class BlockerController
@@ -45,11 +46,7 @@ public class BlockerController
 	 public List<Blocker> getBlockers(@RequestParam String [] ids) {
 			return blockerService.getBlockers(ids);
 		}
-	 
-//	 @GetMapping("/Setflag/{id}")
-//	 public List<Appointment> SetWarningFlag(@PathVariable String id) {
-//			return blockerService.SetWarningFlag(id);
-//		}  
+
 	 
 	 @PostMapping()
 	 public Blocker createBlocker(@RequestBody Blocker blocker) {

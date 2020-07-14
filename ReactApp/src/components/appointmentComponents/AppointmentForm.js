@@ -78,6 +78,46 @@ export const handleDeleteAppointment = async (id,
 }
 
 
+export const getBookedElements = (appointment, type) => {
+    var text = ""
+    switch(type) {
+        case "procedure":
+            if(appointment.bookedProcedure != null) {
+               text += appointment.bookedProcedure.name
+            }
+        break;
+        case "customer":
+            if(appointment.bookedCustomer != null) {
+                if(appointment.bookedCustomer.firstName != null && appointment.bookedCustomer.lastName != null){
+                    text += appointment.bookedCustomer.firstName + " " + appointment.bookedCustomer.lastName 
+                }else {
+                    text = "anonymer Kunder"
+                }
+            }
+        break;
+        case "employee":
+            appointment.bookedEmployees.map((item, index) => {
+                if(index == 0) {
+                    text += item.firstName + " " + item.lastName
+                }else {
+                  text += "; " + item.firstName + " " + item.lastName  
+                }
+            })
+        break;
+        case "resource":
+            appointment.bookedResources.map((item, index) => {
+                if(index == 0) {
+                    text += item.name 
+                } else {
+                   text += "; " + item.name 
+                }
+            })
+        break;
+    }
+    return text
+}
+
+
 function AppointmentForm({
     onCancel,
     edit, 
@@ -92,10 +132,6 @@ function AppointmentForm({
     const rightNameOwn = ownAppointmentRights[1] //write right
     const rightName = appointmentRights[1] //write right
     const [edited, setEdited] = useState(false)
-    const [procedure, setProcedure] = useState(null)
-    const [bookedEmployees, setBookedEmployees] = useState([])
-    const [bookedResources, setBookedResources] = useState([])
-    const [customer, setCustomer] = useState(null) 
     const [plannedStarttime, setPlannedStarttime] = useState(setDate())
     const [plannedEndtime, setPlannedEndtime] = useState(setDate())
     const [actualStarttime, setActualStarttime] = useState(null)
@@ -109,8 +145,6 @@ function AppointmentForm({
 
     useEffect(() => { 
         if(edit) {
-            setProcedure(selected.bookedProcedure)
-            setCustomer(selected.bookedCustomer)
             setPlannedStarttime(selected.plannedStarttime)
             setPlannedEndtime(selected.plannedEndtime)
             setActualStarttime(selected.actualStarttime)
@@ -118,8 +152,6 @@ function AppointmentForm({
             setDescription(selected.description)
             setStatus(selected.status)
             setWarnings(selected.warnings)   
-            setBookedEmployees(selected.bookedEmployees)     
-            setBookedResources(selected.bookedResources)
             setCustomerIsWaiting(selected.customerIsWaiting)
             //check if the selected is an appointment of the logged in user 
             if(selected.bookedCustomer != null && selected.bookedCustomer.id == userStore.userID){
@@ -314,46 +346,6 @@ function AppointmentForm({
             userStore.setInfoMessage("Termin kann leider nicht vorgezogen werden")
         }
     }
-
-
-    const getBookedElements = (type) => {
-        var text = ""
-        switch(type) {
-            case "procedure":
-                if(procedure != null) {
-                   text += procedure.name
-                }
-            break;
-            case "customer":
-                if(customer != null) {
-                    if(customer.firstName != null && customer.lastName != null){
-                        text += customer.firstName + " " + customer.lastName 
-                    }else {
-                        text = "anonymer Kunder"
-                    }
-                }
-            break;
-            case "employee":
-                bookedEmployees.map((item, index) => {
-                    if(index == 0) {
-                        text += item.firstName + " " + item.lastName
-                    }else {
-                      text += "; " + item.firstName + " " + item.lastName  
-                    }
-                })
-            break;
-            case "resource":
-                bookedResources.map((item, index) => {
-                    if(index == 0) {
-                        text += item.name 
-                    } else {
-                       text += "; " + item.name 
-                    }
-                })
-            break;
-        }
-        return text
-    }
     
 
     const getActualStarttime = () => {
@@ -492,7 +484,7 @@ function AppointmentForm({
                                 style={{background: "white"}}
                                 name="customer"
                                 type="text"
-                                value={getBookedElements("customer")} 
+                                value={getBookedElements(selected, "customer")} 
                             />
                         </Form.Group>
                     </Form.Row>
@@ -506,7 +498,7 @@ function AppointmentForm({
                                 style={{background: "white"}}
                                 name="procedure"
                                 type="text"
-                                value={getBookedElements("procedure")} 
+                                value={getBookedElements(selected, "procedure")} 
                             />
                         </Form.Group>
                     </Form.Row>
@@ -521,7 +513,7 @@ function AppointmentForm({
                                 style={{background: "white"}}
                                 name="bookedEmployees"
                                 type="text"
-                                value={getBookedElements("employee")} 
+                                value={getBookedElements(selected, "employee")} 
                             />
                         </Form.Group>
                     </Form.Row>
@@ -535,7 +527,7 @@ function AppointmentForm({
                                 style={{background: "white"}}
                                 name="bookedResources"
                                 type="text"
-                                value={getBookedElements("resource")} 
+                                value={getBookedElements(selected, "resource")} 
                             />
                         </Form.Group>
                     </Form.Row >
