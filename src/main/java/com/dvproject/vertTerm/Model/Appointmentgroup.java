@@ -194,7 +194,7 @@ public class Appointmentgroup {
 	/**
 	 * @author Robert Schulz
 	 *
-	 * Finds an appointment in this appointmentgroup with the matching procedure, or creates a new one.
+	 * Finds the last appointment in this group
 	 */
 	private Appointment findLatestAppointment(){
 		Appointment result = this.appointments.get(0);
@@ -206,6 +206,11 @@ public class Appointmentgroup {
 		return result;
 	}
 
+	/**
+	 * @author Robert Schulz
+	 *
+	 * Finds the earliest Appointment in this group
+	 */
 	private Appointment findEarliestAppointment(){
 		Appointment result = this.appointments.get(0);
 		for(Appointment appointment : this.getAppointments()){
@@ -216,6 +221,11 @@ public class Appointmentgroup {
 		return result;
 	}
 
+	/**
+	 * @author Robert Schulz
+	 *
+	 * Checks if all appointments have the booked entities defines by its procedure.
+	 */
 	private boolean allNeededBookablesFound() {
 		for (Appointment appointment : this.getAppointments()){
 			if(!appointment.allNeededBookablesFound()){
@@ -225,6 +235,11 @@ public class Appointmentgroup {
 		return true;
 	}
 
+	/**
+	 * @author Robert Schulz
+	 *
+	 * Finds an Appointment in this group with the procedure or creates a new one.
+	 */
 	private Appointment getOrCreateAppointmentWithProcedure(Procedure procedure, User customer){
 		for(Appointment appointment : this.getAppointments()){
 			if(appointment.getBookedProcedure().getId().equals(procedure.getId())){
