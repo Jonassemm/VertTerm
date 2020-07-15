@@ -23,6 +23,7 @@ public class CustomerServiceImp implements CustomerService {
     /**
      * @author Robert Schulz
      */
+    @PreAuthorize("hasAuthority('CUSTOMER_READ')")
     @Override
     public List<Customer> getAll() {
         return repo.findAll();
@@ -31,7 +32,7 @@ public class CustomerServiceImp implements CustomerService {
     /**
      * @author Robert Schulz
      */
-    @PreAuthorize("hasAuthority('USER_READ')")
+    @PreAuthorize("hasAuthority('CUSTOMER_READ')")
     public List<Customer> getAll(Status status) {
         List<Customer> users = null;
         switch(status){
@@ -48,6 +49,10 @@ public class CustomerServiceImp implements CustomerService {
         return (users);
     }
 
+    /**
+     * @author Robert Schulz
+     */
+    @PreAuthorize("hasAuthority('CUSTOMER_READ')")
     @Override
     public Customer getById(String id) {
         Optional<Customer> appointment = repo.findById(id);

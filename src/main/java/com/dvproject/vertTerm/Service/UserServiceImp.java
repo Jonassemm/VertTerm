@@ -40,7 +40,7 @@ public class UserServiceImp extends WarningServiceImpl implements UserService {
 	/**
 	 * @author Robert Schulz
 	 */
-	@PreAuthorize("hasAuthority('USERS_READ')")
+	@PreAuthorize("hasAuthority('USER_READ')")
 	public List<User> getAll() {
 		List<User> users = repo.findAll();
 		return obfuscatePassword(users);
@@ -49,7 +49,7 @@ public class UserServiceImp extends WarningServiceImpl implements UserService {
 	/**
 	 * @author Robert Schulz
 	 */
-	@PreAuthorize("hasAuthority('USERS_READ')")
+	@PreAuthorize("hasAuthority('USER_READ')")
 	public List<User> getAll(Status status) {
 		List<User> users = null;
 		switch (status) {
@@ -66,13 +66,19 @@ public class UserServiceImp extends WarningServiceImpl implements UserService {
 		return (users);
 	}
 
-	@PreAuthorize("hasAuthority('USERS_READ')")
+	/**
+	 * @author Robert Schulz
+	 */
+	@PreAuthorize("hasAuthority('USER_READ')")
 	@Override
 	public User getById(String id) {
 		Optional<User> user = repo.findById(id);
 		return user.map(this::obfuscatePassword).orElse(null);
 	}
 
+	/**
+	 * @author Robert Schulz
+	 */
 	@Override
 	public User create(User newInstance) {
 		if (newInstance.getId() == null) {
@@ -125,7 +131,7 @@ public class UserServiceImp extends WarningServiceImpl implements UserService {
 		return user;
 	}
 
-	@PreAuthorize("hasAuthority('USERS_DATA_READ')")
+	@PreAuthorize("hasAuthority('USER_READ')")
 	public List<User> getUsersWithUsernames(String[] usernames) {
 		List<User> users = new ArrayList<>();
 

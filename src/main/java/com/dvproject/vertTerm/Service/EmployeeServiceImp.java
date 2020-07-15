@@ -43,7 +43,7 @@ public class EmployeeServiceImp extends WarningServiceImpl implements EmployeeSe
 	/**
 	 * @author Robert Schulz
 	 */
-	@PreAuthorize("hasAuthority('USERS_READ')")
+	@PreAuthorize("hasAuthority('EMPLOYEE_READ')")
 	public List<Employee> getAll(Status status) {
 		List<Employee> users = null;
 		switch (status) {
@@ -91,6 +91,7 @@ public class EmployeeServiceImp extends WarningServiceImpl implements EmployeeSe
 	 * @author Robert Schulz
 	 */
 	@Override
+	@PreAuthorize("hasAuthority('EMPLOYEE_READ')")
 	public Employee getById(String id) {
 		Optional<Employee> appointment = repo.findById(id);
 		return appointment.orElse(null);
@@ -172,7 +173,7 @@ public class EmployeeServiceImp extends WarningServiceImpl implements EmployeeSe
 	 * @author Joshua Müller
 	 */
 	@Override
-	 @PreAuthorize("hasAuthority('EMPLOYEE_WRITE')")
+	@PreAuthorize("hasAuthority('EMPLOYEE_WRITE')")
 	public boolean delete(String id) {
 		Employee user = getById(id);
 
