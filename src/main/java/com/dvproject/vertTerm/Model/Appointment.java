@@ -646,8 +646,10 @@ public class Appointment implements Serializable {
 	public void optimizeAndPopulateForEarliestEnd(AppointmentService appointmentService, ResourceService resourceService,
 			EmployeeService employeeService) {
 		if (this.getBookedProcedure() == null) { return; }
+		if (this.getPlannedStarttime() == null) { return; }
 		this.setStatus(AppointmentStatus.RECOMMENDED);
-		this.setPlannedEndtime(this.generatePlannedEndtime(this.plannedStarttime));
+		this.setPlannedEndtime(
+				new Date(this.plannedStarttime.getTime() + this.getBookedProcedure().getDuration().toMillis()));
 		// check if customer is available
 		this.getBookedCustomer().populateAppointments(appointmentService);
 		Date newDateToEvaluate = this.getBookedCustomer().getEarliestAvailableDate(this.getPlannedStarttime(),
@@ -805,6 +807,7 @@ public class Appointment implements Serializable {
 	public void optimizeAndPopulateForLatestBeginning(AppointmentService appointmentService,
 			ResourceService resourceService, EmployeeService employeeService) {
 		if (this.getBookedProcedure() == null) { return; }
+		if (this.getPlannedStarttime() == null) { return; }
 		this.setStatus(AppointmentStatus.RECOMMENDED);
 		this.setPlannedEndtime(
 				new Date(this.plannedStarttime.getTime() + this.getBookedProcedure().getDuration().toMillis()));
@@ -828,16 +831,16 @@ public class Appointment implements Serializable {
 					continue;
 				}
 				resource.populateAppointments(appointmentService);
-				Date dateForThisResource = resource.getLatestAvailableDate(this.getPlannedStarttime(),
+				Date temp = resource.getLatestAvailableDate(this.getPlannedStarttime(),
 						this.getBookedProcedure().getDuration());
-				if (dateForThisResource != null) {
+				if (temp != null) {
 					if (newDateToEvaluateForRessources == null) {
-						newDateToEvaluateForRessources = dateForThisResource;
+						newDateToEvaluateForRessources = temp;
 					}
-					if (dateForThisResource.after(newDateToEvaluateForRessources)) {
-						newDateToEvaluateForRessources = dateForThisResource;
+					if (temp.after(newDateToEvaluateForRessources)) {
+						newDateToEvaluateForRessources = temp;
 					}
-					if (!dateForThisResource.before(this.getPlannedStarttime())) {
+					if (!temp.before(this.getPlannedStarttime())) {
 						this.getBookedResources().add(resource);
 						resourceTypeFound = true;
 						break;
