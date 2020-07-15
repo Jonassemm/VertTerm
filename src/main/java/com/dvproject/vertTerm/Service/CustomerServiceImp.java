@@ -73,8 +73,7 @@ public class CustomerServiceImp implements CustomerService {
         	newInstance.setFirstName(capitalize(newInstance.getFirstName()));
         	newInstance.setLastName(capitalize(newInstance.getLastName()));
         	retVal = repo.save(newInstance);
-        }
-        if (repo.findById(newInstance.getId()).isPresent())
+        } else if (repo.findById(newInstance.getId()).isPresent())
             throw new ResourceNotFoundException("Instance with the given id (" + newInstance.getId() + ") exists on the database. Use the update method.");
         
         return retVal;
