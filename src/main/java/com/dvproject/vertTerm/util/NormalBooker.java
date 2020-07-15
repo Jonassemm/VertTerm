@@ -35,4 +35,9 @@ public class NormalBooker extends Booker {
 		appointmentgroupToBook.testProcedureRelations(false);
 	}
 
+	@Override
+	protected void testAppointmentgroup(AppointmentService appointmentService, RestrictionService restrictionService) {
+		testAppointmentgroup(appointmentService, restrictionService, new User());
+	}
+
 }
