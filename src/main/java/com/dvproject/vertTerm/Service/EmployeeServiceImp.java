@@ -40,42 +40,22 @@ public class EmployeeServiceImp extends WarningServiceImpl implements EmployeeSe
 		return repo.findAll();
 	}
 
-	/**
-	 * @author Robert Schulz
-	 */
-	@PreAuthorize("hasAuthority('EMPLOYEE_READ')")
-	public List<Employee> getAll(Status status) {
-		List<Employee> users = null;
-		switch (status) {
-			case ACTIVE:
-				users = repo.findAllActive();
-				break;
-			case INACTIVE:
-				users = repo.findAllInactive();
-				break;
-			case DELETED:
-				users = repo.findAllDeleted();
-				break;
-		}
-		return (users);
-	}
-
 	/** author Amar Alkhankan  **/
 	public List<Employee> getEmployeesByPositionIdandStatus(String positionId,Status status) {
-
-		//get all Active Employees from position 
-
+		//get all Active Employees from position
 		List<Employee> employees = new ArrayList<>();
-		List<Employee> AllEmployees = this.getAll(positionId);
-		for (Employee emp : AllEmployees) {
-			if (emp.getSystemStatus().equals(status)) {
-				if (!employees.contains(emp))
-					employees.add(emp);
-
-			}
-
+		List<Employee> AllEmployees;
+		if(positionId == null){
+			AllEmployees = this.getAll(positionId);
 		}
+		else
+			AllEmployees = this.getAll();
 
+		for (Employee emp : AllEmployees) {
+			if (status == null || emp.getSystemStatus().equals(status)) {
+				employees.add(emp);
+			}
+		}
 		return employees;
 	}
 

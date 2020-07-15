@@ -23,15 +23,7 @@ public class EmployeeController {
     List<Employee> get(@RequestParam(value = "status", required = false) Status status,
                        @RequestParam(value = "position", required = false) String positionId)
     {
-        if (status != null) {
-            return service.getAll(status);
-        }
-        if (positionId != null) {
-            return service.getAll(positionId);
-        }
-        else {
-            return service.getAll();
-        }
+            return service.getEmployeesByPositionIdandStatus(positionId, status);
     }
 
     /**

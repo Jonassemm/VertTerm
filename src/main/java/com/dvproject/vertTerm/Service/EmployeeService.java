@@ -13,7 +13,6 @@ import java.util.List;
  * @author Robert Schulz
  */
 public interface EmployeeService extends BasicService<Employee>{
-    List<Employee> getAll(Status status);
     List<Employee> getAll(String positionId);
     Employee getByUsername(String username);
     //List<Employee> getAll(Position position);

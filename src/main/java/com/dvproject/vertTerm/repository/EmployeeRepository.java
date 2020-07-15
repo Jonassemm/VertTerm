@@ -19,24 +19,6 @@ public interface EmployeeRepository extends MongoRepository<Employee, String>{
 	List<Employee> findAll();
 
     /**
-     * @author Robert Schulz
-     */
-	@Query("{'systemStatus' : 'ACTIVE', " + employeeTest + "}")
-    List<Employee> findAllActive();
-
-    /**
-     * @author Robert Schulz
-     */
-    @Query("{'systemStatus' : 'INACTIVE', " + employeeTest + "}")
-    List<Employee> findAllInactive();
-
-    /**
-     * @author Robert Schulz
-     */
-    @Query("{'systemStatus' : 'DELETED', " + employeeTest + "}")
-    List<Employee> findAllDeleted();
-	
-    /**
      * @author Joshua Müller
      */
     @Query("{'_id' : ?0, " + employeeTest + "}")
