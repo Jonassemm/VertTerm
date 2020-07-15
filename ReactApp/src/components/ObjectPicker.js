@@ -153,7 +153,7 @@ const ObjectPicker = forwardRef((props, ref) => {
     async function getRoleData(userType) {
         console.log("role")
         let finalResult = []
-        const res = await getRoles()
+        const res = await getRoles(status)
         res.data.map((item) => {
             //reduce the selection
             if (userType == "employee") {

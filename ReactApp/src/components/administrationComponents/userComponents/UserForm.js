@@ -533,6 +533,7 @@ function UserForm({onCancel,
                         DbObject={isEmployee ? "employeeRole" : "customerRole" }
                         initial={roles} 
                         multiple={true}
+                        status={"NOTDELETED"}
                       />: isEmployee &&
                       <Form.Control
                           readOnly
@@ -566,6 +567,7 @@ function UserForm({onCancel,
                         DbObject="position"
                         initial ={positions} 
                         multiple ={true}
+                        status={"NOTDELETED"}
                       />
                     </Container>
                   </Form.Group>
