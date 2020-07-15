@@ -115,8 +115,7 @@ public class EmployeeServiceImp extends WarningServiceImpl implements EmployeeSe
 			newInstance.setLastName(capitalize(newInstance.getLastName()));
 			availabilityService.update(newInstance.getAvailabilities(), newInstance);
 			retVal = repo.save(newInstance);
-		}
-		if (repo.findById(newInstance.getId()).isPresent())
+		} else if (repo.findById(newInstance.getId()).isPresent())
 			throw new ResourceNotFoundException("Instance with the given id (" + newInstance.getId()
 					+ ") exists on the database. Use the update method.");
 		
