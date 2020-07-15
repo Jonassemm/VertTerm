@@ -108,7 +108,7 @@ public class AppointmentgroupController {
 	 */
 	@PostMapping(value = { "/override/", "/override/{userid}" })
 	public String bookAppointmentsOverride(
-			@PathVariable String userid, 
+			@PathVariable(required = false) String userid, 
 			@RequestBody Appointmentgroup appointmentgroup) 
 	{
 		AuthorityTester.containsAny("OVERRIDE");

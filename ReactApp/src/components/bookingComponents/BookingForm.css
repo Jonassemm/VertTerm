@@ -79,6 +79,10 @@
     border: 1px solid #bbb;
 }
 
+.StrategyDate {
+    height: 38px;
+}
+
 
 @media (min-width: 1600px) {
     #bookingForm{

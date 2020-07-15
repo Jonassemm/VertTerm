@@ -118,8 +118,10 @@ public class AppointmentController {
 	 * @author Joshua Müller
 	 */
 	@GetMapping("/user/{userid}")
-	public List<Appointment> getAppointmentsWithUserInTimeInterval(@PathVariable String userid,
-			@RequestParam(required = false) Date starttime, @RequestParam(required = false) Date endtime,
+	public List<Appointment> getAppointmentsWithUserInTimeInterval(
+			@PathVariable String userid,
+			@RequestParam(required = false) Date starttime, 
+			@RequestParam(required = false) Date endtime,
 			@RequestParam(required = false, name = "status") String statusString) {
 		List<Appointment> appointments = new ArrayList<>();
 		User user = userRepository.findById(userid).orElseThrow();
@@ -150,13 +152,14 @@ public class AppointmentController {
 	 * @author Joshua Müller
 	 */
 	@GetMapping("/warnings")
-	public List<Appointment> getAppointmentsWithWarnings(@RequestParam(required = false) String userid,
-			@RequestParam(required = false, name = "warnings") List<String> warningStrings) {
+	public List<Appointment> getAppointmentsWithWarnings(
+			@RequestParam(required = false) String userid,
+			@RequestParam(required = false, name = "warnings") List<String> warningStrings) 
+	{
+		AuthorityTester.containsAny("APPOINTMENT_READ");
+		
 		List<Warning> warnings = null;
-		User user = userRepository.findById(userid).orElseThrow();
 		boolean areWarningStringsEmpty = warningStrings == null || warningStrings.isEmpty();
-
-		testCallersAppointmentReadRight(user);
 
 		warnings = areWarningStringsEmpty ? Warning.getAll() : Warning.enumOf(warningStrings);
 
