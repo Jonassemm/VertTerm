@@ -4,7 +4,6 @@
 	"dependencies": {
 		"axios": "^0.19.2",
 		"bootstrap": "^4.4.1",
-		"brotli-webpack-plugin": "^1.1.0",
 		"mobx": "^5.15.4",
 		"mobx-react": "^6.2.2",
 		"moment": "^2.25.3",

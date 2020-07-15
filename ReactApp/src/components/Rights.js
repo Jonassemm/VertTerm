@@ -54,11 +54,6 @@ export const appointmentRights = [
     "APPOINTMENT_WRITE"
 ]
 
-export const ownBookingRights = [
-    "OWN_APPOINTMENT_BOOK"
-]
-
-
 export const overrideRight = [
     "OVERRIDE"
 ]

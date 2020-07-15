@@ -527,27 +527,13 @@ function UserForm({onCancel,
               <Form.Group as={Col} md="5">
                   <Form.Label>Rollen:</Form.Label>
                   <Container style={{display: "flex", flexWrap: "nowrap"}}>
-                    {(isEmployee && roleChangeAllow || (isEmployee && !edit)) ?
+                    {(roleChangeAllow || !edit) ?
                       <ObjectPicker 
                         setState={handleRoleChange}
                         DbObject="employeeRole"
                         initial={roles} 
                         multiple={true}
                       />: isEmployee &&
-                      <Form.Control
-                          readOnly
-                          type="role"
-                          placeholder="Keine Rolle"
-                          value={getRoleString()}
-                          onChange={handlePasswordChange}
-                        />
-                    }{(!isEmployee && roleChangeAllow || (!isEmployee && !edit)) ?
-                      <ObjectPicker // customer cannot choose ADMIN_ROLE
-                        setState={handleRoleChange}
-                        DbObject="customerRole"
-                        initial={roles} 
-                        multiple={true}
-                      />: (!isEmployee) &&
                       <Form.Control
                           readOnly
                           type="role"
