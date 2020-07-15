@@ -46,10 +46,10 @@ public class EmployeeServiceImp extends WarningServiceImpl implements EmployeeSe
 		List<Employee> employees = new ArrayList<>();
 		List<Employee> AllEmployees;
 		if(positionId == null){
-			AllEmployees = this.getAll(positionId);
+			AllEmployees = this.getAll();
 		}
 		else
-			AllEmployees = this.getAll();
+			AllEmployees = this.getAll(positionId);
 
 		for (Employee emp : AllEmployees) {
 			if (status == null || emp.getSystemStatus().equals(status)) {
