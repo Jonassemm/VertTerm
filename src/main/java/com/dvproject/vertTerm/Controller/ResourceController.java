@@ -32,7 +32,7 @@ import java.util.List;
 //author Amar Alkhankan
 @RestController
 @RequestMapping(value= "/Resources")
-public class RessourceController {
+public class ResourceController {
 	
 	 @Autowired
 	 private ResourceService resservice;

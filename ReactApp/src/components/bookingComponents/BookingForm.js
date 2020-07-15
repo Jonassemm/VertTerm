@@ -45,6 +45,7 @@ function BookingForm({ editData, userStore }) {
 
     useEffect(() => {
         setupEdit()
+        if(!hasRight(userStore, [appointmentRights[1]])) setSelectedCustomer([userStore.user])
     }, [])
 
     async function setupEdit() {
@@ -461,22 +462,23 @@ function BookingForm({ editData, userStore }) {
                     {!custom &&
                         <React.Fragment>
                             <hr />
-                            {!showMode && !editMode &&
+                            {!showMode && !editMode && hasRight(userStore, [appointmentRights[1]]) &&
                                 <Form.Row>
                                     <Form.Group xs={2} as={Col} style={{ textAlign: "bottom" }}>
                                         <Form.Label>Kunde:</Form.Label>
                                     </Form.Group>
                                     <Form.Group as={Col}>
+                                        {}
                                         <ObjectPicker
                                             DbObject="user"
-                                            initial={(editMode && selectedCustomer) || (!hasRight(userStore, [appointmentRights[1]]) && [userStore.user])}
+                                            initial={(editMode && selectedCustomer)}
                                             status="notdeleted"
                                             disabled={editMode || !hasRight(userStore, [appointmentRights[1]])}
                                             setState={setSelectedCustomer} />
                                     </Form.Group>
                                 </Form.Row>
                             }
-                            {editMode &&
+                            {(editMode || !hasRight(userStore, [appointmentRights[1]])) &&
                                 <Form.Row>
                                     <Form.Group xs={2} as={Col} style={{ textAlign: "bottom" }}>
                                         <Form.Label>Kunde:</Form.Label>
@@ -485,6 +487,7 @@ function BookingForm({ editData, userStore }) {
                                         <Form.Control
                                             type="text"
                                             value={selectedCustomer[0] && (`${selectedCustomer[0].firstName} ${selectedCustomer[0].lastName}`)}
+                                            disabled
                                         />
                                     </Form.Group>
                                 </Form.Row>

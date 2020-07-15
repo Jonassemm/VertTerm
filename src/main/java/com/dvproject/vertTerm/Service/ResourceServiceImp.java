@@ -11,7 +11,7 @@ import org.springframework.data.rest.webmvc.ResourceNotFoundException;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 
-import com.dvproject.vertTerm.repository.RessourceRepository;
+import com.dvproject.vertTerm.repository.ResourceRepository;
 import com.dvproject.vertTerm.repository.RestrictionRepository;
 
 
@@ -20,7 +20,7 @@ import com.dvproject.vertTerm.repository.RestrictionRepository;
 public class ResourceServiceImp extends WarningServiceImpl implements ResourceService, AvailabilityService {
 
 	@Autowired
-	private RessourceRepository ResRepo;
+	private ResourceRepository ResRepo;
 	@Autowired
 	private RestrictionRepository RestsRepo;
 	@Autowired

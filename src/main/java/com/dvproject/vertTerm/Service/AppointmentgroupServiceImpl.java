@@ -65,7 +65,6 @@ public class AppointmentgroupServiceImpl implements AppointmentgroupService {
 	}
 
 	@Override
-	@PreAuthorize("hasAuthority('APPOINTMENT_READ')")
 	public Appointmentgroup getById(String id) {
 		return getAppointmentgroupInternal(id);
 	}
@@ -152,7 +151,6 @@ public class AppointmentgroupServiceImpl implements AppointmentgroupService {
 	}
 
 	@Override
-	@PreAuthorize("hasAuthority('APPOINTMENT_WRITE')")
 	public void saveAppointmentgroup(Appointmentgroup appointmentgroup) {
 		List<Appointment> appointments = appointmentgroup.getAppointments();
 		appointments.forEach(appointment -> appointmentRepository.save(appointment));
@@ -195,7 +193,6 @@ public class AppointmentgroupServiceImpl implements AppointmentgroupService {
 	}
 
 	@Override
-	@PreAuthorize("hasAuthority('APPOINTMENT_WRITE')")
 	public boolean deleteAppointment(Appointment appointment, Booker booker) {
 		String appointmentid = appointment.getId();
 		Appointmentgroup appointmentgroup = getAppointmentgroupContainingAppointmentID(appointmentid);
