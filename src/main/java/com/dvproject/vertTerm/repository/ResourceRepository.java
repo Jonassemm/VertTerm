@@ -8,7 +8,7 @@ import org.springframework.data.mongodb.repository.MongoRepository;
 import com.dvproject.vertTerm.Model.Resource;
 import com.dvproject.vertTerm.Model.Status;
 
-public interface RessourceRepository extends MongoRepository<Resource, String> {
+public interface ResourceRepository extends MongoRepository<Resource, String> {
 	/**
 	 * @author Joshua Müller
 	 */

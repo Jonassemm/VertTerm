@@ -2,11 +2,10 @@ package com.dvproject.vertTerm.Controller;
 
 import com.dvproject.vertTerm.Model.*;
 import com.dvproject.vertTerm.Service.*;
+import com.dvproject.vertTerm.repository.UserRepository;
 import com.dvproject.vertTerm.security.AuthorityTester;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
@@ -29,6 +28,9 @@ public class AppointmentController {
 
 	@Autowired
 	private UserService userService;
+	
+	@Autowired
+	private UserRepository userRepository;
 
 	/**
 	 * @author Robert Schulz
@@ -100,6 +102,7 @@ public class AppointmentController {
 			@RequestParam(required = false) Date endtime,
 			@RequestParam(required = false, name = "status") String statusString) 
 	{
+		AuthorityTester.containsAny("APPOINTMENT_READ");
 		List<Appointment> appointments = null;
 		AppointmentStatus status = AppointmentStatus.enumOf(statusString);
 
@@ -125,8 +128,11 @@ public class AppointmentController {
 			@RequestParam(required = false, name = "status") String statusString) 
 	{
 		List<Appointment> appointments = new ArrayList<>();
-		boolean isEmployee = userService.getById(userid) instanceof Employee;
+		User user = userRepository.findById(userid).orElseThrow();
+		boolean isEmployee = user instanceof Employee;
 		AppointmentStatus appointmentStatus = AppointmentStatus.enumOf(statusString);
+		
+		testCallersAppointmentReadRight(user);
 
 		if (starttime == null || endtime == null) {
 			appointments.addAll(service.getAppointmentsByUserIdAndAppointmentStatus(userid, appointmentStatus));
@@ -155,7 +161,10 @@ public class AppointmentController {
 			@RequestParam(required = false, name = "warnings") List<String> warningStrings) 
 	{
 		List<Warning> warnings = null;
+		User user = userRepository.findById(userid).orElseThrow();
 		boolean areWarningStringsEmpty = warningStrings == null || warningStrings.isEmpty();
+		
+		testCallersAppointmentReadRight(user);
 
 		warnings = areWarningStringsEmpty ? Warning.getAll() : Warning.enumOf(warningStrings);
 
@@ -209,5 +218,20 @@ public class AppointmentController {
 	@DeleteMapping("/{id}")
 	public boolean DeleteAppointment(@PathVariable String id) {
 		return service.delete(id);
+	}
+	
+	/**
+	 * @author Joshua Müller
+	 */
+	private void testCallersAppointmentReadRight(User userToTest) {
+		if (AuthorityTester.isLoggedInUser(userToTest)) {
+			try {
+				AuthorityTester.containsAny("OWN_APPOINTMENT_READ");
+			} catch (RuntimeException ex) {
+				AuthorityTester.containsAny("APPOINTMENT_READ");
+			}
+		} else {
+			AuthorityTester.containsAny("APPOINTMENT_READ");
+		}
 	}
 }

@@ -6,7 +6,7 @@ import com.dvproject.vertTerm.Model.OptionalAttribute;
 import com.dvproject.vertTerm.Model.Procedure;
 import com.dvproject.vertTerm.Model.Resource;
 import com.dvproject.vertTerm.repository.ProcedureRepository;
-import com.dvproject.vertTerm.repository.RessourceRepository;
+import com.dvproject.vertTerm.repository.ResourceRepository;
 import com.dvproject.vertTerm.repository.RestrictionRepository;
 import com.dvproject.vertTerm.repository.UserRepository;
 import com.fasterxml.jackson.annotation.JsonTypeInfo.Id;
@@ -33,7 +33,7 @@ public class RestrictionServiceImp implements RestrictionService {
 	@Autowired
 	private UserRepository UserRepo;
 	@Autowired
-	private RessourceRepository ResRepo;
+	private ResourceRepository ResRepo;
 	@Autowired
 	private ProcedureRepository ProRepo;
 

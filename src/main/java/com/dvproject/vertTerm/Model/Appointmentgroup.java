@@ -96,7 +96,7 @@ public class Appointmentgroup {
 										.map(Appointment::getBookedProcedure)
 										.collect(Collectors.toList());
 		Procedure privateProcedure = procedures.stream()
-										.filter(Procedure::isPublicProcedure)
+										.filter(proc -> ! proc.isPublicProcedure())
 										.findAny()
 										.orElse(null);
 		boolean isEmployee = user != null && user instanceof Employee;
