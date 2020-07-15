@@ -3,20 +3,15 @@ package com.dvproject.vertTerm.Service;
 import com.dvproject.vertTerm.Model.*;
 import com.dvproject.vertTerm.exception.AppointmentTimeException;
 import com.dvproject.vertTerm.exception.ProcedureException;
-import com.dvproject.vertTerm.repository.AppointmentRepository;
-import com.dvproject.vertTerm.repository.AppointmentgroupRepository;
-import com.dvproject.vertTerm.util.AppointmentTester;
-import com.dvproject.vertTerm.util.NormalAppointmentTester;
+import com.dvproject.vertTerm.repository.*;
+import com.dvproject.vertTerm.util.*;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.rest.webmvc.ResourceNotFoundException;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import org.bson.types.ObjectId;
@@ -29,22 +24,36 @@ public class AppointmentServiceImpl implements AppointmentService {
 
 	@Autowired
 	AppointmentRepository repo;
+	
 	@Autowired
 	AppointmentgroupRepository appgrouprepo;
+	
 	@Autowired
 	ResourceService ResSer;
+
+	@Autowired
+	ResourceRepository resourceRepository;
+
 	@Autowired
 	EmployeeService EmpSer;
+	
 	@Autowired
-	ProcedureService ProcedureSer;
+	EmployeeRepository employeeRepository;
+	
 	@Autowired
 	RestrictionService RestrictionSer;
+	
 	@Autowired
 	private AppointmentgroupService appointmentgroupService;
+	
 	@Autowired
 	private ProcedureService procedureServie;
+	
 	@Autowired
-	private UserService userService;
+	private ProcedureRepository procedureRepository;
+	
+	@Autowired
+	private UserRepository userRepository;
 
 	@Override
 	public List<Appointment> getAll() {
@@ -240,7 +249,6 @@ public class AppointmentServiceImpl implements AppointmentService {
 
 	// Everything below @author Joshua Müller
 	@Override
-	@PreAuthorize("hasAuthority('APPOINTMENT_READ')")
 	public List<Appointment> getAllAppointmentsByUseridAndWarnings(String userid, List<Warning> warnings) {
 		if (warnings == null || warnings.size() == 0)
 			throw new IllegalArgumentException("Warnings are needed!");
@@ -260,7 +268,6 @@ public class AppointmentServiceImpl implements AppointmentService {
 	}
 
 	@Override
-	@PreAuthorize("hasAuthority('APPOINTMENT_READ')")
 	public List<Appointment> getAppointmentsByUserIdAndAppointmentStatus(String userid, AppointmentStatus status) {
 		return status == null 
 				? getAppointmentsByUserid(userid) 
@@ -295,7 +302,6 @@ public class AppointmentServiceImpl implements AppointmentService {
 	}
 
 	@Override
-	@PreAuthorize("hasAuthority('APPOINTMENT_READ')")
 	public List<Appointment> getAppointmentsOfBookedEmployeeInTimeinterval(String employeeid, Date starttime,
 			Date endtime, AppointmentStatus status) {
 		return status == null 
@@ -313,7 +319,6 @@ public class AppointmentServiceImpl implements AppointmentService {
 	}
 
 	@Override
-	@PreAuthorize("hasAuthority('APPOINTMENT_READ')")
 	public List<Appointment> getAppointmentsOfBookedCustomerInTimeinterval(String userid, Date starttime, Date endtime,
 			AppointmentStatus status) {
 		return status == null 
@@ -443,17 +448,23 @@ public class AppointmentServiceImpl implements AppointmentService {
 		
 		List<Employee> employees = new ArrayList<>();
 		List<Resource> resources = new ArrayList<>();
-		Procedure procedure = procedureServie.getById(bookedProcedure.getId());
-		User customer = bookedCustomer.getId() != null ? userService.getById(bookedCustomer.getId()) : null;
+		Procedure procedure = procedureRepository.findById(bookedProcedure.getId()).orElseThrow();
+		User customer = bookedCustomer.getId() != null 
+										? userRepository.findById(bookedCustomer.getId()).orElseThrow() 
+										: null;
 
 		// populate list of employees
 		appointmentToLoad.getBookedEmployees().stream()
 						.filter(employee -> employee.getId() != null)
-						.forEach(employee -> employees.add(EmpSer.getById(employee.getId())));
+						.forEach(employee -> employees.add(
+								employeeRepository.findById(employee.getId())
+										.orElseThrow()));
 		// populate list of resources
 		appointmentToLoad.getBookedResources().stream()
 						.filter(resource -> resource.getId() != null)
-						.forEach(resource -> resources.add(ResSer.getById(resource.getId())));
+						.forEach(resource -> resources.add(
+								resourceRepository.findById(resource.getId())
+										.orElseThrow()));
 
 		appointmentToLoad.setBookedEmployees(employees);
 		appointmentToLoad.setBookedResources(resources);

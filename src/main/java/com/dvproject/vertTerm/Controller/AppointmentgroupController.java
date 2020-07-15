@@ -58,7 +58,11 @@ public class AppointmentgroupController {
 	 */
 	@GetMapping("/{id}")
 	public Appointmentgroup getAppointmentGroup(@PathVariable String id) {
-		return appointmentgroupService.getById(id);
+		Appointmentgroup retVal = appointmentgroupService.getById(id);
+		User bookedUser = retVal.getAppointments().get(0).getBookedCustomer();
+		testCallersAppointmentWriteRights(bookedUser);
+
+		return retVal;
 	}
 
 	/**
@@ -78,9 +82,11 @@ public class AppointmentgroupController {
 			@RequestBody Appointmentgroup appointmentgroup) 
 	{
 		boolean customerAttached = userid != null && !userid.equals("");
-		User bookedCustomer = customerAttached ? userService.getById(userid) : userService.getAnonymousUser();
+		User bookedCustomer = customerAttached 
+										? userRepository.findById(userid).orElseThrow() 
+										: userService.getAnonymousUser();
 
-		testCallersRights(bookedCustomer);
+		testCallersAppointmentWriteRights(bookedCustomer);
 
 		appointmentgroupService.loadAppointmentgroup(appointmentgroup);
 		appointmentgroup.changeBookedCustomer(bookedCustomer);
@@ -99,15 +105,15 @@ public class AppointmentgroupController {
 	 */
 	@PostMapping(value = { "/override/", "/override/{userid}" })
 	public String bookAppointmentsOverride(
-			@PathVariable String userid,
-			@RequestBody Appointmentgroup appointmentgroup)
+			@PathVariable String userid, 
+			@RequestBody Appointmentgroup appointmentgroup) 
 	{
 		AuthorityTester.containsAny("OVERRIDE");
 
 		boolean customerAttached = userid != null && !userid.equals("");
 		User bookedCustomer = customerAttached ? userService.getById(userid) : userService.getAnonymousUser();
 
-		testCallersRights(bookedCustomer);
+		testCallersAppointmentWriteRights(bookedCustomer);
 
 		appointmentgroupService.loadAppointmentgroup(appointmentgroup);
 		appointmentgroup.changeBookedCustomer(bookedCustomer);
@@ -126,11 +132,12 @@ public class AppointmentgroupController {
 	 */
 	@PutMapping("/{userid}")
 	public void updateAppointments(
-			@PathVariable String userid,
-			@RequestBody Appointmentgroup appointmentgroup)
+			@PathVariable String userid, 
+			@RequestBody Appointmentgroup appointmentgroup) 
 	{
 		User user = userRepository.findById(userid).orElse(new User());
-		testCallersRights(user);
+		testCallersAppointmentWriteRights(user);
+		
 		updateAppointmentgroup(userid, appointmentgroup, new NormalBooker(appointmentgroup));
 
 	}
@@ -140,12 +147,13 @@ public class AppointmentgroupController {
 	 */
 	@PutMapping("/override/{userid}")
 	public void updateAppointmentsOverride(
-			@PathVariable String userid,
-			@RequestBody Appointmentgroup appointmentgroup)
+			@PathVariable String userid, 
+			@RequestBody Appointmentgroup appointmentgroup) 
 	{
 		AuthorityTester.containsAny("OVERRIDE");
+		
 		User user = userRepository.findById(userid).orElse(new User());
-		testCallersRights(user);
+		testCallersAppointmentWriteRights(user);
 
 		updateAppointmentgroup(userid, appointmentgroup, new OverrideBooker(appointmentgroup));
 	}
@@ -206,7 +214,7 @@ public class AppointmentgroupController {
 
 		String userid = appointment.getBookedCustomer().getId();
 		User user = userRepository.findById(userid).orElse(new User());
-		testCallersRights(user);
+		testCallersAppointmentWriteRights(user);
 
 		boolean retVal = appointmentgroupService.deleteAppointment(appointment, new NormalBooker());
 
@@ -225,7 +233,7 @@ public class AppointmentgroupController {
 		AuthorityTester.containsAny("OVERRIDE");
 		String userid = appointment.getBookedCustomer().getId();
 		User user = userRepository.findById(userid).orElse(new User());
-		testCallersRights(user);
+		testCallersAppointmentWriteRights(user);
 
 		boolean retVal = appointmentgroupService.deleteAppointment(appointment, new OverrideBooker());
 
@@ -246,7 +254,8 @@ public class AppointmentgroupController {
 
 		if (appointmentgroupid == null) {
 			Appointment appointmentOfAppointmentgroup = appointmentgroup.getAppointments().get(0);
-			appointmentgroupFromDB = appointmentgroupService.getAppointmentgroupContainingAppointmentID(appointmentOfAppointmentgroup.getId());
+			appointmentgroupFromDB = appointmentgroupService
+					.getAppointmentgroupContainingAppointmentID(appointmentOfAppointmentgroup.getId());
 			appointmentgroup.setId(appointmentgroupFromDB.getId());
 		}
 
@@ -318,7 +327,7 @@ public class AppointmentgroupController {
 	/**
 	 * @author Robert Schulz
 	 */
-	private void PopulateCustomer(Appointmentgroup appointmentgroup){
+	private void PopulateCustomer(Appointmentgroup appointmentgroup) {
 		Appointment firstAppointment = appointmentgroup.getAppointments().get(0);
 		User user = FindUserForAppointments(firstAppointment.getBookedCustomer());
 		for (Appointment appointment : appointmentgroup.getAppointments()) {
@@ -329,8 +338,8 @@ public class AppointmentgroupController {
 	/**
 	 * @author Robert Schulz
 	 */
-	private User FindUserForAppointments(User user){
-		if(user == null){
+	private User FindUserForAppointments(User user) {
+		if (user == null) {
 			return userService.getAnonymousUser();
 		} else
 			return userService.getById(user.getId());
@@ -354,14 +363,13 @@ public class AppointmentgroupController {
 		List<Appointment> appointmentsToTest = new ArrayList<>();
 
 		appointmentgroupToTestAppointments.getAppointments().forEach(app -> {
-			List<Appointment> appointmentsInTimeinterval = appointmentService
-					.getAppointmentsInTimeIntervalAndStatus(app.getPlannedStarttime(), app.getPlannedEndtime(), AppointmentStatus.PLANNED);
+			List<Appointment> appointmentsInTimeinterval = appointmentService.getAppointmentsInTimeIntervalAndStatus(
+					app.getPlannedStarttime(), app.getPlannedEndtime(), AppointmentStatus.PLANNED);
 			appointmentsToTest.addAll(appointmentsInTimeinterval);
 		});
 
 		appointmentgroupService.testWarningsForAppointments(appointmentsToTest);
 	}
-
 
 	/**
 	 * @author Joshua Müller
@@ -378,9 +386,13 @@ public class AppointmentgroupController {
 	/**
 	 * @author Joshua Müller
 	 */
-	private void testCallersRights(User userToTest) {
+	private void testCallersAppointmentWriteRights(User userToTest) {
 		if (AuthorityTester.isLoggedInUser(userToTest)) {
-			AuthorityTester.containsAny("OWN_APPOINTMENT_WRITE");
+			try {
+				AuthorityTester.containsAny("OWN_APPOINTMENT_WRITE");
+			} catch (RuntimeException ex) {
+				AuthorityTester.containsAny("APPOINTMENT_WRITE");
+			}
 		} else {
 			AuthorityTester.containsAny("APPOINTMENT_WRITE");
 		}
