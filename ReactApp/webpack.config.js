@@ -2,15 +2,14 @@
 const path = require('path')
 const webpack = require('webpack')
 const HtmlWebPackPlugin = require('html-webpack-plugin')
-const BrotliPlugin = require('brotli-webpack-plugin')
 
 module.exports = {
   entry: './src/index.js',
   output: {
-    //path: path.join(__dirname, '../src/main/resources/static/build'), //Production path
-    path: path.join(__dirname, '/dist'),                                //Development path
+    path: path.join(__dirname, '../src/main/resources/static/'),          //Production path
+    //path: path.join(__dirname, '/dist'),                                //Development path
     filename: 'bundle.js',
-    publicPath: '/',
+    publicPath: '/api/'
   },
   devServer: {
     port: 3001,
@@ -44,12 +43,6 @@ module.exports = {
     }),
      new webpack.DefinePlugin({
       'process.env.NODE_ENV': JSON.stringify('production')
-     }),
-     /* new BrotliPlugin({
-      asset: '[path].br[query]',
-      test: /\.(js|css|html|svg)$/,
-      threshold: 10240,
-      minRatio: 0.8
-    })  */
+     })
   ]
 };

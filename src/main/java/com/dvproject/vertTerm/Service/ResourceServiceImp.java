@@ -14,8 +14,7 @@ import org.springframework.stereotype.Service;
 import com.dvproject.vertTerm.repository.ResourceRepository;
 import com.dvproject.vertTerm.repository.RestrictionRepository;
 
-
-/**  author Amar Alkhankan  **/
+/** author Amar Alkhankan **/
 @Service
 public class ResourceServiceImp extends WarningServiceImpl implements ResourceService, AvailabilityService {
 
@@ -26,16 +25,16 @@ public class ResourceServiceImp extends WarningServiceImpl implements ResourceSe
 	@Autowired
 	private AvailabilityServiceImpl availabilityService;
 	@Autowired
-	private ResourceTypeService  RestypeService;
+	private ResourceTypeService RestypeService;
 	@Autowired
 	private AppointmentService appointmentService;
 
-	// @PreAuthorize("hasAuthority('RESOURCE_READ')")
+	@PreAuthorize("hasAuthority('RESOURCE_READ')")
 	public List<Resource> getAll() {
 		return this.ResRepo.findAll();
 	}
 
-	// @PreAuthorize("hasAuthority('RESOURCE_READ')")
+	@PreAuthorize("hasAuthority('RESOURCE_READ')")
 	public Resource getById(String id) {
 		Optional<Resource> ResDb = this.ResRepo.findById(id);
 		if (ResDb.isPresent())
@@ -44,7 +43,7 @@ public class ResourceServiceImp extends WarningServiceImpl implements ResourceSe
 			throw new ResourceNotFoundException("Resource with the given id :" + id + " already exists");
 	}
 
-	// @PreAuthorize("hasAuthority('RESOURCE_WRITE')")
+	@PreAuthorize("hasAuthority('RESOURCE_WRITE')")
 	public Resource create(Resource res) {
 		res.setName(capitalize(res.getName()));
 		if (this.ResRepo.findByName(res.getName()) == null) {
@@ -55,7 +54,7 @@ public class ResourceServiceImp extends WarningServiceImpl implements ResourceSe
 
 	}
 
-	// @PreAuthorize("hasAuthority('RESOURCE_WRITE')")
+	@PreAuthorize("hasAuthority('RESOURCE_WRITE')")
 	public boolean delete(String id) {
 		// change resource_Status to 'DELETED'
 		Resource Res = getById(id);
@@ -70,7 +69,7 @@ public class ResourceServiceImp extends WarningServiceImpl implements ResourceSe
 		return Res.getStatus() == Status.DELETED;
 	}
 
-	// @PreAuthorize("hasAuthority('RESOURCE_WRITE')")
+	@PreAuthorize("hasAuthority('RESOURCE_WRITE')")
 	public Resource update(Resource res) {
 		String resId = res.getId();
 		Optional<Resource> resource = resId != null ? ResRepo.findById(resId) : null;
@@ -87,7 +86,7 @@ public class ResourceServiceImp extends WarningServiceImpl implements ResourceSe
 		}
 	}
 
-	// @PreAuthorize("hasAuthority('RESOURCE_READ')")
+	@PreAuthorize("hasAuthority('RESOURCE_READ')")
 	public List<Resource> getResources(String[] ids) {
 		List<Resource> Resources = new ArrayList<>();
 		for (String id : ids) {
@@ -96,12 +95,12 @@ public class ResourceServiceImp extends WarningServiceImpl implements ResourceSe
 		return Resources;
 	}
 
-	// @PreAuthorize("hasAuthority('RESOURCE_READ')")
+	@PreAuthorize("hasAuthority('RESOURCE_READ')")
 	public List<Resource> getAll(ResourceType type) {
 		return this.getResources(type.getId());
 	}
 
-	// @PreAuthorize("hasAuthority('RESOURCE_READ')")
+	@PreAuthorize("hasAuthority('RESOURCE_READ')")
 	public List<Restriction> getResourceRestrictions(String id) {
 		List<Restriction> dep = new ArrayList<>();
 		Resource res = getById(id);
@@ -113,16 +112,18 @@ public class ResourceServiceImp extends WarningServiceImpl implements ResourceSe
 
 	}
 
-	// @PreAuthorize("hasAuthority('RESOURCE_READ')")
+	@PreAuthorize("hasAuthority('RESOURCE_READ')")
 	public List<Availability> getAllAvailabilities(String id) {
 		// get resource availabilities
 		Resource resource = this.getById(id);
-		if (resource == null) { throw new IllegalArgumentException("No resource with the given id"); }
+		if (resource == null) {
+			throw new IllegalArgumentException("No resource with the given id");
+		}
 
 		return resource.getAvailabilities();
 	}
 
-	// @PreAuthorize("hasAuthority('RESOURCE_WRITE')")
+	@PreAuthorize("hasAuthority('RESOURCE_WRITE')")
 	public List<Availability> updateResourceAvailabilities(String id, List<Availability> availabilities) {
 		Optional<Resource> ResDb = this.ResRepo.findById(id);
 		if (ResDb.isPresent()) {
@@ -138,7 +139,7 @@ public class ResourceServiceImp extends WarningServiceImpl implements ResourceSe
 		}
 	}
 
-	// @PreAuthorize("hasAuthority('RESOURCE_WRITE')")
+	@PreAuthorize("hasAuthority('RESOURCE_WRITE')")
 	public List<Restriction> updateResourceRestrictions(String id, String[] Rids) {
 		List<Restriction> dep = new ArrayList<>();
 		List<Restriction> AllRestrictions = RestsRepo.findAll();
@@ -163,19 +164,18 @@ public class ResourceServiceImp extends WarningServiceImpl implements ResourceSe
 		}
 	}
 
-	// @PreAuthorize("hasAuthority('RESOURCE_READ')")
+	@PreAuthorize("hasAuthority('RESOURCE_READ')")
 	public List<Resource> getResources(Status status) {
 		return ResRepo.findByStatus(status);
 	}
 
-	// @PreAuthorize("hasAuthority('RESOURCE_READ')")
+	@PreAuthorize("hasAuthority('RESOURCE_READ')")
 	public List<ResourceType> getResourceTypes(String id) {
 		Resource Resource = getById(id);
 		return Resource.getResourceTypes();
 	}
 
-	
-	// @PreAuthorize("hasAuthority('RESOURCE_READ')")
+	@PreAuthorize("hasAuthority('RESOURCE_READ')")
 	public List<Resource> getResources(String ResTid) {
 		// get all resources from resource-type using id
 		List<Resource> Resources = new ArrayList<>();
@@ -193,23 +193,22 @@ public class ResourceServiceImp extends WarningServiceImpl implements ResourceSe
 		return Resources;
 	}
 
-
-	// @PreAuthorize("hasAuthority('RESOURCE_READ')")
-		public List<Resource> getResourcesbyResourceTypeandStatus(String RTid,Status status) {
-			// get all resources of a specific resource type and status
-			List<Resource> Resources = new ArrayList<>();
-			ResourceType type= RestypeService.getById(RTid);
-			List<Resource> AllResources = this.getAll(type);
-			for (Resource res : AllResources) {
-				if (res.getStatus().equals(status)) {
-					if (!Resources.contains(res))
-						Resources.add(res);
-				}
+	@PreAuthorize("hasAuthority('RESOURCE_READ')")
+	public List<Resource> getResourcesbyResourceTypeandStatus(String RTid, Status status) {
+		// get all resources of a specific resource type and status
+		List<Resource> Resources = new ArrayList<>();
+		ResourceType type = RestypeService.getById(RTid);
+		List<Resource> AllResources = this.getAll(type);
+		for (Resource res : AllResources) {
+			if (res.getStatus().equals(status)) {
+				if (!Resources.contains(res))
+					Resources.add(res);
 			}
-			return Resources;
 		}
+		return Resources;
+	}
 
-	// @PreAuthorize("hasAuthority('RESOURCE_READ')")
+	@PreAuthorize("hasAuthority('RESOURCE_READ')")
 	public boolean isResourceAvailableBetween(String id, Date startdate, Date enddate) {
 		Resource Res = getById(id);
 		return availabilityService.isAvailable(Res.getAvailabilities(), startdate, enddate);

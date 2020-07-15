@@ -119,7 +119,7 @@ public class UserServiceImp extends WarningServiceImpl implements UserService {
 		return getById(id).getSystemStatus() == Status.DELETED;
 	}
 
-//	@PreAuthorize("hasAuthority('OWN_USER_DATA_READ')")
+	@PreAuthorize("hasAuthority('OWN_USER_READ')")
 	public User getOwnUser(Principal principal) {
 		User user = null;
 
