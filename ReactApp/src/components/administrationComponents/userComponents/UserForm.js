@@ -530,7 +530,7 @@ function UserForm({onCancel,
                     {(roleChangeAllow || !edit) ?
                       <ObjectPicker 
                         setState={handleRoleChange}
-                        DbObject="employeeRole"
+                        DbObject={isEmployee ? "employeeRole" : "customerRole" }
                         initial={roles} 
                         multiple={true}
                       />: isEmployee &&
