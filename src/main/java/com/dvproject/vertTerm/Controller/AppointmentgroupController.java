@@ -82,9 +82,8 @@ public class AppointmentgroupController {
 			@RequestBody Appointmentgroup appointmentgroup) 
 	{
 		boolean customerAttached = userid != null && !userid.equals("");
-		User bookedCustomer = customerAttached 
-										? userRepository.findById(userid).orElseThrow() 
-										: userService.getAnonymousUser();
+		User bookedCustomer = customerAttached ? userRepository.findById(userid).orElseThrow()
+				: userService.getAnonymousUser();
 
 		if (customerAttached)
 			testCallersAppointmentWriteRights(bookedCustomer);
@@ -108,7 +107,7 @@ public class AppointmentgroupController {
 	 */
 	@PostMapping(value = { "/override/", "/override/{userid}" })
 	public String bookAppointmentsOverride(
-			@PathVariable(required = false) String userid, 
+			@PathVariable(required = false) String userid,
 			@RequestBody Appointmentgroup appointmentgroup) 
 	{
 		AuthorityTester.containsAny("OVERRIDE");
@@ -117,9 +116,9 @@ public class AppointmentgroupController {
 		User bookedCustomer = customerAttached ? userService.getById(userid) : userService.getAnonymousUser();
 
 		if (customerAttached)
-				testCallersAppointmentWriteRights(bookedCustomer);
+			testCallersAppointmentWriteRights(bookedCustomer);
 		else
-				testCallersAppointmentWriteRightsBookingAnonymously();
+			testCallersAppointmentWriteRightsBookingAnonymously();
 
 		appointmentgroupService.loadAppointmentgroup(appointmentgroup);
 		appointmentgroup.changeBookedCustomer(bookedCustomer);
@@ -143,7 +142,7 @@ public class AppointmentgroupController {
 	{
 		User user = userRepository.findById(userid).orElse(new User());
 		testCallersAppointmentWriteRights(user);
-		
+
 		updateAppointmentgroup(userid, appointmentgroup, new NormalBooker(appointmentgroup));
 
 	}
@@ -215,9 +214,13 @@ public class AppointmentgroupController {
 	public boolean deleteAppointment(@PathVariable(name = "id") String appointmentId) {
 		Appointment appointment = appointmentService.getById(appointmentId);
 
-		String userid = appointment.getBookedCustomer().getId();
-		User user = userRepository.findById(userid).orElse(new User());
-		testCallersAppointmentWriteRights(user);
+		try {
+			String userid = appointment.getBookedCustomer().getId();
+			User user = userRepository.findById(userid).orElseThrow();
+			testCallersAppointmentWriteRights(user);
+		} catch (NullPointerException | NoSuchElementException ex) {
+			AuthorityTester.containsAny("APPOINTMENT_WRITE");
+		}
 
 		boolean retVal = appointmentgroupService.deleteAppointment(appointment, new NormalBooker());
 
@@ -396,8 +399,8 @@ public class AppointmentgroupController {
 			AuthorityTester.containsAny("APPOINTMENT_WRITE");
 		}
 	}
-	
-	private void testCallersAppointmentWriteRightsBookingAnonymously () {
+
+	private void testCallersAppointmentWriteRightsBookingAnonymously() {
 		AuthorityTester.containsAny("OWN_APPOINTMENT_WRITE", "APPOINTMENT_WRITE");
 	}
 }
