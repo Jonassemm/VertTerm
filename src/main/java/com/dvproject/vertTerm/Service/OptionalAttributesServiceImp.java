@@ -22,13 +22,13 @@ public class OptionalAttributesServiceImp implements OptionalAttributesService {
 	@Autowired
 	private OptionalAttributesRepository OptionalAttributesRepo;
 
-	// @PreAuthorize("hasAuthority('')")
+	@PreAuthorize("hasAuthority('USER_WRITE')")
 	public List<OptionalAttributes> getAll() {
 		// get a list of all OptionalAttributes from DB
 		return OptionalAttributesRepo.findAll();
 	}
 
-	// @PreAuthorize("hasAuthority('')")
+	@PreAuthorize("hasAuthority('USER_READ') OR hasAuthority('OWN_USER_READ')")
 	public OptionalAttributes getById(String id) {
 		// get an OptionalAttributes by the OptionalAttributes-ID
 		Optional<OptionalAttributes> OptionalAttributes = OptionalAttributesRepo.findById(id);
@@ -40,7 +40,7 @@ public class OptionalAttributesServiceImp implements OptionalAttributesService {
 
 	}
 
-	// @PreAuthorize("hasAuthority('USER_WRITE')")
+	@PreAuthorize("hasAuthority('USER_WRITE')")
 	public OptionalAttributes create(OptionalAttributes OAttribute) {
 		// get a new OptionalAttributes if not exist
 		List<OptionalAttribute> OpAttList = new ArrayList<>();
@@ -57,7 +57,7 @@ public class OptionalAttributesServiceImp implements OptionalAttributesService {
 					"OptionalAttributes  with the given Class :" + OAttribute.getClass() + "already exsist");
 	}
 
-	// @PreAuthorize("hasAuthority('USER_WRITE')")
+	@PreAuthorize("hasAuthority('USER_WRITE')")
 	public OptionalAttributes update(OptionalAttributes OAttribute) {
 		// update an OptionalAttributes if it's exist
 		Optional<OptionalAttributes> OptionalAttributes = OptionalAttributesRepo.findById(OAttribute.getId());
@@ -82,7 +82,7 @@ public class OptionalAttributesServiceImp implements OptionalAttributesService {
 
 	}
 
-	// @PreAuthorize("hasAuthority('USER_WRITE')")
+	@PreAuthorize("hasAuthority('USER_WRITE')")
 	public List<OptionalAttribute> addOptionalAttribute(String id, OptionalAttribute OAtt) {
 		// add an OptionalAttribute to the OptionalAttributes-List of the
 		// OptionalAttributes-Object with the given ID
@@ -121,7 +121,7 @@ public class OptionalAttributesServiceImp implements OptionalAttributesService {
 
 	}
 
-	// @PreAuthorize("hasAuthority('USER_WRITE')")
+	@PreAuthorize("hasAuthority('USER_WRITE')")
 	public List<OptionalAttribute> deleteOptionalAttribute(String id, OptionalAttribute OAtt) {
 		// remove an OptionalAttribute to the OptionalAttributes-List of the
 		// OptionalAttributes-Object with the given ID
@@ -161,7 +161,7 @@ public class OptionalAttributesServiceImp implements OptionalAttributesService {
 
 	}
 
-	// @PreAuthorize("hasAuthority('USER_WRITE')")
+	@PreAuthorize("hasAuthority('USER_WRITE')")
 	public List<OptionalAttribute> updateOptionalAttribute(String id, List<OptionalAttribute> OptionalAttributeList) {
 		// update the OptionalAttribute-List of the
 		// OptionalAttributes-Object with the given ID
@@ -178,7 +178,7 @@ public class OptionalAttributesServiceImp implements OptionalAttributesService {
 
 	}
 
-	// @PreAuthorize("hasAuthority('')")
+	@PreAuthorize("hasAuthority('USER_READ') OR hasAuthority('OWN_USER_READ')")
 	public List<OptionalAttributes> getOptionalAttributeswithIDS(String[] ids) {
 		// get a list of OptionalAttributes if their ID exists in the given ids-list
 		List<OptionalAttributes> OpAttsList = new ArrayList<>();
@@ -189,7 +189,7 @@ public class OptionalAttributesServiceImp implements OptionalAttributesService {
 
 	}
 
-	// @PreAuthorize("hasAuthority('')")
+	@PreAuthorize("hasAuthority('USER_READ') OR hasAuthority('OWN_USER_READ')")
 	public List<OptionalAttribute> getOptionalAttributes(String id) {
 		// get OptionalAttributes by the given ID
 		List<OptionalAttribute> OA = new ArrayList<>();

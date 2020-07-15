@@ -43,7 +43,7 @@ public class BlockerServiceImp implements BlockerService {
 	private AppointmentServiceImpl appointmentServiceImp;
 	
 
-	// @PreAuthorize("hasAuthority('')")
+	@PreAuthorize("hasAuthority('APPOINTMENT_WRITE')")
 	public Blocker create(Blocker blocker) {
 		// create new blocker 
 		
@@ -139,7 +139,7 @@ public class BlockerServiceImp implements BlockerService {
 
 	}
 
-	// @PreAuthorize("hasAuthority('')")
+	@PreAuthorize("hasAuthority('APPOINTMENT_WRITE')")
 	public Blocker update(Blocker blocker) {
 		// update a blocker if it's exist
 		// blocker.setName(capitalize(blocker.getName()));
@@ -155,14 +155,14 @@ public class BlockerServiceImp implements BlockerService {
 		}
 	}
 
-	// @PreAuthorize("hasAuthority('')")
+	@PreAuthorize("hasAuthority('APPOINTMENT_READ')")
 	public List<Blocker> getAll() {
 		// get all blockers from DB
 		return this.blockerRepo.findAll();
 
 	}
 
-	// @PreAuthorize("hasAuthority('')")
+	@PreAuthorize("hasAuthority('APPOINTMENT_READ')")
 	public Blocker getById(String id) {
 		// get a blocker by the blocker-ID
 		Optional<Blocker> BlockerDb = this.blockerRepo.findById(id);
@@ -182,7 +182,7 @@ public class BlockerServiceImp implements BlockerService {
 		return blockerRepo.findById(id).isPresent();
 	}
 
-	// @PreAuthorize("hasAuthority('')")
+	@PreAuthorize("hasAuthority('APPOINTMENT_READ')")
 	public List<Blocker> getBlockers(String[] ids) {
 		// get all blockers if their ID exists in the given ids-list
 		List<Blocker> Blockers = new ArrayList<>();
@@ -193,7 +193,7 @@ public class BlockerServiceImp implements BlockerService {
 		return Blockers;
 	}
 
-	// @PreAuthorize("hasAuthority('')")
+	@PreAuthorize("hasAuthority('APPOINTMENT_WRITE')")
 	public boolean delete(String id) {
 		// change blocker_Status to 'DELETED'
 		Blocker blocker;

@@ -28,7 +28,7 @@ public class ResourceTypeServiceImp implements ResourceTypeService {
 	@Autowired
 	private ProcedureRepository procedureRepository;
 
-	// @PreAuthorize("hasAuthority('RESOURCE_TYPE_READ')")
+	@PreAuthorize("hasAuthority('RESOURCE_TYPE_READ')")
 	public List<ResourceType> getAll() {
 		// get all ResourceTypes from DB
 		return this.ResourceTypeRepo.findAll();
@@ -43,7 +43,7 @@ public class ResourceTypeServiceImp implements ResourceTypeService {
 		return ResourceTypeRepo.findByStatus(status);
 	}
 
-	// @PreAuthorize("hasAuthority('RESOURCE_TYPE_READ')")
+	@PreAuthorize("hasAuthority('RESOURCE_TYPE_READ')")
 	public ResourceType getById(String id) {
 		// get a ResourceType by the ResourceType-ID
 		Optional<ResourceType> ResTypDb = this.ResourceTypeRepo.findById(id);
@@ -55,7 +55,7 @@ public class ResourceTypeServiceImp implements ResourceTypeService {
 
 	}
 
-	// @PreAuthorize("hasAuthority('RESOURCE_TYPE_WRITE')")
+	@PreAuthorize("hasAuthority('RESOURCE_TYPE_WRITE')")
 	public ResourceType create(ResourceType restype) {
 		// create new ResourceType if not exist
 		restype.setName(capitalize(restype.getName()));
@@ -69,7 +69,7 @@ public class ResourceTypeServiceImp implements ResourceTypeService {
 
 	}
 
-	// @PreAuthorize("hasAuthority('RESOURCE_TYPE_WRITE')")
+	@PreAuthorize("hasAuthority('RESOURCE_TYPE_WRITE')")
 	public ResourceType update(ResourceType restype) {
 		// update a ResourceType if it's exist
 		if (restype.getId() != null && ResourceTypeRepo.findById(restype.getId()).isPresent()) {
@@ -80,7 +80,7 @@ public class ResourceTypeServiceImp implements ResourceTypeService {
 		}
 	}
 
-	// @PreAuthorize("hasAuthority('RESOURCE_TYPE_WRITE')")
+	@PreAuthorize("hasAuthority('RESOURCE_TYPE_WRITE')")
 	public boolean delete(String id) {
 		// delete a ResourceType from DB
 		Optional<ResourceType> ResTypDb = this.ResourceTypeRepo.findById(id);
@@ -96,7 +96,7 @@ public class ResourceTypeServiceImp implements ResourceTypeService {
 		return getById(id).getStatus() == Status.DELETED;
 	}
 
-	// @PreAuthorize("hasAuthority('RESOURCE_TYPE_READ')")
+	@PreAuthorize("hasAuthority('RESOURCE_TYPE_READ')")
 	public List<ResourceType> getResourceTypes(String[] ids) {
 		// get all ResourceTypes if their ID exists in the given ids-list
 		List<ResourceType> ResTypes = new ArrayList<ResourceType>();

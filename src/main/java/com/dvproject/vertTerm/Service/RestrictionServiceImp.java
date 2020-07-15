@@ -15,6 +15,7 @@ import com.fasterxml.jackson.core.sym.Name;
 import net.springboot.javaguides.exception.ResourceExsistException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.rest.webmvc.ResourceNotFoundException;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -37,7 +38,7 @@ public class RestrictionServiceImp implements RestrictionService {
 	@Autowired
 	private ProcedureRepository ProRepo;
 
-	// @PreAuthorize("hasAuthority('')")
+	@PreAuthorize("hasAuthority('USER_WRITE')")
 	public Restriction create(Restriction Restriction) {
 		// create new restriction if not exist
 		Restriction.setName(capitalize(Restriction.getName()));
@@ -49,7 +50,7 @@ public class RestrictionServiceImp implements RestrictionService {
 		}
 	}
 
-	// @PreAuthorize("hasAuthority('')")
+	@PreAuthorize("hasAuthority('USER_WRITE')")
 	public Restriction update(Restriction Restriction) {
 		// update a restriction if it's exist
 		if (RestrictionRepo.findById(Restriction.getId()).isPresent()) {
@@ -60,13 +61,13 @@ public class RestrictionServiceImp implements RestrictionService {
 		}
 	}
 
-	// @PreAuthorize("hasAuthority('')")
+	@PreAuthorize("hasAuthority('USER_READ')")
 	public List<Restriction> getAll() {
 		// get all restrictions from DB
 		return this.RestrictionRepo.findAll();
 	}
 
-	// @PreAuthorize("hasAuthority('')")
+	@PreAuthorize("hasAuthority('USER_READ')")
 	public Restriction getById(String id) {
 		// get a restriction by the restriction-ID
 		Optional<Restriction> RestrictionDb = this.RestrictionRepo.findById(id);
@@ -77,7 +78,7 @@ public class RestrictionServiceImp implements RestrictionService {
 		}
 	}
 
-	// @PreAuthorize("hasAuthority('')")
+	@PreAuthorize("hasAuthority('USER_READ')")
 	public List<Restriction> getRestrictions(String[] ids) {
 		// get all restrictions if their ID exists in the given ids-list
 		List<Restriction> Restrictions = new ArrayList<>();

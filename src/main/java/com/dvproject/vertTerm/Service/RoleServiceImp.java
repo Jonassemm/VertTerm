@@ -34,7 +34,7 @@ public class RoleServiceImp implements RoleService {
 	@Autowired
 	private WebSecurityConfigurerAdapter configure;
 
-	// @PreAuthorize("hasAuthority('ROLE_WRITE')")
+	@PreAuthorize("hasAuthority('ROLE_WRITE')")
 	public Role create(Role role) {
 		//create new Role if not exist
 		role.setName(capitalize(role.getName()));
@@ -45,7 +45,7 @@ public class RoleServiceImp implements RoleService {
 		}
 	}
 
-	// @PreAuthorize("hasAuthority('ROLE_WRITE')")
+	@PreAuthorize("hasAuthority('ROLE_WRITE')")
 	public Role update(Role role) {
 		//update role if it's exist
 		if (RoleRepo.findById(role.getId()).isPresent()) {
@@ -57,13 +57,13 @@ public class RoleServiceImp implements RoleService {
 		}
 	}
 
-	//@PreAuthorize("hasAuthority('ROLE_READ')")
+	@PreAuthorize("hasAuthority('ROLE_READ')")
 	public List<Role> getAll() {
 		//get all role from DB
 		return this.RoleRepo.findAll();
 	}
 
-	// @PreAuthorize("hasAuthority('ROLE_READ')")
+	@PreAuthorize("hasAuthority('ROLE_READ')")
 	public Role getById(String id) {
 		//get a role by the role-ID
 		Optional<Role> RoleDb = this.RoleRepo.findById(id);
@@ -74,7 +74,7 @@ public class RoleServiceImp implements RoleService {
 		}
 	}
 
-	// @PreAuthorize("hasAuthority('ROLE_READ')")
+	@PreAuthorize("hasAuthority('ROLE_READ')")
 	public List<Role> getRoles(String[] ids) {
 		//get all roles if their ID exists in the given ids-list
 		List<Role> Roles = new ArrayList<>();
@@ -84,7 +84,7 @@ public class RoleServiceImp implements RoleService {
 		return Roles;
 	}
 
-	// @PreAuthorize("hasAuthority('ROLE_READ')")
+	@PreAuthorize("hasAuthority('ROLE_WRITE')")
 	public boolean delete(String id) {
 		//delete a role by ID from DB
 		Optional<Role> RoleDb = this.RoleRepo.findById(id);
@@ -97,7 +97,7 @@ public class RoleServiceImp implements RoleService {
 		return RoleRepo.existsById(id);
 	}
 
-	// @PreAuthorize("hasAuthority('ROLE_READ','RIGHT_READ')")
+	@PreAuthorize("hasAuthority('ROLE_READ','RIGHT_READ')")
 	public List<Right> getRoleRights(String id) {
 		//Get all rights for the role with the given ID
 		List<Right> rights = new ArrayList<>();
@@ -108,7 +108,7 @@ public class RoleServiceImp implements RoleService {
 		return rights;
 	}
 
-	// @PreAuthorize("hasAuthority('USER_READ')")
+	@PreAuthorize("hasAuthority('USER_READ')")
 	public List<User> getRoleUsers(String id) {
 		//get all users that they have the role with the given ID
 		List<User> userslist = new ArrayList<>();
@@ -123,7 +123,7 @@ public class RoleServiceImp implements RoleService {
 		return userslist;
 	}
 
-	// @PreAuthorize("hasAuthority('ROLE_WRITE','RIGHT_READ')")
+	@PreAuthorize("hasAuthority('ROLE_WRITE','RIGHT_READ')")
 	public List<Right> updateRoleRights(String id, String[] Rids) {
 		//update the rights of the role with the given ID
 		//rights of the role = get all rights if their ID exists in the given Rids-list
@@ -149,7 +149,7 @@ public class RoleServiceImp implements RoleService {
 		}
 	}
 
-	// @PreAuthorize("hasAuthority('ROLE_READ','USER_WRITE')")
+	@PreAuthorize("hasAuthority('ROLE_READ','USER_WRITE')")
 	public List<User> updateRoleUsers(String id, String[] Uids) {
 		//Add the role with the given ID to all users if their ID exists in the given Uids-list
 		//and remove that role from the other users (their ID not exists in Uids-list) only if
