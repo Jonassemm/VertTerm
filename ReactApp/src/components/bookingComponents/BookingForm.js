@@ -37,6 +37,8 @@ function BookingForm({ editData, userStore }) {
     const [showMode, setShowMode] = useState(false)
     const [QRCred, setQRCred] = useState("")
     const [editApt, setEditApt] = useState({})
+    const [strategy, setStrategy] = useState("0")
+    const [optimizeStartTime, setOptimizeStartTime] = useState(new Date())
 
     useEffect(() => {
         checkCompletion()
@@ -45,7 +47,7 @@ function BookingForm({ editData, userStore }) {
 
     useEffect(() => {
         setupEdit()
-        if(!hasRight(userStore, [appointmentRights[1]]) && (userStore.user != null)) setSelectedCustomer([userStore.user])
+        if (!hasRight(userStore, [appointmentRights[1]]) && (userStore.user != null)) setSelectedCustomer([userStore.user])
     }, [])
 
     async function setupEdit() {
@@ -287,8 +289,27 @@ function BookingForm({ editData, userStore }) {
     }
 
     async function optimizeAppointment() {
-        const aptGroup = buildFinalData()
-        const res = await OptimizeEarlyEnd(aptGroup, 0)
+        let aptGroup = buildFinalData()
+        aptGroup.appointments = aptGroup.appointments.map((item, index) => {
+            if (index == 0) return {
+                ...item,
+                plannedStarttime: moment(optimizeStartTime).format("DD.MM.YYYY HH:mm").toString(),
+            }
+            else return { ...item }
+        })
+        let data = {}
+        try {
+            console.log(strategy)
+            switch (strategy) {
+                case "0": data = await OptimizeEarlyEnd(aptGroup, 0); break;
+                case "1": data = await OptimizeLeastWaitingTime(aptGroup, 0); break;
+                case "2": data = await OptimizeLeastDays(aptGroup, 0);
+            }
+            console.log(data)
+            setApts(data.data)
+        } catch (error) {
+            console.log(error)
+        }
     }
 
     //searching resources and employees for the defined appointments with given times
@@ -640,16 +661,20 @@ function BookingForm({ editData, userStore }) {
                     <Row>
                         {!editMode && hasRight(userStore, [appointmentRights[0]]) && !showMode && !custom && (selectedProcedures.length != 0) &&
                             <Col xs={7} style={{ textAlign: "left", display: "flex", alignItems: "baseline", justifyContent: "space-between" }}>
-                                <Form.Control style={{ width: "50%" }} as="select">
-                                    <option>Frühstes Ende</option>
-                                    <option>Wenig Wartezeit</option>
-                                    <option>Wenige Teiltermine</option>
+                                <Form.Control onChange={e => setStrategy(e.target.value)} value={strategy} style={{ width: "50%" }} as="select">
+                                    <option value="0">Frühstes Ende</option>
+                                    <option value="1">Wenig Wartezeit</option>
+                                    <option value="2">Wenige Teiltermine</option>
                                 </Form.Control>
                                 <DatePicker
-                                    className="endDate"
-                                    selected={new Date()}
+                                    className="StrategyDate"
+                                    selected={optimizeStartTime}
+                                    onChange={date => setOptimizeStartTime(date)}
+                                    showTimeSelect
                                     timeFormat="HH:mm"
-                                    dateFormat="dd.M.yyyy"
+                                    timeIntervals={5}
+                                    timeCaption="Uhrzeit"
+                                    dateFormat="dd.M.yyyy / HH:mm"
                                 />
                                 <Button onClick={optimizeAppointment}>Terminvorschlag</Button>
                             </Col>

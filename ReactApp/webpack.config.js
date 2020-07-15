@@ -9,6 +9,7 @@ module.exports = {
     path: path.join(__dirname, '../src/main/resources/static/'),          //Production path
     //path: path.join(__dirname, '/dist'),                                //Development path
     filename: 'bundle.js',
+    //publicPath: '/'
     publicPath: '/api/'
   },
   devServer: {

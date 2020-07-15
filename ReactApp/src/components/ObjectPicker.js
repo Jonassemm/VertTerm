@@ -17,7 +17,7 @@ import { getTranslatedWarning, kindOfWarningList } from "./Warnings"
 
 const ObjectPicker = forwardRef((props, ref) => {
     let { DbObject, setState, initial, multiple, ident, filter, status, disabled } = props
-    if(status) status = status.toUpperCase()
+    if (status) status = status.toUpperCase()
     const [options, setOptions] = useState([])
     const [labelKey, setLabelKey] = useState("")
     const [selected, setSelected] = useState([])
@@ -93,7 +93,7 @@ const ObjectPicker = forwardRef((props, ref) => {
         switch (DbObject) {
             case 'user': res = await getUsers(status); break;
             case 'customer': res = await getCustomers(status); break;
-            case 'employee': res = await getEmployees(status,filter); break;
+            case 'employee': res = await getEmployees(status, filter); break;
         }
         //attach labelKey
         const result = res.data.map(item => {
@@ -116,21 +116,21 @@ const ObjectPicker = forwardRef((props, ref) => {
 
 
     async function getResourceData() {
-        const {data} = await getResources(status,filter)
+        const { data } = await getResources(status, filter)
         setOptions(data)
         setLabelKey("name")
         setInit(true)
     }
 
     async function getResourceTypeData() {
-        const {data} = await getResourceTypes(status)
+        const { data } = await getResourceTypes(status)
         setOptions(data)
         setLabelKey("name")
         setInit(true)
     }
 
     async function getPositionData() {
-        const {data} = await getPositions(status)
+        const { data } = await getPositions(status)
         setOptions(data)
         setLabelKey("name")
         setInit(true)
@@ -138,11 +138,11 @@ const ObjectPicker = forwardRef((props, ref) => {
 
     async function getProcedureData() {
         let result = []
-        if(filter == "public"){
-            const {data} = await getPublicProcedures(status)
+        if (filter == "public") {
+            const { data } = await getPublicProcedures(status)
             result = data
-        }else{
-            const {data} = await getProcedures(status)
+        } else {
+            const { data } = await getProcedures(status)
             result = data
         }
         setOptions(result)
@@ -159,10 +159,7 @@ const ObjectPicker = forwardRef((props, ref) => {
             if (userType == "employee") {
                 finalResult.push(item)
             } else { // customer
-                console.log(item)
-                if (item.name != "Admin_role") {
-                    finalResult.push(item)
-                }
+                if (item.name != "Admin_role") finalResult.push(item)
             }
         })
         setOptions(finalResult)
@@ -171,7 +168,7 @@ const ObjectPicker = forwardRef((props, ref) => {
     }
 
     async function getRestrictionData() {
-        const {data} = await getRestrictions()
+        const { data } = await getRestrictions()
         setOptions(data)
         setLabelKey("name")
         setInit(true)
@@ -188,11 +185,8 @@ const ObjectPicker = forwardRef((props, ref) => {
 
     const handleChange = event => {
         setSelected(event)
-        if (!ident) {
-            setState(event)
-        } else {
-            setState({ data: event, ident: ident, DbObject: DbObject })
-        }
+        if (!ident) setState(event)
+        else setState({ data: event, ident: ident, DbObject: DbObject })
     }
 
     return (
