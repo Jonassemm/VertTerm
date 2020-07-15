@@ -500,7 +500,7 @@ export default function AppointmentPage({calendarStore, userStore}) {
                         <Form.Control
                             readOnly
                             type="text"
-                            value={userStore.username == "anonymousUser" ? "Anonymer Benutzer": selectedUser[0].firstName + " " + selectedUser[0].lastName || ""}
+                            value={(userStore.firstName == null || userStore.lastName == null) ? userStore.username: selectedUser[0].firstName + " " + selectedUser[0].lastName || ""}
                         />: (appointmentsOf == loadMode.foreign || appointmentsOf == loadMode.foreignUnpicked) ?
                             userStore.user != null && allowEntireView &&
                                 <ObjectPicker 

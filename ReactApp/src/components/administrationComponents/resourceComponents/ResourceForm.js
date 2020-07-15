@@ -242,7 +242,8 @@ const RessourceForm = ({ onCancel,
                     setState={handleResourceTypeChange}
                     DbObject="resourceType"
                     initial={resourceTypes}
-                    multiple={true} />
+                    multiple={true}
+                    status={"NOTDELETED"} />
                 </Form.Group>
                 
                 <Form.Group as={Col} md="2">

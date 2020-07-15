@@ -86,7 +86,10 @@ public class AppointmentgroupController {
 										? userRepository.findById(userid).orElseThrow() 
 										: userService.getAnonymousUser();
 
-		testCallersAppointmentWriteRights(bookedCustomer);
+		if (customerAttached)
+			testCallersAppointmentWriteRights(bookedCustomer);
+		else
+			testCallersAppointmentWriteRightsBookingAnonymously();
 
 		appointmentgroupService.loadAppointmentgroup(appointmentgroup);
 		appointmentgroup.changeBookedCustomer(bookedCustomer);
@@ -113,7 +116,10 @@ public class AppointmentgroupController {
 		boolean customerAttached = userid != null && !userid.equals("");
 		User bookedCustomer = customerAttached ? userService.getById(userid) : userService.getAnonymousUser();
 
-		testCallersAppointmentWriteRights(bookedCustomer);
+		if (customerAttached)
+				testCallersAppointmentWriteRights(bookedCustomer);
+		else
+				testCallersAppointmentWriteRightsBookingAnonymously();
 
 		appointmentgroupService.loadAppointmentgroup(appointmentgroup);
 		appointmentgroup.changeBookedCustomer(bookedCustomer);
@@ -151,9 +157,6 @@ public class AppointmentgroupController {
 			@RequestBody Appointmentgroup appointmentgroup) 
 	{
 		AuthorityTester.containsAny("OVERRIDE");
-		
-		User user = userRepository.findById(userid).orElse(new User());
-		testCallersAppointmentWriteRights(user);
 
 		updateAppointmentgroup(userid, appointmentgroup, new OverrideBooker(appointmentgroup));
 	}
@@ -388,13 +391,13 @@ public class AppointmentgroupController {
 	 */
 	private void testCallersAppointmentWriteRights(User userToTest) {
 		if (AuthorityTester.isLoggedInUser(userToTest)) {
-			try {
-				AuthorityTester.containsAny("OWN_APPOINTMENT_WRITE");
-			} catch (RuntimeException ex) {
-				AuthorityTester.containsAny("APPOINTMENT_WRITE");
-			}
+			AuthorityTester.containsAny("OWN_APPOINTMENT_WRITE", "APPOINTMENT_WRITE");
 		} else {
 			AuthorityTester.containsAny("APPOINTMENT_WRITE");
 		}
+	}
+	
+	private void testCallersAppointmentWriteRightsBookingAnonymously () {
+		AuthorityTester.containsAny("OWN_APPOINTMENT_WRITE", "APPOINTMENT_WRITE");
 	}
 }

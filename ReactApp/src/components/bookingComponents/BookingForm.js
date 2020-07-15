@@ -45,7 +45,7 @@ function BookingForm({ editData, userStore }) {
 
     useEffect(() => {
         setupEdit()
-        if(!hasRight(userStore, [appointmentRights[1]])) setSelectedCustomer([userStore.user])
+        if(!hasRight(userStore, [appointmentRights[1]]) && (userStore.user != null)) setSelectedCustomer([userStore.user])
     }, [])
 
     async function setupEdit() {
@@ -685,7 +685,6 @@ function BookingForm({ editData, userStore }) {
                     <span>{exceptionMessage}</span>
                 </Modal.Body>
                 <Modal.Footer>
-                    {console.log(hasRight(userStore, [overrideRight[0]]))}
                     {exception != "customer" && hasRight(userStore, [overrideRight[0]]) && <Button variant="danger" onClick={overrideSubmit}>Trotzdem buchen</Button>}
                     <Button onClick={() => setShowExceptionModal(false)} variant="secondary">OK</Button>
                 </Modal.Footer>

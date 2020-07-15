@@ -23,7 +23,7 @@ import java.util.Optional;
 public class PositionServiceImp implements PositionService {
 	@Autowired
 	private PositionRepository positionRepository;
-	
+
 	@Autowired
 	private ProcedureRepository procedureRepository;
 
@@ -51,11 +51,14 @@ public class PositionServiceImp implements PositionService {
 	public Position update(Position position) {
 		Position retVal = null;
 		
+		if (position.getStatus() == null && position.getId() != null)
+			position.setStatus(positionRepository.findById(position.getId()).orElseThrow().getStatus());
+
 		if (isUpdatble(position)) {
 			position.setName(capitalize(position.getName()));
 			retVal = positionRepository.save(position);
 		}
-		
+
 		return retVal;
 	}
 
@@ -83,17 +86,16 @@ public class PositionServiceImp implements PositionService {
 	@PreAuthorize("hasAuthority('POSITION_WRITE')")
 	public Position create(Position position) {
 		Position retVal = null;
-		
+
 		if (position.getId() == null) {
 			position.setName(capitalize(position.getName()));
 			position.setStatus(Status.ACTIVE);
-			retVal =  positionRepository.save(position);
-		}
-		
-		if (positionRepository.findById(position.getId()).isPresent())
-			throw new ResourceNotFoundException(
-					"Procedure with the given id (" + position.getId() + ") exists on the database. Use the update method.");
-		
+			retVal = positionRepository.save(position);
+		} else
+			if (positionRepository.findById(position.getId()).isPresent())
+				throw new ResourceNotFoundException("Procedure with the given id (" + position.getId()
+						+ ") exists on the database. Use the update method.");
+
 		return retVal;
 	}
 
@@ -114,13 +116,11 @@ public class PositionServiceImp implements PositionService {
 		return str.substring(0, 1).toUpperCase() + str.substring(1).toLowerCase();
 
 	}
-	
+
 	private boolean isUpdatble(Position position) {
-		return position.getId() != null 
-				&& positionRepository.findById(position.getId()).isPresent()
-				&& StatusService.isUpdateable(position.getStatus());
+		return position.getId() != null && StatusService.isUpdateable(position.getStatus());
 	}
-	
+
 	private void removeResourceTypeFromProcedures(String positionId) {
 		List<Procedure> procedureToUpdate = procedureRepository.findByNeededEmployeePositions(positionId);
 

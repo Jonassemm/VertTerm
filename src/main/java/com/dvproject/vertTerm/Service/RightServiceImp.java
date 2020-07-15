@@ -8,6 +8,7 @@ import com.dvproject.vertTerm.repository.RoleRepository;
 import com.dvproject.vertTerm.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.rest.webmvc.ResourceNotFoundException;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -26,13 +27,13 @@ public class RightServiceImp implements RightService {
 	@Autowired
 	private RoleRepository roleRepo;
 
-	// @PreAuthorize("hasAuthority('RIGHT_READ')")
+	@PreAuthorize("hasAuthority('RIGHT_READ')")
 	public List<Right> getAll() {
 		// get all rights from DB
 		return this.RightRepo.findAll();
 	}
 
-	// @PreAuthorize("hasAuthority('RIGHT_READ')")
+	@PreAuthorize("hasAuthority('RIGHT_READ')")
 	public Right getById(String id) {
 		// get a right by the right-ID
 		Optional<Right> RightDb = this.RightRepo.findById(id);
@@ -43,7 +44,7 @@ public class RightServiceImp implements RightService {
 		}
 	}
 
-	// @PreAuthorize("hasAuthority('ROLE_READ','USER_READ')")
+	@PreAuthorize("hasAuthority('ROLE_READ','USER_READ')")
 	public List<User> getListUserswithRight(String id) {
 		// get all user how they have the right with the given ID
 		List<User> userslist = new ArrayList<>();
@@ -59,7 +60,7 @@ public class RightServiceImp implements RightService {
 		return userslist;
 	}
 
-	// @PreAuthorize("hasAuthority('ROLE_READ','RIGHT_READ')")
+	@PreAuthorize("hasAuthority('ROLE_READ','RIGHT_READ')")
 	public List<Role> getListRoleswithRight(String id) {
 		// get all roles that they have the right with the given ID
 		List<Role> listrole = new ArrayList<>();

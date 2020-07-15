@@ -1,7 +1,7 @@
 package com.dvproject.vertTerm.Service;
 
 import com.dvproject.vertTerm.Model.*;
-import com.dvproject.vertTerm.repository.ProcedureRepository;
+import com.dvproject.vertTerm.repository.*;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.rest.webmvc.ResourceNotFoundException;
@@ -9,6 +9,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * @author Joshua Müller
@@ -23,6 +24,12 @@ public class ProcedureServiceImp extends WarningServiceImpl implements Procedure
 
 	@Autowired
 	private AppointmentService appointmentService;
+
+	@Autowired
+	private ResourceTypeRepository resourceTypeRepository;
+
+	@Autowired
+	private PositionRepository positionRepository;
 
 	@Override
 	@PreAuthorize("hasAuthority('PROCEDURE_READ')")
@@ -67,17 +74,19 @@ public class ProcedureServiceImp extends WarningServiceImpl implements Procedure
 	@PreAuthorize("hasAuthority('PROCEDURE_WRITE')")
 	public Procedure create(Procedure procedure) {
 		Procedure retVal = null;
-		
+
 		if (procedure.getId() == null) {
+			loadResourceTypes(procedure);
+			loadPositions(procedure);
 			procedure.testAllReferenceValues();
 			availabilityService.update(procedure.getAvailabilities(), procedure);
 			procedure.setName(capitalize(procedure.getName()));
 			retVal = procedureRepository.save(procedure);
-		}
-		if (procedureRepository.findById(procedure.getId()).isPresent())
-			throw new IllegalArgumentException("Procedure with the given id (" + procedure.getId()
-					+ ") exists on the database. Use the update method.");
-			
+		} else
+			if (procedureRepository.findById(procedure.getId()).isPresent())
+				throw new IllegalArgumentException("Procedure with the given id (" + procedure.getId()
+						+ ") exists on the database. Use the update method.");
+
 		return retVal;
 	}
 
@@ -87,6 +96,8 @@ public class ProcedureServiceImp extends WarningServiceImpl implements Procedure
 		String procedureId = procedure.getId();
 		Procedure oldProcedure = getProcedureFromDB(procedureId);
 
+		loadResourceTypes(procedure);
+		loadPositions(procedure);
 		procedure.testAllReferenceValues();
 		procedure.setName(capitalize(procedure.getName()));
 		availabilityService.loadAllAvailabilitiesOfEntity(procedure.getAvailabilities(), procedure, this);
@@ -142,5 +153,25 @@ public class ProcedureServiceImp extends WarningServiceImpl implements Procedure
 	@Override
 	List<Appointment> getPlannedAppointmentsWithId(String id) {
 		return appointmentService.getAppointmentsByProcedureIdAndAppointmentStatus(id, AppointmentStatus.PLANNED);
+	}
+
+	private void loadResourceTypes(Procedure procedure) {
+		List<ResourceType> resourceTypes = procedure.getNeededResourceTypes();
+
+		resourceTypes = resourceTypes.stream()
+				.map(resourceType -> resourceTypeRepository.findById(resourceType.getId()).orElseThrow())
+				.collect(Collectors.toList());
+
+		procedure.setNeededResourceTypes(resourceTypes);
+	}
+
+	private void loadPositions(Procedure procedure) {
+		List<Position> positions = procedure.getNeededEmployeePositions();
+
+		positions = positions.stream()
+				.map(position -> positionRepository.findById(position.getId()).orElseThrow())
+				.collect(Collectors.toList());
+
+		procedure.setNeededEmployeePositions(positions);
 	}
 }

@@ -37,4 +37,9 @@ public class OverrideBooker extends Booker {
 		appointmentgroupToBook.testProcedureRelations(true);
 	}
 
+	@Override
+	protected void testAppointmentgroup(AppointmentService appointmentService, RestrictionService restrictionService) {
+		testAppointmentgroup(appointmentService, restrictionService, new User());
+	}
+
 }

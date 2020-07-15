@@ -151,14 +151,16 @@ const ObjectPicker = forwardRef((props, ref) => {
     }
 
     async function getRoleData(userType) {
+        console.log("role")
         let finalResult = []
-        const res = await getRoles()
+        const res = await getRoles(status)
         res.data.map((item) => {
             //reduce the selection
             if (userType == "employee") {
                 finalResult.push(item)
             } else { // customer
-                if (item.name != "ADMIN_ROLE") {
+                console.log(item)
+                if (item.name != "Admin_role") {
                     finalResult.push(item)
                 }
             }

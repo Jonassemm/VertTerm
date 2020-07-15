@@ -3,6 +3,7 @@ package com.dvproject.vertTerm.Model;
 import java.io.Serializable;
 import java.time.Duration;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import javax.validation.constraints.NotNull;
 
@@ -206,19 +207,28 @@ public class Procedure implements Serializable, Available {
 	}
 
 	public void testResourceTypes() {
-		ResourceType failedResourceType = neededResourceTypes.stream()
-				.filter(resourceType -> resourceType.getStatus().isDeleted()).findAny().orElse(null);
+		if (neededResourceTypes == null)
+			return;
+		
+		List<ResourceType> failedResourceTypes = neededResourceTypes
+				.stream()
+				.filter(resourceType -> resourceType.getStatus().isDeleted())
+				.collect(Collectors.toList());
 
-		if (failedResourceType != null)
-			throw new ResourceTypeException("ResourceType is deleted", failedResourceType);
+		if (failedResourceTypes.size() != 0)
+			throw new ResourceTypeException("ResourceType is deleted", failedResourceTypes.get(0));
 	}
 
 	public void testPositions() {
-		Position failedposition = neededEmployeePositions.stream()
-				.filter(position -> position.getStatus().isDeleted()).findAny().orElse(null);
+		if (neededEmployeePositions == null)
+			return;
+		
+		List<Position> failedposition = neededEmployeePositions.stream()
+				.filter(position -> position.getStatus().isDeleted())
+				.collect(Collectors.toList());
 
-		if (failedposition != null)
-			throw new PositionException("Position is deleted", failedposition);
+		if (failedposition.size() != 0)
+			throw new PositionException("Position is deleted", failedposition.get(0));
 	}
 
 	private void testProcedureRelation(ProcedureRelation procedureRelation) {

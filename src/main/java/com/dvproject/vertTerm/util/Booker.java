@@ -14,10 +14,16 @@ import com.dvproject.vertTerm.repository.UserRepository;
 public abstract class Booker {
 	protected Appointmentgroup appointmentgroupToBook;
 	private org.springframework.security.core.userdetails.User logedInUser;
+	private boolean noUserLoggedIn = false;
 
 	public Booker() {
-		logedInUser = (org.springframework.security.core.userdetails.User) 
-				SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+		Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+		
+		if (principal instanceof org.springframework.security.core.userdetails.User) {
+			logedInUser = (org.springframework.security.core.userdetails.User) principal;
+		} else {
+			noUserLoggedIn = true;
+		}
 	}
 	
 	public Booker (Appointmentgroup appointmentgroupToBook) {
@@ -31,7 +37,7 @@ public abstract class Booker {
 	
 	public void bookable(AppointmentService appointmentService,
 			RestrictionService restrictionService, UserRepository userRepository) {
-		User booker = userRepository.findByUsername(logedInUser.getUsername());
+		User booker = noUserLoggedIn ? null : userRepository.findByUsername(logedInUser.getUsername());
 		
 		appointmentgroupToBook.resetAllWarnings();
 		
@@ -43,6 +49,9 @@ public abstract class Booker {
 
 	protected abstract void testAppointmentgroup(AppointmentService appointmentService,
 			RestrictionService restrictionService, User booker);
+	
+	protected abstract void testAppointmentgroup(AppointmentService appointmentService,
+			RestrictionService restrictionService);
 	
 	public abstract void testProcedureRelations();
 }
