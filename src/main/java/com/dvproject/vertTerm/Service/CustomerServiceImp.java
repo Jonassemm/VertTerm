@@ -28,7 +28,10 @@ public class CustomerServiceImp implements CustomerService {
         return repo.findAll();
     }
 
-    @PreAuthorize("hasAuthority('USERS_DATA_READ')")
+    /**
+     * @author Robert Schulz
+     */
+    @PreAuthorize("hasAuthority('USER_READ')")
     public List<Customer> getAll(Status status) {
         List<Customer> users = null;
         switch(status){

@@ -43,7 +43,7 @@ public class EmployeeServiceImp extends WarningServiceImpl implements EmployeeSe
 	/**
 	 * @author Robert Schulz
 	 */
-	@PreAuthorize("hasAuthority('USERS_DATA_READ')")
+	@PreAuthorize("hasAuthority('USERS_READ')")
 	public List<Employee> getAll(Status status) {
 		List<Employee> users = null;
 		switch (status) {
