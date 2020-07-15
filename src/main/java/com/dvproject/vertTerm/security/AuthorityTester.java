@@ -60,8 +60,8 @@ public class AuthorityTester {
 		return SecurityContextHolder.getContext().getAuthentication().getAuthorities();
 	}
 	
-	private static String getLoggedInUsername(){
-		return (String) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+	private static String getLoggedInUsername() {
+		return (String) SecurityContextHolder.getContext().getAuthentication().getName();
 	}
 
 }
