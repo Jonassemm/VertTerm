@@ -50,6 +50,9 @@ public class PositionServiceImp implements PositionService {
 	@PreAuthorize("hasAuthority('POSITION_WRITE')")
 	public Position update(Position position) {
 		Position retVal = null;
+		
+		if (position.getStatus() == null && position.getId() != null)
+			position.setStatus(positionRepository.findById(position.getId()).orElseThrow().getStatus());
 
 		if (isUpdatble(position)) {
 			position.setName(capitalize(position.getName()));
@@ -115,8 +118,7 @@ public class PositionServiceImp implements PositionService {
 	}
 
 	private boolean isUpdatble(Position position) {
-		return position.getId() != null && positionRepository.findById(position.getId()).isPresent()
-				&& StatusService.isUpdateable(position.getStatus());
+		return position.getId() != null && StatusService.isUpdateable(position.getStatus());
 	}
 
 	private void removeResourceTypeFromProcedures(String positionId) {
