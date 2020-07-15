@@ -114,7 +114,10 @@ public class ResourceTypeServiceImp implements ResourceTypeService {
 		return str.substring(0, 1).toUpperCase() + str.substring(1).toLowerCase();
 
 	}
-	
+
+	/**
+	 * @Author Joshua Müller
+	 */
 	private void removeResourceTypeFromProcedures(String resourceTypeId) {
 		List<Procedure> procedureToUpdate = procedureRepository.findByNeededResourceTypesId(resourceTypeId);
 
