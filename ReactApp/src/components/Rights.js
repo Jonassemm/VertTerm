@@ -9,6 +9,16 @@ export const userRights = [
     "USER_WRITE"
 ]
 
+export const employeeRights = [
+    "EMPLOYEE_READ",
+    "EMPLOYEE_WRITE"
+]
+
+export const customerRights = [
+    "CUSTOMER_READ",
+    "CUSTOMER_WRITE"
+]
+
 export const positionRights = [
     "POSITION_READ",
     "POSITION_WRITE"

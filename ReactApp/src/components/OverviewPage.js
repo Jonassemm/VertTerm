@@ -6,8 +6,10 @@ import { hasRight } from "../auth"
 //...Rights[0] = read right
 //...Rights[1] = write right
 import {
-    ownUserRights, 
+    ownUserRights,
     userRights,
+    customerRights,
+    employeeRights,
     positionRights,
     procedureRights,
     resourceRights,
@@ -15,7 +17,7 @@ import {
     ownAppointmentRights,
     appointmentRights,
     roleRights
- } from "./Rights"
+} from "./Rights"
 
 export const Style = styled.div`
 
@@ -75,6 +77,8 @@ const modal = (onCancel,edit,selectedItem) => {
 
 export const modalTypes = {
     user: "user",
+    customer: "customer",
+    employee: "employee",
     position: "position",
     resource: "resource",
     resourceType: "resourceType",
@@ -85,7 +89,7 @@ export const modalTypes = {
 
 
 function OverviewPage({
-    pageTitle,        
+    pageTitle,
     newItemText,                //text of the new Item button 
     tableHeader,
     tableBody,
@@ -99,14 +103,15 @@ function OverviewPage({
     noTopMargin = false,        //optional prop to reduce te space above the OverviewPage
     refreshData,                //called after closing the modal   
     scrollable
-    }) {
+}) {
+    console.log(modalType)
     const [showNewModal, setShowNewModal] = useState(false)
     const [showEditModal, setShowEditModal] = useState(false)
     const [selectedItem, setSelectedItem] = useState({})
 
 
     const handleClick = event => {
-        if(event.target.type != "button"){
+        if (event.target.type != "button") {
             let x = (event.target.parentElement.firstChild.textContent) - 1
             setSelectedItem(data[x])
             setShowEditModal(true)
@@ -125,36 +130,46 @@ function OverviewPage({
 
 
     //for showing the add-button
-    const hasWriteRight = () =>{
+    const hasWriteRight = () => {
         var rightExists = false
-        switch(modalType) {
+        switch (modalType) {
             case modalTypes.user:
-                if(hasRight(userStore, [userRights[1]])){
+                if (hasRight(userStore, [userRights[1]])) {
+                    rightExists = true
+                }
+                break;
+            case modalTypes.employee:
+                if (hasRight(userStore, [employeeRights[1]])) {
+                    rightExists = true
+                }
+                break;
+            case modalTypes.customer:
+                if (hasRight(userStore, [customerRights[1]])) {
                     rightExists = true
                 }
                 break;
             case modalTypes.position:
-                if(hasRight(userStore, [positionRights[1]])){
+                if (hasRight(userStore, [positionRights[1]])) {
                     rightExists = true
                 }
                 break;
             case modalTypes.procedure:
-                if(hasRight(userStore, [procedureRights[1]])){
+                if (hasRight(userStore, [procedureRights[1]])) {
                     rightExists = true
                 }
                 break;
             case modalTypes.resource:
-                if(hasRight(userStore, [resourceRights[1]])){
+                if (hasRight(userStore, [resourceRights[1]])) {
                     rightExists = true
                 }
                 break;
             case modalTypes.resourceType:
-                if(hasRight(userStore, [resourceTypeRights[1]])){
+                if (hasRight(userStore, [resourceTypeRights[1]])) {
                     rightExists = true
                 }
                 break;
             case modalTypes.role:
-                if(hasRight(userStore, [roleRights[1]])){
+                if (hasRight(userStore, [roleRights[1]])) {
                     rightExists = true
                 }
                 break;
@@ -164,16 +179,16 @@ function OverviewPage({
     }
 
 
-    const isOwnAppointment = () =>{
+    const isOwnAppointment = () => {
         var ownAppointment = false
         //check if the selected is an appointment of the logged in user 
-        if(Object.keys(selectedItem).length != 0) {
-            if(selectedItem.bookedCustomer.id == userStore.userID){
+        if (Object.keys(selectedItem).length != 0) {
+            if (selectedItem.bookedCustomer.id == userStore.userID) {
                 ownAppointment = true
             }
-            if(selectedItem.bookedEmployees.length > 0){
+            if (selectedItem.bookedEmployees.length > 0) {
                 selectedItem.bookedEmployees.map(employee => {
-                    if(employee.id == userStore.userID){
+                    if (employee.id == userStore.userID) {
                         ownAppointment = true
                     }
                 })
@@ -190,7 +205,7 @@ function OverviewPage({
                     <Modal.Title>{editModalText || selectedItem.name || selectedItem.username || selectedItem.title}</Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
-                    {modal(hideModals,true,selectedItem)}
+                    {modal(hideModals, true, selectedItem)}
                 </Modal.Body>
             </Modal>
 
@@ -199,7 +214,7 @@ function OverviewPage({
                     <Modal.Title>{newItemText}</Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
-                    {modal(hideModals,false)}
+                    {modal(hideModals, false)}
                 </Modal.Body>
             </Modal>
 
@@ -225,52 +240,66 @@ function OverviewPage({
                         <tbody>
                             {tableBody.map((rowItem, index) => {
                                 var showCurrentRow = false
-                                if(modalType != null){
-                                    if(userStore != null) {
-                                        switch(modalType) {
+                                if (modalType != null) {
+                                    if (userStore != null) {
+                                        switch (modalType) {
                                             case modalTypes.user:
-                                                if(hasRight(userStore, [userRights[0]])){
+                                                if (hasRight(userStore, [userRights[0]])) {
                                                     showCurrentRow = true
-                                                }else if(hasRight(userStore, [ownUserRights[0]]) && rowItem[1] == userStore.username){
+                                                } else if (hasRight(userStore, [ownUserRights[0]]) && rowItem[1] == userStore.username) {
+                                                    showCurrentRow = true
+                                                }
+                                                break;
+                                            case modalTypes.employee:
+                                                if (hasRight(userStore, [employeeRights[0]])) {
+                                                    showCurrentRow = true
+                                                } else if (hasRight(userStore, [ownUserRights[0]]) && rowItem[1] == userStore.username) {
+                                                    showCurrentRow = true
+                                                }
+                                                break;
+                                            case modalTypes.customer:
+                                                if (hasRight(userStore, [customerRights[0]])) {
+                                                    showCurrentRow = true
+                                                } else if (hasRight(userStore, [ownUserRights[0]]) && rowItem[1] == userStore.username) {
                                                     showCurrentRow = true
                                                 }
                                                 break;
                                             case modalTypes.position:
-                                                if(hasRight(userStore, [positionRights[0]])){
+                                                if (hasRight(userStore, [positionRights[0]])) {
                                                     showCurrentRow = true
                                                 }
                                                 break;
                                             case modalTypes.procedure:
-                                                if(hasRight(userStore, [procedureRights[0]])){
+                                                if (hasRight(userStore, [procedureRights[0]])) {
                                                     showCurrentRow = true
                                                 }
                                                 break;
                                             case modalTypes.resource:
-                                                if(hasRight(userStore, [resourceRights[0]])){
+                                                if (hasRight(userStore, [resourceRights[0]])) {
                                                     showCurrentRow = true
                                                 }
                                                 break;
                                             case modalTypes.resourceType:
-                                                if(hasRight(userStore, [resourceTypeRights[0]])){
+                                                if (hasRight(userStore, [resourceTypeRights[0]])) {
                                                     showCurrentRow = true
                                                 }
                                                 break;
                                             case modalTypes.role:
-                                                if(hasRight(userStore, [roleRights[0]])){
+                                                if (hasRight(userStore, [roleRights[0]])) {
                                                     showCurrentRow = true
                                                 }
                                                 break;
                                             case modalTypes.appointment:
-                                                if(hasRight(userStore, [appointmentRights[0]])){
+                                                if (hasRight(userStore, [appointmentRights[0]])) {
                                                     showCurrentRow = true
-                                                }else if(hasRight(userStore, [ownAppointmentRights[0]]) && rowItem[4] == (userStore.firstName + ", " + userStore.lastName)){
+                                                } else if (hasRight(userStore, [ownAppointmentRights[0]]) && rowItem[4] == (userStore.firstName + ", " + userStore.lastName)) {
                                                     showCurrentRow = true
                                                 }
                                                 break;
                                             default: showCurrentRow = false
                                         }
                                     }
-                                    if(showCurrentRow){
+                                    if (showCurrentRow) {
                                         return (
                                             <tr key={index} onClick={handleClick}>
                                                 {rowItem.map((colItem, index) => {
@@ -281,7 +310,7 @@ function OverviewPage({
                                             </tr>
                                         )
                                     }
-                                }else {//no modalType -> no right check
+                                } else {//no modalType -> no right check
                                     return (
                                         <tr key={index} onClick={handleClick}>
                                             {rowItem.map((colItem, index) => {

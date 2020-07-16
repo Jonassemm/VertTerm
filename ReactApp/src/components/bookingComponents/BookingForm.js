@@ -55,7 +55,8 @@ function BookingForm({ editData, userStore }) {
             setEditMode(true)
             const appointmentID = editData.match.params.appointmentID
             //checking if Appointment is Blocker
-            if (await isBlocker(appointmentID)) {
+            const aptIsblocker = await isBlocker(appointmentID)
+            if (aptIsblocker.data) {
                 const { data } = await getAppointment(appointmentID)
                 setCustomApt(data)
                 setCustom(true)
@@ -73,21 +74,22 @@ function BookingForm({ editData, userStore }) {
                     return item.bookedProcedure
                 })
                 const tempApt = await getAppointment(appointmentID)
-                if (editData.match.params.startTime) {
-                    validateTime({ date: editData.match.params.startTime, ident: "start", ref: tempApt })
-
-                    userStore.setInfoMessage("Optimal Zeit wurde bereits übernommen!")
-                }
+                setApts(data)
                 setEditApt(tempApt.data)
                 setSelectedProcedures(tempProcedures)
                 setSelectedCustomer([data[0].bookedCustomer])
-                setApts(data)
+                if (editData.match.params.startTime) {
+                    validateTime({ date: moment(editData.match.params.startTime, "DD.MM.YYYY HH:mm").toDate(), ident: "start", ref: tempApt.data, apts:data })
+                    userStore.setInfoMessage("Optimal Zeit wurde bereits übernommen!")
+                }
+
             }
         }
     }
 
     //function for setting the times and checking if they are valid
     function validateTime(data) {
+        console.log(data)
         //calculating the current date rounded to 5 minutes
         let currentDate = new Date()
         let mod = currentDate.getMinutes() % 10
@@ -98,6 +100,12 @@ function BookingForm({ editData, userStore }) {
         let tempApts = apts.map(item => {
             return { ...item }
         })
+        if(tempApts.length == 0) {
+            tempApts = data.apts.map(item => {
+                return {...item}
+            })
+        }
+        console.log(tempApts)
         // defining function for Appointments without a fixed duration
         const calculateDifference = (ref1, ref2, end) => {
             if (ref1) {
@@ -228,16 +236,15 @@ function BookingForm({ editData, userStore }) {
                 if ((item.bookedEmployees.length != item.bookedProcedure.neededEmployeePositions.length) ||
                     (item.bookedResources.length != item.bookedProcedure.neededResourceTypes.length) ||
                     (item.plannedEndtime === null) ||
-                    (item.plannedStarttime === null) ||
-                    (item.bookedCustomer === null)) {
-                    complete = false
+                    (item.plannedStarttime === null)) {
+                        return complete = false
                 } else {
                     complete = true
                     for (let i = 0; i < item.bookedResources.length; i++) {
-                        if (item.bookedResources[i] === undefined) complete = false
+                        if (item.bookedResources[i] === undefined) return complete = false
                     }
                     for (let i = 0; i < item.bookedEmployees.length; i++) {
-                        if (item.bookedEmployees[i] === undefined) complete = false
+                        if (item.bookedEmployees[i] === undefined) return complete = false
                     }
                 }
             })
@@ -289,7 +296,13 @@ function BookingForm({ editData, userStore }) {
     }
 
     async function optimizeAppointment() {
-        let aptGroup = buildFinalData()
+        const temp = apts.map(item => {
+            return {...item,
+                    bookedCustomer: selectedCustomer[0]
+                    }
+        })
+        let aptGroup = {appointments: temp, status:"active"}
+        
         aptGroup.appointments = aptGroup.appointments.map((item, index) => {
             if (index == 0) return {
                 ...item,
@@ -299,13 +312,11 @@ function BookingForm({ editData, userStore }) {
         })
         let data = {}
         try {
-            console.log(strategy)
             switch (strategy) {
                 case "0": data = await OptimizeEarlyEnd(aptGroup, 0); break;
                 case "1": data = await OptimizeLeastWaitingTime(aptGroup, 0); break;
                 case "2": data = await OptimizeLeastDays(aptGroup, 0);
             }
-            console.log(data)
             setApts(data.data)
         } catch (error) {
             console.log(error)
@@ -533,7 +544,7 @@ function BookingForm({ editData, userStore }) {
                                     return (
                                         <React.Fragment>
                                             <hr />
-                                            <div className="parent" style={editMode ? (apt.bookedProcedure.id == editApt.bookedProcedure.id) ? selectedAptStyle : null : null}>
+                                            <div className="parent" style={editMode ? (editApt.bookedProcedure && (apt.bookedProcedure.id == editApt.bookedProcedure.id)) ? selectedAptStyle : null : null}>
                                                 <div className="namebox">
                                                     <h4>{apt.bookedProcedure.name}</h4>
                                                     {apt.bookedProcedure.duration != null && <p>{secondsToMinutes(apt.bookedProcedure.duration)} Minuten Dauer</p>}

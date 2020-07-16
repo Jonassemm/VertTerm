@@ -3,7 +3,7 @@ import axios from "axios"
 import { APIURL } from "../APIConfig"
 
 function filterDeleted(list) {
-    return { data: list.data.filter(item => item.status != "deleted") }
+    return { data: list.data.filter(item => (item.status != "deleted") && item.systemStatus != "deleted") }
 }
 
 //Optional Attributes

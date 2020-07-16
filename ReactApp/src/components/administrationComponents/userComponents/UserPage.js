@@ -93,7 +93,7 @@ export default function UserPage({ userStore, userType }) {
                 modalSize="xl"
                 refreshData={loadUserList}
                 userStore={userStore}
-                modalType={modalTypes.user}
+                modalType={userType == "employee" ? modalTypes.employee : modalTypes.customer}
             />
             {exception != null &&
                 <ExceptionModal
