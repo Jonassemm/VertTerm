@@ -113,6 +113,7 @@ public class CustomerServiceImp implements CustomerService {
 		user.obfuscate();
 
 		user.setSystemStatus(Status.DELETED);
+		repo.save(user);
 
 		return getById(id).getSystemStatus().isDeleted();
 	}
